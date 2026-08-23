@@ -50,6 +50,27 @@ Neither can be set from SQL, both take a click in **Authentication → Sign In /
 | `/agent` | Agent dashboard: stats, my listings, leads, new-listing form |
 | `/account` | Buyer account: saved properties, saved searches, profile |
 
+## Deploy (Vercel)
+
+The repo is linked to the Vercel project **resoha** (`frorexstudios-projects`), so every push to
+`main` builds automatically. Three things are configured outside the repo:
+
+1. **Environment variables** — Settings → Environment Variables, for Production *and* Preview:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL       https://zgfcysoyksticnbgbhxb.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY  <publishable key from Supabase → Settings → API>
+   ```
+   Both are public by design; the database is protected by RLS, not by hiding them. Without them
+   every request dies in middleware with
+   *“Your project's URL and Key are required to create a Supabase client”*.
+2. **Supabase → Authentication → URL Configuration** — add the deployment origin to *Site URL* and
+   *Redirect URLs*, otherwise confirmation and password-reset links bounce back to localhost.
+3. **Deployment protection** — new projects here start with Vercel Authentication on, so the
+   `.vercel.app` URLs ask for a Vercel login. Turn it off (Settings → Deployment Protection) to make
+   the preview publicly shareable.
+
+Redeploy after changing environment variables — Vercel injects them at build time.
+
 ## Accounts, agencies and permissions
 
 Three kinds of account, created at `/signup`:
