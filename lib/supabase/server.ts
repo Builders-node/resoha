@@ -9,15 +9,17 @@ const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
  * Усі запити йдуть від його імені — права перевіряє RLS, а не наш код.
  */
 export async function supabaseServer() {
+  // cookies() першим: він позначає сторінку динамічною, тому збірка не намагається
+  // її пререндерити й не падає через відсутні змінні оточення
+  const store = await cookies();
+
   if (!URL || !KEY) {
-    // зрозуміле повідомлення замість загального від supabase-js
     throw new Error(
       'Supabase is not configured: set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY '
       + '(locally in .env.local, on Vercel in Settings → Environment Variables, then redeploy).',
     );
   }
 
-  const store = await cookies();
   return createServerClient(URL, KEY, {
     cookies: {
       getAll: () => store.getAll(),
