@@ -50,6 +50,23 @@ Neither can be set from SQL, both take a click in **Authentication → Sign In /
 | `/agent` | Agent dashboard: stats, my listings, leads, new-listing form |
 | `/account` | Buyer account: saved properties, saved searches, profile |
 
+## Branches
+
+```
+dev   ← daily work lands here; every push builds a Vercel preview
+main  ← production; only fast-forwarded from dev once a preview looks right
+```
+
+Publish to `dev` first, check the preview URL, then promote:
+
+```bash
+git checkout main && git merge --ff-only dev && git push origin main
+git checkout dev
+```
+
+Preview builds read the **Preview** scope of the Vercel environment variables, so the same two
+Supabase values have to be filled in for Preview as well as Production.
+
 ## Deploy (Vercel)
 
 The repo is linked to the Vercel project **resoha** (`frorexstudios-projects`), so every push to
