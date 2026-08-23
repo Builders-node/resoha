@@ -35,6 +35,7 @@ export interface Profile {
   /* профіль ріелтора */
   agencyId: string | null;  // null — незалежний ріелтор
   isOwner: boolean;         // власник агенції
+  isAdmin: boolean;         // адміністратор платформи
   agency: string;           // назва агенції для показу ('Independent agent')
   experience: number;
   rating: number;
@@ -110,7 +111,8 @@ export interface Session {
   name: string;
   avatar: string;
   agencyId: string | null;
-  isOwner: boolean;
+  isOwner: boolean;         // власник агенції
+  isAdmin: boolean;         // адміністратор платформи
 }
 
 export type SortKey = 'new' | 'price_asc' | 'price_desc' | 'sqft_desc' | 'popular';
@@ -152,4 +154,5 @@ export interface Review {
   createdAt: string;
   authorName: string;
   authorAvatar: string;
+  agentName?: string;   // заповнюється лише в адмінському списку
 }

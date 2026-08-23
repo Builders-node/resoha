@@ -247,15 +247,20 @@ supabase/migrations/       schema, RLS, RPC — exported from the live database
 
 ## What each role can do
 
-| | Guest | Buyer | Realtor | Agency owner |
-|---|---|---|---|---|
-| Search, map, property pages | ✓ | ✓ | ✓ | ✓ |
-| Send an enquiry | ✓ | ✓ (kept in the account) | ✓ | ✓ |
-| Save listings and searches | — | ✓ | ✓ | ✓ |
-| Review an agent | — | ✓ | ✓ | ✓ |
-| Publish and edit listings | — | — | ✓ | ✓ + the whole team's |
-| Leads inbox | — | own enquiries | own listings | whole agency |
-| Agency profile, invite code, team | — | — | join / open one | full control |
+| | Guest | Buyer | Realtor | Agency owner | Admin |
+|---|---|---|---|---|---|
+| Search, map, property pages | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Send an enquiry | ✓ | ✓ (kept in the account) | ✓ | ✓ | ✓ |
+| Save listings and searches | — | ✓ | ✓ | ✓ | ✓ |
+| Review an agent | — | ✓ | ✓ | ✓ | ✓ |
+| Publish and edit listings | — | — | ✓ | ✓ + the whole team's | any |
+| Leads inbox | — | own enquiries | own listings | whole agency | all |
+| Agency profile, invite code, team | — | — | join / open one | full control | verify any |
+
+**Admin panel** at `/admin`, gated on the `is_admin` flag: platform overview, every listing
+(hidden included) with feature / take-down, agency and realtor verification, account suspension,
+and review moderation. Admin rights are an extra flag on top of a normal account, and the API
+refuses to let an admin suspend or demote themselves. Demo login: `admin@resoha.dev` / `demo1234`.
 
 Public pages: `/agency/[id]` (brand header, contacts, team, listings) and `/agents/[id]`
 (bio, contacts, listings, reviews).
@@ -267,7 +272,6 @@ Public pages: `/agency/[id]` (brand header, contacts, team, listings) and `/agen
 | **Transactional email** | Supabase's built-in SMTP is rate-limited, so confirmation and password-reset letters stall. The flows are built and handled gracefully; connect your own SMTP (or switch *Confirm email* off) to make them real |
 | **Saved-search alerts** | Counts are live, but nothing emails you when a match appears — same SMTP dependency |
 | **Map viewport search** | Clusters work; “search this area” as you pan does not exist yet |
-| **Moderation** | `verified` on agents and agencies is set in the database by hand — no admin screen |
 
 ## Deliberately out of scope
 

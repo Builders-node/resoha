@@ -15,7 +15,7 @@ export async function currentUser(): Promise<Agent | null> {
 
 export const toSession = (u: Agent): Session => ({
   id: u.id, role: u.role, name: u.name, avatar: u.avatar,
-  agencyId: u.agencyId, isOwner: u.isOwner,
+  agencyId: u.agencyId, isOwner: u.isOwner, isAdmin: u.isAdmin,
 });
 
 export async function getSession(): Promise<Session | null> {

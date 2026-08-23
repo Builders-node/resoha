@@ -1,6 +1,6 @@
 import LoginGate from '@/components/LoginGate';
 import UserAccount from '@/components/UserAccount';
-import { currentUser } from '@/lib/session';
+import { currentUser, toSession } from '@/lib/session';
 
 export default async function AccountPage() {
   const user = await currentUser();
@@ -14,7 +14,7 @@ export default async function AccountPage() {
     );
   }
   return <UserAccount
-    session={{ id: user.id, role: user.role, name: user.name, avatar: user.avatar, agencyId: user.agencyId, isOwner: user.isOwner }}
+    session={toSession(user)}
     user={{ email: user.email, phone: user.phone }}
   />;
 }

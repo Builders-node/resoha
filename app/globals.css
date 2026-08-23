@@ -453,3 +453,8 @@ textarea.input{resize:vertical;min-height:96px}
 .pin-cluster{display:grid;place-items:center;border-radius:50%;background:var(--ink);color:#fff;
   font-weight:800;font-size:13.5px;border:3px solid #fff;box-shadow:var(--shadow);cursor:pointer;transition:.15s}
 .pin-cluster:hover{background:var(--orange);transform:scale(1.06)}
+
+/* ===== Адмінка ===== */
+.admin-mark{width:72px;height:72px;flex:none;border-radius:50%;display:grid;place-items:center;
+  background:var(--ink);color:#fff}
+.agc-dot{width:32px;height:32px;border-radius:9px;flex:none}

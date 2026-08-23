@@ -31,6 +31,13 @@ export default function Sidebar({ session }: { session: Session | null }) {
           <span className="sidebar__word">Resoha</span>
         </Link>
 
+        {session?.isAdmin && (
+          <Link href="/admin" className={pathname === '/admin' ? 'is-active' : ''}>
+            <span className="sidebar__ico"><Icon name="deed" size={22} /></span>
+            <span className="sidebar__cap">Admin</span>
+          </Link>
+        )}
+
         {NAV.map((n) => (
           <Link key={n.cap} href={n.href} className={n.match(pathname, deal) ? 'is-active' : ''}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>

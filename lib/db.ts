@@ -20,7 +20,7 @@ export const mapAgency = (r: Row): Agency => ({
 export const mapAgent = (r: Row): Agent => ({
   id: r.id, role: r.role, name: r.name, email: r.email, avatar: r.avatar,
   phone: r.phone, whatsapp: r.whatsapp, createdAt: r.created_at, active: r.active,
-  agencyId: r.agency_id, isOwner: r.is_owner,
+  agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
   experience: r.experience, rating: Number(r.rating), reviews: r.reviews,
   verified: r.verified, languages: r.languages ?? [], about: r.about,
@@ -285,6 +285,113 @@ export async function countMatches(query: ListingQuery, since?: string) {
     since ? base().gt('created_at', since) : Promise.resolve({ count: 0 }),
   ]);
   return { total: total ?? 0, fresh: fresh.count ?? 0 };
+}
+
+/* ---------- admin ---------- */
+/** Зведення по платформі. RLS уже впустила лише адміна, окремих перевірок тут не треба. */
+export async function adminOverview() {
+  const client = await db();
+  const count = async (table: string, filter?: (q: never) => unknown) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let q: any = client.from(table).select('id', { count: 'exact', head: true });
+    if (filter) q = (filter as unknown as (x: unknown) => unknown)(q);
+    const { count: n } = await q;
+    return n ?? 0;
+  };
+
+  const [listings, hidden, agencies, reviews, leads, newLeads] = await Promise.all([
+    count('listings'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    count('listings', ((q: any) => q.eq('active', false)) as never),
+    count('agencies'),
+    count('reviews'),
+    count('leads'),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    count('leads', ((q: any) => q.eq('status', 'new')) as never),
+  ]);
+
+  const { data: people } = await client.from('profiles').select('role, verified, is_admin, active');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rows = (people ?? []) as any[];
+  const { data: viewRows } = await client.from('listings').select('views');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const views = ((viewRows ?? []) as any[]).reduce((sum, r) => sum + (r.views ?? 0), 0);
+
+  return {
+    listings, hidden, agencies, reviews, leads, newLeads, views,
+    agents: rows.filter((r) => r.role === 'agent').length,
+    buyers: rows.filter((r) => r.role === 'user').length,
+    unverifiedAgents: rows.filter((r) => r.role === 'agent' && !r.verified).length,
+    suspended: rows.filter((r) => !r.active).length,
+  };
+}
+
+export async function adminListUsers(): Promise<Agent[]> {
+  const { data } = await (await db()).from('profiles')
+    .select(AGENT_COLS).order('created_at', { ascending: false }).limit(500);
+  return (data ?? []).map(mapAgent);
+}
+
+export async function adminListAgencies() {
+  const client = await db();
+  const [{ data: agencies }, { data: members }, { data: listings }] = await Promise.all([
+    client.from('agencies').select('*').order('created_at', { ascending: false }),
+    client.from('profiles').select('agency_id'),
+    client.from('listings').select('agency_id'),
+  ]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const countBy = (rows: any[] | null, id: string) => (rows ?? []).filter((r) => r.agency_id === id).length;
+  return (agencies ?? []).map((a) => ({
+    agency: mapAgency(a),
+    agents: countBy(members, a.id),
+    listings: countBy(listings, a.id),
+  }));
+}
+
+/** Оновлення полів, доступних лише адміну: підтвердження, добірка, блокування. */
+export async function adminSetProfileFlags(id: string, patch: { verified?: boolean; active?: boolean; isAdmin?: boolean }) {
+  const row: Row = {};
+  if (patch.verified !== undefined) row.verified = patch.verified;
+  if (patch.active !== undefined) row.active = patch.active;
+  if (patch.isAdmin !== undefined) row.is_admin = patch.isAdmin;
+  const { data, error } = await (await db()).from('profiles').update(row).eq('id', id).select(AGENT_COLS).maybeSingle();
+  if (error) throw error;
+  return data ? mapAgent(data) : null;
+}
+
+export async function adminSetAgencyFlags(id: string, patch: { verified?: boolean }) {
+  const { data, error } = await (await db()).from('agencies')
+    .update({ verified: patch.verified }).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapAgency(data) : null;
+}
+
+export async function adminSetListingFlags(id: string, patch: { featured?: boolean; active?: boolean }) {
+  const row: Row = {};
+  if (patch.featured !== undefined) row.featured = patch.featured;
+  if (patch.active !== undefined) row.active = patch.active;
+  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapListing(data) : null;
+}
+
+export async function adminDeleteReview(id: string) {
+  const { error } = await (await db()).from('reviews').delete().eq('id', id);
+  if (error) throw error;
+  return true;
+}
+
+export async function adminListReviews(): Promise<Review[]> {
+  const { data } = await (await db()).from('reviews')
+    .select('*, author:profiles!reviews_author_id_fkey(name, avatar), agent:profiles!reviews_agent_id_fkey(name)')
+    .order('created_at', { ascending: false }).limit(200);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((r: any) => ({
+    id: r.id, agentId: r.agent_id, authorId: r.author_id, rating: r.rating,
+    body: r.body, createdAt: r.created_at,
+    authorName: r.author?.name ?? 'Guest', authorAvatar: r.author?.avatar ?? '',
+    agentName: r.agent?.name ?? '',
+  }));
 }
 
 /* ---------- reviews ---------- */
