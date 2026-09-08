@@ -8,7 +8,7 @@ import ListingCard from './ListingCard';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import { EMPTY_FILTERS, type Filters, countActive, toQuery } from '@/lib/filters';
-import { fmtUsd, nListings } from '@/lib/format';
+import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { Listing } from '@/lib/types';
 
 const MapView = dynamic(() => import('./MapView'), {
@@ -32,6 +32,16 @@ export default function ListingsExplorer({
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
+  // на вузьких екранах показуємо щось одне: список або карту
+  const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
+
+  // у режимі карти сторінка не має прокручуватись — інакше з-під карти визирає футер
+  useEffect(() => {
+    if (mobileView !== 'map') return;
+    window.scrollTo(0, 0);
+    document.body.dataset.mapView = '1';
+    return () => { delete document.body.dataset.mapView; };
+  }, [mobileView]);
   const filtersRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
@@ -114,12 +124,6 @@ export default function ListingsExplorer({
           <input className="input" type="search" placeholder="Search: area, resort, street…"
             value={filters.q} onChange={(e) => set({ q: e.target.value })} style={{ minWidth: 240 }} />
 
-          <select className="input" value={filters.deal} onChange={(e) => set({ deal: e.target.value })}>
-            <option value="">Buy or rent</option>
-            <option value="sale">For sale</option>
-            <option value="rent">For rent</option>
-          </select>
-
           <select className="input" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
             <option value="">Any type</option>
             <option value="condo">Condos</option>
@@ -145,10 +149,18 @@ export default function ListingsExplorer({
         </div>
       </div>
 
-      <div className="split">
+      <div className={`split split--${mobileView}`}>
         <div className="split__list">
           <div className="list-head">
-            <h1>{loading ? 'Searching…' : `${nListings(total)} on Roatán`}</h1>
+            <h1>
+              {loading
+                ? 'Searching…'
+                : filters.deal === 'rent'
+                  ? `${fmtNumber(total)} for rent on Roatán`
+                  : filters.deal === 'sale'
+                    ? `${fmtNumber(total)} for sale on Roatán`
+                    : `${nListings(total)} on Roatán`}
+            </h1>
             <span className="muted small">Bay Islands, Honduras</span>
           </div>
 
@@ -183,6 +195,15 @@ export default function ListingsExplorer({
           <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId} />
         </div>
       </div>
+
+      <button
+        className="view-toggle"
+        onClick={() => setMobileView((v) => (v === 'list' ? 'map' : 'list'))}
+        aria-label={mobileView === 'list' ? 'Show map' : 'Show list'}
+      >
+        {mobileView === 'list' ? 'Map' : 'List'}
+        <Icon name={mobileView === 'list' ? 'map' : 'list'} size={18} />
+      </button>
 
       <FiltersModal
         open={modal}

@@ -126,16 +126,6 @@ export default function FiltersModal({
             <div className="fsec__head"><span className="fsec__ico"><Icon name="sliders" size={19} /></span><h4>Main filters</h4></div>
 
             <div className="fgroup">
-              <h5>Listing type</h5>
-              <div className="chip-row">
-                {[{ v: '', label: 'All' }, { v: 'sale', label: 'For sale' }, { v: 'rent', label: 'For rent' }].map((d) => (
-                  <button key={d.v} className={`chip-btn ${draft.deal === d.v ? 'is-on' : ''}`}
-                    onClick={() => set({ deal: d.v })}>{d.label}</button>
-                ))}
-              </div>
-            </div>
-
-            <div className="fgroup">
               <h5>Property type</h5>
               <div className="chip-row">
                 {TYPES.map((t) => (

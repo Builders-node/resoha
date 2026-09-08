@@ -13,6 +13,7 @@ const PATHS: Record<string, React.ReactNode> = {
   logout: <><path d="M14.5 4.5h3.3A1.7 1.7 0 0 1 19.5 6.2v11.6a1.7 1.7 0 0 1-1.7 1.7h-3.3" /><path d="m9.5 8.2-4 3.8 4 3.8" /><path d="M5.5 12h9" /></>,
   wave: <><path d="M2.5 9.2c2.4-2.1 4-2.1 6.4 0s4 2.1 6.4 0 4-2.1 6.2 0" /><path d="M2.5 14.8c2.4-2.1 4-2.1 6.4 0s4 2.1 6.4 0 4-2.1 6.2 0" /></>,
   sliders: <><path d="M3.5 7.5h9M16.5 7.5h4M3.5 16.5h4M11.5 16.5h9" /><circle cx="14.4" cy="7.5" r="2.3" /><circle cx="9.4" cy="16.5" r="2.3" /></>,
+  list: <><path d="M9 6.5h11M9 12h11M9 17.5h11" /><circle cx="4.6" cy="6.5" r="1.3" /><circle cx="4.6" cy="12" r="1.3" /><circle cx="4.6" cy="17.5" r="1.3" /></>,
   sort: <><path d="M4 6.5h13M4 12h9M4 17.5h5" /></>,
   bookmark: <><path d="M6.6 3.8h10.8v16.4L12 16.2l-5.4 4z" /></>,
   deed: <><path d="M6.4 3.5h7L18 8v12.5H6.4z" /><path d="M13.2 3.5V8h4.6" /><path d="M9 12.5h6M9 16h4" /></>,

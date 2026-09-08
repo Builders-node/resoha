@@ -167,8 +167,13 @@ Modelled on the lun.ua filter modal, with island-relevant controls:
 - **Areas of Roatán** — multi-select with per-area counts
 - Footer shows a **live result count** (`/api/listings?...&countOnly=1`, debounced) before you apply
 
-Sale and rent are treated as separate markets — `/listings` defaults to `deal=sale`, otherwise the
-price histogram would mix $1.1K/mo rentals with $1.7M villas.
+**Sale and rent are separate sections, not a filter.** You switch between them in the navigation
+(Buy / Rent), the results heading names the section, and neither the toolbar nor the filter sheet
+can mix them — otherwise the price histogram would put $1.1K/mo rentals next to $1.7M villas.
+`/listings` defaults to `deal=sale`; an agency or agent portfolio is the one view that shows both.
+
+On phones the results page shows one pane at a time with an Airbnb-style **Map / List** pill, and
+the filter row collapses into a single horizontally scrollable line.
 
 ## Island-specific data model
 

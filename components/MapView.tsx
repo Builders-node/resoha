@@ -54,6 +54,9 @@ export default function MapView({
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cache = useRef<Record<string, Listing>>({});
   const clusterLayer = useRef<Marker[]>([]);
+  // підганяння меж під поточні піни; викликаємо, коли карта вперше отримала розмір
+  const refit = useRef<(() => void) | null>(null);
+  const lastSize = useRef({ w: 0, h: 0 });
   const [zoomTick, setZoomTick] = useState(0);
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
@@ -87,7 +90,15 @@ export default function MapView({
       // перегруповуємо після кожної зміни масштабу
       m.on('zoomend', () => setZoomTick((t) => t + 1));
       map.current = m;
-      ro = new ResizeObserver(() => m.invalidateSize());
+      ro = new ResizeObserver((entries) => {
+        const box = entries[0].contentRect;
+        // контейнер був прихований (0×0) і щойно зʼявився — Leaflet тоді порахував
+        // масштаб по нулю, тож після invalidateSize повертаємо межі на місце
+        const wasHidden = lastSize.current.w === 0 || lastSize.current.h === 0;
+        lastSize.current = { w: box.width, h: box.height };
+        m.invalidateSize();
+        if (wasHidden && box.width > 0 && box.height > 0) refit.current?.();
+      });
       ro.observe(el.current);
       setTimeout(() => m.invalidateSize(), 0);
       setReady(true);
@@ -212,13 +223,19 @@ export default function MapView({
         markers.current[l.id] = mk;
       });
 
+      const fitToItems = () => {
+        if (!items.length) return;
+        if (items.length > 1) {
+          m.fitBounds(L.latLngBounds(items.map((l) => [l.lat, l.lng] as [number, number])).pad(0.2), { animate: false });
+        } else {
+          m.setView([items[0].lat, items[0].lng], Math.max(zoom, 14), { animate: false });
+        }
+      };
+      refit.current = fitToItems;
+
       m.invalidateSize();
       if (zoomTick > 0) return;          // це перегрупування, а не нова вибірка
-      if (items.length > 1) {
-        m.fitBounds(L.latLngBounds(items.map((l) => [l.lat, l.lng] as [number, number])).pad(0.2), { animate: false });
-      } else if (items.length === 1) {
-        m.setView([items[0].lat, items[0].lng], Math.max(zoom, 14), { animate: false });
-      }
+      fitToItems();
     })();
 
     return () => { cancelled = true; };

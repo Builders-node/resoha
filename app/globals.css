@@ -361,6 +361,13 @@ textarea.input{resize:vertical;min-height:96px}
   .sidebar__foot > a,.sidebar__foot > button{flex:1}
 
   .shell{margin-left:0;padding-bottom:calc(var(--bar-h) + env(safe-area-inset-bottom,0))}
+
+  /* Фільтри в один рядок із горизонтальною прокруткою: на телефоні вони займали
+     чверть екрана й тиснули карту. */
+  .filters__in{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .filters__in::-webkit-scrollbar{display:none}
+  .filters__in > *{flex:none}
+  .filters__count{margin-left:8px}
   .grid--3,.grid--4,.grid--list{grid-template-columns:repeat(2,1fr)}
   .tiles{grid-template-columns:repeat(2,1fr)}
   .specs,.stats{grid-template-columns:repeat(2,1fr)}
@@ -487,3 +494,27 @@ textarea.input{resize:vertical;min-height:96px}
 .admin-mark{width:72px;height:72px;flex:none;border-radius:50%;display:grid;place-items:center;
   background:var(--ink);color:#fff}
 .agc-dot{width:32px;height:32px;border-radius:9px;flex:none}
+
+/* ===== Перемикач «список ↔ карта» на вузьких екранах ===== */
+.view-toggle{display:none}
+@media (max-width:1080px){
+  .view-toggle{
+    position:fixed;left:50%;transform:translateX(-50%);z-index:900;
+    bottom:calc(var(--bar-h, 0px) + 20px + env(safe-area-inset-bottom,0));
+    display:inline-flex;align-items:center;gap:8px;
+    background:var(--ink);color:#fff;border:0;border-radius:999px;
+    padding:13px 22px;font-weight:700;font-size:14.5px;cursor:pointer;
+    box-shadow:0 10px 26px rgba(15,15,16,.32)}
+  .view-toggle:active{transform:translateX(-50%) scale(.97)}
+
+  /* показуємо рівно одну панель — друга не займає місце й не тягне тайли */
+  .split--list .split__map{display:none}
+  .split--map .split__list{display:none}
+  /* карта займає весь екран між панеллю фільтрів і нижньою навігацією */
+  .split--map{position:fixed;left:0;right:0;top:var(--filters-h);
+    bottom:calc(var(--bar-h, 0px) + env(safe-area-inset-bottom,0));height:auto;z-index:500}
+  .split--map .split__map{height:100%}
+  .split--list{height:auto}
+  body[data-map-view]{overflow:hidden}
+  body[data-map-view] .footer{display:none}
+}
