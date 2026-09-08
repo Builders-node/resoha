@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { DEAL_LABELS, fmtPrice, photoUrl, specLine } from '@/lib/format';
+import { DEAL_LABELS, fmtPrice, specLine } from '@/lib/format';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
+import Photo from './Photo';
 
 type Props = {
   listing: Listing;
@@ -24,8 +25,7 @@ export default function ListingCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img loading="lazy" src={photoUrl(l.photos[0], 700, ratio === 'tall' ? 900 : 560)} alt={l.title} />
+      <Photo src={l.photos[0]} alt={l.title} />
       <div className="card__badges">
         <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{DEAL_LABELS[l.deal]}</span>
         {l.oceanfront && <span className="badge">Oceanfront</span>}

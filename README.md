@@ -14,8 +14,8 @@ Re-cut for an island market: USD prices, titled land, oceanfront filter, WhatsAp
   with the *user's* session, so RLS is what actually enforces access (no service-role key anywhere)
 - Map: Leaflet + OpenStreetMap (no API key)
 - Plain CSS, no UI framework (`app/globals.css`)
-- ~64 demo listings across 7 agencies: 12 written by hand, the rest generated deterministically
-  (seeded LCG) so filters, facet counts and the price histogram have something real to chew on
+- 7 real listings, each one a unit that an island agency actually has on the market; every row
+  carries `source_name` / `source_ref` / `source_url`, and the property page links to the original
 - One local SVG icon set (`components/Icon.tsx`) — no emoji, no icon dependency
 
 ## Run
@@ -129,7 +129,8 @@ non-owner touching team or agency endpoints gets `403`.
 
 **Photos** go to the `listing-photos` Storage bucket, each agent into their own folder (the storage
 policy checks `auth.uid()`), and the listing keeps the public URL. `photoUrl()` passes real URLs
-through and only turns bare demo seeds into placeholders.
+through and returns `''` for anything else — `<Photo>` then draws a plain "no photo yet" block.
+Stock images never stand in for a property, and `<Avatar>` falls back to initials, not a stock face.
 
 **Where the rules live.** Access control is in the database, not in the route handlers:
 `listings_update` lets the author *or* the agency owner edit; `leads_read` shows an owner the whole
@@ -139,14 +140,15 @@ with the guard rails inside — the last-owner rule is a trigger, so it holds no
 
 **Auth** is Supabase Auth (email + password); `@supabase/ssr` keeps the session in httpOnly cookies
 and `middleware.ts` refreshes it. A `profiles` row is created by the `handle_new_user` trigger from
-the signup metadata. Demo accounts (password `demo1234`):
+the signup metadata. Two accounts exist, both real to the platform rather than invented people:
 
 ```
-marla@islandliferoatan.com    agency owner — Island Life Realty
-kevin@islandliferoatan.com    realtor inside that agency
-tanya@roatanmail.com          independent realtor
-dana.whitfield@example.com    buyer
+admin@resoha.dev        platform admin
+listings@resoha.dev     "Resoha listings desk" — holds the sourced listings (Roatan-Desk-2026!)
 ```
+
+Agency and team flows are tested by registering an account through the UI; there are no fictional
+realtors sitting in the database any more.
 
 ## Agency board
 
@@ -265,7 +267,7 @@ supabase/migrations/       schema, RLS, RPC — exported from the live database
 **Admin panel** at `/admin`, gated on the `is_admin` flag: platform overview, every listing
 (hidden included) with feature / take-down, agency and realtor verification, account suspension,
 and review moderation. Admin rights are an extra flag on top of a normal account, and the API
-refuses to let an admin suspend or demote themselves. Demo login: `admin@resoha.dev` / `demo1234`.
+refuses to let an admin suspend or demote themselves. Admin account: `admin@resoha.dev`.
 
 Public pages: `/agency/[id]` (brand header, contacts, team, listings) and `/agents/[id]`
 (bio, contacts, listings, reviews).
@@ -294,17 +296,19 @@ Checked by probing PostgREST directly with the anon key, not just through the ap
 
 ## Deliberately out of scope
 
-- Agent `rating` / `reviews` and agency `verified` are seeded numbers — there is no reviews table or
-  moderation flow behind them yet.
+- Ratings start at zero and only move through the reviews table; `verified` is off until someone
+  checks a licence.
 - The island picker on the home page only lists Roatán; Utila and Guanaja are marked "soon".
 - No password reset flow or agency licence check yet — an agency is `verified: false` until someone flips it.
-- The seed (5 agencies, 10 accounts, 64 listings) was imported once via a temporary SECURITY DEFINER
-  function that refused to run on a non-empty database; it has been dropped.
-- Data lives in Supabase Postgres; the demo seed is a one-off import, not a fixture reset on restart.
-- Seeded demo listings still use picsum placeholders for photos; uploads go to Supabase Storage.
+- The old generated seed (5 invented agencies, 10 invented people, 64 generated listings) was
+  deleted in migration `0013`; what replaced it is a small set of real, sourced listings.
+- Listings carry no photos yet: the agencies own theirs, so the cards show a "no photo yet" state
+  until an agency uploads its own or gives permission.
 - Coordinates are entered manually (no geocoder).
 - No payments, moderation, chat or pagination.
-- **All listing data is fictional.** Prices are plausible for the market but not real inventory.
+- **The listings are real but second-hand.** Prices, sizes and MLS numbers are what the listing
+  agency published; nothing is verified independently, and enquiries reach the platform, not the
+  agency, until an agency signs up here.
 
 ## Next steps
 

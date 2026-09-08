@@ -7,6 +7,7 @@ import ListingCard from '@/components/ListingCard';
 import { getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import Avatar from '@/components/Avatar';
 
 export default async function AgentPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -32,8 +33,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       </div>
 
       <header className="org org--person">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="org__avatar" src={agent.avatar} alt={agent.name} />
+        <Avatar className="org__avatar" src={agent.avatar} name={agent.name} />
         <div>
           <h1 className="with-ico">
             {agent.name}

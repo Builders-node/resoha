@@ -33,6 +33,8 @@ const PATHS: Record<string, React.ReactNode> = {
   island: <><path d="M2.8 18.6c1.9-1.6 3.2-1.6 5.1 0s3.2 1.6 5.1 0 3.2-1.6 5-.1" /><path d="M12 16V9.4" /><path d="M12 9.4c-2-2.2-4.4-2.4-6.2-1 1.6-2.5 4.2-2.8 6.2-1.1 2-1.7 4.6-1.4 6.2 1.1-1.8-1.4-4.2-1.2-6.2 1z" /></>,
   land: <><path d="M3.4 17.5 12 13l8.6 4.5-8.6 4z" /><path d="M12 13V6.5" /><path d="M12 6.5c1.6-1.4 3.6-1.4 5 0-1.4 1.4-3.4 1.4-5 0z" /></>,
   briefcase: <><rect x="3.4" y="7.4" width="17.2" height="11.6" rx="2" /><path d="M9 7.4V6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 6v1.4" /><path d="M3.4 12.4h17.2" /></>,
+  camera: <><path d="M3.4 8.6h3.4l1.5-2.4h7.4l1.5 2.4h3.4v10H3.4z" /><circle cx="12" cy="13.2" r="3.4" /></>,
+  link: <><path d="M10.4 13.6a3.8 3.8 0 0 0 5.4 0l2.6-2.6a3.8 3.8 0 0 0-5.4-5.4l-1.3 1.3" /><path d="M13.6 10.4a3.8 3.8 0 0 0-5.4 0l-2.6 2.6a3.8 3.8 0 0 0 5.4 5.4l1.3-1.3" /></>,
 };
 
 type Props = SVGProps<SVGSVGElement> & { name: keyof typeof PATHS | string; size?: number };

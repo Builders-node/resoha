@@ -6,6 +6,18 @@ type Row = { agency: Agency; listings: number; agents: number };
 
 /** Плитки агенцій у стилі блоку «Агенції нерухомості» на ЛУН. */
 export default function AgencyRow({ rows }: { rows: Row[] }) {
+  if (rows.length === 0) {
+    return (
+      <div className="panel empty">
+        <b>No agencies on Resoha yet.</b>
+        <p className="muted small" style={{ marginTop: 6 }}>
+          Island agencies get their own page here — listings, team and contacts — as soon as they sign up.
+        </p>
+        <Link className="btn btn--primary" href="/agent" style={{ marginTop: 12 }}>Open an agency</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="agc-row">
       {rows.map(({ agency, listings, agents }) => {

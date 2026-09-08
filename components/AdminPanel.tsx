@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
+import Photo from './Photo';
 import { toast } from './Toaster';
-import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice, photoUrl } from '@/lib/format';
+import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import type { Agency, Agent, Listing, Review, Session } from '@/lib/types';
+import Avatar from './Avatar';
 
 type Tab = 'overview' | 'listings' | 'agencies' | 'users' | 'reviews';
 type Overview = {
@@ -123,8 +125,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                     <tr key={l.id}>
                       <td>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img className="thumb" src={photoUrl(l.photos[0], 128, 96)} alt="" />
+                          <Photo className="thumb" src={l.photos[0]} label="" />
                           <div>
                             <Link href={`/listings/${l.id}`} style={{ fontWeight: 600 }}>{l.title}</Link>
                             <div className="tiny muted">{DEAL_LABELS[l.deal]} · {l.neighborhood} · {fmtDate(l.createdAt)}</div>
@@ -208,8 +209,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                   <tr key={u.id}>
                     <td>
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={u.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                        <Avatar src={u.avatar} name={u.name} style={{ width: 34, height: 34, fontSize: 12 }} />
                         <div>
                           <div style={{ fontWeight: 600 }}>
                             {u.role === 'agent' ? <Link href={`/agents/${u.id}`}>{u.name}</Link> : u.name}

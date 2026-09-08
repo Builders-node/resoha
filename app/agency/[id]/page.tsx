@@ -6,6 +6,7 @@ import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import Avatar from '@/components/Avatar';
 
 export default async function AgencyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -65,8 +66,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         <div className="grid grid--4">
           {team.map((m) => (
             <Link key={m.id} className="person" href={`/agents/${m.id}`}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={m.avatar} alt={m.name} />
+              <Avatar src={m.avatar} name={m.name} />
               <div>
                 <div className="person__name with-ico">
                   {m.name}

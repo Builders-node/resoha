@@ -1,6 +1,7 @@
 'use client';
 import { useRef, useState } from 'react';
 import Icon from './Icon';
+import Avatar from './Avatar';
 import { toast } from './Toaster';
 
 /** Завантаження аватара: той самий бакет, тека користувача, потім PATCH профілю. */
@@ -30,10 +31,9 @@ export default function AvatarPicker({
 
   return (
     <div className="avatar-pick">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={src} alt={name} />
+      <Avatar src={src} name={name} />
       <button type="button" className="btn btn--sm btn--ghost" disabled={busy} onClick={() => input.current?.click()}>
-        <Icon name="plus" size={15} /> {busy ? 'Uploading…' : 'Change photo'}
+        <Icon name="plus" size={15} /> {busy ? 'Uploading…' : src ? 'Change photo' : 'Add a photo'}
       </button>
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif" hidden
         onChange={(e) => { const f = e.target.files?.[0]; if (f) pick(f); e.target.value = ''; }} />

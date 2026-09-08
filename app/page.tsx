@@ -3,18 +3,18 @@ import Icon from '@/components/Icon';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import { agencyBoard, getFavorites, queryListings } from '@/lib/db';
-import { fmtNumber, fmtUsd, nListings, photoUrl } from '@/lib/format';
+import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 
 const SALE_TILES = [
-  { label: 'Condos', href: '/listings?deal=sale&type=condo', img: 'tile-condo' },
-  { label: 'Houses & villas', href: '/listings?deal=sale&type=house', img: 'tile-villa' },
-  { label: 'Land', href: '/listings?deal=sale&type=land', img: 'tile-land', isNew: true },
-  { label: 'Commercial', href: '/listings?deal=sale&type=commercial', img: 'tile-commercial' },
+  { label: 'Condos', href: '/listings?deal=sale&type=condo', icon: 'building' },
+  { label: 'Houses & villas', href: '/listings?deal=sale&type=house', icon: 'home' },
+  { label: 'Land', href: '/listings?deal=sale&type=land', icon: 'land' },
+  { label: 'Commercial', href: '/listings?deal=sale&type=commercial', icon: 'briefcase' },
 ];
 const RENT_TILES = [
-  { label: 'Condos', href: '/listings?deal=rent&type=condo', img: 'tile-rent-condo' },
-  { label: 'Houses', href: '/listings?deal=rent&type=house', img: 'tile-rent-house' },
+  { label: 'Condos', href: '/listings?deal=rent&type=condo', icon: 'building' },
+  { label: 'Houses', href: '/listings?deal=rent&type=house', icon: 'key' },
 ];
 
 export default async function HomePage() {
@@ -50,9 +50,7 @@ export default async function HomePage() {
           <div className="tiles">
             {SALE_TILES.map((t) => (
               <Link key={t.label} className="tile" href={t.href}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(t.img, 200, 200)} alt="" />
-                {t.isNew && <span className="tile__new">New</span>}
+                <span className="tile__ico"><Icon name={t.icon} size={26} /></span>
                 <span>{t.label}</span>
               </Link>
             ))}
@@ -62,8 +60,7 @@ export default async function HomePage() {
           <div className="tiles">
             {RENT_TILES.map((t) => (
               <Link key={t.label} className="tile tile--wide" href={t.href}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(t.img, 260, 200)} alt="" />
+                <span className="tile__ico"><Icon name={t.icon} size={26} /></span>
                 <span>{t.label}</span>
               </Link>
             ))}
@@ -71,13 +68,13 @@ export default async function HomePage() {
         </div>
 
         <aside className="promo">
-          <h2>Roatán price report: what the island actually costs</h2>
+          <h2>Every listing says where it came from</h2>
           <p>
-            Median $/ft² by area, how long listings sit, and which communities moved this quarter —
-            built from every listing on Resoha.
+            Resoha is starting with a small, checked set: real units at real addresses, each one
+            linking back to the island agency that holds it. No stock photos, no filler.
           </p>
           <div>
-            <Link className="btn btn--orange btn--lg" href="/listings?sort=price_desc">See the market <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">Browse the listings <Icon name="arrowRight" size={18} /></Link>
           </div>
         </aside>
       </section>
@@ -87,7 +84,7 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>Featured on Roatán</h2>
             <Link className="btn btn--primary" href="/listings?deal=sale">See all {nListings(all.filter((l) => l.deal === 'sale').length)} <Icon name="arrowRight" size={18} /></Link>
-            <p>Hand-picked homes, condos and land with verified titles</p>
+            <p>Picked from what island agencies currently have on the market</p>
           </div>
           <div className="grid grid--4">
             {featured.map((l) => (
@@ -106,9 +103,8 @@ export default async function HomePage() {
           </div>
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
-              <Link key={name} className="ov ov--area" href={`/listings?neighborhoods=${encodeURIComponent(name)}`}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img loading="lazy" src={photoUrl(`area-${name}`, 560, 380)} alt={name} />
+              <Link key={name} className="ov ov--area ov--plain" href={`/listings?neighborhoods=${encodeURIComponent(name)}`}>
+                <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 19 }}>{name}</div>
                   <div className="ov__meta">{nListings(a.count)} · from {fmtUsd(a.from)}</div>
@@ -187,7 +183,7 @@ export default async function HomePage() {
           </div>
           <div className="stats" style={{ gridTemplateColumns: '1fr 1fr', margin: 0 }}>
             <div className="stat"><span className="muted small">Listings</span><b>{all.length}</b></div>
-            <div className="stat"><span className="muted small">Agents</span><b>{board.length}</b></div>
+            <div className="stat"><span className="muted small">Agencies</span><b>{board.length}</b></div>
             <div className="stat"><span className="muted small">Areas covered</span><b>{byArea.size}</b></div>
             <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(all.reduce((s, l) => s + l.views, 0))}</b></div>
           </div>

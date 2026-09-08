@@ -32,8 +32,11 @@ function skeletonNode(pin: Pin) {
 function buildPopupNode(l: Listing, onClick: () => void) {
   const node = document.createElement('div');
   node.className = 'map-pop';
+  const photo = photoUrl(l.photos[0]);
   node.innerHTML = `
-    <img src="${photoUrl(l.photos[0], 480, 380)}" alt="" loading="lazy">
+    ${photo
+      ? `<img src="${photo}" alt="" loading="lazy">`
+      : '<span class="nophoto"><em>No photo yet</em></span>'}
     <span class="badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}">${DEAL_LABELS[l.deal]}</span>
     ${l.oceanfront ? '<span class="badge map-pop__ocean">Oceanfront</span>' : ''}
     <div class="map-pop__b">

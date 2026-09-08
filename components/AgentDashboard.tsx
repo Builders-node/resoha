@@ -3,11 +3,13 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import AgencyPanel from './AgencyPanel';
 import Icon from './Icon';
+import Photo from './Photo';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import { toast } from './Toaster';
-import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice, photoUrl } from '@/lib/format';
+import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
+import Avatar from './Avatar';
 
 type Tab = 'listings' | 'leads' | 'new' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
@@ -92,8 +94,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
 
       <div>
         <div className="profile-head">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={agent.avatar} alt={agent.name} />
+          <Avatar src={agent.avatar} name={agent.name} />
           <div>
             <h2 className="with-ico">
               {agent.name}
@@ -140,8 +141,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
                     <tr key={l.id}>
                       <td>
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img className="thumb" src={photoUrl(l.photos[0], 128, 96)} alt="" />
+                          <Photo className="thumb" src={l.photos[0]} label="" />
                           <div>
                             <Link href={`/listings/${l.id}`} style={{ fontWeight: 600 }}>{l.title}</Link>
                             <div className="tiny muted">{DEAL_LABELS[l.deal]} · {l.neighborhood} · {fmtDate(l.createdAt)}</div>

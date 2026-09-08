@@ -7,6 +7,7 @@ import ListingCard from './ListingCard';
 import { toast } from './Toaster';
 import { fmtDate } from '@/lib/format';
 import type { Lead, Listing, SavedSearch, Session } from '@/lib/types';
+import Avatar from './Avatar';
 
 type Tab = 'fav' | 'searches' | 'enquiries' | 'profile';
 
@@ -57,8 +58,7 @@ export default function UserAccount({ session, user }: {
 
       <div>
         <div className="profile-head">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={avatar} alt={session.name} />
+          <Avatar src={avatar} name={session.name} />
           <div>
             <h2>{session.name}</h2>
             <div className="muted">{user.email} · {user.phone}</div>

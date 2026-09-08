@@ -261,7 +261,7 @@ textarea.input{resize:vertical;min-height:96px}
 .chip{display:inline-flex;align-items:center;gap:7px;background:var(--chip);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600}
 .agent-card{position:sticky;top:20px;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
 .agent-card__top{display:flex;gap:13px;align-items:center}
-.agent-card__top img{width:56px;height:56px;border-radius:50%;object-fit:cover}
+.agent-card__top .ava{width:56px;height:56px;border-radius:50%;object-fit:cover}
 .phone-box{background:var(--bg-soft);border-radius:12px;padding:12px 14px;font-weight:800;font-size:17px;text-align:center;margin:12px 0}
 .rating{display:inline-flex;gap:4px;align-items:center;font-weight:800}
 #miniMap{height:260px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
@@ -273,7 +273,7 @@ textarea.input{resize:vertical;min-height:96px}
 .sidenav a:hover{background:#e9e9ef}
 .sidenav a.is-active{background:var(--ink);color:#fff}
 .profile-head{display:flex;gap:16px;align-items:center;padding:20px;background:var(--bg-soft);border-radius:var(--radius-lg);margin-bottom:22px}
-.profile-head img{width:72px;height:72px;border-radius:50%;object-fit:cover}
+.profile-head .ava{width:72px;height:72px;border-radius:50%;object-fit:cover}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .stat{background:var(--bg-soft);border-radius:var(--radius);padding:16px}
 .stat b{display:block;font-size:26px;letter-spacing:-.03em;margin-top:4px}
@@ -456,7 +456,7 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Аватар у профілі ===== */
 .avatar-pick{display:flex;align-items:center;gap:14px}
-.avatar-pick img{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg-soft)}
+.avatar-pick .ava{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg-soft)}
 
 /* ===== Публічні профілі агенції та ріелтора ===== */
 .org{display:flex;gap:22px;align-items:center;color:#fff;border-radius:var(--radius-lg);padding:26px;margin-top:8px}
@@ -473,7 +473,7 @@ textarea.input{resize:vertical;min-height:96px}
 .org__contacts--light a{color:var(--ink)}
 .person{display:flex;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--radius);transition:.15s}
 .person:hover{border-color:var(--ink);background:var(--bg-soft)}
-.person img{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none}
+.person .ava{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none}
 .person__name{font-weight:700}
 @media (max-width:760px){ .org{flex-direction:column;align-items:flex-start;text-align:left} }
 .map-pop--loading{height:auto;background:#fff;color:var(--ink)}
@@ -541,8 +541,46 @@ textarea.input{resize:vertical;min-height:96px}
   padding-bottom:calc(18px + var(--bar-h, 0px) + env(safe-area-inset-bottom,0))}
 .sheet__grip{width:44px;height:4px;border-radius:4px;background:var(--line);margin:2px auto 10px}
 .sheet__me{display:flex;align-items:center;gap:12px;padding:10px 4px 14px;border-bottom:1px solid var(--line);margin-bottom:6px}
-.sheet__me img{width:44px;height:44px;border-radius:50%;object-fit:cover}
+.sheet__me .ava{width:44px;height:44px;border-radius:50%;object-fit:cover}
 .sheet__me b{display:block}
 .sheet__item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 4px;border:0;background:none;
   font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
 .sheet__item:hover{color:var(--orange)}
+
+
+/* ===== Замість стокових картинок — чесні заглушки ===== */
+/* Фото показуємо тільки справжні, тож усюди потрібен вигляд «фото ще немає». */
+.nophoto{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  background:var(--bg-soft);color:var(--ink-3);text-align:center;padding:10px;line-height:1.3}
+.nophoto em{font-style:normal;font-size:12px;font-weight:600;max-width:24ch}
+.ov .nophoto,.map-pop .nophoto{width:100%;height:100%;
+  background:linear-gradient(160deg,#2a2a31,#16161a);color:rgba(255,255,255,.45)}
+.gallery .nophoto{width:100%;height:100%}
+.gallery--empty{grid-template-columns:1fr;grid-template-rows:260px}
+.thumb.nophoto{width:64px;height:48px;border-radius:8px}
+
+/* Аватар: фото або ініціали. Розмір задає контекст (.person, .profile-head тощо). */
+.ava--ini{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;
+  background:var(--chip);color:var(--ink-2);font-weight:800;font-size:15px;letter-spacing:-.02em}
+.org__avatar.ava--ini{font-size:30px}
+.profile-head .ava--ini,.avatar-pick .ava--ini{font-size:24px}
+.person .ava--ini,.agent-card__top .ava--ini{font-size:18px}
+.sidebar__avatar.ava--ini{font-size:11px;background:rgba(255,255,255,.16);color:#fff}
+
+/* Плитки категорій на головній: іконка замість фотографії */
+.tile__ico{position:absolute;right:10px;top:10px;width:46px;height:46px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;background:#fff;color:var(--orange)}
+.tile--wide .tile__ico{width:54px;height:54px}
+
+/* Плитка району — без фото, самим кольором */
+.ov--plain{background:linear-gradient(150deg,#20202a,#3b2a1f)}
+.ov__map{position:absolute;right:14px;top:12px;z-index:2;color:rgba(255,255,255,.5)}
+
+/* Звідки взяті факти оголошення */
+.src{display:flex;gap:9px;align-items:flex-start;margin-top:16px;padding:12px 14px;
+  background:var(--bg-soft);border-radius:12px;font-size:13.5px;color:var(--ink-2)}
+.src .ico{flex:none;margin-top:2px;color:var(--ink-3)}
+.src a{color:var(--orange);font-weight:700;white-space:nowrap}
+
+/* Порожній блок замість вигаданого контенту */
+.empty{text-align:center;padding:30px 24px}

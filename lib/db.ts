@@ -34,6 +34,7 @@ export const mapListing = (r: Row): Listing => ({
   lat: r.lat, lng: r.lng, agentId: r.agent_id, agencyId: r.agency_id,
   featured: r.featured, active: r.active, views: r.views,
   createdAt: r.created_at, tags: r.tags ?? [], photos: r.photos ?? [], text: r.body ?? '',
+  sourceName: r.source_name ?? '', sourceRef: r.source_ref ?? '', sourceUrl: r.source_url ?? '',
 });
 
 const mapLead = (r: Row): Lead => ({
@@ -203,6 +204,9 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     tags: input.tags ?? [],
     photos: input.photos ?? [],
     body: input.text ?? '',
+    source_name: input.sourceName ?? '',
+    source_ref: input.sourceRef ?? '',
+    source_url: input.sourceUrl ?? '',
   }).select('*').single();
   if (error) throw error;
   return mapListing(data);
@@ -215,6 +219,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   lotAcres: 'lot_acres', year: 'year', oceanfront: 'oceanfront', titled: 'titled',
   ownerFinancing: 'owner_financing', lat: 'lat', lng: 'lng', tags: 'tags', photos: 'photos',
   text: 'body', active: 'active',
+  sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);

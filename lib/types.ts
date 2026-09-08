@@ -77,6 +77,10 @@ export interface Listing {
   tags: string[];
   photos: string[];
   text: string;
+  /* Звідки взяті факти. Порожньо — оголошення завів сам ріелтор. */
+  sourceName: string;
+  sourceRef: string;
+  sourceUrl: string;
 }
 
 export interface Lead {

@@ -4,6 +4,7 @@ import { Fragment, useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import type { Agency, Agent } from '@/lib/types';
+import Avatar from './Avatar';
 
 type Member = Agent & { listings?: number };
 
@@ -228,8 +229,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                 <tr>
                   <td>
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={m.avatar} alt="" style={{ width: 34, height: 34, borderRadius: '50%', objectFit: 'cover' }} />
+                      <Avatar src={m.avatar} name={m.name} style={{ width: 34, height: 34, fontSize: 12 }} />
                       <div>
                         <div style={{ fontWeight: 600 }}>
                           {m.name}{' '}

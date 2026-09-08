@@ -4,6 +4,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Icon from './Icon';
 import type { Session } from '@/lib/types';
+import Avatar from './Avatar';
 
 const NAV = [
   { href: '/listings?deal=sale', ico: 'home', cap: 'Buy', match: (p: string, q: string) => p === '/listings' && q === 'sale' },
@@ -55,8 +56,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
           {session ? (
             <>
               <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img className="sidebar__avatar" src={session.avatar} alt={session.name} />
+                <Avatar className="sidebar__avatar" src={session.avatar} name={session.name} />
                 <span className="sidebar__cap">Me</span>
               </Link>
               <button className="sidelink desk-only" onClick={logout}>
@@ -83,8 +83,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
             <span className="sheet__grip" />
             {session && (
               <Link className="sheet__me" href={session.role === 'agent' ? '/agent' : '/account'}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={session.avatar} alt="" />
+                <Avatar src={session.avatar} name={session.name} />
                 <span>
                   <b>{session.name}</b>
                   <span className="muted small">

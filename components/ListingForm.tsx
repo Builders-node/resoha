@@ -128,6 +128,13 @@ export default function ListingForm({
         <div className="field full"><label>Description</label>
           <textarea className="input" name="text" defaultValue={v?.text} placeholder="What makes this property worth the flight…" /></div>
 
+        <div className="field full"><label>Source — fill in only if the facts come from someone else&apos;s listing</label>
+          <input className="input" name="sourceName" defaultValue={v?.sourceName} placeholder="Century 21 Roatan" /></div>
+        <div className="field"><label>Reference</label>
+          <input className="input" name="sourceRef" defaultValue={v?.sourceRef} placeholder="MLS 24-382" /></div>
+        <div className="field"><label>Link to the original</label>
+          <input className="input" name="sourceUrl" type="url" defaultValue={v?.sourceUrl} placeholder="https://…" /></div>
+
         <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button className="btn btn--primary btn--lg" disabled={saving}>
             {saving ? 'Saving…' : editing ? 'Save changes' : 'Publish listing'}

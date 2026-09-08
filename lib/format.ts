@@ -6,8 +6,9 @@ export const TYPE_LABELS: Record<PropertyType, string> = {
 export const DEAL_LABELS: Record<Deal, string> = { sale: 'For sale', rent: 'For rent' };
 
 export const NEIGHBORHOODS = [
-  'West Bay', 'West End', 'Sandy Bay', 'Coxen Hole', 'French Harbour',
-  'Parrot Tree', 'Palmetto Bay', 'Pristine Bay', 'Oak Ridge', 'Punta Gorda', 'Camp Bay',
+  'West Bay', 'West End', 'Gibson Bight', 'Sandy Bay', 'Flowers Bay', 'Coxen Hole',
+  'French Harbour', 'Parrot Tree', 'Palmetto Bay', 'Pristine Bay', 'Oak Ridge',
+  'Punta Gorda', 'Camp Bay',
 ];
 
 const usd = new Intl.NumberFormat('en-US', {
@@ -29,11 +30,12 @@ export const fmtPriceShort = (v: number, deal: Deal = 'sale') => {
   return v >= 1_000 ? `$${Math.round(v / 1_000)}K` : `$${v}`;
 };
 
-/** Завантажене фото віддаємо як є; демо-сід перетворюємо на плейсхолдер. */
-export const photoUrl = (seed: string, w = 800, h = 600) =>
-  seed.startsWith('/') || seed.startsWith('http')
-    ? seed
-    : `https://picsum.photos/seed/resoha-${seed}/${w}/${h}`;
+/**
+ * Показуємо лише справжні фото — завантажені у Storage або з абсолютним URL.
+ * Усе інше повертає '' , і компонент малює заглушку замість стокової картинки.
+ */
+export const photoUrl = (src?: string | null) =>
+  src && (src.startsWith('/') || src.startsWith('http')) ? src : '';
 
 export const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });

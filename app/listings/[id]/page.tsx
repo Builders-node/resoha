@@ -6,8 +6,9 @@ import FavButton from '@/components/FavButton';
 import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
+import Photo from '@/components/Photo';
 import { bumpViews, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
-import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, photoUrl } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 
 const MapView = dynamic(() => import('@/components/MapView'));
@@ -38,12 +39,17 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       <div className="gallery-wrap">
         <BackButton fallback={`/listings?deal=${listing.deal}`} />
-        <div className="gallery">
-        {listing.photos.slice(0, 5).map((p, i) => (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img key={p} src={photoUrl(p, i === 0 ? 1000 : 500, i === 0 ? 750 : 375)} alt={`${listing.title} — photo ${i + 1}`} />
-          ))}
-        </div>
+        {listing.photos.length > 0 ? (
+          <div className="gallery">
+            {listing.photos.slice(0, 5).map((p, i) => (
+              <Photo key={p} src={p} alt={`${listing.title} — photo ${i + 1}`} eager={i === 0} />
+            ))}
+          </div>
+        ) : (
+          <div className="gallery gallery--empty">
+            <Photo label="No photos yet — ask the agency for the full set" />
+          </div>
+        )}
       </div>
 
       <div className="prop">
@@ -75,7 +81,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <>
                 <div className="spec"><span className="muted small">Lot size</span><b>{listing.lotAcres} ac</b></div>
                 <div className="spec"><span className="muted small">Frontage</span><b>{listing.oceanfront ? 'Oceanfront' : 'Inland'}</b></div>
-                <div className="spec"><span className="muted small">Title</span><b>{listing.titled ? 'Free & clear' : 'In process'}</b></div>
+                <div className="spec"><span className="muted small">Title</span><b>{listing.titled ? 'Free & clear' : 'Not confirmed'}</b></div>
                 <div className="spec"><span className="muted small">Type</span><b>{TYPE_LABELS[listing.type]}</b></div>
               </>
             ) : (
@@ -99,6 +105,22 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           <h3 style={{ marginTop: 26 }}>About this property</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 15.5 }}>{listing.text}</p>
+
+          {listing.sourceName && (
+            <p className="src">
+              <Icon name="link" size={16} />
+              <span>
+                Facts on this page come from <b>{listing.sourceName}</b>
+                {listing.sourceRef && <> · {listing.sourceRef}</>}, who hold the listing.
+                {listing.sourceUrl && (
+                  <>
+                    {' '}
+                    <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">Open the original listing</a>
+                  </>
+                )}
+              </span>
+            </p>
+          )}
 
           <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
           <div id="miniMap">

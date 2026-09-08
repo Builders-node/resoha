@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import type { Agent, Listing } from '@/lib/types';
+import Avatar from './Avatar';
 
 export default function AgentContact({ agent, listing, me }: {
   agent: Agent; listing: Listing; me?: { name: string; phone: string; email: string } | null;
@@ -33,10 +34,8 @@ export default function AgentContact({ agent, listing, me }: {
   return (
     <aside className="agent-card">
       <div className="agent-card__top">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <Link href={`/agents/${agent.id}`}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={agent.avatar} alt={agent.name} />
+          <Avatar src={agent.avatar} name={agent.name} />
         </Link>
         <div>
           <div style={{ fontWeight: 700 }}>
@@ -67,20 +66,36 @@ export default function AgentContact({ agent, listing, me }: {
       <p className="muted small" style={{ marginTop: 12 }}>{agent.about}</p>
       <p className="tiny muted">Speaks: {agent.languages.join(', ')}</p>
 
-      {shown ? (
+      {/* Оголошення зі стороннього джерела: показуємо, у кого воно насправді. */}
+      {listing.sourceName && (
+        <p className="src" style={{ marginTop: 14 }}>
+          <Icon name="link" size={16} />
+          <span>
+            Held by <b>{listing.sourceName}</b>{listing.sourceRef && <> · {listing.sourceRef}</>}.
+            {listing.sourceUrl && (
+              <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">Original listing</a></>
+            )}
+          </span>
+        </p>
+      )}
+
+      {/* Телефон показуємо лише коли він справді є. */}
+      {agent.phone && (shown ? (
         <>
           <div className="phone-box">{agent.phone}</div>
-          <a className="btn btn--ghost btn--block" style={{ marginBottom: 8 }}
-             href={`https://wa.me/${agent.whatsapp.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-            <Icon name="chat" size={17} /> WhatsApp
-          </a>
-          <a className="btn btn--ghost btn--block" href={`mailto:${agent.email}`}>{agent.email}</a>
+          {agent.whatsapp && (
+            <a className="btn btn--ghost btn--block" style={{ marginBottom: 8 }}
+               href={`https://wa.me/${agent.whatsapp.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
+              <Icon name="chat" size={17} /> WhatsApp
+            </a>
+          )}
+          {agent.email && <a className="btn btn--ghost btn--block" href={`mailto:${agent.email}`}>{agent.email}</a>}
         </>
       ) : (
         <button className="btn btn--primary btn--block btn--lg" style={{ marginTop: 14 }} onClick={() => setShown(true)}>
           <Icon name="phone" size={18} /> Show phone &amp; WhatsApp
         </button>
-      )}
+      ))}
 
       <hr style={{ border: 0, borderTop: '1px solid var(--line)', margin: '18px 0' }} />
 
