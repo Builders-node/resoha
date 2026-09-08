@@ -39,7 +39,8 @@ export default function Sidebar({ session }: { session: Session | null }) {
         )}
 
         {NAV.map((n) => (
-          <Link key={n.cap} href={n.href} className={n.match(pathname, deal) ? 'is-active' : ''}>
+          <Link key={n.cap} href={n.href}
+            className={`${n.match(pathname, deal) ? 'is-active' : ''} ${n.cap === 'Land' ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
             <span className="sidebar__cap">{n.cap}</span>
           </Link>
@@ -53,7 +54,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
                 <img className="sidebar__avatar" src={session.avatar} alt={session.name} />
                 <span className="sidebar__cap">Me</span>
               </Link>
-              <button className="sidelink" onClick={logout}>
+              <button className="sidelink desk-only" onClick={logout}>
                 <span className="sidebar__ico"><Icon name="logout" size={22} /></span>
                 <span className="sidebar__cap">Out</span>
               </button>

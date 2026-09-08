@@ -169,7 +169,15 @@ export default function UserAccount({ session, user }: {
                 <input className="input" defaultValue={user.email} disabled />
                 <span className="tiny muted">Email is managed by your login — change it from Supabase Auth.</span>
               </div>
-              <div className="full"><button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button></div>
+              <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+                <button type="button" className="btn btn--ghost" onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  location.href = '/';
+                }}>
+                  <Icon name="logout" size={17} /> Sign out
+                </button>
+              </div>
             </form>
           </div>
         )}

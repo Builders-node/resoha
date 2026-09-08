@@ -243,7 +243,15 @@ export default function AgentDashboard({ session }: { session: Session }) {
               <div className="field"><label>WhatsApp</label><input className="input" name="whatsapp" defaultValue={agent.whatsapp} /></div>
               <div className="field"><label>Years on island</label><input className="input" name="experience" type="number" defaultValue={agent.experience} /></div>
               <div className="field full"><label>About</label><textarea className="input" name="about" defaultValue={agent.about} /></div>
-              <div className="full"><button className="btn btn--primary">Save</button></div>
+              <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                <button className="btn btn--primary">Save</button>
+                <button type="button" className="btn btn--ghost" onClick={async () => {
+                  await fetch('/api/auth/logout', { method: 'POST' });
+                  location.href = '/';
+                }}>
+                  <Icon name="logout" size={17} /> Sign out
+                </button>
+              </div>
             </form>
           </div>
         )}
