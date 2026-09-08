@@ -265,6 +265,20 @@ refuses to let an admin suspend or demote themselves. Demo login: `admin@resoha.
 Public pages: `/agency/[id]` (brand header, contacts, team, listings) and `/agents/[id]`
 (bio, contacts, listings, reviews).
 
+## What the public can and cannot see
+
+Checked by probing PostgREST directly with the anon key, not just through the app:
+
+- **Public:** listings, agency cards (name, brand, contacts, about, verified), agent cards
+  (name, avatar, phone/WhatsApp, bio, languages, experience, rating, reviews), reviews, photos.
+- **Closed to anonymous visitors:** `agencies.invite_code` (an open code let anyone join any
+  agency), `profiles.email` (it is the login identifier) and `profiles.is_admin` (it told an
+  attacker which accounts to target). Enforced with column grants, so it holds for direct API
+  access too, not only through the app.
+- **Closed to everyone but the owner:** leads, favourites, saved searches. The invite code is
+  read through the `agency_invite_code()` RPC by the owner alone; `join_agency()` no longer
+  returns it either.
+
 ## Still missing
 
 | Gap | Note |

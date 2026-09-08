@@ -13,12 +13,12 @@ const db = async (): Promise<DB> => supabaseServer();
 type Row = Record<string, any>;
 
 export const mapAgency = (r: Row): Agency => ({
-  id: r.id, name: r.name, brand: r.brand, phone: r.phone, email: r.email, about: r.about,
+  id: r.id, name: r.name, brand: r.brand, phone: r.phone, email: r.email ?? '', about: r.about,
   verified: r.verified, ownerId: r.owner_id, inviteCode: r.invite_code ?? '', createdAt: r.created_at,
 });
 
 export const mapAgent = (r: Row): Agent => ({
-  id: r.id, role: r.role, name: r.name, email: r.email, avatar: r.avatar,
+  id: r.id, role: r.role, name: r.name, email: r.email ?? '', avatar: r.avatar,
   phone: r.phone, whatsapp: r.whatsapp, createdAt: r.created_at, active: r.active,
   agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
@@ -43,28 +43,42 @@ const mapLead = (r: Row): Lead => ({
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
 });
 
-const AGENT_COLS = '*, agency:agencies!profiles_agency_id_fkey(name)';
+/**
+ * Публічний набір колонок профілю: без email (це логін) і без is_admin.
+ * Анонімна роль у базі й не має права їх читати — тому «*» тут зламався б.
+ */
+const AGENT_PUBLIC_COLS = 'id, role, name, avatar, phone, whatsapp, agency_id, is_owner, '
+  + 'experience, rating, reviews, verified, languages, about, active, created_at, '
+  + 'agency:agencies!profiles_agency_id_fkey(name)';
+
+/** Повний профіль — лише для залогінених контекстів: свій кабінет, команда, адмінка. */
+const AGENT_FULL_COLS = '*, agency:agencies!profiles_agency_id_fkey(name)';
+
+/** Картка агенції без invite_code: код читає лише власник через RPC. */
+const AGENCY_PUBLIC_COLS = 'id, name, brand, phone, email, about, verified, owner_id, created_at';
 
 /* ---------- profiles / agents ---------- */
 export async function getAgent(id: string): Promise<Agent | null> {
-  const { data } = await (await db()).from('profiles').select(AGENT_COLS).eq('id', id).maybeSingle();
+  const { data } = await (await db()).from('profiles').select(AGENT_PUBLIC_COLS).eq('id', id).maybeSingle();
   return data ? mapAgent(data) : null;
 }
 
 export async function listAgents(): Promise<Agent[]> {
-  const { data } = await (await db()).from('profiles').select(AGENT_COLS).eq('role', 'agent').order('reviews', { ascending: false });
+  const { data } = await (await db()).from('profiles').select(AGENT_PUBLIC_COLS).eq('role', 'agent').order('reviews', { ascending: false });
   return (data ?? []).map(mapAgent);
 }
 
-export async function agencyMembers(agencyId: string): Promise<Agent[]> {
-  const { data } = await (await db()).from('profiles').select(AGENT_COLS).eq('agency_id', agencyId).eq('role', 'agent');
+/** withContacts=true — для команди в кабінеті, де показуємо пошту колег. */
+export async function agencyMembers(agencyId: string, withContacts = false): Promise<Agent[]> {
+  const { data } = await (await db()).from('profiles').select(withContacts ? AGENT_FULL_COLS : AGENT_PUBLIC_COLS)
+    .eq('agency_id', agencyId).eq('role', 'agent');
   return (data ?? []).map(mapAgent);
 }
 
 /* ---------- agencies ---------- */
 export async function getAgency(id: string | null): Promise<Agency | null> {
   if (!id) return null;
-  const { data } = await (await db()).from('agencies').select('*').eq('id', id).maybeSingle();
+  const { data } = await (await db()).from('agencies').select(AGENCY_PUBLIC_COLS).eq('id', id).maybeSingle();
   return data ? mapAgency(data) : null;
 }
 
@@ -287,6 +301,12 @@ export async function countMatches(query: ListingQuery, since?: string) {
   return { total: total ?? 0, fresh: fresh.count ?? 0 };
 }
 
+/** Код запрошення читає лише власник — і лише через RPC: у таблиці колонка закрита. */
+export async function agencyInviteCode(): Promise<string | null> {
+  const { data, error } = await (await db()).rpc('agency_invite_code');
+  return error ? null : (data as string);
+}
+
 /* ---------- admin ---------- */
 /** Зведення по платформі. RLS уже впустила лише адміна, окремих перевірок тут не треба. */
 export async function adminOverview() {
@@ -328,14 +348,14 @@ export async function adminOverview() {
 
 export async function adminListUsers(): Promise<Agent[]> {
   const { data } = await (await db()).from('profiles')
-    .select(AGENT_COLS).order('created_at', { ascending: false }).limit(500);
+    .select(AGENT_FULL_COLS).order('created_at', { ascending: false }).limit(500);
   return (data ?? []).map(mapAgent);
 }
 
 export async function adminListAgencies() {
   const client = await db();
   const [{ data: agencies }, { data: members }, { data: listings }] = await Promise.all([
-    client.from('agencies').select('*').order('created_at', { ascending: false }),
+    client.from('agencies').select(AGENCY_PUBLIC_COLS).order('created_at', { ascending: false }),
     client.from('profiles').select('agency_id'),
     client.from('listings').select('agency_id'),
   ]);
@@ -354,7 +374,7 @@ export async function adminSetProfileFlags(id: string, patch: { verified?: boole
   if (patch.verified !== undefined) row.verified = patch.verified;
   if (patch.active !== undefined) row.active = patch.active;
   if (patch.isAdmin !== undefined) row.is_admin = patch.isAdmin;
-  const { data, error } = await (await db()).from('profiles').update(row).eq('id', id).select(AGENT_COLS).maybeSingle();
+  const { data, error } = await (await db()).from('profiles').update(row).eq('id', id).select(AGENT_FULL_COLS).maybeSingle();
   if (error) throw error;
   return data ? mapAgent(data) : null;
 }

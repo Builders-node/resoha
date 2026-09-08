@@ -4,7 +4,11 @@ import { currentUser } from '@/lib/session';
 import type { Deal, ListingQuery, PropertyType, SortKey } from '@/lib/types';
 
 export function parseQuery(sp: URLSearchParams): ListingQuery {
-  const num = (k: string) => (sp.get(k) ? Number(sp.get(k)) : undefined);
+  // NaN з кривого вводу не має доїжджати до бази
+  const num = (k: string) => {
+    const v = sp.get(k) ? Number(sp.get(k)) : undefined;
+    return v !== undefined && Number.isFinite(v) ? v : undefined;
+  };
   const list = (k: string) => (sp.get(k) ? sp.get(k)!.split(',').filter(Boolean) : undefined);
   const flag = (k: string) => (sp.get(k) === '1' ? true : undefined);
 
@@ -13,7 +17,7 @@ export function parseQuery(sp: URLSearchParams): ListingQuery {
     type: (sp.get('type') as PropertyType) || undefined,
     island: sp.get('island') || undefined,
     neighborhoods: list('neighborhoods'),
-    beds: list('beds')?.map(Number),
+    beds: list('beds')?.map(Number).filter(Number.isFinite),
     bathsMin: num('bathsMin'),
     priceMin: num('priceMin'),
     priceMax: num('priceMax'),

@@ -244,7 +244,10 @@ export default function FiltersModal({
                 <button className={`switch ${draft.oceanfront ? 'is-on' : ''}`}
                   onClick={() => set({ oceanfront: !draft.oceanfront })} aria-label="Oceanfront" />
               </div>
-              {AMENITIES.map((a) => {
+              {(facets?.tags.length
+                  ? facets.tags.filter((t) => t.count > 0).slice(0, 12).map((t) => t.name)
+                  : AMENITIES
+                ).map((a) => {
                 const c = facets?.tags.find((t) => t.name === a)?.count ?? 0;
                 return (
                   <div className="switch-row" key={a}>

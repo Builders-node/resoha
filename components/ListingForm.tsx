@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { NEIGHBORHOODS } from '@/lib/format';
@@ -15,8 +15,21 @@ export default function ListingForm({
   onCancel?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
+  // Райони беремо з бази, а не з константи: інакше форма не побачить нові
+  const [areas, setAreas] = useState<string[]>(NEIGHBORHOODS);
   const [saving, setSaving] = useState(false);
   const editing = Boolean(listing);
+
+  useEffect(() => {
+    fetch('/api/facets')
+      .then((r) => r.json())
+      .then((d: { areas?: { name: string }[] }) => {
+        const fromDb = (d.areas ?? []).map((a) => a.name);
+        // об'єднуємо з довідником і поточним значенням, щоб нічого не загубити
+        setAreas([...new Set([...fromDb, ...NEIGHBORHOODS, listing?.neighborhood].filter(Boolean) as string[])].sort());
+      })
+      .catch(() => {});
+  }, [listing?.neighborhood]);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -88,7 +101,7 @@ export default function ListingForm({
 
         <div className="field"><label>Area</label>
           <select className="input" name="neighborhood" defaultValue={v?.neighborhood ?? 'West Bay'}>
-            {NEIGHBORHOODS.map((n) => <option key={n} value={n}>{n}</option>)}
+            {areas.map((n) => <option key={n} value={n}>{n}</option>)}
           </select></div>
         <div className="field"><label>Address</label>
           <input className="input" name="address" defaultValue={v?.address} placeholder="West Bay Beach Rd" /></div>

@@ -1,10 +1,18 @@
 import { NextResponse } from 'next/server';
+import { currentUser } from '@/lib/session';
 
 /**
  * Перевірка конфігурації середовища. Значень не віддає — лише імена змінних
  * і чи вони видимі рантайму, щоб ловити помилки в назвах і в scope на Vercel.
  */
 export async function GET() {
+  // Деталі конфігурації — тільки адміну: стороннім достатньо знати, що сервіс живий
+  const viewer = await currentUser().catch(() => null);
+  if (!viewer?.isAdmin) {
+    const configured = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+    return NextResponse.json({ ok: configured });
+  }
+
   // Пряме звернення Next вшиває у бандл на збірці, обчислюване — читає рантайм.
   // Різниця між ними показує, чи змінна зʼявилась уже після складання деплою.
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';

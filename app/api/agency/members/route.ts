@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { agencyMembers, mapAgency, queryListings } from '@/lib/db';
+import { agencyInviteCode, agencyMembers, mapAgency, queryListings } from '@/lib/db';
 import { currentUserWithAgency } from '@/lib/session';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -10,7 +10,7 @@ export async function GET() {
   }
   if (!agency) return NextResponse.json({ agency: null, members: [], inviteCode: null });
 
-  const team = await agencyMembers(agency.id);
+  const team = await agencyMembers(agency.id, true);
   const members = await Promise.all(team.map(async (m) => ({
     ...m,
     listings: (await queryListings({ agentId: m.id, includeInactive: true })).length,
@@ -19,7 +19,7 @@ export async function GET() {
   return NextResponse.json({
     agency,
     members,
-    inviteCode: user.isOwner ? agency.inviteCode : null,
+    inviteCode: user.isOwner ? await agencyInviteCode() : null,
   });
 }
 
