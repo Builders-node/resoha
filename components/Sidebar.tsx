@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import Icon from './Icon';
 import type { Session } from '@/lib/types';
 
@@ -15,7 +16,11 @@ const NAV = [
 export default function Sidebar({ session }: { session: Session | null }) {
   const router = useRouter();
   const pathname = usePathname();
+  const [more, setMore] = useState(false);   // лист «Other» на телефоні
   const deal = useSearchParams().get('deal') ?? '';
+
+  // після переходу лист має закриватись сам
+  useEffect(() => { setMore(false); }, [pathname]);
 
   async function logout() {
     await fetch('/api/auth/logout', { method: 'POST' });
@@ -32,7 +37,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
         </Link>
 
         {session?.isAdmin && (
-          <Link href="/admin" className={pathname === '/admin' ? 'is-active' : ''}>
+          <Link href="/admin" className={`desk-only ${pathname === '/admin' ? 'is-active' : ''}`}>
             <span className="sidebar__ico"><Icon name="deed" size={22} /></span>
             <span className="sidebar__cap">Admin</span>
           </Link>
@@ -49,7 +54,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
         <div className="sidebar__foot">
           {session ? (
             <>
-              <Link href={session.role === 'agent' ? '/agent' : '/account'}>
+              <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img className="sidebar__avatar" src={session.avatar} alt={session.name} />
                 <span className="sidebar__cap">Me</span>
@@ -60,13 +65,60 @@ export default function Sidebar({ session }: { session: Session | null }) {
               </button>
             </>
           ) : (
-            <Link href="/login">
+            <Link className="desk-only" href="/login">
               <span className="sidebar__ico"><Icon name="user" size={22} /></span>
               <span className="sidebar__cap">Sign in</span>
             </Link>
           )}
+          <button className="sidelink mob-only" onClick={() => setMore(true)}>
+            <span className="sidebar__ico"><Icon name="more" size={22} /></span>
+            <span className="sidebar__cap">Other</span>
+          </button>
         </div>
       </aside>
+
+      {more && (
+        <div className="sheet-wrap" onClick={(e) => e.target === e.currentTarget && setMore(false)}>
+          <div className="sheet">
+            <span className="sheet__grip" />
+            {session && (
+              <Link className="sheet__me" href={session.role === 'agent' ? '/agent' : '/account'}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={session.avatar} alt="" />
+                <span>
+                  <b>{session.name}</b>
+                  <span className="muted small">
+                    {session.role === 'agent' ? (session.isOwner ? 'Agency owner' : 'Realtor') : 'Buyer account'}
+                  </span>
+                </span>
+              </Link>
+            )}
+
+            <Link className="sheet__item" href="/listings?type=land">
+              <Icon name="land" size={19} /> Land &amp; lots
+            </Link>
+
+            {session?.isAdmin && (
+              <Link className="sheet__item" href="/admin">
+                <Icon name="deed" size={19} /> Admin panel
+              </Link>
+            )}
+
+            {session ? (
+              <button className="sheet__item" onClick={logout}>
+                <Icon name="logout" size={19} /> Sign out
+              </button>
+            ) : (
+              <>
+                <Link className="sheet__item" href="/login"><Icon name="user" size={19} /> Sign in</Link>
+                <Link className="sheet__item" href="/signup"><Icon name="plus" size={19} /> Create an account</Link>
+              </>
+            )}
+
+            <button className="btn btn--ghost btn--block" onClick={() => setMore(false)}>Close</button>
+          </div>
+        </div>
+      )}
 
     </>
   );

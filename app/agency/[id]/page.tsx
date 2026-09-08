@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
@@ -25,6 +26,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
   return (
     <div className="wrap">
       <div className="crumbs small muted">
+        <BackButton variant="inline" fallback="/" />
         <Link href="/">Home</Link> · <Link href="/listings?deal=sale">Agencies</Link> · {agency.name}
       </div>
 

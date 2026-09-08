@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
+import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import { bumpViews, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
@@ -35,11 +36,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <Link href={`/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`}>{listing.neighborhood}</Link>
       </div>
 
-      <div className="gallery">
+      <div className="gallery-wrap">
+        <BackButton fallback={`/listings?deal=${listing.deal}`} />
+        <div className="gallery">
         {listing.photos.slice(0, 5).map((p, i) => (
           // eslint-disable-next-line @next/next/no-img-element
           <img key={p} src={photoUrl(p, i === 0 ? 1000 : 500, i === 0 ? 750 : 375)} alt={`${listing.title} — photo ${i + 1}`} />
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="prop">

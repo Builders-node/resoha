@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import AgentReviews from '@/components/AgentReviews';
 import ListingCard from '@/components/ListingCard';
@@ -25,6 +26,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   return (
     <div className="wrap">
       <div className="crumbs small muted">
+        <BackButton variant="inline" fallback="/" />
         <Link href="/">Home</Link> ·{' '}
         {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : 'Independent agent'} · {agent.name}
       </div>
