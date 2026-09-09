@@ -121,10 +121,10 @@ export default function ListingsExplorer({
     <>
       <div className="filters" ref={filtersRef}>
         <div className="wrap filters__in">
-          <input className="input" type="search" placeholder="Search: area, resort, street…"
-            value={filters.q} onChange={(e) => set({ q: e.target.value })} style={{ minWidth: 240 }} />
+          <input className="input filters__q" type="search" placeholder="Search: area, resort, street…"
+            value={filters.q} onChange={(e) => set({ q: e.target.value })} />
 
-          <select className="input" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
+          <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
             <option value="">Any type</option>
             <option value="condo">Condos</option>
             <option value="house">Houses &amp; villas</option>
@@ -132,17 +132,22 @@ export default function ListingsExplorer({
             <option value="commercial">Commercial</option>
           </select>
 
-          <button className={`btn btn--sm ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
+          {/* Oceanfront і Reset живуть ще й у модалці фільтрів, тож на телефоні
+              ховаємо їх, щоб панель влазила у ширину без бокової прокрутки. */}
+          <button className={`btn btn--sm filters__ocean ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
             onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> Oceanfront</button>
 
-          <button className="btn btn--sm btn--orange" onClick={() => setModal(true)}>
+          <button className="btn btn--sm btn--orange filters__more" onClick={() => setModal(true)}>
             <Icon name="sliders" size={17} /> Filters {active > 0 && <span className="f-badge">{active}</span>}
           </button>
 
-          <button className="btn btn--sm" onClick={saveSearch}><Icon name="bookmark" size={17} /> Save search</button>
+          <button className="btn btn--sm filters__save" onClick={saveSearch} aria-label="Save search">
+            <Icon name="bookmark" size={17} /> <span className="btn__t">Save search</span>
+          </button>
 
           {active > 0 && (
-            <button className="btn btn--sm btn--ghost" onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>Reset all</button>
+            <button className="btn btn--sm btn--ghost filters__reset"
+              onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>Reset all</button>
           )}
 
           <span className="filters__count">{loading ? 'Searching…' : nListings(total)}</span>
