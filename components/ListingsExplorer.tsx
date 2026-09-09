@@ -58,7 +58,14 @@ export default function ListingsExplorer({
 
   const qs = useMemo(() => toQuery(filters), [filters]);
 
+  // Що вже завантажено: стартове значення — запит, який віддав сервер, тож на
+  // монтуванні той самий список не тягнеться вдруге (і StrictMode це не ламає).
+  const fetchedQs = useRef(toQuery(initialFilters));
+
   useEffect(() => {
+    if (fetchedQs.current === qs) return;
+    fetchedQs.current = qs;
+
     let cancelled = false;
     setLoading(true);
     setPage(0);

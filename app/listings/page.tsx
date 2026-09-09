@@ -39,9 +39,9 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
     sort: (filters.sort as SortKey) || undefined,
   };
 
-  const [{ items, total, hasMore }, pins] = await Promise.all([searchListings(query), queryPins(query)]);
-
-  const session = await getSession();
+  const [{ items, total, hasMore }, pins, session] = await Promise.all([
+    searchListings(query), queryPins(query), getSession(),
+  ]);
   const favIds = session ? await getFavorites(session.id) : [];
 
   return (

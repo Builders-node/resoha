@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { after } from 'next/server';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
@@ -18,16 +19,21 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const listing = await getListing(id);
   if (!listing) notFound();
 
-  await bumpViews(id);
+  // лічильник переглядів — запис, і він не має тримати рендер: виконуємо після відповіді
+  after(() => bumpViews(id));
+
+  // усе інше не залежить одне від одного, тож ходимо в базу паралельно
+  const [agent, me, similarAll] = await Promise.all([
+    getAgent(listing.agentId),
+    currentUser(),
+    queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }),
+  ]);
   // Автор може бути прихованим (заблокований акаунт) — тоді оголошення теж не показуємо
-  const agent = await getAgent(listing.agentId);
   if (!agent) notFound();
-  const me = await currentUser();
+
   const session = me;
   const favIds = session ? await getFavorites(session.id) : [];
-
-  const similar = (await queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }))
-    .filter((l) => l.id !== listing.id).slice(0, 4);
+  const similar = similarAll.filter((l) => l.id !== listing.id).slice(0, 4);
 
   const isLand = listing.type === 'land';
 

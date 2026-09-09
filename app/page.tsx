@@ -18,14 +18,19 @@ const RENT_TILES = [
 ];
 
 export default async function HomePage() {
-  const session = await getSession();
+  // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
+  const [session, all, newest, board] = await Promise.all([
+    getSession(),
+    queryListings(),
+    queryListings({ sort: 'new' }),
+    agencyBoard(),
+  ]);
   const favIds = session ? await getFavorites(session.id) : [];
 
-  const all = await queryListings();
   const featured = [...all].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 4);
   // на невеликому каталозі обидва блоки показували майже одні й ті самі картки
   const featuredIds = new Set(featured.map((l) => l.id));
-  const fresh = (await queryListings({ sort: 'new' })).filter((l) => !featuredIds.has(l.id)).slice(0, 4);
+  const fresh = newest.filter((l) => !featuredIds.has(l.id)).slice(0, 4);
 
   // рахуємо і оренду теж, інакше район без продажу зникає з блоку;
   // «from» лишається ціною продажу — місячну ставку туди мішати не можна
@@ -39,7 +44,6 @@ export default async function HomePage() {
   });
   const areas = [...byArea.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 4);
 
-  const board = await agencyBoard();
   const agencies = board.slice(0, 5);
   const agencyNameById = new Map(board.map((b) => [b.agency.id, b.agency.name]));
 
