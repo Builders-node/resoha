@@ -32,7 +32,10 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 
 .sidebar{
   position:fixed;left:0;top:0;bottom:0;width:var(--side-w);background:#131316;color:#fff;
-  display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:6px;z-index:1000}
+  display:flex;flex-direction:column;align-items:center;padding:16px 8px;gap:6px;z-index:1000;
+  /* на низькому вікні пунктів більше, ніж висоти: даємо прокрутку, щоб «Out» не тікав за екран */
+  overflow-y:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
 .sidebar__logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
 .sidebar__mark{width:44px;height:44px;border-radius:12px;background:var(--orange);
   display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff}
@@ -362,6 +365,7 @@ textarea.input{resize:vertical;min-height:96px}
     max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sidebar__ico{height:20px}
   .sidebar__avatar{width:22px;height:22px}
+  .sidebar{overflow:visible}
   .sidebar__foot{margin-top:0;width:auto;display:flex;flex:1}
   .sidebar__foot > a,.sidebar__foot > button{flex:1}
 

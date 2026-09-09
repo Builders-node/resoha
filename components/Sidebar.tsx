@@ -7,6 +7,8 @@ import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
 
 const NAV = [
+  // «home» вже зайнятий продажем, тож головна їде під островом — і в ряду іконок її ні з чим не сплутати
+  { href: '/', ico: 'island', cap: 'Home', match: (p: string) => p === '/' },
   { href: '/listings?deal=sale', ico: 'home', cap: 'Buy', match: (p: string, q: string) => p === '/listings' && q === 'sale' },
   { href: '/listings?deal=rent', ico: 'key', cap: 'Rent', match: (p: string, q: string) => p === '/listings' && q === 'rent' },
   { href: '/listings?type=land', ico: 'land', cap: 'Land', match: () => false },
