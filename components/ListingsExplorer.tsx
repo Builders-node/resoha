@@ -1,13 +1,13 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FiltersModal from './FiltersModal';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
-import { EMPTY_FILTERS, type Filters, countActive, toQuery } from '@/lib/filters';
+import { EMPTY_FILTERS, type Filters, countActive, fromParams, toQuery } from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { Listing } from '@/lib/types';
 
@@ -43,7 +43,6 @@ export default function ListingsExplorer({
     return () => { delete document.body.dataset.mapView; };
   }, [mobileView]);
   const filtersRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   /* висота панелі → в CSS, щоб карта займала рівно решту вікна */
   useEffect(() => {
@@ -61,6 +60,33 @@ export default function ListingsExplorer({
   // Що вже завантажено: стартове значення — запит, який віддав сервер, тож на
   // монтуванні той самий список не тягнеться вдруге (і StrictMode це не ламає).
   const fetchedQs = useRef(toQuery(initialFilters));
+
+  /*
+   * Перемикання Buy / Rent / Land — навігація в межах того самого маршруту:
+   * Next лишає компонент змонтованим, тож його стан переживає перехід і на
+   * екрані лишається попередній розділ. Стежимо за адресою (useSearchParams
+   * бачить і наш власний replaceState) і на чужу зміну приймаємо те, що для
+   * цієї адреси віддав сервер.
+   */
+  const urlQs = toQuery(fromParams(Object.fromEntries(useSearchParams().entries())));
+  // остання адреса, яку записали ми самі — щоб не приймати свій же фільтр за навігацію
+  const ownQs = useRef(toQuery(initialFilters));
+
+  useEffect(() => {
+    if (urlQs === ownQs.current) return;
+
+    const incoming = toQuery(initialFilters);
+    ownQs.current = incoming;
+    fetchedQs.current = incoming;
+    setFilters(initialFilters);
+    setItems(initialItems);
+    setPins(initialPins);
+    setTotal(initialTotal);
+    setHasMore(initialHasMore);
+    setPage(0);
+    setActiveId(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlQs]);
 
   useEffect(() => {
     if (fetchedQs.current === qs) return;
@@ -84,6 +110,7 @@ export default function ListingsExplorer({
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
+    ownQs.current = qs;
     window.history.replaceState(null, '', `/listings${qs ? `?${qs}` : ''}`);
     return () => { cancelled = true; };
   }, [qs]);
@@ -119,7 +146,6 @@ export default function ListingsExplorer({
       body: JSON.stringify({ title: title || 'All listings', query: qs }),
     });
     toast(res.ok ? 'Search saved to your account' : 'Could not save the search');
-    router.refresh();
   }
 
   const active = countActive(filters);

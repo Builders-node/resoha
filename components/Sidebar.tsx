@@ -6,22 +6,26 @@ import Icon from './Icon';
 import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
 
-const NAV = [
+type Match = (path: string, deal: string, type: string) => boolean;
+
+const NAV: { href: string; ico: string; cap: string; deskOnly?: boolean; match: Match }[] = [
   // «home» вже зайнятий продажем, тож головна їде під островом — і в ряду іконок її ні з чим не сплутати
-  { href: '/', ico: 'island', cap: 'Home', match: (p: string) => p === '/' },
-  { href: '/listings?deal=sale', ico: 'home', cap: 'Buy', match: (p: string, q: string) => p === '/listings' && q === 'sale' },
-  { href: '/listings?deal=rent', ico: 'key', cap: 'Rent', match: (p: string, q: string) => p === '/listings' && q === 'rent' },
+  { href: '/', ico: 'island', cap: 'Home', match: (p) => p === '/' },
+  { href: '/listings?deal=sale', ico: 'home', cap: 'Buy', match: (p, deal, type) => p === '/listings' && deal === 'sale' && type !== 'land' },
+  { href: '/listings?deal=rent', ico: 'key', cap: 'Rent', match: (p, deal) => p === '/listings' && deal === 'rent' },
   // deskOnly — пункт лишається у вертикальній рейці, а на телефоні їде в лист «Other»
-  { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: () => false },
-  { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p: string) => p === '/account' },
-  { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p: string) => p.startsWith('/agents') },
+  { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: (p, _deal, type) => p === '/listings' && type === 'land' },
+  { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p) => p === '/account' },
+  { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p) => p.startsWith('/agents') },
 ];
 
 export default function Sidebar({ session }: { session: Session | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [more, setMore] = useState(false);   // лист «Other» на телефоні
-  const deal = useSearchParams().get('deal') ?? '';
+  const params = useSearchParams();
+  const deal = params.get('deal') ?? '';
+  const type = params.get('type') ?? '';
 
   // після переходу лист має закриватись сам
   useEffect(() => { setMore(false); }, [pathname]);
@@ -49,7 +53,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
         {NAV.map((n) => (
           <Link key={n.cap} href={n.href}
-            className={`${n.match(pathname, deal) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
+            className={`${n.match(pathname, deal, type) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
             <span className="sidebar__cap">{n.cap}</span>
           </Link>
