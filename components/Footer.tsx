@@ -10,7 +10,7 @@ export default function Footer() {
             <span>Resoha<span className="logo__sub"> Roatán</span></span>
           </Link>
           <p className="small" style={{ marginTop: 10 }}>
-            Property on Roatán and the Bay Islands. MVP prototype running on Supabase — listing data is fictional.
+            Property on Roatán and the Bay Islands. Every listing links back to the island agency that holds it.
           </p>
         </div>
         <div className="footer__cols">
@@ -41,7 +41,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="wrap tiny muted" style={{ marginTop: 26 }}>
-        © 2026 Resoha — prototype. Listing data is fictional and for demo purposes only.
+        © 2026 Resoha — prototype. Listing details are as published by the agency holding each property.
       </div>
     </footer>
   );

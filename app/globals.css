@@ -526,7 +526,10 @@ textarea.input{resize:vertical;min-height:96px}
   .split--map .split__map{height:100%}
   .split--list{height:auto}
   body[data-map-view]{overflow:hidden}
-  body[data-map-view] .footer{display:none}
+
+  /* Футер — десктопна річ: на телефоні його роль виконує нижня панель,
+     а сам він лише додає екран прокрутки в кінці кожної сторінки. */
+  .footer{display:none}
 }
 
 /* ===== Кнопка «назад» ===== */
