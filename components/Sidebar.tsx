@@ -14,7 +14,7 @@ const NAV = [
   // deskOnly — пункт лишається у вертикальній рейці, а на телефоні їде в лист «Other»
   { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: () => false },
   { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p: string) => p === '/account' },
-  { href: '/agent', ico: 'building', cap: 'Agents', deskOnly: true, match: (p: string) => p === '/agent' },
+  { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p: string) => p.startsWith('/agents') },
 ];
 
 export default function Sidebar({ session }: { session: Session | null }) {
@@ -100,7 +100,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
               <Icon name="heart" size={19} /> Saved listings
             </Link>
 
-            <Link className="sheet__item" href="/agent">
+            <Link className="sheet__item" href="/agents">
               <Icon name="building" size={19} /> Agents &amp; agencies
             </Link>
 

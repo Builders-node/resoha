@@ -23,12 +23,19 @@ export default async function HomePage() {
 
   const all = await queryListings();
   const featured = [...all].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 4);
-  const fresh = (await queryListings({ sort: 'new' })).slice(0, 4);
+  // на невеликому каталозі обидва блоки показували майже одні й ті самі картки
+  const featuredIds = new Set(featured.map((l) => l.id));
+  const fresh = (await queryListings({ sort: 'new' })).filter((l) => !featuredIds.has(l.id)).slice(0, 4);
 
+  // рахуємо і оренду теж, інакше район без продажу зникає з блоку;
+  // «from» лишається ціною продажу — місячну ставку туди мішати не можна
   const byArea = new Map<string, { count: number; from: number }>();
-  all.filter((l) => l.deal === 'sale').forEach((l) => {
+  all.forEach((l) => {
     const cur = byArea.get(l.neighborhood) ?? { count: 0, from: Infinity };
-    byArea.set(l.neighborhood, { count: cur.count + 1, from: Math.min(cur.from, l.price) });
+    byArea.set(l.neighborhood, {
+      count: cur.count + 1,
+      from: l.deal === 'sale' ? Math.min(cur.from, l.price) : cur.from,
+    });
   });
   const areas = [...byArea.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 4);
 
@@ -107,7 +114,9 @@ export default async function HomePage() {
                 <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 19 }}>{name}</div>
-                  <div className="ov__meta">{nListings(a.count)} · from {fmtUsd(a.from)}</div>
+                  <div className="ov__meta">
+                    {nListings(a.count)}{Number.isFinite(a.from) && ` · from ${fmtUsd(a.from)}`}
+                  </div>
                 </div>
               </Link>
             ))}
@@ -115,6 +124,7 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {fresh.length > 0 && (
       <section className="section">
         <div className="wrap">
           <div className="section__head">
@@ -128,6 +138,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="section section--soft">
         <div className="wrap">
@@ -162,7 +173,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>Real-estate agencies</h2>
-            <Link className="btn btn--primary" href="/agent">Join as an agent <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href="/agents">All agents &amp; agencies <Icon name="arrowRight" size={18} /></Link>
             <p>Licensed agencies working the island — open one to see everything they have listed</p>
           </div>
           <AgencyRow rows={agencies} />

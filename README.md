@@ -47,8 +47,11 @@ Neither can be set from SQL, both take a click in **Authentication → Sign In /
 | `/` | Home: island picker, category tiles, featured, areas, agency board, “Buying on Roatán” explainer |
 | `/listings` | Compact filter bar + full filters sheet, result list, island map with price pins and hover cards |
 | `/listings/[id]` | Property page: gallery, specs, map, agent card with phone/WhatsApp, enquiry form |
+| `/agents` | Public directory: agencies board and every realtor with their listing count |
 | `/agent` | Agent dashboard: stats, my listings, leads, new-listing form |
 | `/account` | Buyer account: saved properties, saved searches, profile |
+
+`npm run lint` runs ESLint (flat config in `eslint.config.mjs`; `next lint` is gone in Next 16).
 
 ## Branches
 
@@ -298,6 +301,8 @@ Checked by probing PostgREST directly with the anon key, not just through the ap
 
 - Ratings start at zero and only move through the reviews table; `verified` is off until someone
   checks a licence.
+- Suspending an account (`profiles.active = false`) blocks sign-in, kills any live session and drops
+  the person's listings and profile out of every public query — the rule lives in RLS, not in the UI.
 - The island picker on the home page only lists Roatán; Utila and Guanaja are marked "soon".
 - No password reset flow or agency licence check yet — an agency is `verified: false` until someone flips it.
 - The old generated seed (5 invented agencies, 10 invented people, 64 generated listings) was

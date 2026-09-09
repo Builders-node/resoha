@@ -61,10 +61,12 @@ export default function MapView({
   const refit = useRef<(() => void) | null>(null);
   const lastSize = useRef({ w: 0, h: 0 });
   const [zoomTick, setZoomTick] = useState(0);
+  // колбеки тримаємо у рефах, щоб не перестворювати карту на кожен рендер батька;
+  // писати в них треба в ефекті — під час рендера React це забороняє
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
-  onSelectRef.current = onSelect;
-  onHoverRef.current = onHover;
+  useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
+  useEffect(() => { onHoverRef.current = onHover; }, [onHover]);
 
   const [ready, setReady] = useState(false);
   const router = useRouter();

@@ -170,7 +170,12 @@ export default function ListingsExplorer({
           </div>
 
           {total === 0 && !loading ? (
-            <div className="empty"><div className="empty__ico"><Icon name="island" size={40} /></div>Nothing matches these filters. Try widening the price range.</div>
+            <div className="empty">
+              <div className="empty__ico"><Icon name="island" size={40} /></div>
+              {active > 0
+                ? 'Nothing matches these filters. Drop one of them and try again.'
+                : `Nothing on Roatán ${filters.deal === 'rent' ? 'for rent' : 'for sale'} in this section yet.`}
+            </div>
           ) : (
             <div className="grid grid--list">
               {items.map((l) => (

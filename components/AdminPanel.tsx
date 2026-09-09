@@ -24,6 +24,9 @@ const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'reviews', label: 'Reviews', ico: 'star' },
 ];
 
+/** «1 realtors» виглядало як помилка — тримаємо однину окремо. */
+const plural = (n: number, one: string, many = `${one}s`) => `${n === 1 ? one : many} ${n === 1 ? 'is' : 'are'}`;
+
 export default function AdminPanel({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [overview, setOverview] = useState<Overview | null>(null);
@@ -93,17 +96,17 @@ export default function AdminPanel({ session }: { session: Session }) {
               <div className="panel">
                 <h3 style={{ marginBottom: 12 }}>Needs attention</h3>
                 <div className="lead">
-                  <div><b>{overview.unverifiedAgents}</b> realtors are not verified yet
+                  <div><b>{overview.unverifiedAgents}</b> {plural(overview.unverifiedAgents, 'realtor')} not verified yet
                     <div className="tiny muted">Verified agents get a badge on their card and profile</div></div>
                   <button className="btn btn--sm btn--ghost" onClick={() => setTab('users')}>Review</button>
                 </div>
                 <div className="lead">
-                  <div><b>{overview.newLeads}</b> enquiries still marked new
+                  <div><b>{overview.newLeads}</b> {overview.newLeads === 1 ? 'enquiry' : 'enquiries'} still marked new
                     <div className="tiny muted">Across every agency on the platform</div></div>
                 </div>
                 <div className="lead">
-                  <div><b>{overview.suspended}</b> suspended accounts
-                    <div className="tiny muted">They cannot sign in until reactivated</div></div>
+                  <div><b>{overview.suspended}</b> suspended {overview.suspended === 1 ? 'account' : 'accounts'}
+                    <div className="tiny muted">Suspended people cannot sign in, and their listings drop out of search</div></div>
                   <button className="btn btn--sm btn--ghost" onClick={() => setTab('users')}>Open</button>
                 </div>
               </div>
@@ -161,6 +164,9 @@ export default function AdminPanel({ session }: { session: Session }) {
         {tab === 'agencies' && (
           <div className="panel">
             <h3 style={{ marginBottom: 12 }}>Agencies</h3>
+            {agencies.length === 0 ? (
+              <p className="muted small">No agencies registered yet — the table fills in as they sign up.</p>
+            ) : (
             <table className="table">
               <thead><tr><th>Agency</th><th>Agents</th><th>Listings</th><th>Status</th><th></th></tr></thead>
               <tbody>
@@ -193,6 +199,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                 ))}
               </tbody>
             </table>
+            )}
           </div>
         )}
 

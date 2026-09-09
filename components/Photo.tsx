@@ -18,7 +18,6 @@ export default function Photo({ src, alt = '', className = '', eager, label = 'N
   const url = photoUrl(src);
   if (url) {
     return (
-      // eslint-disable-next-line @next/next/no-img-element
       <img className={className} src={url} alt={alt} loading={eager ? 'eager' : 'lazy'} />
     );
   }

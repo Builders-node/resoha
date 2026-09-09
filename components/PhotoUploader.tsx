@@ -63,7 +63,6 @@ export default function PhotoUploader({
         <div className="shots">
           {value.map((url, i) => (
             <figure key={url} className="shot">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={url} alt="" />
               {i === 0 && <span className="badge badge--brand shot__cover">Cover</span>}
               <div className="shot__bar">

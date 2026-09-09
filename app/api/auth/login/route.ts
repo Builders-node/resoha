@@ -12,6 +12,14 @@ export async function POST(req: Request) {
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return NextResponse.json({ error: 'Wrong email or password' }, { status: 401 });
 
+  // currentUser() віддає null і для заблокованого акаунта — тоді куку треба прибрати,
+  // інакше людина ходила б із «напівживою» сесією.
   const user = await currentUser();
-  return NextResponse.json({ session: user ? toSession(user) : null });
+  if (!user) {
+    await supabase.auth.signOut();
+    return NextResponse.json(
+      { error: 'This account is suspended. Contact the platform admin.' }, { status: 403 },
+    );
+  }
+  return NextResponse.json({ session: toSession(user) });
 }

@@ -115,7 +115,8 @@ export default function ListingForm({
 
         <div className="field full switch-inline">
           <label><input type="checkbox" name="oceanfront" defaultChecked={v?.oceanfront} /> Oceanfront</label>
-          <label><input type="checkbox" name="titled" defaultChecked={v?.titled ?? true} /> Free &amp; clear title</label>
+          {/* Титул — найчутливіше твердження в оголошенні, тому ставиться вручну, а не за замовчуванням */}
+          <label><input type="checkbox" name="titled" defaultChecked={v?.titled ?? false} /> Free &amp; clear title</label>
           <label><input type="checkbox" name="ownerFinancing" defaultChecked={v?.ownerFinancing} /> Owner financing</label>
         </div>
 

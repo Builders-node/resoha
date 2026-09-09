@@ -67,7 +67,6 @@ export default function AgentReviews({
       {items.map((r) => (
         <div key={r.id} className="lead">
           <div style={{ display: 'flex', gap: 12 }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             {r.authorAvatar && <img src={r.authorAvatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />}
             <div>
               <b>{r.authorName}</b> <Stars value={r.rating} />

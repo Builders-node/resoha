@@ -10,6 +10,7 @@ export default async function AccountPage() {
         role="user"
         title="Buyer account"
         text="Keep your shortlist, saved searches and contact details in one place while you plan the trip."
+        signedInAs={user ? user.name : null}
       />
     );
   }

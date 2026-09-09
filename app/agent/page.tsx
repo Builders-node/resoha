@@ -10,6 +10,7 @@ export default async function AgentPage() {
         role="agent"
         title="Agent dashboard"
         text="Publish listings, answer buyer enquiries and track views. Independent realtors and agencies both live here."
+        signedInAs={session ? session.name : null}
       />
     );
   }

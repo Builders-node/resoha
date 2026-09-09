@@ -10,7 +10,18 @@ type DB = SupabaseClient;
 const db = async (): Promise<DB> => supabaseServer();
 
 /* ---------- mappers ---------- */
+// Рядок PostgREST: форма залежить від select, тож типізувати його жорстко нема сенсу
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
+
+/**
+ * Посилання на джерело потрапляє в href, тож пускаємо лише http(s):
+ * інакше ріелтор міг би зберегти `javascript:` і воно б відрендерилось як лінк.
+ */
+const safeUrl = (v: unknown) => {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return /^https?:\/\//i.test(s) ? s : '';
+};
 
 export const mapAgency = (r: Row): Agency => ({
   id: r.id, name: r.name, brand: r.brand, phone: r.phone, email: r.email ?? '', about: r.about,
@@ -206,7 +217,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     body: input.text ?? '',
     source_name: input.sourceName ?? '',
     source_ref: input.sourceRef ?? '',
-    source_url: input.sourceUrl ?? '',
+    source_url: safeUrl(input.sourceUrl),
   }).select('*').single();
   if (error) throw error;
   return mapListing(data);
@@ -229,7 +240,9 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
   for (const [key, column] of Object.entries(LISTING_COLUMNS)) {
     const value = (patch as Row)[key];
     if (value === undefined) continue;
-    row[column] = NUMERIC.has(key) ? Number(value) || 0 : BOOLEAN.has(key) ? Boolean(value) : value;
+    row[column] = key === 'sourceUrl' ? safeUrl(value)
+      : NUMERIC.has(key) ? Number(value) || 0
+        : BOOLEAN.has(key) ? Boolean(value) : value;
   }
   if (!Object.keys(row).length) return getListing(id);
 

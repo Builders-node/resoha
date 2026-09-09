@@ -5,7 +5,7 @@ import Icon from '@/components/Icon';
 import AgentReviews from '@/components/AgentReviews';
 import ListingCard from '@/components/ListingCard';
 import { getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
-import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import { nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import Avatar from '@/components/Avatar';
 
@@ -21,7 +21,6 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   ]);
   const favIds = session ? await getFavorites(session.id) : [];
 
-  const cheapest = listings.filter((l) => l.deal === 'sale').sort((a, b) => a.price - b.price)[0];
   const areas = [...new Set(listings.map((l) => l.neighborhood))];
 
   return (
@@ -45,10 +44,18 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
           </p>
           {agent.about && <p className="org__about" style={{ color: 'var(--ink-2)' }}>{agent.about}</p>}
           <div className="org__contacts org__contacts--light">
-            <a href={`tel:${agent.phone.replace(/[^+\d]/g, '')}`}><Icon name="phone" size={16} /> {agent.phone}</a>
-            <a href={`https://wa.me/${agent.whatsapp.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-              <Icon name="chat" size={16} /> WhatsApp
-            </a>
+            {/* Порожній телефон давав живу кнопку WhatsApp, що вела на wa.me без номера. */}
+            {agent.phone && (
+              <a href={`tel:${agent.phone.replace(/[^+\d]/g, '')}`}><Icon name="phone" size={16} /> {agent.phone}</a>
+            )}
+            {agent.whatsapp && (
+              <a href={`https://wa.me/${agent.whatsapp.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
+                <Icon name="chat" size={16} /> WhatsApp
+              </a>
+            )}
+            {!agent.phone && !agent.whatsapp && (
+              <span className="muted small">No phone on file — use the enquiry form on a listing</span>
+            )}
             {agent.languages.length > 0 && <span className="muted small">Speaks {agent.languages.join(', ')}</span>}
           </div>
         </div>

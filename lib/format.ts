@@ -45,7 +45,8 @@ export const nListings = (n: number) => `${num.format(n)} ${n === 1 ? 'listing' 
 /** "2 bd · 2 ba · 1,240 ft²" — для землі показуємо акри */
 export function specLine(l: { type: PropertyType; beds: number; baths: number; sqft: number; lotAcres: number }) {
   if (l.type === 'land') return `${l.lotAcres} ac lot`;
-  const parts = [`${l.beds} bd`, `${l.baths} ba`];
+  // 0 спалень — це студія, а не помилка даних
+  const parts = [l.beds > 0 ? `${l.beds} bd` : 'Studio', `${l.baths} ba`];
   if (l.sqft) parts.push(`${num.format(l.sqft)} ft²`);
   if (l.lotAcres) parts.push(`${l.lotAcres} ac`);
   return parts.join(' · ');

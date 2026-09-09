@@ -10,7 +10,13 @@ export async function currentUser(): Promise<Agent | null> {
 
   const { data } = await supabase
     .from('profiles').select('*, agency:agencies!profiles_agency_id_fkey(name)').eq('id', auth.user.id).maybeSingle();
-  return data ? mapAgent(data) : null;
+  if (!data) return null;
+
+  // Заблокований акаунт нічим не відрізняється від незалогіненого: кука лишається,
+  // але жодна сторінка й жоден роут її вже не приймають.
+  if (data.active === false) return null;
+
+  return mapAgent(data);
 }
 
 export const toSession = (u: Agent): Session => ({

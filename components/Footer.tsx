@@ -32,11 +32,14 @@ export default function Footer() {
           </div>
           <div>
             <h4>API</h4>
+            {/* Це не сторінки, а сирий JSON — next/link тут не до речі */}
+            {/* eslint-disable @next/next/no-html-link-for-pages */}
             <ul>
               <li><a href="/api/listings">/api/listings</a></li>
               <li><a href="/api/agents">/api/agents</a></li>
               <li><a href="/api/auth/me">/api/auth/me</a></li>
             </ul>
+            {/* eslint-enable @next/next/no-html-link-for-pages */}
           </div>
         </div>
       </div>

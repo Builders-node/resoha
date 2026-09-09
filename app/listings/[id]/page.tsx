@@ -19,7 +19,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   if (!listing) notFound();
 
   await bumpViews(id);
-  const agent = (await getAgent(listing.agentId))!;
+  // Автор може бути прихованим (заблокований акаунт) — тоді оголошення теж не показуємо
+  const agent = await getAgent(listing.agentId);
+  if (!agent) notFound();
   const me = await currentUser();
   const session = me;
   const favIds = session ? await getFavorites(session.id) : [];
@@ -86,9 +88,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               </>
             ) : (
               <>
-                <div className="spec"><span className="muted small">Bedrooms</span><b>{listing.beds}</b></div>
+                <div className="spec"><span className="muted small">Bedrooms</span>
+                  <b>{listing.beds > 0 ? listing.beds : 'Studio'}</b></div>
                 <div className="spec"><span className="muted small">Bathrooms</span><b>{listing.baths}</b></div>
-                <div className="spec"><span className="muted small">Interior</span><b>{fmtNumber(listing.sqft)} ft²</b></div>
+                <div className="spec"><span className="muted small">Interior</span>
+                  <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b></div>
                 <div className="spec"><span className="muted small">Built</span><b>{listing.year || '—'}</b></div>
               </>
             )}

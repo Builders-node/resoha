@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AvatarPicker from './AvatarPicker';
 import Icon, { HeartIcon } from './Icon';
 import ListingCard from './ListingCard';
@@ -15,6 +16,7 @@ export default function UserAccount({ session, user }: {
   session: Session;
   user: { email: string; phone: string };
 }) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('fav');
   const [favs, setFavs] = useState<Listing[]>([]);
   const [favIds, setFavIds] = useState<string[]>([]);
@@ -61,7 +63,7 @@ export default function UserAccount({ session, user }: {
           <Avatar src={avatar} name={session.name} />
           <div>
             <h2>{session.name}</h2>
-            <div className="muted">{user.email} · {user.phone}</div>
+            <div className="muted">{[user.email, user.phone].filter(Boolean).join(' · ')}</div>
             <div className="small muted" style={{ marginTop: 4 }}>Buyer account</div>
           </div>
           <Link className="btn btn--primary" href="/listings" style={{ marginLeft: 'auto' }}>Browse listings</Link>
@@ -173,7 +175,8 @@ export default function UserAccount({ session, user }: {
                 <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
                 <button type="button" className="btn btn--ghost" onClick={async () => {
                   await fetch('/api/auth/logout', { method: 'POST' });
-                  location.href = '/';
+                  router.push('/');
+                  router.refresh();
                 }}>
                   <Icon name="logout" size={17} /> Sign out
                 </button>

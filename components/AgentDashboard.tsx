@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
 import Icon from './Icon';
 import Photo from './Photo';
@@ -16,6 +17,7 @@ type Stats = { total: number; active: number; views: number; leads: number; newL
 type Member = Agent & { listings?: number };
 
 export default function AgentDashboard({ session }: { session: Session }) {
+  const router = useRouter();
   const [tab, setTab] = useState<Tab>('listings');
   const [scope, setScope] = useState<'own' | 'agency'>('own');
   const [agent, setAgent] = useState<Agent | null>(null);
@@ -247,7 +249,8 @@ export default function AgentDashboard({ session }: { session: Session }) {
                 <button className="btn btn--primary">Save</button>
                 <button type="button" className="btn btn--ghost" onClick={async () => {
                   await fetch('/api/auth/logout', { method: 'POST' });
-                  location.href = '/';
+                  router.push('/');
+                  router.refresh();
                 }}>
                   <Icon name="logout" size={17} /> Sign out
                 </button>

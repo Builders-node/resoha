@@ -15,7 +15,6 @@ const initials = (name: string) =>
 export default function Avatar({ src, name, className = '', style }: Props) {
   const url = photoUrl(src);
   if (url) {
-    // eslint-disable-next-line @next/next/no-img-element
     return <img className={`ava ${className}`.trim()} src={url} alt={name} style={style} />;
   }
   return (
