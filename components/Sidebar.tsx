@@ -11,9 +11,10 @@ const NAV = [
   { href: '/', ico: 'island', cap: 'Home', match: (p: string) => p === '/' },
   { href: '/listings?deal=sale', ico: 'home', cap: 'Buy', match: (p: string, q: string) => p === '/listings' && q === 'sale' },
   { href: '/listings?deal=rent', ico: 'key', cap: 'Rent', match: (p: string, q: string) => p === '/listings' && q === 'rent' },
-  { href: '/listings?type=land', ico: 'land', cap: 'Land', match: () => false },
-  { href: '/account', ico: 'heart', cap: 'Saved', match: (p: string) => p === '/account' },
-  { href: '/agent', ico: 'building', cap: 'Agents', match: (p: string) => p === '/agent' },
+  // deskOnly — пункт лишається у вертикальній рейці, а на телефоні їде в лист «Other»
+  { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: () => false },
+  { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p: string) => p === '/account' },
+  { href: '/agent', ico: 'building', cap: 'Agents', deskOnly: true, match: (p: string) => p === '/agent' },
 ];
 
 export default function Sidebar({ session }: { session: Session | null }) {
@@ -48,7 +49,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
         {NAV.map((n) => (
           <Link key={n.cap} href={n.href}
-            className={`${n.match(pathname, deal) ? 'is-active' : ''} ${n.cap === 'Land' ? 'desk-only' : ''}`}>
+            className={`${n.match(pathname, deal) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
             <span className="sidebar__cap">{n.cap}</span>
           </Link>
@@ -94,6 +95,14 @@ export default function Sidebar({ session }: { session: Session | null }) {
                 </span>
               </Link>
             )}
+
+            <Link className="sheet__item" href="/account">
+              <Icon name="heart" size={19} /> Saved listings
+            </Link>
+
+            <Link className="sheet__item" href="/agent">
+              <Icon name="building" size={19} /> Agents &amp; agencies
+            </Link>
 
             <Link className="sheet__item" href="/listings?type=land">
               <Icon name="land" size={19} /> Land &amp; lots
