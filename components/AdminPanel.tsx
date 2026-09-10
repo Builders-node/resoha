@@ -126,7 +126,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                 <tbody>
                   {listings.map((l) => (
                     <tr key={l.id}>
-                      <td>
+                      <td data-label="Property">
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                           <Photo className="thumb" src={l.photos[0]} label="" />
                           <div>
@@ -135,13 +135,13 @@ export default function AdminPanel({ session }: { session: Session }) {
                           </div>
                         </div>
                       </td>
-                      <td style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
-                      <td>{fmtNumber(l.views)}</td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
+                      <td data-label="Price" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
+                      <td data-label="Views">{fmtNumber(l.views)}</td>
+                      <td data-label="State" style={{ whiteSpace: 'nowrap' }}>
                         <span className={`pill ${l.active ? 'pill--on' : 'pill--off'}`}>{l.active ? 'Live' : 'Hidden'}</span>
                         {l.featured && <span className="pill pill--on" style={{ marginLeft: 6 }}>Featured</span>}
                       </td>
-                      <td style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
+                      <td className="td--act" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                         <button className="btn btn--sm btn--ghost"
                           onClick={() => act({ kind: 'listing', id: l.id, featured: !l.featured },
                             l.featured ? 'Removed from the home page' : 'Featured on the home page')}>
@@ -172,7 +172,7 @@ export default function AdminPanel({ session }: { session: Session }) {
               <tbody>
                 {agencies.map(({ agency, agents, listings: n }) => (
                   <tr key={agency.id}>
-                    <td>
+                    <td data-label="Agency">
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         <span className="agc-dot" style={{ background: agency.brand }} />
                         <div>
@@ -181,14 +181,14 @@ export default function AdminPanel({ session }: { session: Session }) {
                         </div>
                       </div>
                     </td>
-                    <td>{agents}</td>
-                    <td>{n}</td>
-                    <td>
+                    <td data-label="Agents">{agents}</td>
+                    <td data-label="Listings">{n}</td>
+                    <td data-label="Status">
                       <span className={`pill ${agency.verified ? 'pill--on' : 'pill--off'}`}>
                         {agency.verified ? 'Verified' : 'Unverified'}
                       </span>
                     </td>
-                    <td style={{ textAlign: 'right' }}>
+                    <td className="td--act" style={{ textAlign: 'right' }}>
                       <button className="btn btn--sm btn--ghost"
                         onClick={() => act({ kind: 'agency', id: agency.id, verified: !agency.verified },
                           agency.verified ? 'Verification removed' : `${agency.name} verified`)}>
@@ -214,7 +214,7 @@ export default function AdminPanel({ session }: { session: Session }) {
               <tbody>
                 {users.map((u) => (
                   <tr key={u.id}>
-                    <td>
+                    <td data-label="Account">
                       <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                         <Avatar src={u.avatar} name={u.name} style={{ width: 34, height: 34, fontSize: 12 }} />
                         <div>
@@ -225,16 +225,16 @@ export default function AdminPanel({ session }: { session: Session }) {
                         </div>
                       </div>
                     </td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
+                    <td data-label="Role" style={{ whiteSpace: 'nowrap' }}>
                       <span className="pill pill--off">{u.role === 'agent' ? 'Realtor' : 'Buyer'}</span>
                       {u.isOwner && <span className="pill pill--on" style={{ marginLeft: 6 }}>Owner</span>}
                       {u.isAdmin && <span className="pill pill--on" style={{ marginLeft: 6 }}>Admin</span>}
                     </td>
-                    <td style={{ whiteSpace: 'nowrap' }}>
+                    <td data-label="Status" style={{ whiteSpace: 'nowrap' }}>
                       <span className={`pill ${u.active ? 'pill--on' : 'pill--off'}`}>{u.active ? 'Active' : 'Suspended'}</span>
                       {u.verified && <span className="pill pill--on" style={{ marginLeft: 6 }}>Verified</span>}
                     </td>
-                    <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                    <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                       {u.role === 'agent' && (
                         <>
                           <button className="btn btn--sm btn--ghost"

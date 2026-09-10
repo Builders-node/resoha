@@ -330,7 +330,8 @@ textarea.input{resize:vertical;min-height:96px}
   .split{grid-template-columns:1fr;height:auto}
   .split__map{height:58vh}
   .dash{grid-template-columns:1fr}
-  .sidenav{position:static;display:flex;overflow-x:auto}
+  /* на планшеті вкладки теж переносяться, а не ховаються за боковою прокруткою */
+  .sidenav{position:static;display:flex;flex-wrap:wrap;gap:6px}
   .cta{grid-template-columns:1fr}
 }
 @media (max-width:860px){
@@ -624,4 +625,36 @@ textarea.input{resize:vertical;min-height:96px}
 @media (max-width:860px){
   .sk--map{display:none}
   .sk--gallery{height:210px}
+}
+
+
+/* ===== Кабінети на телефоні: таблиці стають картками ===== */
+/* П'ять колонок у 375px не влазять — раніше сторінка їхала вбік на 400px,
+   а кнопки дій лишались за краєм екрана. */
+@media (max-width:860px){
+  .sidenav{flex-wrap:wrap;overflow:visible;gap:6px;padding:8px;border-radius:var(--radius)}
+  .sidenav a{flex:1 0 auto;justify-content:center;padding:9px 12px;font-size:13.5px}
+
+  .table,.table tbody,.table tr,.table td{display:block;width:auto}
+  .table thead{display:none}
+  .table tr{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
+  .table tr:hover td{background:none}
+  .table td{border:0;padding:5px 0;white-space:normal !important;text-align:left !important}
+
+  /* Підпис колонки переїжджає в рядок — інакше «Live» чи «3» ні про що не кажуть */
+  .table td[data-label]::before{
+    content:attr(data-label);display:block;font-size:11px;text-transform:uppercase;
+    letter-spacing:.04em;color:var(--ink-3);margin-bottom:2px}
+  /* Перша клітинка — заголовок картки, підпис їй не потрібен */
+  .table td:first-child::before{display:none}
+  .table td:first-child{padding-top:0;margin-bottom:4px}
+
+  /* Дії — окремим рядом на всю ширину, кнопки однакові */
+  .table td.td--act{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px;margin-top:8px;border-top:1px solid var(--line)}
+  .table td.td--act::before{display:none}
+  .table td.td--act .btn{flex:1 0 auto}
+  .table td.td--act:empty{display:none}
+
+  .profile-head{gap:14px}
+  .admin-mark{width:52px;height:52px}
 }

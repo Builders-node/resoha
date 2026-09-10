@@ -227,7 +227,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
             {members.map((m) => (
               <Fragment key={m.id}>
                 <tr>
-                  <td>
+                  <td data-label="Agent">
                     <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
                       <Avatar src={m.avatar} name={m.name} style={{ width: 34, height: 34, fontSize: 12 }} />
                       <div>
@@ -240,9 +240,9 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                       </div>
                     </div>
                   </td>
-                  <td>{m.listings ?? 0}</td>
-                  <td><span className={`pill ${m.isOwner ? 'pill--on' : 'pill--off'}`}>{m.isOwner ? 'Owner' : 'Agent'}</span></td>
-                  <td style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                  <td data-label="Listings">{m.listings ?? 0}</td>
+                  <td data-label="Role"><span className={`pill ${m.isOwner ? 'pill--on' : 'pill--off'}`}>{m.isOwner ? 'Owner' : 'Agent'}</span></td>
+                  <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     {isOwner && (
                       <>
                         <button className="btn btn--sm btn--ghost"

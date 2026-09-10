@@ -141,7 +141,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
                 <tbody>
                   {listings.map((l) => (
                     <tr key={l.id}>
-                      <td>
+                      <td data-label="Property">
                         <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                           <Photo className="thumb" src={l.photos[0]} label="" />
                           <div>
@@ -151,12 +151,12 @@ export default function AgentDashboard({ session }: { session: Session }) {
                         </div>
                       </td>
                       {scope === 'agency' && (
-                        <td className="small">{members.find((m) => m.id === l.agentId)?.name ?? '—'}</td>
+                        <td className="small" data-label="Agent">{members.find((m) => m.id === l.agentId)?.name ?? '—'}</td>
                       )}
-                      <td style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
-                      <td>{fmtNumber(l.views)}</td>
-                      <td><span className={`pill ${l.active ? 'pill--on' : 'pill--off'}`}>{l.active ? 'Live' : 'Hidden'}</span></td>
-                      <td style={{ whiteSpace: 'nowrap' }}>
+                      <td data-label="Price" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
+                      <td data-label="Views">{fmtNumber(l.views)}</td>
+                      <td data-label="Status"><span className={`pill ${l.active ? 'pill--on' : 'pill--off'}`}>{l.active ? 'Live' : 'Hidden'}</span></td>
+                      <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
                         <button className="btn btn--sm btn--ghost"
                           onClick={() => { setEditing(l); setTab('new'); }}>Edit</button>{' '}
                         <button className="btn btn--sm btn--ghost" onClick={() => toggleActive(l)}>
