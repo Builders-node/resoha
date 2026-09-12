@@ -160,3 +160,15 @@ export interface Review {
   authorAvatar: string;
   agentName?: string;   // заповнюється лише в адмінському списку
 }
+
+/** Запис у журналі адмінських дій. */
+export interface AdminLogEntry {
+  id: string;
+  actorName: string;
+  action: string;
+  targetKind: 'listing' | 'profile' | 'agency' | 'review';
+  targetId: string | null;
+  targetName: string;
+  reason: string;
+  createdAt: string;
+}

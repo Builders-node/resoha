@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
-import type { Agency, Agent, Deal, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
+import type { AdminLogEntry, Agency, Agent, Deal, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -351,12 +351,25 @@ export async function adminOverview() {
   const { data: people } = await client.from('profiles').select('role, verified, is_admin, active');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rows = (people ?? []) as any[];
-  const { data: viewRows } = await client.from('listings').select('views');
+
+  // Перевірки якості даних важать тут більше за загальні лічильники: оголошення
+  // без фото чи земля з непідтвердженим титулом — це те, що псує довіру до площадки.
+  const { data: qualityRows } = await client.from('listings')
+    .select('views, photos, source_name, type, titled, body, lat, lng');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const views = ((viewRows ?? []) as any[]).reduce((sum, r) => sum + (r.views ?? 0), 0);
+  const all = (qualityRows ?? []) as any[];
+  const views = all.reduce((sum, r) => sum + (r.views ?? 0), 0);
+
+  const quality = {
+    noPhotos: all.filter((r) => (r.photos ?? []).length === 0).length,
+    noSource: all.filter((r) => !r.source_name).length,
+    untitledLand: all.filter((r) => r.type === 'land' && !r.titled).length,
+    thinText: all.filter((r) => (r.body ?? '').length < 40).length,
+    offIsland: all.filter((r) => r.lat < 16.2 || r.lat > 16.6 || r.lng < -86.7 || r.lng > -86.2).length,
+  };
 
   return {
-    listings, hidden, agencies, reviews, leads, newLeads, views,
+    listings, hidden, agencies, reviews, leads, newLeads, views, quality,
     agents: rows.filter((r) => r.role === 'agent').length,
     buyers: rows.filter((r) => r.role === 'user').length,
     unverifiedAgents: rows.filter((r) => r.role === 'agent' && !r.verified).length,
@@ -411,6 +424,61 @@ export async function adminSetListingFlags(id: string, patch: { featured?: boole
   const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select('*').maybeSingle();
   if (error) throw error;
   return data ? mapListing(data) : null;
+}
+
+/* ---------- журнал дій адміністратора ---------- */
+export type AdminLogInput = {
+  action: string;
+  targetKind: 'listing' | 'profile' | 'agency' | 'review';
+  targetId: string;
+  targetName?: string;
+  reason?: string;
+};
+
+/** Запис у журнал. Ніколи не валить саму дію: лог важливий, але не важливіший за неї. */
+export async function adminLog(actor: { id: string; name: string }, entry: AdminLogInput) {
+  const { error } = await (await db()).from('admin_log').insert({
+    actor_id: actor.id,
+    actor_name: actor.name,
+    action: entry.action,
+    target_kind: entry.targetKind,
+    target_id: entry.targetId,
+    target_name: entry.targetName ?? '',
+    reason: entry.reason ?? '',
+  });
+  if (error) console.error('admin_log write failed:', error.message);
+}
+
+export async function adminListLog(): Promise<AdminLogEntry[]> {
+  const { data } = await (await db()).from('admin_log')
+    .select('*').order('created_at', { ascending: false }).limit(300);
+  return (data ?? []).map((r: Row) => ({
+    id: r.id, actorName: r.actor_name, action: r.action, targetKind: r.target_kind,
+    targetId: r.target_id, targetName: r.target_name, reason: r.reason, createdAt: r.created_at,
+  }));
+}
+
+/**
+ * Видалення оголошення разом із фотографіями: інакше файли лишаються в бакеті
+ * назавжди (кілька таких сиріт там уже є від видалених акаунтів).
+ */
+export async function adminDeleteListing(id: string) {
+  const client = await db();
+  const listing = await getListing(id);
+
+  const paths = (listing?.photos ?? [])
+    .map((url) => url.split('/listing-photos/')[1])
+    .filter((p): p is string => Boolean(p))
+    .map((p) => decodeURIComponent(p.split('?')[0]));
+
+  if (paths.length) {
+    const { error } = await client.storage.from('listing-photos').remove(paths);
+    if (error) console.error('storage cleanup failed:', error.message);
+  }
+
+  const { error, count } = await client.from('listings').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }
 
 export async function adminDeleteReview(id: string) {

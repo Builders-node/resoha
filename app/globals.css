@@ -658,3 +658,22 @@ textarea.input{resize:vertical;min-height:96px}
   .profile-head{gap:14px}
   .admin-mark{width:52px;height:52px}
 }
+
+
+/* ===== Адмінка: панель пошуку й перевірки якості ===== */
+.adm-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.adm-bar .input{width:auto;min-width:150px;padding:9px 13px;border-radius:12px;font-size:14px}
+.adm-bar .input[type=search]{flex:1 1 240px}
+
+.quality{display:grid;gap:2px}
+.quality__row{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;
+  padding:10px 12px;border-radius:10px;font-size:14px}
+.quality__row:nth-child(odd){background:var(--bg-soft)}
+.quality__row b{font-variant-numeric:tabular-nums;font-size:16px}
+.quality__row.is-bad b{color:var(--orange)}
+
+@media (max-width:860px){
+  .adm-bar .input,.adm-bar .input[type=search]{flex:1 1 100%;min-width:0}
+  .quality__row{grid-template-columns:1fr auto;row-gap:6px}
+  .quality__row .btn{grid-column:1/-1}
+}
