@@ -9,6 +9,7 @@ import { toast } from './Toaster';
 import { fmtDate } from '@/lib/format';
 import type { Lead, Listing, SavedSearch, Session } from '@/lib/types';
 import Avatar from './Avatar';
+import TabStrip from './TabStrip';
 
 type Tab = 'fav' | 'searches' | 'enquiries' | 'profile';
 
@@ -47,7 +48,7 @@ export default function UserAccount({ session, user }: {
 
   return (
     <div className="wrap dash">
-      <nav className="sidenav">
+      <TabStrip>
         <a className={tab === 'fav' ? 'is-active' : ''} onClick={() => setTab('fav')}>
           <HeartIcon filled size={18} /> Saved {favIds.length > 0 && <span className="pill pill--off">{favIds.length}</span>}
         </a>
@@ -56,7 +57,7 @@ export default function UserAccount({ session, user }: {
           <Icon name="chat" size={18} /> My enquiries {leads.length > 0 && <span className="pill pill--off">{leads.length}</span>}
         </a>
         <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}><Icon name="user" size={18} /> Profile</a>
-      </nav>
+      </TabStrip>
 
       <div>
         <div className="profile-head">

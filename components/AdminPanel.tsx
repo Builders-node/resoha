@@ -9,6 +9,7 @@ import { toast } from './Toaster';
 import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } from '@/lib/types';
 import Avatar from './Avatar';
+import TabStrip from './TabStrip';
 
 type Tab = 'overview' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = { noPhotos: number; noSource: number; untitledLand: number; thinText: number; offIsland: number };
@@ -134,13 +135,13 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   return (
     <div className="wrap dash">
-      <nav className="sidenav">
+      <TabStrip>
         {TABS.map((t) => (
           <a key={t.v} className={tab === t.v ? 'is-active' : ''} onClick={() => setTab(t.v)}>
             <Icon name={t.ico} size={18} /> {t.label}
           </a>
         ))}
-      </nav>
+      </TabStrip>
 
       <div>
         <div className="profile-head">

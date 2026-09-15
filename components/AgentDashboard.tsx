@@ -11,6 +11,7 @@ import { toast } from './Toaster';
 import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import Avatar from './Avatar';
+import TabStrip from './TabStrip';
 
 type Tab = 'listings' | 'leads' | 'new' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
@@ -76,7 +77,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
 
   return (
     <div className="wrap dash">
-      <nav className="sidenav">
+      <TabStrip>
         <a className={tab === 'listings' ? 'is-active' : ''} onClick={() => setTab('listings')}>
           <Icon name="home" size={18} /> Listings
         </a>
@@ -92,7 +93,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
         <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}>
           <Icon name="user" size={18} /> Profile
         </a>
-      </nav>
+      </TabStrip>
 
       <div>
         <div className="profile-head">

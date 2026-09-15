@@ -315,8 +315,12 @@ textarea.input{resize:vertical;min-height:96px}
      тож довга вкладка («Saved searches») розпирала кабінет і всю сторінку */
   .dash{grid-template-columns:minmax(0,1fr)}
   .dash > *{min-width:0}
-  /* на планшеті вкладки теж переносяться, а не ховаються за боковою прокруткою */
-  .sidenav{position:static;display:flex;flex-wrap:wrap;gap:6px}
+  /* Вкладки стають горизонтальною стрічкою: ряд не переноситься, а прокручується.
+     Активну підкручує у видиму зону TabStrip, інакше вона губилась би за краєм. */
+  .sidenav{position:static;display:flex;flex-wrap:nowrap;gap:6px;
+    overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;scroll-snap-type:x proximity}
+  .sidenav::-webkit-scrollbar{display:none}
+  .sidenav a{flex:0 0 auto;scroll-snap-align:start;white-space:nowrap}
   .cta{grid-template-columns:1fr}
 }
 @media (max-width:860px){
@@ -617,8 +621,8 @@ textarea.input{resize:vertical;min-height:96px}
 /* П'ять колонок у 375px не влазять — раніше сторінка їхала вбік на 400px,
    а кнопки дій лишались за краєм екрана. */
 @media (max-width:860px){
-  .sidenav{flex-wrap:wrap;overflow:visible;gap:6px;padding:8px;border-radius:var(--radius)}
-  .sidenav a{flex:1 1 auto;min-width:0;justify-content:center;padding:9px 12px;font-size:13.5px}
+  .sidenav{gap:6px;padding:8px;border-radius:var(--radius)}
+  .sidenav a{padding:9px 12px;font-size:13.5px}
 
   .table,.table tbody,.table tr,.table td{display:block;width:auto}
   .table thead{display:none}
