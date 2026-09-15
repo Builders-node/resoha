@@ -501,6 +501,18 @@ export async function adminListReviews(): Promise<Review[]> {
 }
 
 /* ---------- reviews ---------- */
+/**
+ * Відгук може лишити лише той, хто вже писав цьому ріелтору: те саме правило
+ * стоїть у політиці reviews_write, а тут — щоб не показувати форму марно.
+ */
+export async function canReviewAgent(agentId: string, userId: string | null) {
+  if (!userId || userId === agentId) return false;
+  const { count } = await (await db()).from('leads')
+    .select('id', { count: 'exact', head: true })
+    .eq('agent_id', agentId).eq('user_id', userId);
+  return (count ?? 0) > 0;
+}
+
 export async function listReviews(agentId: string): Promise<Review[]> {
   const { data } = await (await db()).from('reviews')
     .select('*, author:profiles!reviews_author_id_fkey(name, avatar)')

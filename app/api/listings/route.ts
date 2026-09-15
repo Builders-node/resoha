@@ -1,48 +1,11 @@
 import { NextResponse } from 'next/server';
 import { PAGE_SIZE, createListing, queryPins, searchListings } from '@/lib/db';
+import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
-import type { Deal, ListingQuery, PropertyType, SortKey } from '@/lib/types';
-
-export function parseQuery(sp: URLSearchParams): ListingQuery {
-  // NaN з кривого вводу не має доїжджати до бази
-  const num = (k: string) => {
-    const v = sp.get(k) ? Number(sp.get(k)) : undefined;
-    return v !== undefined && Number.isFinite(v) ? v : undefined;
-  };
-  const list = (k: string) => (sp.get(k) ? sp.get(k)!.split(',').filter(Boolean) : undefined);
-  const flag = (k: string) => (sp.get(k) === '1' ? true : undefined);
-
-  return {
-    deal: (sp.get('deal') as Deal) || undefined,
-    type: (sp.get('type') as PropertyType) || undefined,
-    island: sp.get('island') || undefined,
-    neighborhoods: list('neighborhoods'),
-    beds: list('beds')?.map(Number).filter(Number.isFinite),
-    bathsMin: num('bathsMin'),
-    priceMin: num('priceMin'),
-    priceMax: num('priceMax'),
-    sqftMin: num('sqftMin'),
-    sqftMax: num('sqftMax'),
-    lotMin: num('lotMin'),
-    lotMax: num('lotMax'),
-    hoaMax: sp.has('hoaMax') ? Number(sp.get('hoaMax')) : undefined,
-    yearMin: num('yearMin'),
-    oceanfront: flag('oceanfront'),
-    titled: flag('titled'),
-    ownerFinancing: flag('ownerFinancing'),
-    tags: list('tags'),
-    q: sp.get('q') || undefined,
-    agentId: sp.get('agentId') || undefined,
-    agencyId: sp.get('agencyId') || undefined,
-    sort: (sp.get('sort') as SortKey) || undefined,
-    ids: list('ids'),
-    includeInactive: sp.get('includeInactive') === '1',
-  };
-}
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
-  const query = parseQuery(searchParams);
+  const query = toListingQuery(searchParams);
 
   // countOnly — для лічильника у фільтрах; pins — координати всіх збігів для карти
   const mode = searchParams.get('mode');

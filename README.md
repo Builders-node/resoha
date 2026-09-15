@@ -305,6 +305,8 @@ Checked by probing PostgREST directly with the anon key, not just through the ap
   the person's listings and profile out of every public query — the rule lives in RLS, not in the UI.
 - Every moderation action is confirmed, carries a reason and lands in `admin_log`, which is
   append-only: RLS grants admins select and insert, and no update or delete policy exists.
+- A review requires a prior enquiry: `reviews_write` checks for a `leads` row from this account to
+  that realtor, so the rating cannot be driven by people who never contacted them.
 - The island picker on the home page only lists Roatán; Utila and Guanaja are marked "soon".
 - No password reset flow or agency licence check yet — an agency is `verified: false` until someone flips it.
 - The old generated seed (5 invented agencies, 10 invented people, 64 generated listings) was

@@ -105,6 +105,9 @@ export interface SavedSearch {
   title: string;
   query: string;
   createdAt: string;
+  /* рахує /api/saved-searches: скільки збігів зараз і скільки зʼявилось після збереження */
+  total?: number;
+  fresh?: number;
 }
 
 export interface Session {

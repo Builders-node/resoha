@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createReview, listReviews } from '@/lib/db';
+import { canReviewAgent, createReview, listReviews } from '@/lib/db';
 import { currentUser } from '@/lib/session';
 
 export async function GET(req: Request) {
@@ -18,6 +18,13 @@ export async function POST(req: Request) {
   if (!agentId) return NextResponse.json({ error: 'agentId is required' }, { status: 400 });
   if (!(value >= 1 && value <= 5)) return NextResponse.json({ error: 'Rating must be 1 to 5' }, { status: 400 });
   if (agentId === user.id) return NextResponse.json({ error: 'You cannot review yourself' }, { status: 400 });
+
+  // Те саме правило стоїть у RLS; тут — щоб повернути зрозумілу причину, а не «не вийшло»
+  if (!(await canReviewAgent(agentId, user.id))) {
+    return NextResponse.json(
+      { error: 'Only buyers who have contacted this agent can review them' }, { status: 403 },
+    );
+  }
 
   const review = await createReview({ agentId, authorId: user.id, rating: value, body: body ?? '' });
   if (!review) return NextResponse.json({ error: 'Could not save the review' }, { status: 400 });

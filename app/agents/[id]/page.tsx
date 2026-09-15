@@ -4,7 +4,7 @@ import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import AgentReviews from '@/components/AgentReviews';
 import ListingCard from '@/components/ListingCard';
-import { getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
+import { canReviewAgent, getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import Avatar from '@/components/Avatar';
@@ -19,7 +19,10 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
     queryListings({ agentId: agent.id, sort: 'new' }),
     getSession(),
   ]);
-  const favIds = session ? await getFavorites(session.id) : [];
+  const [favIds, canReview] = await Promise.all([
+    session ? getFavorites(session.id) : Promise.resolve([]),
+    canReviewAgent(agent.id, session?.id ?? null),
+  ]);
 
   const areas = [...new Set(listings.map((l) => l.neighborhood))];
 
@@ -89,7 +92,8 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         )}
       </section>
 
-      <AgentReviews agentId={agent.id} canReview={!!session} isSelf={session?.id === agent.id} />
+      <AgentReviews agentId={agent.id} canReview={canReview} signedIn={!!session}
+        isSelf={session?.id === agent.id} />
     </div>
   );
 }

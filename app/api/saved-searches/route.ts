@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { countMatches, createSavedSearch, listSavedSearches } from '@/lib/db';
-import { parseQuery } from '../listings/route';
+import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
   // до кожного пошуку рахуємо, скільки збігів зараз і скільки зʼявилось після збереження
   const items = await Promise.all(searches.map(async (s) => ({
     ...s,
-    ...(await countMatches(parseQuery(new URLSearchParams(s.query)), s.createdAt)),
+    ...(await countMatches(toListingQuery(new URLSearchParams(s.query)), s.createdAt)),
   })));
   return NextResponse.json({ items });
 }

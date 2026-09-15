@@ -15,8 +15,8 @@ const Stars = ({ value, size = 15 }: { value: number; size?: number }) => (
 );
 
 export default function AgentReviews({
-  agentId, canReview, isSelf,
-}: { agentId: string; canReview: boolean; isSelf: boolean }) {
+  agentId, canReview, signedIn, isSelf,
+}: { agentId: string; canReview: boolean; signedIn: boolean; isSelf: boolean }) {
   const [items, setItems] = useState<Review[]>([]);
   const [rating, setRating] = useState(5);
   const [busy, setBusy] = useState(false);
@@ -97,7 +97,9 @@ export default function AgentReviews({
         </form>
       ) : (
         <p className="small muted" style={{ marginTop: 14 }}>
-          <Link className="link-accent" href="/login">Sign in</Link> to leave a review.
+          {signedIn
+            ? 'Reviews come from buyers who have contacted this agent — send an enquiry on one of their listings first.'
+            : <><Link className="link-accent" href="/login">Sign in</Link> to leave a review.</>}
         </p>
       )}
     </section>
