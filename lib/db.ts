@@ -37,7 +37,7 @@ export const mapAgent = (r: Row): Agent => ({
   verified: r.verified, languages: r.languages ?? [], about: r.about,
 });
 
-export const mapListing = (r: Row): Listing => ({
+const mapListing = (r: Row): Listing => ({
   id: r.id, deal: r.deal, type: r.type, title: r.title, island: r.island,
   neighborhood: r.neighborhood, address: r.address, price: Number(r.price), hoa: Number(r.hoa),
   beds: r.beds, baths: Number(r.baths), sqft: r.sqft, lotAcres: Number(r.lot_acres), year: r.year,
@@ -427,7 +427,7 @@ export async function adminSetListingFlags(id: string, patch: { featured?: boole
 }
 
 /* ---------- журнал дій адміністратора ---------- */
-export type AdminLogInput = {
+type AdminLogInput = {
   action: string;
   targetKind: 'listing' | 'profile' | 'agency' | 'review';
   targetId: string;

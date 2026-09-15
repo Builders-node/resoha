@@ -51,12 +51,6 @@ export default async function HomePage() {
     <>
       <section className="wrap home-top">
         <div className="tiles-block">
-          <select className="select-lg" defaultValue="Roatán" aria-label="Island">
-            <option>Roatán</option>
-            <option disabled>Utila (soon)</option>
-            <option disabled>Guanaja (soon)</option>
-          </select>
-
           <h3>For sale</h3>
           <div className="tiles">
             {SALE_TILES.map((t) => (

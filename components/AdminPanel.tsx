@@ -169,27 +169,43 @@ export default function AdminPanel({ session }: { session: Session }) {
                 <div className="stat"><span className="muted small">Reviews</span><b>{fmtNumber(overview.reviews)}</b></div>
               </div>
 
-              <div className="panel">
-                <h3 style={{ marginBottom: 12 }}>Needs attention</h3>
-                <div className="lead">
-                  <div><b>{overview.unverifiedAgents}</b> {plural(overview.unverifiedAgents, 'realtor')} not verified yet
-                    <div className="tiny muted">Verified agents get a badge on their card and profile</div></div>
-                  <button className="btn btn--sm btn--ghost"
-                    onClick={() => { setTab('users'); setTimeout(() => setState('unverified'), 0); }}>Review</button>
-                </div>
-                <div className="lead">
-                  <div><b>{overview.newLeads}</b> {overview.newLeads === 1 ? 'enquiry' : 'enquiries'} still marked new
-                    <div className="tiny muted">Across every agency on the platform</div></div>
-                  <button className="btn btn--sm btn--ghost"
-                    onClick={() => { setTab('leads'); setTimeout(() => setState('new'), 0); }}>Open</button>
-                </div>
-                <div className="lead">
-                  <div><b>{overview.suspended}</b> suspended {overview.suspended === 1 ? 'account' : 'accounts'}
-                    <div className="tiny muted">Suspended people cannot sign in, and their listings drop out of search</div></div>
-                  <button className="btn btn--sm btn--ghost"
-                    onClick={() => { setTab('users'); setTimeout(() => setState('suspended'), 0); }}>Open</button>
-                </div>
-              </div>
+              {/* Рядок із нулем — це не «увага», а шум: показуємо лише те, що справді чекає */}
+              {(() => {
+                const rows = [
+                  overview.unverifiedAgents > 0 && {
+                    key: 'unverified',
+                    body: <><b>{overview.unverifiedAgents}</b> {plural(overview.unverifiedAgents, 'realtor')} not verified yet</>,
+                    hint: 'Verified agents get a badge on their card and profile',
+                    go: () => { setTab('users'); setTimeout(() => setState('unverified'), 0); },
+                  },
+                  overview.newLeads > 0 && {
+                    key: 'leads',
+                    body: <><b>{overview.newLeads}</b> {overview.newLeads === 1 ? 'enquiry' : 'enquiries'} still marked new</>,
+                    hint: 'Across every agency on the platform',
+                    go: () => { setTab('leads'); setTimeout(() => setState('new'), 0); },
+                  },
+                  overview.suspended > 0 && {
+                    key: 'suspended',
+                    body: <><b>{overview.suspended}</b> suspended {overview.suspended === 1 ? 'account' : 'accounts'}</>,
+                    hint: 'They cannot sign in, and their listings drop out of search',
+                    go: () => { setTab('users'); setTimeout(() => setState('suspended'), 0); },
+                  },
+                ].filter(Boolean) as { key: string; body: React.ReactNode; hint: string; go: () => void }[];
+
+                return (
+                  <div className="panel">
+                    <h3 style={{ marginBottom: rows.length ? 12 : 4 }}>Needs attention</h3>
+                    {rows.length === 0 ? (
+                      <p className="muted small">Nothing waiting — no unverified realtors, unanswered enquiries or suspended accounts.</p>
+                    ) : rows.map((r) => (
+                      <div key={r.key} className="lead">
+                        <div>{r.body}<div className="tiny muted">{r.hint}</div></div>
+                        <button className="btn btn--sm btn--ghost" onClick={r.go}>Open</button>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
 
               {/* Те, що псує довіру до площадки, помітно тільки таким списком */}
               <div className="panel">

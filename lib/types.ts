@@ -105,8 +105,6 @@ export interface SavedSearch {
   title: string;
   query: string;
   createdAt: string;
-  total?: number;   // скільки обʼєктів підпадає зараз
-  fresh?: number;   // скільки зʼявилось після збереження
 }
 
 export interface Session {

@@ -17,7 +17,6 @@ type Facets = {
 
 const SORTS = [
   { v: '', label: 'Default' },
-  { v: 'popular', label: 'Most viewed' },
   { v: 'new', label: 'Newest first' },
   { v: 'price_asc', label: 'Cheapest first' },
   { v: 'price_desc', label: 'Most expensive' },

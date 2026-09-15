@@ -205,7 +205,6 @@ first question every foreign buyer asks.
 | PATCH | `/api/listings/:id` | Edit every field, publish / unpublish (author or agency owner) |
 | DELETE | `/api/listings/:id` | Delete (owner only) |
 | GET | `/api/facets` | Price histogram, size/lot ranges, tag and area counts — feeds the filters sheet |
-| GET | `/api/agents` | All agents |
 | GET | `/api/agents/:id` | Profile + listings + stats |
 | POST | `/api/auth/signup` | `{ mode: 'buyer'\|'agent'\|'agency', name, email, password, phone?, agencyName?, inviteCode? }` |
 | POST | `/api/auth/login` | `{ email, password }` → sets the session cookie |

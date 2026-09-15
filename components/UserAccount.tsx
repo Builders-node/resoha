@@ -95,16 +95,7 @@ export default function UserAccount({ session, user }: {
               <div key={s.id} className="lead">
                 <div>
                   <b>{s.title}</b>
-                  {typeof s.total === 'number' && (
-                    <>
-                      {' '}<span className="pill pill--off">{s.total} {s.total === 1 ? 'match' : 'matches'}</span>
-                      {!!s.fresh && <span className="pill pill--on" style={{ marginLeft: 6 }}>+{s.fresh} new</span>}
-                    </>
-                  )}
-                  <div className="tiny muted" style={{ marginTop: 4 }}>
-                    Saved {fmtDate(s.createdAt)}
-                    {!!s.fresh && ` · ${s.fresh} added since then`}
-                  </div>
+                  <div className="tiny muted" style={{ marginTop: 4 }}>Saved {fmtDate(s.createdAt)}</div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Link className="btn btn--sm btn--ghost" href={`/listings?${s.query}`}>Open</Link>
