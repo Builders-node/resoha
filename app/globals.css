@@ -311,7 +311,10 @@ textarea.input{resize:vertical;min-height:96px}
 @media (max-width:1080px){
   .split{grid-template-columns:1fr;height:auto}
   .split__map{height:58vh}
-  .dash{grid-template-columns:1fr}
+  /* min-width:0 обовʼязково: грід-колонка не стискається вужче за вміст,
+     тож довга вкладка («Saved searches») розпирала кабінет і всю сторінку */
+  .dash{grid-template-columns:minmax(0,1fr)}
+  .dash > *{min-width:0}
   /* на планшеті вкладки теж переносяться, а не ховаються за боковою прокруткою */
   .sidenav{position:static;display:flex;flex-wrap:wrap;gap:6px}
   .cta{grid-template-columns:1fr}
@@ -615,7 +618,7 @@ textarea.input{resize:vertical;min-height:96px}
    а кнопки дій лишались за краєм екрана. */
 @media (max-width:860px){
   .sidenav{flex-wrap:wrap;overflow:visible;gap:6px;padding:8px;border-radius:var(--radius)}
-  .sidenav a{flex:1 0 auto;justify-content:center;padding:9px 12px;font-size:13.5px}
+  .sidenav a{flex:1 1 auto;min-width:0;justify-content:center;padding:9px 12px;font-size:13.5px}
 
   .table,.table tbody,.table tr,.table td{display:block;width:auto}
   .table thead{display:none}
@@ -637,8 +640,13 @@ textarea.input{resize:vertical;min-height:96px}
   .table td.td--act .btn{flex:1 0 auto}
   .table td.td--act:empty{display:none}
 
-  .profile-head{gap:14px}
-  .admin-mark{width:52px;height:52px}
+  /* шапка кабінету: аватар не стискаємо, кнопку переносимо під текст */
+  .profile-head{gap:14px;flex-wrap:wrap;padding:16px}
+  .profile-head .ava{width:56px;height:56px;flex:none}
+  .profile-head > div:not(.admin-mark){min-width:0;flex:1 1 60%}
+  .profile-head h2{font-size:22px}
+  .profile-head .btn{flex:1 0 100%;margin-left:0 !important;justify-content:center}
+  .admin-mark{width:52px;height:52px;flex:none}
 }
 
 

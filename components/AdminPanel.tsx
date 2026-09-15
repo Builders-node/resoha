@@ -249,7 +249,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
             {editing && (
               <div style={{ margin: '14px 0' }}>
-                <ListingForm listing={editing} onSaved={() => { setEditing(null); load('listings'); }}
+                <ListingForm listing={editing} asAdmin onSaved={() => { setEditing(null); load('listings'); }}
                   onCancel={() => setEditing(null)} />
               </div>
             )}
