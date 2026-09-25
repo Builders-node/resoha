@@ -190,11 +190,15 @@ export default async function HomePage() {
               <Link className="btn btn--ghost btn--lg" href="/account">Buyer account</Link>
             </div>
           </div>
+          {/* лише те, що щось означає: «Agencies 0» на головній працює проти запрошення,
+              а просмотри накручуються публічним RPC */}
           <div className="stats" style={{ gridTemplateColumns: '1fr 1fr', margin: 0 }}>
-            <div className="stat"><span className="muted small">Listings</span><b>{all.length}</b></div>
-            <div className="stat"><span className="muted small">Agencies</span><b>{board.length}</b></div>
+            <div className="stat"><span className="muted small">Listings</span><b>{fmtNumber(all.length)}</b></div>
             <div className="stat"><span className="muted small">Areas covered</span><b>{byArea.size}</b></div>
-            <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(all.reduce((s, l) => s + l.views, 0))}</b></div>
+            <div className="stat"><span className="muted small">For sale</span>
+              <b>{fmtNumber(all.filter((l) => l.deal === 'sale').length)}</b></div>
+            <div className="stat"><span className="muted small">For rent</span>
+              <b>{fmtNumber(all.filter((l) => l.deal === 'rent').length)}</b></div>
           </div>
         </div>
       </section>

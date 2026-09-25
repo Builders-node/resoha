@@ -130,6 +130,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
               )}
             </div>
 
+            {listings.length > 0 && (
             <div style={{ overflowX: 'auto' }}>
               <table className="table">
                 <thead>
@@ -170,8 +171,10 @@ export default function AgentDashboard({ session }: { session: Session }) {
                 </tbody>
               </table>
             </div>
+            )}
             {listings.length === 0 && (
-              <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>No listings yet</div>
+              <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>
+                No listings yet — add your first one from the tab above.</div>
             )}
           </div>
         )}
@@ -193,7 +196,7 @@ export default function AgentDashboard({ session }: { session: Session }) {
                   </span>
                   <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>
                   <div className="tiny muted" style={{ marginTop: 6 }}>
-                    {fmtDate(l.createdAt)} · <Link href={`/listings/${l.listingId}`}>listing {l.listingId}</Link>
+                    {fmtDate(l.createdAt)} · <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>
                     {l.agentId !== agent.id && ` · agent: ${members.find((m) => m.id === l.agentId)?.name ?? l.agentId}`}
                   </div>
                 </div>

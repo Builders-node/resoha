@@ -54,16 +54,6 @@ export function LoginForm() {
           <Link className="link-accent" href="/forgot">Forgot password?</Link>
         </p>
 
-        <div className="auth__demo">
-          <b className="small">Demo accounts</b>
-          <div className="tiny muted" style={{ marginTop: 6, lineHeight: 1.7 }}>
-            Agency owner — <code>marla@islandliferoatan.com</code><br />
-            Agency realtor — <code>kevin@islandliferoatan.com</code><br />
-            Independent realtor — <code>tanya@roatanmail.com</code><br />
-            Buyer — <code>dana.whitfield@example.com</code><br />
-            Password for all — <code>demo1234</code>
-          </div>
-        </div>
       </div>
     </div>
   );
@@ -107,7 +97,11 @@ export function SignupForm({ initialMode = 'buyer' }: { initialMode?: Mode }) {
           <div className="empty__ico"><Icon name="inbox" size={40} /></div>
           <h1 style={{ fontSize: 24 }}>Confirm your email</h1>
           <p className="muted" style={{ margin: '10px 0 20px' }}>
-            We sent a confirmation link to <b>{pending}</b>. Open it, then sign in — your account is already created.
+            Your account is created. Open the confirmation link sent to <b>{pending}</b> and then sign in.
+          </p>
+          <p className="tiny muted" style={{ margin: '-8px 0 20px' }}>
+            Nothing arrived? This site has no mail service connected yet — ask the Resoha admin to
+            confirm the account by hand.
           </p>
           <Link className="btn btn--primary btn--lg btn--block" href="/login">Go to sign in</Link>
         </div>
@@ -203,6 +197,10 @@ export function ForgotForm() {
             <p className="muted" style={{ margin: '10px 0 20px' }}>
               If that address has an account, a reset link is on its way. The link signs you in once and
               takes you straight to a new-password form.
+            </p>
+            <p className="tiny muted" style={{ margin: '-8px 0 20px' }}>
+              Nothing arrived within a few minutes? This site has no mail service connected yet —
+              ask the Resoha admin to reset it for you.
             </p>
             <Link className="btn btn--ghost btn--block" href="/login">Back to sign in</Link>
           </>

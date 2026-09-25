@@ -1,3 +1,4 @@
+import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import type { AdminLogEntry, Agency, Agent, Deal, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
@@ -260,6 +261,19 @@ export async function deleteListing(id: string) {
 
 export async function bumpViews(id: string) {
   await (await db()).rpc('bump_views', { p_listing: id });
+}
+
+/**
+ * Той самий лічильник, але поза критичним шляхом рендера.
+ * Клієнт створюємо ДО after(): усередині колбека cookies() заборонені, і спроба
+ * зробити це там валила рендер сторінки — разом із нею вмирала вся інтерактивність.
+ */
+export async function bumpViewsAfterResponse(id: string) {
+  const client = await db();
+  after(async () => {
+    const { error } = await client.rpc('bump_views', { p_listing: id });
+    if (error) console.error('bump_views failed:', error.message);
+  });
 }
 
 /* ---------- favorites ---------- */

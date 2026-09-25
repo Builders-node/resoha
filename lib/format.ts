@@ -5,11 +5,27 @@ export const TYPE_LABELS: Record<PropertyType, string> = {
 };
 export const DEAL_LABELS: Record<Deal, string> = { sale: 'For sale', rent: 'For rent' };
 
-export const NEIGHBORHOODS = [
-  'West Bay', 'West End', 'Gibson Bight', 'Sandy Bay', 'Flowers Bay', 'Coxen Hole',
-  'French Harbour', 'Parrot Tree', 'Palmetto Bay', 'Pristine Bay', 'Oak Ridge',
-  'Punta Gorda', 'Camp Bay',
-];
+/**
+ * Райони та їхні центри. Координати — з OpenStreetMap; форма ставить пін у центр
+ * обраного району, щоб ріелтору не доводилось знати широту з довготою напамʼять.
+ */
+export const AREA_CENTRES: Record<string, [number, number]> = {
+  'West Bay': [16.2752, -86.5977],
+  'West End': [16.3010, -86.5964],
+  'Gibson Bight': [16.3190, -86.5808],
+  'Sandy Bay': [16.3208, -86.5602],
+  'Flowers Bay': [16.2950, -86.5699],
+  'Coxen Hole': [16.3230, -86.5374],
+  'French Harbour': [16.3494, -86.4411],
+  'Parrot Tree': [16.3641, -86.4131],
+  'Palmetto Bay': [16.3732, -86.4245],
+  'Pristine Bay': [16.3748, -86.3935],
+  'Oak Ridge': [16.3958, -86.3400],
+  'Punta Gorda': [16.4106, -86.3349],
+  'Camp Bay': [16.4435, -86.2902],
+};
+
+export const NEIGHBORHOODS = Object.keys(AREA_CENTRES);
 
 const usd = new Intl.NumberFormat('en-US', {
   style: 'currency', currency: 'USD', maximumFractionDigits: 0,

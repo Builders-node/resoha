@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
-import { NEIGHBORHOODS } from '@/lib/format';
+import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -17,6 +17,18 @@ export default function ListingForm({
   onCancel?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
+  // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
+  const [area, setArea] = useState(listing?.neighborhood ?? 'West Bay');
+  const [pin, setPin] = useState<[number, number]>(
+    listing ? [listing.lat, listing.lng] : AREA_CENTRES['West Bay'],
+  );
+
+  function pickArea(next: string) {
+    setArea(next);
+    const centre = AREA_CENTRES[next];
+    if (centre) setPin(centre);
+  }
+
   // Райони беремо з бази, а не з константи: інакше форма не побачить нові
   const [areas, setAreas] = useState<string[]>(NEIGHBORHOODS);
   const [saving, setSaving] = useState(false);
@@ -104,7 +116,7 @@ export default function ListingForm({
           <input className="input" name="lotAcres" type="number" step="0.01" defaultValue={v?.lotAcres ?? 0} /></div>
 
         <div className="field"><label>Area</label>
-          <select className="input" name="neighborhood" defaultValue={v?.neighborhood ?? 'West Bay'}>
+          <select className="input" name="neighborhood" value={area} onChange={(e) => pickArea(e.target.value)}>
             {areas.map((n) => <option key={n} value={n}>{n}</option>)}
           </select></div>
         <div className="field"><label>Address</label>
@@ -113,9 +125,17 @@ export default function ListingForm({
         <div className="field"><label>Year built</label>
           <input className="input" name="year" type="number" defaultValue={v?.year || ''} placeholder="2019" /></div>
         <div className="field"><label>Latitude</label>
-          <input className="input" name="lat" type="number" step="0.0001" defaultValue={v?.lat ?? 16.29} /></div>
+          <input className="input" name="lat" type="number" step="0.0001" value={pin[0]}
+            onChange={(e) => setPin([Number(e.target.value), pin[1]])} /></div>
         <div className="field"><label>Longitude</label>
-          <input className="input" name="lng" type="number" step="0.0001" defaultValue={v?.lng ?? -86.594} /></div>
+          <input className="input" name="lng" type="number" step="0.0001" value={pin[1]}
+            onChange={(e) => setPin([pin[0], Number(e.target.value)])} /></div>
+        <div className="field full">
+          <span className="tiny muted">
+            The pin starts in the middle of {area}. Fine-tune it if you know the exact spot —
+            buyers use the map to judge the walk to the beach.
+          </span>
+        </div>
 
         <div className="field full switch-inline">
           <label><input type="checkbox" name="oceanfront" defaultChecked={v?.oceanfront} /> Oceanfront</label>
@@ -133,12 +153,17 @@ export default function ListingForm({
         <div className="field full"><label>Description</label>
           <textarea className="input" name="text" defaultValue={v?.text} placeholder="What makes this property worth the flight…" /></div>
 
-        <div className="field full"><label>Source — fill in only if the facts come from someone else&apos;s listing</label>
-          <input className="input" name="sourceName" defaultValue={v?.sourceName} placeholder="Century 21 Roatan" /></div>
-        <div className="field"><label>Reference</label>
-          <input className="input" name="sourceRef" defaultValue={v?.sourceRef} placeholder="MLS 24-382" /></div>
-        <div className="field"><label>Link to the original</label>
-          <input className="input" name="sourceUrl" type="url" defaultValue={v?.sourceUrl} placeholder="https://…" /></div>
+        {/* Провенанс потрібен лише там, де оголошення завела платформа з чужого джерела */}
+        {asAdmin && (
+          <>
+            <div className="field full"><label>Source — where these facts came from</label>
+              <input className="input" name="sourceName" defaultValue={v?.sourceName} placeholder="Century 21 Roatan" /></div>
+            <div className="field"><label>Reference</label>
+              <input className="input" name="sourceRef" defaultValue={v?.sourceRef} placeholder="MLS 24-382" /></div>
+            <div className="field"><label>Link to the original</label>
+              <input className="input" name="sourceUrl" type="url" defaultValue={v?.sourceUrl} placeholder="https://…" /></div>
+          </>
+        )}
 
         <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button className="btn btn--primary btn--lg" disabled={saving}>

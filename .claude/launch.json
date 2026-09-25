@@ -9,6 +9,16 @@
         "dev"
       ],
       "autoPort": true
+    },
+    {
+      "name": "resoha-prod",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
+      "port": 3100,
+      "autoPort": true
     }
   ]
 }

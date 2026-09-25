@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { after } from 'next/server';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
@@ -8,7 +7,7 @@ import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
-import { bumpViews, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
+import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 
@@ -20,7 +19,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   if (!listing) notFound();
 
   // лічильник переглядів — запис, і він не має тримати рендер: виконуємо після відповіді
-  after(() => bumpViews(id));
+  await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
   const [agent, me, similarAll] = await Promise.all([

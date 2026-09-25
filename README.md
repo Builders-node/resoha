@@ -319,11 +319,28 @@ Checked by probing PostgREST directly with the anon key, not just through the ap
   agency published; nothing is verified independently, and enquiries reach the platform, not the
   agency, until an agency signs up here.
 
+## Before anyone can sign up
+
+**Nobody outside can create an account yet.** Supabase Auth has `mailer_autoconfirm = false` and the
+project has no SMTP, so a new user is told to open a confirmation link that never arrives. Sign-up,
+password reset and saved-search alerts all wait on the same thing. Pick one:
+
+- **Fastest:** Authentication → Providers → Email → turn *Confirm email* off. Accounts work
+  immediately; addresses stay unverified.
+- **Proper:** connect SMTP (Resend, Postmark, SES) under Authentication → Emails, then leave
+  confirmation on.
+
+Two other dashboard settings are still open: leaked-password protection (Authentication → Passwords)
+and Vercel's deployment protection, which keeps the production URL behind an SSO login.
+The `admin@resoha.dev` account still uses the password from the prototype seed — change it before
+the site is public, since that account can suspend people and delete listings.
+
 ## Next steps
 
-1. Agent verification against AHDEPI / licence number, and an admin role to grant `verified`.
-2. Password reset + email templates on your own SMTP domain.
+1. Realtor verification against a licence number — the badge is granted by hand today.
+2. Photos: the listings carry none, because the facts come from agencies that own their images.
+   The first real upload comes from a realtor publishing their own property.
 3. Address geocoding; MLS/IDX import if a feed is available.
-4. Marker clustering, pagination, map-bounds search (“search this area”).
+4. Map-bounds search (“search this area”) — clustering and pagination are done.
 5. Vacation-rental mode: nightly rates, availability calendar, projected ROI — the other half of this market.
 6. Spanish locale next to English (`next-intl`), since resident sellers read Spanish.
