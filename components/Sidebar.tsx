@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Icon from './Icon';
+import Logo from './Logo';
 import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
 
@@ -40,7 +41,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
     <>
       <aside className="sidebar">
         <Link className="sidebar__logo" href="/">
-          <span className="sidebar__mark">R</span>
+          <span className="sidebar__mark"><Logo size={40} /></span>
           <span className="sidebar__word">Resoha</span>
         </Link>
 

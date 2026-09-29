@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function Footer() {
   return (
@@ -6,7 +7,7 @@ export default function Footer() {
       <div className="wrap footer__in">
         <div style={{ maxWidth: 280 }}>
           <Link className="logo" href="/">
-            <span className="logo__mark">R</span>
+            <span className="logo__mark"><Logo size={28} /></span>
             <span>Resoha<span className="logo__sub"> Roatán</span></span>
           </Link>
           <p className="small" style={{ marginTop: 10 }}>

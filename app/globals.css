@@ -1,6 +1,6 @@
 /* ===== Resoha Roatán — стилістика за референсом ЛУН ===== */
 :root{
-  --orange:#ff5a00; --orange-soft:#fff1e8;
+  --orange:#ff4800; --orange-soft:#fff1e8;   /* #ff4800 — колір із logo.svg, він і задає бренд */
   --ink:#0f0f10; --ink-2:#6b6b73; --ink-3:#9a9aa3;
   --line:#e9e9ee; --bg:#fff; --bg-soft:#f4f4f7; --chip:#f0f0f4;
   --green:#22c55e;
@@ -37,8 +37,7 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
   overflow-y:auto;scrollbar-width:none}
 .sidebar::-webkit-scrollbar{display:none}
 .sidebar__logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
-.sidebar__mark{width:44px;height:44px;border-radius:12px;background:var(--orange);
-  display:grid;place-items:center;font-weight:900;font-size:20px;color:#fff}
+.sidebar__mark{width:44px;height:44px;display:grid;place-items:center;color:var(--orange)}
 .sidebar__word{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .sidebar a,.sidebar button.sidelink{
   width:100%;background:none;border:0;color:#fff;cursor:pointer;text-align:center;
@@ -293,7 +292,8 @@ textarea.input{resize:vertical;min-height:96px}
 .footer li{list-style:none;margin:0 0 7px}
 .footer ul{padding:0;margin:0}
 .logo{display:flex;align-items:center;gap:9px;font-weight:900;font-size:19px;letter-spacing:-.03em}
-.logo__mark{width:30px;height:30px;border-radius:9px;background:var(--orange);display:grid;place-items:center;color:#fff;font-size:15px;font-weight:900}
+.logo__mark{width:30px;height:30px;display:grid;place-items:center;color:var(--orange)}
+.logo-mark{display:block}
 .logo__sub{font-weight:700;color:var(--ink-3)}
 
 /* ===== Toast ===== */
