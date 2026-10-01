@@ -138,28 +138,6 @@ export default async function HomePage() {
       </section>
       )}
 
-      <section className="section section--soft">
-        <div className="wrap">
-          <div className="section__head"><h2>Buying on Roatán, in plain terms</h2></div>
-          <div className="grid grid--2">
-            <div className="panel">
-              <h3>Title first, always</h3>
-              <p className="muted small" style={{ marginTop: 8 }}>
-                Listings marked <b>Free &amp; clear title</b> have a registered, searchable title. Untitled
-                land is the most common way buyers lose money here — so it&apos;s a filter, not a footnote.
-              </p>
-            </div>
-            <div className="panel">
-              <h3>Water, power, internet</h3>
-              <p className="muted small" style={{ marginTop: 8 }}>
-                Cistern size, generator, solar and Starlink matter more than square footage on an island.
-                They live in the specs and in the filters.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section className="section">
         <div className="wrap">
           <div className="section__head">
