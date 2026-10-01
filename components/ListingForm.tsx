@@ -7,12 +7,14 @@ import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
 export default function ListingForm({
-  listing, agencyName, asAdmin, onSaved, onCancel,
+  listing, agencyName, asAdmin, owners, onSaved, onCancel,
 }: {
   listing?: Listing | null;
   agencyName?: string | null;
   /** З адмінки форму відкриває не автор — підказка про власну агенцію тут ні до чого */
   asAdmin?: boolean;
+  /** Ріелтори, на яких адмін може записати нове оголошення */
+  owners?: { id: string; name: string; agency: string }[];
   onSaved: () => void;
   onCancel?: () => void;
 }) {
@@ -79,13 +81,23 @@ export default function ListingForm({
       <h3 style={{ marginBottom: 4 }}>{editing ? 'Edit listing' : 'New listing'}</h3>
       <p className="muted small" style={{ marginBottom: 18 }}>
         {asAdmin
-          ? <>Editing as an admin — the listing stays with its own realtor and agency.</>
+          ? editing
+            ? <>Editing as an admin — the listing stays with its own realtor and agency.</>
+            : <>Adding as an admin — the listing is published under the realtor you pick, with their agency and contacts.</>
           : agencyName
             ? <>Published under <b>{agencyName}</b> — the agency name shows on the card and on the map.</>
             : <>Published under your own name. Join or open an agency in the <b>Agency</b> tab to list under a brand.</>}
       </p>
 
       <form className="form-grid" onSubmit={submit}>
+        {asAdmin && !editing && (
+          <div className="field full"><label>Listed by</label>
+            <select className="input" name="agentId" required defaultValue={owners?.[0]?.id ?? ''}>
+              {(owners ?? []).map((o) => (
+                <option key={o.id} value={o.id}>{o.name}{o.agency ? ` — ${o.agency}` : ''}</option>
+              ))}
+            </select></div>
+        )}
         <div className="field full"><label>Title</label>
           <input className="input" name="title" required defaultValue={v?.title}
             placeholder="2BR oceanfront condo at West Bay" /></div>

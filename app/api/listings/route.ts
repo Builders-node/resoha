@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PAGE_SIZE, createListing, queryPins, searchListings } from '@/lib/db';
+import { PAGE_SIZE, adminLog, createListing, queryPins, searchListings } from '@/lib/db';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 
@@ -23,15 +23,26 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const user = await currentUser();
-  if (!user || user.role !== 'agent') {
+  const body = await req.json().catch(() => ({}));
+
+  // Адмін заводить оголошення на ріелтора (наприклад, на «listings desk»);
+  // агенцію за ріелтором підставляє тригер listings_guard.
+  const onBehalf = user?.isAdmin && typeof body.agentId === 'string' && body.agentId ? body.agentId : null;
+  if (!user || (!onBehalf && user.role !== 'agent')) {
     return NextResponse.json({ error: 'Agent sign-in required' }, { status: 401 });
   }
-  const body = await req.json().catch(() => ({}));
   if (!body.title || !body.price) {
     return NextResponse.json({ error: 'Title and price are required' }, { status: 400 });
   }
   try {
-    const listing = await createListing({ ...body, agentId: user.id, agencyId: user.agencyId });
+    const listing = await createListing({
+      ...body, agentId: onBehalf ?? user.id, agencyId: onBehalf ? null : user.agencyId,
+    });
+    if (onBehalf) {
+      await adminLog({ id: user.id, name: user.name }, {
+        action: 'listing.create', targetKind: 'listing', targetId: listing.id, targetName: listing.title,
+      });
+    }
     return NextResponse.json({ listing }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });

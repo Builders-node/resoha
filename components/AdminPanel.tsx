@@ -7,12 +7,14 @@ import ListingForm from './ListingForm';
 import Photo from './Photo';
 import { toast } from './Toaster';
 import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
+import { QUALITY_CHECKS, type QualityKey } from '@/lib/quality';
 import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
 type Tab = 'overview' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
-type Quality = { noPhotos: number; noSource: number; untitledLand: number; thinText: number; offIsland: number };
+type Quality = Record<QualityKey, number>;
+type Owner = { id: string; name: string; agency: string };
 type Overview = {
   listings: number; hidden: number; agencies: number; reviews: number; leads: number;
   newLeads: number; views: number; agents: number; buyers: number;
@@ -41,6 +43,7 @@ export default function AdminPanel({ session }: { session: Session }) {
   const [tab, setTab] = useState<Tab>('overview');
   const [overview, setOverview] = useState<Overview | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
+  const [owners, setOwners] = useState<Owner[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [agencies, setAgencies] = useState<AgencyRowData[]>([]);
   const [users, setUsers] = useState<Agent[]>([]);
@@ -55,12 +58,14 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   const [ask, setAsk] = useState<Ask | null>(null);
   const [editing, setEditing] = useState<Listing | null>(null);
+  const [adding, setAdding] = useState(false);
+  const [editingUser, setEditingUser] = useState<Agent | null>(null);
 
   const load = useCallback(async (which: Tab) => {
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
-    if (which === 'listings') setListings(d.items ?? []);
+    if (which === 'listings') { setListings(d.items ?? []); setOwners(d.owners ?? []); }
     if (which === 'leads') setLeads(d.items ?? []);
     if (which === 'agencies') setAgencies(d.items ?? []);
     if (which === 'users') setUsers(d.items ?? []);
@@ -71,7 +76,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   useEffect(() => { load(tab); }, [tab, load]);
   // новий розділ — чистий пошук, інакше «нічого не знайдено» без видимої причини
-  useEffect(() => { setQ(''); setState('all'); setShown(PAGE); setEditing(null); }, [tab]);
+  useEffect(() => { setQ(''); setState('all'); setShown(PAGE); setEditing(null); setAdding(false); setEditingUser(null); }, [tab]);
   useEffect(() => { setShown(PAGE); }, [q, state]);
 
   async function act(body: Record<string, unknown>, message: string) {
@@ -87,13 +92,17 @@ export default function AdminPanel({ session }: { session: Session }) {
   const confirmAct = (a: Omit<Ask, 'onConfirm'>, body: Record<string, unknown>, message: string) =>
     setAsk({ ...a, onConfirm: (reason) => act({ ...body, reason }, message) });
 
+  const ownerOf = useMemo(() => new Map(owners.map((o) => [o.id, o])), [owners]);
+
   const filteredListings = useMemo(() => listings.filter((l) => {
     if (state === 'live' && !l.active) return false;
     if (state === 'hidden' && l.active) return false;
     if (state === 'featured' && !l.featured) return false;
-    if (state === 'nophoto' && l.photos.length > 0) return false;
-    return has([l.title, l.neighborhood, l.address, l.sourceName], q);
-  }), [listings, state, q]);
+    const check = QUALITY_CHECKS.find((c) => c.filter === state);
+    if (check && !check.test(l)) return false;
+    const o = ownerOf.get(l.agentId);
+    return has([l.title, l.neighborhood, l.address, l.sourceName, o?.name, o?.agency], q);
+  }), [listings, state, q, ownerOf]);
 
   const filteredUsers = useMemo(() => users.filter((u) => {
     if (state === 'agents' && u.role !== 'agent') return false;
@@ -215,22 +224,19 @@ export default function AdminPanel({ session }: { session: Session }) {
                   Checks that matter on this island market, counted across every listing.
                 </p>
                 <div className="quality">
-                  {([
-                    ['No photos', overview.quality.noPhotos, 'nophoto'],
-                    ['No source link', overview.quality.noSource, null],
-                    ['Land, title not confirmed', overview.quality.untitledLand, null],
-                    ['Description under 40 characters', overview.quality.thinText, null],
-                    ['Coordinates outside Roatán', overview.quality.offIsland, null],
-                  ] as [string, number, string | null][]).map(([label, n, filter]) => (
-                    <div key={label} className={`quality__row ${n > 0 ? 'is-bad' : ''}`}>
-                      <span>{label}</span>
-                      <b>{fmtNumber(n)}</b>
-                      {n > 0 && filter && (
-                        <button className="btn btn--sm btn--ghost"
-                          onClick={() => { setTab('listings'); setTimeout(() => setState(filter), 0); }}>Show</button>
-                      )}
-                    </div>
-                  ))}
+                  {QUALITY_CHECKS.map((c) => {
+                    const n = overview.quality[c.key] ?? 0;
+                    return (
+                      <div key={c.key} className={`quality__row ${n > 0 ? 'is-bad' : ''}`}>
+                        <span>{c.label}</span>
+                        <b>{fmtNumber(n)}</b>
+                        {n > 0 && (
+                          <button className="btn btn--sm btn--ghost"
+                            onClick={() => { setTab('listings'); setTimeout(() => setState(c.filter), 0); }}>Show</button>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </>
@@ -239,14 +245,30 @@ export default function AdminPanel({ session }: { session: Session }) {
 
         {tab === 'listings' && (
           <div className="panel">
-            <div className="fgroup__head"><h3>All listings</h3></div>
-            {toolbar('Search by title, area, address or source…', [
+            <div className="fgroup__head">
+              <h3>All listings</h3>
+              {!adding && !editing && (
+                <button className="btn btn--sm btn--primary" disabled={owners.length === 0}
+                  title={owners.length === 0 ? 'There is no realtor account to list under yet' : undefined}
+                  onClick={() => setAdding(true)}>
+                  <Icon name="plus" size={16} /> Add listing
+                </button>
+              )}
+            </div>
+            {toolbar('Search by title, area, address, realtor or source…', [
               { v: 'all', label: 'Any state' },
               { v: 'live', label: 'Live only' },
               { v: 'hidden', label: 'Hidden only' },
               { v: 'featured', label: 'Featured' },
-              { v: 'nophoto', label: 'Without photos' },
+              ...QUALITY_CHECKS.map((c) => ({ v: c.filter as string, label: c.option as string })),
             ], listings.length, filteredListings.length)}
+
+            {adding && (
+              <div style={{ margin: '14px 0' }}>
+                <ListingForm asAdmin owners={owners} onSaved={() => { setAdding(false); load('listings'); }}
+                  onCancel={() => setAdding(false)} />
+              </div>
+            )}
 
             {editing && (
               <div style={{ margin: '14px 0' }}>
@@ -270,6 +292,14 @@ export default function AdminPanel({ session }: { session: Session }) {
                             <div>
                               <Link href={`/listings/${l.id}`} style={{ fontWeight: 600 }}>{l.title}</Link>
                               <div className="tiny muted">{DEAL_LABELS[l.deal]} · {l.neighborhood} · {fmtDate(l.createdAt)}</div>
+                              {/* чиє оголошення: ріелтор, його агенція і звідки взяті факти */}
+                              <div className="tiny muted">
+                                {[
+                                  ownerOf.get(l.agentId)?.name ?? 'Unknown realtor',
+                                  ownerOf.get(l.agentId)?.agency,
+                                  l.sourceName && `source: ${l.sourceName}`,
+                                ].filter(Boolean).join(' · ')}
+                              </div>
                             </div>
                           </div>
                         </td>
@@ -280,7 +310,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                           {l.featured && <span className="pill pill--on" style={{ marginLeft: 6 }}>Featured</span>}
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <button className="btn btn--sm btn--ghost" onClick={() => setEditing(l)}>Edit</button>{' '}
+                          <button className="btn btn--sm btn--ghost" onClick={() => { setAdding(false); setEditing(l); }}>Edit</button>{' '}
                           <button className="btn btn--sm btn--ghost"
                             onClick={() => act({ kind: 'listing', id: l.id, featured: !l.featured, targetName: l.title },
                               l.featured ? 'Removed from the home page' : 'Featured on the home page')}>
@@ -440,6 +470,14 @@ export default function AdminPanel({ session }: { session: Session }) {
               { v: 'suspended', label: 'Suspended' },
             ], users.length, filteredUsers.length)}
 
+            {editingUser && (
+              <ProfileEditor key={editingUser.id} user={editingUser} onCancel={() => setEditingUser(null)}
+                onSave={async (edit) => {
+                  await act({ kind: 'profile', id: editingUser.id, edit, targetName: editingUser.name }, 'Profile updated');
+                  setEditingUser(null);
+                }} />
+            )}
+
             {filteredUsers.length === 0 ? (
               <p className="muted small">{busy ? 'Loading…' : 'Nobody matches this search.'}</p>
             ) : (
@@ -457,6 +495,13 @@ export default function AdminPanel({ session }: { session: Session }) {
                                 ? <Link href={`/agents/${u.id}`} style={{ fontWeight: 600 }}>{u.name}</Link>
                                 : <span style={{ fontWeight: 600 }}>{u.name}</span>}
                               <div className="tiny muted">{u.email}{u.agencyId && u.agency ? ` · ${u.agency}` : ''}</div>
+                              {u.role === 'agent' && (
+                                <div className="tiny muted">
+                                  {u.whatsapp || u.phone
+                                    ? [u.phone, u.whatsapp && `WhatsApp ${u.whatsapp}`].filter(Boolean).join(' · ')
+                                    : 'No phone or WhatsApp — buyers only get the enquiry form'}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
@@ -470,6 +515,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                           {u.verified && <span className="pill pill--on" style={{ marginLeft: 6 }}>Verified</span>}
                         </td>
                         <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
+                          <button className="btn btn--sm btn--ghost" onClick={() => setEditingUser(u)}>Edit</button>{' '}
                           {u.role === 'agent' && (
                             <>
                               <button className="btn btn--sm btn--ghost"
@@ -604,6 +650,63 @@ export default function AdminPanel({ session }: { session: Session }) {
       </div>
 
       <ConfirmAction ask={ask} onClose={() => setAsk(null)} />
+    </div>
+  );
+}
+
+/** Контакти й опис чужого профілю. Права та статуси міняються окремими кнопками з підтвердженням. */
+function ProfileEditor({ user, onSave, onCancel }: {
+  user: Agent;
+  onSave: (edit: Record<string, unknown>) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    await onSave({
+      name: fd.get('name'), phone: fd.get('phone'), whatsapp: fd.get('whatsapp'),
+      // решту полів показуємо лише ріелторам — у покупця їх не чіпаємо
+      ...(user.role === 'agent' && {
+        about: fd.get('about'),
+        experience: Number(fd.get('experience')) || 0,
+        languages: String(fd.get('languages') ?? '').split(',').map((x) => x.trim()).filter(Boolean),
+      }),
+    });
+    setSaving(false);
+  }
+
+  return (
+    <div className="panel" style={{ margin: '14px 0' }}>
+      <h3 style={{ marginBottom: 4 }}>Edit {user.name}</h3>
+      <p className="muted small" style={{ marginBottom: 18 }}>
+        {user.email} · the change is written to the admin log.
+        {user.role === 'agent' && ' The WhatsApp number is what the green button on their listings opens.'}
+      </p>
+      <form className="form-grid" onSubmit={submit}>
+        <div className="field full"><label>Name</label>
+          <input className="input" name="name" required maxLength={120} defaultValue={user.name} /></div>
+        <div className="field"><label>Phone</label>
+          <input className="input" name="phone" maxLength={40} defaultValue={user.phone} placeholder="+504 9999 0000" /></div>
+        <div className="field"><label>WhatsApp</label>
+          <input className="input" name="whatsapp" maxLength={40} defaultValue={user.whatsapp} placeholder="+504 9999 0000" /></div>
+        {user.role === 'agent' && (
+          <>
+            <div className="field"><label>Years on the island</label>
+              <input className="input" name="experience" type="number" min={0} max={80} defaultValue={user.experience} /></div>
+            <div className="field"><label>Languages (comma separated)</label>
+              <input className="input" name="languages" defaultValue={user.languages.join(', ')} placeholder="English, Spanish" /></div>
+            <div className="field full"><label>About</label>
+              <textarea className="input" name="about" maxLength={2000} defaultValue={user.about} /></div>
+          </>
+        )}
+        <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+          <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save changes'}</button>
+          <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>
+        </div>
+      </form>
     </div>
   );
 }

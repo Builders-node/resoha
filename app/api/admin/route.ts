@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import {
-  adminDeleteListing, adminListAgencies, adminListLog, adminListReviews, adminListUsers,
+  adminDeleteListing, adminListAgencies, adminListLog, adminListOwners, adminListReviews, adminListUsers,
   adminLog, adminOverview, adminSetAgencyFlags, adminSetListingFlags, adminSetProfileFlags,
-  adminDeleteReview, listLeads, queryListings,
+  adminDeleteReview, adminUpdateProfile, listLeads, queryListings,
 } from '@/lib/db';
 import { currentUser } from '@/lib/session';
 
@@ -14,7 +14,13 @@ export async function GET(req: Request) {
   const section = new URL(req.url).searchParams.get('section') ?? 'overview';
   switch (section) {
     case 'listings':
-      return NextResponse.json({ items: await queryListings({ includeInactive: true, sort: 'new' }) });
+    {
+      // owners — щоб показати, чиє оголошення, і щоб було на кого записати нове
+      const [items, owners] = await Promise.all([
+        queryListings({ includeInactive: true, sort: 'new' }), adminListOwners(),
+      ]);
+      return NextResponse.json({ items, owners });
+    }
     case 'agencies':
       return NextResponse.json({ items: await adminListAgencies() });
     case 'users':
@@ -34,6 +40,7 @@ export async function GET(req: Request) {
 
 type Action =
   | { kind: 'profile'; id: string; verified?: boolean; active?: boolean; isAdmin?: boolean }
+  | { kind: 'profile'; id: string; edit: Record<string, unknown> }
   | { kind: 'agency'; id: string; verified?: boolean }
   | { kind: 'listing'; id: string; featured?: boolean; active?: boolean }
   | { kind: 'listing'; id: string; remove: true }
@@ -49,6 +56,7 @@ function describe(body: Action): string {
   }
   if (body.kind === 'agency') return body.verified ? 'agency.verify' : 'agency.unverify';
   if (body.kind === 'profile') {
+    if ('edit' in body) return 'profile.edit';
     if (body.isAdmin !== undefined) return body.isAdmin ? 'profile.grant_admin' : 'profile.revoke_admin';
     if (body.active !== undefined) return body.active ? 'profile.restore' : 'profile.suspend';
     if (body.verified !== undefined) return body.verified ? 'profile.verify' : 'profile.unverify';
@@ -70,6 +78,24 @@ export async function POST(req: Request) {
 
   switch (body.kind) {
     case 'profile': {
+      if ('edit' in body) {
+        const e = body.edit ?? {};
+        const text = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : undefined);
+        const name = text(e.name, 120);
+        if (name === '') return NextResponse.json({ error: 'Name cannot be empty' }, { status: 400 });
+        const item = await adminUpdateProfile(body.id, {
+          name,
+          phone: text(e.phone, 40),
+          whatsapp: text(e.whatsapp, 40),
+          about: text(e.about, 2000),
+          experience: e.experience === undefined ? undefined : Math.max(0, Math.min(80, Number(e.experience) || 0)),
+          languages: Array.isArray(e.languages)
+            ? e.languages.map((l) => String(l).trim().slice(0, 40)).filter(Boolean).slice(0, 10) : undefined,
+        });
+        if (!item) return NextResponse.json({ error: 'Account not found' }, { status: 404 });
+        await record('profile');
+        return NextResponse.json({ item });
+      }
       if (body.id === user.id && body.isAdmin === false) {
         return NextResponse.json({ error: 'You cannot remove your own admin rights' }, { status: 400 });
       }

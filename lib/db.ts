@@ -1,6 +1,7 @@
 import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
+import { QUALITY_CHECKS, type QualityKey } from './quality';
 import type { AdminLogEntry, Agency, Agent, Deal, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
@@ -386,13 +387,13 @@ export async function adminOverview() {
   const all = (qualityRows ?? []) as any[];
   const views = all.reduce((sum, r) => sum + (r.views ?? 0), 0);
 
-  const quality = {
-    noPhotos: all.filter((r) => (r.photos ?? []).length === 0).length,
-    noSource: all.filter((r) => !r.source_name).length,
-    untitledLand: all.filter((r) => r.type === 'land' && !r.titled).length,
-    thinText: all.filter((r) => (r.body ?? '').length < 40).length,
-    offIsland: all.filter((r) => r.lat < 16.2 || r.lat > 16.6 || r.lng < -86.7 || r.lng > -86.2).length,
-  };
+  const checked = all.map((r) => ({
+    photos: r.photos ?? [], sourceName: r.source_name ?? '', type: r.type, titled: r.titled,
+    text: r.body ?? '', lat: r.lat, lng: r.lng,
+  }));
+  const quality = Object.fromEntries(
+    QUALITY_CHECKS.map((c) => [c.key, checked.filter(c.test).length]),
+  ) as Record<QualityKey, number>;
 
   return {
     listings, hidden, agencies, reviews, leads, newLeads, views, quality,
@@ -434,6 +435,31 @@ export async function adminSetProfileFlags(id: string, patch: { verified?: boole
   const { data, error } = await (await db()).from('profiles').update(row).eq('id', id).select(AGENT_FULL_COLS).maybeSingle();
   if (error) throw error;
   return data ? mapAgent(data) : null;
+}
+
+/** Правка чужого профілю адміном: контакти ріелтора, без прав і статусів. */
+export async function adminUpdateProfile(id: string, patch: {
+  name?: string; phone?: string; whatsapp?: string; about?: string; experience?: number; languages?: string[];
+}) {
+  const row: Row = {};
+  if (patch.name !== undefined) row.name = patch.name;
+  if (patch.phone !== undefined) row.phone = patch.phone;
+  if (patch.whatsapp !== undefined) row.whatsapp = patch.whatsapp;
+  if (patch.about !== undefined) row.about = patch.about;
+  if (patch.experience !== undefined) row.experience = patch.experience;
+  if (patch.languages !== undefined) row.languages = patch.languages;
+  if (!Object.keys(row).length) return null;
+  const { data, error } = await (await db()).from('profiles').update(row).eq('id', id).select(AGENT_FULL_COLS).maybeSingle();
+  if (error) throw error;
+  return data ? mapAgent(data) : null;
+}
+
+/** На кого можна записати оголошення: усі ріелтори з назвою агенції. */
+export async function adminListOwners(): Promise<{ id: string; name: string; agency: string }[]> {
+  const { data } = await (await db()).from('profiles')
+    .select('id, name, agency:agencies!profiles_agency_id_fkey(name)').eq('role', 'agent').order('name').limit(1000);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (data ?? []).map((r: any) => ({ id: r.id, name: r.name, agency: r.agency?.name ?? '' }));
 }
 
 export async function adminSetAgencyFlags(id: string, patch: { verified?: boolean }) {
