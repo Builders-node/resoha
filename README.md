@@ -192,9 +192,6 @@ Fields that actually matter to buyers here, not generic ones:
 - `neighborhood` — West Bay → Camp Bay, the axis everyone actually searches by
 - agent `whatsapp` + `languages` — the primary contact channel in Honduras
 
-Home page also states the **3,000 m² foreign-ownership rule** in plain language, which is the
-first question every foreign buyer asks.
-
 ## API
 
 | Method | Endpoint | Notes |
