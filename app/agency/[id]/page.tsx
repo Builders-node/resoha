@@ -1,3 +1,5 @@
+import { cache } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/BackButton';
@@ -6,11 +8,24 @@ import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
+
+const loadAgency = cache(getAgency);
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const a = await loadAgency(id);
+  if (!a) return { title: `Agency not found — ${SITE_NAME}` };
+  return {
+    title: `${a.name} — real estate agency on Roatán | ${SITE_NAME}`,
+    alternates: { canonical: `/agency/${a.id}` },
+  };
+}
 
 export default async function AgencyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const agency = await getAgency(id);
+  const agency = await loadAgency(id);
   if (!agency) notFound();
 
   const [team, listings, session] = await Promise.all([

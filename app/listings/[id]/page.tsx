@@ -1,3 +1,5 @@
+import { cache } from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -8,14 +10,34 @@ import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
 import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
-import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
+import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { currentUser } from '@/lib/session';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
+// метадані й сама сторінка питають те саме оголошення — один запит на двох
+const loadListing = cache(getListing);
+
+/** Посилання на обʼєкт пересилають у месенджерах — у превʼю мають бути назва, ціна й район. */
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const l = await loadListing(id);
+  if (!l) return { title: `Listing not found — ${SITE_NAME}` };
+
+  const title = `${l.title} — ${fmtPrice(l.price, l.deal)}`;
+  const description = `${specLine(l)} · ${l.neighborhood}, Roatán. ${l.text}`.slice(0, 200);
+  return {
+    title: `${title} | ${SITE_NAME}`,
+    description,
+    alternates: { canonical: `/listings/${l.id}` },
+    openGraph: { title, description, url: `/listings/${l.id}`, type: 'website', siteName: SITE_NAME },
+  };
+}
+
 export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const listing = await getListing(id);
+  const listing = await loadListing(id);
   if (!listing) notFound();
 
   // лічильник переглядів — запис, і він не має тримати рендер: виконуємо після відповіді
@@ -141,7 +163,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </p>
         </div>
 
-        <AgentContact agent={agent} listing={listing}
+        <AgentContact agent={agent} listing={listing} listingUrl={`${SITE_URL}/listings/${listing.id}`}
           me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
       </div>
 

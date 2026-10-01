@@ -53,6 +53,7 @@ const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
   userId: r.user_id ?? null, name: r.name, phone: r.phone, email: r.email ?? '',
   message: r.message, createdAt: r.created_at, status: r.status,
+  channel: r.channel === 'whatsapp' ? 'whatsapp' : 'form',
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
 });
 
@@ -306,6 +307,7 @@ export async function listLeads(): Promise<Lead[]> {
 
 export async function createLead(input: {
   listingId: string; name: string; phone: string; email?: string; message: string; userId?: string | null;
+  channel?: 'form' | 'whatsapp';
 }): Promise<boolean> {
   const client = await db();
   const { data: listing } = await client.from('listings')
@@ -317,9 +319,19 @@ export async function createLead(input: {
     listing_id: listing.id, agent_id: listing.agent_id, agency_id: listing.agency_id,
     user_id: input.userId ?? null,
     name: input.name, phone: input.phone, email: input.email ?? '', message: input.message,
+    channel: input.channel ?? 'form',
   });
   if (error) throw error;
   return true;
+}
+
+/** Лічильник запитів у базі: true — ще в межах ліміту. Див. lib/guard.ts. */
+export async function rateLimitHit(key: string, max: number, windowSeconds: number): Promise<boolean> {
+  const { data, error } = await (await db()).rpc('rate_limit_hit', {
+    p_key: key, p_max: max, p_window_seconds: windowSeconds,
+  });
+  if (error) throw error;
+  return data !== false;
 }
 
 /** Скільки обʼєктів підпадає під збережений пошук зараз і скільки зʼявилось після збереження. */

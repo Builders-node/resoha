@@ -350,8 +350,9 @@ export default function AdminPanel({ session }: { session: Session }) {
                       <span className={`pill ${l.status === 'new' ? 'pill--on' : 'pill--off'}`} style={{ marginLeft: 8 }}>
                         {l.status === 'new' ? 'New' : 'Handled'}
                       </span>
+                      {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
                       <div className="tiny muted" style={{ marginTop: 3 }}>
-                        {l.phone}{l.email && ` · ${l.email}`} · {fmtDate(l.createdAt)}
+                        {[l.phone, l.email, fmtDate(l.createdAt)].filter(Boolean).join(' · ')}
                       </div>
                       <div className="small" style={{ marginTop: 4 }}>
                         <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'listing'}</Link>

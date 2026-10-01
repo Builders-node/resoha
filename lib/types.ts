@@ -95,6 +95,7 @@ export interface Lead {
   message: string;
   createdAt: string;
   status: 'new' | 'done';
+  channel: 'form' | 'whatsapp';   // форма на сторінці чи перехід у WhatsApp
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
 }

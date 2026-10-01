@@ -190,10 +190,11 @@ export default function AgentDashboard({ session }: { session: Session }) {
             ) : leads.map((l) => (
               <div key={l.id} className="lead">
                 <div>
-                  <b>{l.name}</b> <span className="muted">· {l.phone}</span>
+                  <b>{l.name}</b>{l.phone && <span className="muted"> · {l.phone}</span>}
                   <span className={`pill ${l.status === 'new' ? 'pill--on' : 'pill--off'}`} style={{ marginLeft: 8 }}>
                     {l.status === 'new' ? 'New' : 'Handled'}
                   </span>
+                  {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
                   <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>
                   <div className="tiny muted" style={{ marginTop: 6 }}>
                     {fmtDate(l.createdAt)} · <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>
@@ -205,12 +206,17 @@ export default function AgentDashboard({ session }: { session: Session }) {
                     onClick={() => setLeadStatus(l.id, l.status === 'new' ? 'done' : 'new')}>
                     {l.status === 'new' ? 'Mark handled' : 'Reopen'}
                   </button>
-                  <a className="btn btn--sm btn--ghost" href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-                    <Icon name="chat" size={16} /> WhatsApp
-                  </a>
-                  <a className="btn btn--sm btn--primary" href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
-                    <Icon name="phone" size={16} /> Call
-                  </a>
+                  {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
+                  {l.phone && (
+                    <>
+                      <a className="btn btn--sm btn--ghost" href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
+                        <Icon name="chat" size={16} /> WhatsApp
+                      </a>
+                      <a className="btn btn--sm btn--primary" href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
+                        <Icon name="phone" size={16} /> Call
+                      </a>
+                    </>
+                  )}
                 </div>
               </div>
             ))}

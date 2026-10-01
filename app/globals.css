@@ -67,6 +67,11 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 .btn--lg{padding:15px 26px;font-size:16px;border-radius:14px}
 .btn--block{width:100%}
 .btn--danger{background:#fff1f2;color:#be123c}
+/* WhatsApp — фірмовий зелений месенджера: кнопку мають упізнавати з першого погляду */
+.btn--wa{background:#25d366;color:#0b2e16;font-weight:800}
+.btn--wa:hover{background:#1fbe5a}
+/* приманка для ботів: у DOM є, людині не видно й недосяжна з клавіатури */
+.hp{position:absolute !important;left:-9999px;width:1px;height:1px;opacity:0;pointer-events:none}
 .btn[disabled]{opacity:.55;cursor:default}
 
 /* ===== Чипи (як у фільтрах ЛУН) ===== */

@@ -134,7 +134,7 @@ export default function UserAccount({ session, user }: {
                     {l.listingTitle || 'Listing'}
                   </Link>
                   <span className={`pill ${l.status === 'new' ? 'pill--off' : 'pill--on'}`} style={{ marginLeft: 8 }}>
-                    {l.status === 'new' ? 'Awaiting reply' : 'Handled'}
+                    {l.channel === 'whatsapp' ? 'Sent on WhatsApp' : l.status === 'new' ? 'Awaiting reply' : 'Handled'}
                   </span>
                   {l.message && <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>}
                   <div className="tiny muted" style={{ marginTop: 6 }}>

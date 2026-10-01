@@ -2,16 +2,27 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase/server';
 import { currentUser, toSession } from '@/lib/session';
 import { mapAgency } from '@/lib/db';
+import { looksAutomated, withinLimit } from '@/lib/guard';
 
 type Body = {
   mode?: 'buyer' | 'agent' | 'agency';
   name?: string; email?: string; password?: string; phone?: string;
   agencyName?: string; inviteCode?: string;
+  website?: string; ts?: number;   // приманка й час появи форми — див. lib/guard.ts
 };
 
 export async function POST(req: Request) {
   const b = (await req.json().catch(() => ({}))) as Body;
   const mode = b.mode ?? 'buyer';
+
+  if (looksAutomated(b)) {
+    return NextResponse.json({ error: 'Could not create the account. Reload the page and try again.' }, { status: 400 });
+  }
+  if (!(await withinLimit(req, 'signup', 5, 3600))) {
+    return NextResponse.json(
+      { error: 'Too many sign-up attempts from this connection. Please try again in an hour.' }, { status: 429 },
+    );
+  }
 
   if (!b.name?.trim()) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   if (!b.email) return NextResponse.json({ error: 'Enter a valid email' }, { status: 400 });

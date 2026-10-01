@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import { toast } from './Toaster';
 
@@ -65,6 +65,9 @@ export function SignupForm({ initialMode = 'buyer' }: { initialMode?: Mode }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const router = useRouter();
+  // приманка й час появи форми — сервер відсіює ботів (lib/guard.ts)
+  const shownAt = useRef(0);
+  useEffect(() => { shownAt.current = Date.now(); }, []);
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -76,6 +79,7 @@ export function SignupForm({ initialMode = 'buyer' }: { initialMode?: Mode }) {
         mode,
         name: fd.get('name'), email: fd.get('email'), password: fd.get('password'),
         phone: fd.get('phone'), agencyName: fd.get('agencyName'), inviteCode: fd.get('inviteCode'),
+        website: fd.get('website'), ts: shownAt.current,
       }),
     });
     const data = await res.json();
@@ -123,6 +127,7 @@ export function SignupForm({ initialMode = 'buyer' }: { initialMode?: Mode }) {
         <p className="muted small" style={{ marginBottom: 20 }}>{active.hint}</p>
 
         <form onSubmit={submit} className="auth__form">
+          <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
           {mode === 'agency' && (
             <div className="field"><label>Agency name</label>
               <input className="input" name="agencyName" required placeholder="Blue Harbour Estates" /></div>
