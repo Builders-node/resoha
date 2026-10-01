@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
+import AuthLink from './AuthLink';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import { fmtDate } from '@/lib/format';
@@ -99,7 +100,7 @@ export default function AgentReviews({
         <p className="small muted" style={{ marginTop: 14 }}>
           {signedIn
             ? 'Reviews come from buyers who have contacted this agent — send an enquiry on one of their listings first.'
-            : <><Link className="link-accent" href="/login">Sign in</Link> to leave a review.</>}
+            : <><AuthLink className="link-accent">Sign in</AuthLink> to leave a review.</>}
         </p>
       )}
     </section>

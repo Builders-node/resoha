@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import AdminPanel from '@/components/AdminPanel';
+import AuthLink from '@/components/AuthLink';
 import Icon from '@/components/Icon';
 import { getSession } from '@/lib/session';
 
@@ -19,9 +20,9 @@ export default async function AdminPage() {
               ? 'This account does not have platform admin rights.'
               : 'Sign in with an admin account to moderate listings, agencies and reviews.'}
           </p>
-          <Link className="btn btn--primary btn--lg btn--block" href={session ? '/' : '/login'}>
-            {session ? 'Back to the site' : 'Sign in'}
-          </Link>
+          {session
+            ? <Link className="btn btn--primary btn--lg btn--block" href="/">Back to the site</Link>
+            : <AuthLink className="btn btn--primary btn--lg btn--block">Sign in</AuthLink>}
         </div>
       </div>
     );

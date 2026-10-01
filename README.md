@@ -327,6 +327,20 @@ password reset and saved-search alerts all wait on the same thing. Pick one:
 - **Proper:** connect SMTP (Resend, Postmark, SES) under Authentication → Emails, then leave
   confirmation on.
 
+### Google sign-in
+
+The code is in place (`/api/auth/google` → Google → `/auth/callback`), but the provider is off in
+Supabase, so the button answers "not switched on yet". To turn it on:
+
+1. Google Cloud Console → APIs & Services → Credentials → *Create OAuth client ID* (Web application).
+   Authorised redirect URI: `https://zgfcysoyksticnbgbhxb.supabase.co/auth/v1/callback`.
+2. Supabase → Authentication → Providers → Google: enable it, paste the client ID and secret.
+3. Supabase → Authentication → URL Configuration: set *Site URL* to the production domain and add
+   `https://<domain>/auth/callback**` (and `http://localhost:3000/auth/callback**` for local work)
+   to *Redirect URLs*.
+
+Google accounts skip the email-confirmation problem above: Google has already verified the address.
+
 Two other dashboard settings are still open: leaked-password protection (Authentication → Passwords)
 and Vercel's deployment protection, which keeps the production URL behind an SSO login.
 The `admin@resoha.dev` account still uses the password from the prototype seed — change it before

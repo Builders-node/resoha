@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import AuthLink from './AuthLink';
 import Icon from './Icon';
 import type { Role } from '@/lib/types';
 
@@ -38,18 +39,18 @@ export default function LoginGate({ role, title, text, signedInAs }: Props) {
             <Link className="btn btn--primary btn--lg btn--block" href="/agent">Open the agent dashboard</Link>
           ) : (
             <>
-              {!signedInAs && <Link className="btn btn--primary btn--lg btn--block" href="/login">Sign in</Link>}
-              <Link className={`btn btn--lg btn--block ${signedInAs ? 'btn--primary' : 'btn--ghost'}`}
-                href={`/signup?as=${signupAs}`}>
+              {!signedInAs && <AuthLink className="btn btn--primary btn--lg btn--block">Sign in</AuthLink>}
+              <AuthLink className={`btn btn--lg btn--block ${signedInAs ? 'btn--primary' : 'btn--ghost'}`}
+                view="signup" as={signupAs}>
                 Create {wantsAgent ? 'a realtor' : 'a buyer'} account
-              </Link>
+              </AuthLink>
             </>
           )}
 
           {wantsAgent && (
-            <Link className="link-accent" href="/signup?as=agency" style={{ justifyContent: 'center', marginTop: 4 }}>
+            <AuthLink className="link-accent" view="signup" as="agency" style={{ justifyContent: 'center', marginTop: 4 }}>
               Register a whole agency <Icon name="arrowRight" size={15} />
-            </Link>
+            </AuthLink>
           )}
           {signedInAs && (
             <Link className="btn btn--ghost btn--block" href="/agents">Browse agents &amp; agencies</Link>

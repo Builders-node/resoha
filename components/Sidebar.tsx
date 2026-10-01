@@ -6,6 +6,7 @@ import Icon from './Icon';
 import Logo from './Logo';
 import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
+import AuthLink from './AuthLink';
 
 type Match = (path: string, deal: string, type: string) => boolean;
 
@@ -73,10 +74,10 @@ export default function Sidebar({ session }: { session: Session | null }) {
               </button>
             </>
           ) : (
-            <Link className="desk-only" href="/login">
+            <AuthLink className="desk-only">
               <span className="sidebar__ico"><Icon name="user" size={22} /></span>
               <span className="sidebar__cap">Sign in</span>
-            </Link>
+            </AuthLink>
           )}
           <button className="sidelink mob-only" onClick={() => setMore(true)}>
             <span className="sidebar__ico"><Icon name="more" size={22} /></span>
@@ -125,8 +126,8 @@ export default function Sidebar({ session }: { session: Session | null }) {
               </button>
             ) : (
               <>
-                <Link className="sheet__item" href="/login"><Icon name="user" size={19} /> Sign in</Link>
-                <Link className="sheet__item" href="/signup"><Icon name="plus" size={19} /> Create an account</Link>
+                <AuthLink className="sheet__item" onOpen={() => setMore(false)}><Icon name="user" size={19} /> Sign in</AuthLink>
+                <AuthLink className="sheet__item" view="signup" onOpen={() => setMore(false)}><Icon name="plus" size={19} /> Create an account</AuthLink>
               </>
             )}
 

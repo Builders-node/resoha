@@ -10,3 +10,8 @@ export const SITE_URL = (
 ).replace(/\/$/, '');
 
 export const SITE_NAME = 'Resoha Roatán';
+
+/** Шлях для редиректу після входу: лише всередині сайту, щоб ?next= не вів на чужий домен. */
+export function safePath(v: string | null | undefined, fallback = '/') {
+  return v && v.startsWith('/') && !v.startsWith('//') && !v.includes('\\') ? v : fallback;
+}

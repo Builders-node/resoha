@@ -5,6 +5,7 @@ import './globals.css';
 import SidebarSlot from '@/components/SidebarSlot';
 import Footer from '@/components/Footer';
 import Toaster from '@/components/Toaster';
+import AuthModal from '@/components/AuthModal';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
@@ -37,6 +38,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </div>
         <Toaster />
+        {/* useSearchParams усередині — тому власна межа Suspense */}
+        <Suspense fallback={null}><AuthModal /></Suspense>
       </body>
     </html>
   );
