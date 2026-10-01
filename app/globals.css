@@ -118,6 +118,8 @@ textarea.input{resize:vertical;min-height:96px}
 .section--soft{background:var(--bg-soft)}
 .section__head{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
 .section__head h2{font-size:26px}
+/* кнопка — у правому краї рядка, а не впритул до заголовка */
+.section__head .btn{margin-left:auto}
 .section__head p{margin:4px 0 0;color:var(--ink-2);font-weight:500;font-size:14px;width:100%}
 
 /* ===== Картки ===== */
@@ -386,6 +388,7 @@ textarea.input{resize:vertical;min-height:96px}
   .toast{left:50%}
 }
 @media (max-width:560px){
+  .section__head .btn{margin-left:0}
   .wrap{padding:0 16px}
   .grid--3,.grid--4,.grid--list{grid-template-columns:1fr}
   .modal__foot{grid-template-columns:1fr 1fr}
