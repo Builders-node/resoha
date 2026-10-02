@@ -130,6 +130,32 @@ textarea.input{resize:vertical;min-height:96px}
 .badge{background:rgba(255,255,255,.94);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700}
 .badge--brand{background:var(--ink);color:#fff}
 .badge--accent{background:var(--orange);color:#fff}
+/* готовність ділянки: один бейдж на картці */
+.badge--ok{background:#dcfce7;color:#166534}
+.badge--warn{background:#fef3c7;color:#92400e}
+.badge--bad{background:#fee2e2;color:#991b1b}
+/* блок «Land check» на сторінці ділянки */
+.land{margin-top:26px;border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px 20px}
+.land__head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.land__head h3{margin:0}
+.land__score{border-radius:999px;padding:7px 13px;font-weight:800;font-size:14px;white-space:nowrap}
+.land__score small{font-weight:600;opacity:.75}
+.land__score--ok{background:#dcfce7;color:#166534}
+.land__score--warn{background:#fef3c7;color:#92400e}
+.land__score--bad{background:#fee2e2;color:#991b1b}
+.land__score--muted{background:var(--bg-soft);color:var(--ink-2)}
+.land__rows{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}
+.land__row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.land__k{color:var(--ink-2);font-weight:500}
+.land__v{display:inline-flex;align-items:center;gap:6px;font-weight:700;text-align:right}
+.land__row--ok .land__v{color:#166534}
+.land__row--bad .land__v{color:#991b1b}
+.land__row--na .land__v{color:var(--ink-2);font-weight:500}
+.land__foot{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.land-form{border-top:1px solid var(--line);padding-top:16px}
+.land-form > .form-grid{margin-top:4px}
+@media (max-width:560px){ .land__rows{grid-template-columns:1fr} }
+
 .fav{position:absolute;top:8px;right:8px;width:34px;height:34px;border:0;border-radius:50%;cursor:pointer;
   background:rgba(255,255,255,.92);display:grid;place-items:center;font-size:16px;line-height:1;box-shadow:var(--shadow)}
 .fav.is-on{color:#e11d48}

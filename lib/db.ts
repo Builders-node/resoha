@@ -2,7 +2,7 @@ import { after } from 'next/server';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
-import type { AdminLogEntry, Agency, Agent, Deal, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
+import type { AdminLogEntry, Agency, Agent, Deal, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -39,6 +39,12 @@ export const mapAgent = (r: Row): Agent => ({
   verified: r.verified, languages: r.languages ?? [], about: r.about,
 });
 
+const mapLand = (r: Row | null | undefined): LandFacts | null => r ? ({
+  titleStatus: r.title_status, survey: r.survey, roadAccess: r.road_access, power: r.power,
+  water: r.water, zolitur: r.zolitur, zone: r.zone, slope: r.slope,
+  ready: Boolean(r.ready), checkedAt: r.checked_at ?? null, checkedBy: r.checker?.name ?? '',
+}) : null;
+
 const mapListing = (r: Row): Listing => ({
   id: r.id, deal: r.deal, type: r.type, title: r.title, island: r.island,
   neighborhood: r.neighborhood, address: r.address, price: Number(r.price), hoa: Number(r.hoa),
@@ -48,7 +54,13 @@ const mapListing = (r: Row): Listing => ({
   featured: r.featured, active: r.active, views: r.views,
   createdAt: r.created_at, tags: r.tags ?? [], photos: r.photos ?? [], text: r.body ?? '',
   sourceName: r.source_name ?? '', sourceRef: r.source_ref ?? '', sourceUrl: r.source_url ?? '',
+  land: mapLand(r.land_facts),
 });
+
+/** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
+const LAND_EMBED = '*, checker:profiles!land_facts_checked_by_fkey(name)';
+const listingCols = (q: ListingQuery, base = '*') =>
+  `${base}, land_facts${q.ready ? '!inner' : ''}(${LAND_EMBED})`;
 
 const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
@@ -132,6 +144,7 @@ function applyFilters(sel: any, q: ListingQuery) {
   if (q.titled) sel = sel.eq('titled', true);
   if (q.ownerFinancing) sel = sel.eq('owner_financing', true);
   if (q.tags?.length) sel = sel.contains('tags', q.tags);
+  if (q.ready) sel = sel.eq('land_facts.ready', true);
   if (q.beds?.length) {
     // 4 у фільтрі означає «4+»
     sel = sel.or(q.beds.map((b) => (b >= 4 ? 'beds.gte.4' : `beds.eq.${b}`)).join(','));
@@ -161,7 +174,7 @@ export const PAGE_SIZE = 24;
 /** Сторінка результатів + скільки всього збігів (для «показати ще» і лічильника). */
 export async function searchListings(q: ListingQuery = {}, page = 0, pageSize = PAGE_SIZE) {
   const from = page * pageSize;
-  let sel = applyFilters((await db()).from('listings').select('*', { count: 'exact' }), q);
+  let sel = applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q);
   sel = applySort(sel, q.sort).range(from, from + pageSize - 1);
 
   const { data, error, count } = await sel;
@@ -172,7 +185,8 @@ export async function searchListings(q: ListingQuery = {}, page = 0, pageSize = 
 
 /** Координати всіх збігів — щоб карта показувала повну картину, а список вантажився сторінками. */
 export async function queryPins(q: ListingQuery = {}) {
-  const sel = applyFilters((await db()).from('listings').select('id, lat, lng, price, deal'), q);
+  const pins = q.ready ? 'id, lat, lng, price, deal, land_facts!inner(ready)' : 'id, lat, lng, price, deal';
+  const sel = applyFilters((await db()).from('listings').select(pins), q);
   const { data, error } = await sel.limit(2000);
   if (error) throw error;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -180,7 +194,7 @@ export async function queryPins(q: ListingQuery = {}) {
 }
 
 export async function queryListings(q: ListingQuery = {}): Promise<Listing[]> {
-  let sel = applyFilters((await db()).from('listings').select('*'), q);
+  let sel = applyFilters((await db()).from('listings').select(listingCols(q)), q);
   sel = applySort(sel, q.sort);
 
   const { data, error } = await sel.limit(500);
@@ -189,7 +203,7 @@ export async function queryListings(q: ListingQuery = {}): Promise<Listing[]> {
 }
 
 export async function getListing(id: string): Promise<Listing | null> {
-  const { data } = await (await db()).from('listings').select('*').eq('id', id).maybeSingle();
+  const { data } = await (await db()).from('listings').select(listingCols({})).eq('id', id).maybeSingle();
   return data ? mapListing(data) : null;
 }
 
@@ -221,9 +235,25 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     source_name: input.sourceName ?? '',
     source_ref: input.sourceRef ?? '',
     source_url: safeUrl(input.sourceUrl),
-  }).select('*').single();
+  }).select(listingCols({})).single();
   if (error) throw error;
   return mapListing(data);
+}
+
+const LAND_COLUMNS: Record<string, string> = {
+  titleStatus: 'title_status', survey: 'survey', roadAccess: 'road_access', power: 'power',
+  water: 'water', zolitur: 'zolitur', zone: 'zone', slope: 'slope',
+};
+
+/** Паспорт ділянки: upsert за listing_id. Права — ті самі, що на саме оголошення (RLS land_facts). */
+export async function saveLandFacts(listingId: string, patch: Record<string, unknown>) {
+  const row: Row = { listing_id: listingId };
+  for (const [key, column] of Object.entries(LAND_COLUMNS)) {
+    const v = patch[key];
+    if (typeof v === 'string' && v) row[column] = v;
+  }
+  const { error } = await (await db()).from('land_facts').upsert(row, { onConflict: 'listing_id' });
+  if (error) throw error;
 }
 
 /** Мапа «поле форми → колонка», щоб редагування покривало всі поля оголошення. */
@@ -249,7 +279,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
   }
   if (!Object.keys(row).length) return getListing(id);
 
-  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select('*').maybeSingle();
+  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
   if (error) throw error;
   return data ? mapListing(data) : null;
 }
@@ -382,7 +412,7 @@ export async function adminOverview() {
   // Перевірки якості даних важать тут більше за загальні лічильники: оголошення
   // без фото чи земля з непідтвердженим титулом — це те, що псує довіру до площадки.
   const { data: qualityRows } = await client.from('listings')
-    .select('views, photos, source_name, type, titled, body, lat, lng');
+    .select('views, photos, source_name, type, titled, body, lat, lng, land_facts(checked_at)');
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const all = (qualityRows ?? []) as any[];
   const views = all.reduce((sum, r) => sum + (r.views ?? 0), 0);
@@ -390,6 +420,7 @@ export async function adminOverview() {
   const checked = all.map((r) => ({
     photos: r.photos ?? [], sourceName: r.source_name ?? '', type: r.type, titled: r.titled,
     text: r.body ?? '', lat: r.lat, lng: r.lng,
+    land: r.land_facts ? { checkedAt: r.land_facts.checked_at ?? null } : null,
   }));
   const quality = Object.fromEntries(
     QUALITY_CHECKS.map((c) => [c.key, checked.filter(c.test).length]),
@@ -473,7 +504,7 @@ export async function adminSetListingFlags(id: string, patch: { featured?: boole
   const row: Row = {};
   if (patch.featured !== undefined) row.featured = patch.featured;
   if (patch.active !== undefined) row.active = patch.active;
-  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select('*').maybeSingle();
+  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
   if (error) throw error;
   return data ? mapListing(data) : null;
 }

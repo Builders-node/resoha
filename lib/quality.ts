@@ -4,7 +4,8 @@ import type { Listing } from './types';
  * Перевірки якості оголошень. Один список і для лічильників на Overview,
  * і для фільтра в таблиці — щоб число та перелік за ним ніколи не розійшлись.
  */
-type Checked = Pick<Listing, 'photos' | 'sourceName' | 'type' | 'titled' | 'text' | 'lat' | 'lng'>;
+type Checked = Pick<Listing, 'photos' | 'sourceName' | 'type' | 'titled' | 'text' | 'lat' | 'lng'>
+  & { land: { checkedAt: string | null } | null };
 
 export const QUALITY_CHECKS = [
   { key: 'noPhotos', filter: 'nophoto', label: 'No photos', option: 'Without photos',
@@ -15,6 +16,8 @@ export const QUALITY_CHECKS = [
     test: (l: Checked) => l.type === 'land' && !l.titled },
   { key: 'thinText', filter: 'thin', label: 'Description under 40 characters', option: 'Short description',
     test: (l: Checked) => l.text.length < 40 },
+  { key: 'landUnchecked', filter: 'landunchecked', label: 'Land without a land check', option: 'Land not checked',
+    test: (l: Checked) => l.type === 'land' && !l.land?.checkedAt },
   { key: 'offIsland', filter: 'offisland', label: 'Coordinates outside Roatán', option: 'Pin outside Roatán',
     test: (l: Checked) => l.lat < 16.2 || l.lat > 16.6 || l.lng < -86.7 || l.lng > -86.2 },
 ] as const;

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PAGE_SIZE, adminLog, createListing, queryPins, searchListings } from '@/lib/db';
+import { PAGE_SIZE, adminLog, createListing, getListing, queryPins, saveLandFacts, searchListings } from '@/lib/db';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 
@@ -35,9 +35,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Title and price are required' }, { status: 400 });
   }
   try {
-    const listing = await createListing({
+    let listing = await createListing({
       ...body, agentId: onBehalf ?? user.id, agencyId: onBehalf ? null : user.agencyId,
     });
+    if (listing.type === 'land' && body.land && typeof body.land === 'object') {
+      await saveLandFacts(listing.id, body.land);
+      listing = (await getListing(listing.id)) ?? listing;
+    }
     if (onBehalf) {
       await adminLog({ id: user.id, name: user.name }, {
         action: 'listing.create', targetKind: 'listing', targetId: listing.id, targetName: listing.title,

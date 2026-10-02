@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
+import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -19,6 +20,8 @@ export default function ListingForm({
   onCancel?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
+  // тип керований: від нього залежить, чи показувати секцію «Land check»
+  const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
   const [area, setArea] = useState(listing?.neighborhood ?? 'West Bay');
   const [pin, setPin] = useState<[number, number]>(
@@ -52,6 +55,12 @@ export default function ListingForm({
     const form = e.currentTarget;
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
+    // паспорт ділянки збираємо окремо: поля land_* → обʼєкт land
+    const land: Record<string, string> = {};
+    for (const f of LAND_FIELDS) {
+      const v = fd.get(`land_${f.key}`);
+      if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
+    }
     setSaving(true);
 
     const res = await fetch(editing ? `/api/listings/${listing!.id}` : '/api/listings', {
@@ -59,6 +68,7 @@ export default function ListingForm({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...body,
+        land: type === 'land' ? land : undefined,
         photos,
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
@@ -107,7 +117,7 @@ export default function ListingForm({
             <option value="sale">For sale</option><option value="rent">For rent</option>
           </select></div>
         <div className="field"><label>Property type</label>
-          <select className="input" name="type" defaultValue={v?.type ?? 'condo'}>
+          <select className="input" name="type" value={type} onChange={(e) => setType(e.target.value as Listing['type'])}>
             <option value="condo">Condo</option><option value="house">House / Villa</option>
             <option value="land">Land</option><option value="commercial">Commercial</option>
           </select></div>
@@ -155,6 +165,25 @@ export default function ListingForm({
           <label><input type="checkbox" name="titled" defaultChecked={v?.titled ?? false} /> Free &amp; clear title</label>
           <label><input type="checkbox" name="ownerFinancing" defaultChecked={v?.ownerFinancing} /> Owner financing</label>
         </div>
+
+        {/* Паспорт ділянки — лише для землі; у кондо й будинків цієї секції немає */}
+        {type === 'land' && (
+          <div className="field full land-form">
+            <label>Land check</label>
+            <span className="tiny muted" style={{ marginBottom: 10 }}>
+              What a buyer asks first. Leave a field on “Not confirmed” rather than guessing —
+              title, road, electricity and water make up the “Ready to build” badge.
+            </span>
+            <div className="form-grid">
+              {LAND_FIELDS.map((f) => (
+                <div key={f.key} className="field"><label>{f.label}</label>
+                  <select className="input" name={`land_${f.key}`} defaultValue={v?.land?.[f.key] ?? EMPTY_LAND[f.key]}>
+                    {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                  </select></div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="field full"><label>Photos</label>
           <PhotoUploader value={photos} onChange={setPhotos} /></div>

@@ -48,6 +48,21 @@ export interface Profile {
 /** Профіль ріелтора у публічному контексті — той самий рядок. */
 export type Agent = Profile;
 
+/** Паспорт ділянки (таблиця land_facts). Є лише в землі; у решти типів — null. */
+export interface LandFacts {
+  titleStatus: string;
+  survey: string;
+  roadAccess: string;
+  power: string;
+  water: string;
+  zolitur: string;
+  zone: string;
+  slope: string;
+  ready: boolean;
+  checkedAt: string | null;
+  checkedBy: string;     // імʼя того, хто заповнив
+}
+
 export interface Listing {
   id: string;
   deal: Deal;
@@ -81,6 +96,7 @@ export interface Listing {
   sourceName: string;
   sourceRef: string;
   sourceUrl: string;
+  land: LandFacts | null;
 }
 
 export interface Lead {
@@ -148,6 +164,8 @@ export interface ListingQuery {
   sort?: SortKey;
   ids?: string[];
   includeInactive?: boolean;
+  /** лише земля, готова до будівництва (land_facts.ready) */
+  ready?: boolean;
 }
 
 /** Відгук про ріелтора. Рейтинг у профілі перераховує тригер у базі. */

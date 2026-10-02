@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { bumpViews, deleteListing, getAgency, getAgent, getListing, updateListing } from '@/lib/db';
+import { bumpViews, deleteListing, getAgency, getAgent, getListing, saveLandFacts, updateListing } from '@/lib/db';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,8 +20,13 @@ export async function GET(req: Request, { params }: Ctx) {
 export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params;
   const patch = await req.json().catch(() => ({}));
-  const listing = await updateListing(id, patch);
+  let listing = await updateListing(id, patch);
   if (!listing) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  // паспорт ділянки — окрема таблиця; зберігаємо лише для землі
+  if (listing.type === 'land' && patch.land && typeof patch.land === 'object') {
+    await saveLandFacts(id, patch.land);
+    listing = (await getListing(id)) ?? listing;
+  }
   return NextResponse.json({ listing });
 }
 

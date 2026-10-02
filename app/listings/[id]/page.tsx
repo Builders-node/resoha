@@ -12,6 +12,8 @@ import Photo from '@/components/Photo';
 import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { LAND_FIELDS, isChecked, landLabel, readiness } from '@/lib/land';
+import { fmtDate as fmtDay } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 
 const MapView = dynamic(() => import('@/components/MapView'));
@@ -57,6 +59,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const similar = similarAll.filter((l) => l.id !== listing.id).slice(0, 4);
 
   const isLand = listing.type === 'land';
+  // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
+  const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
   return (
     <div className="wrap">
@@ -110,7 +114,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <>
                 <div className="spec"><span className="muted small">Lot size</span><b>{listing.lotAcres} ac</b></div>
                 <div className="spec"><span className="muted small">Frontage</span><b>{listing.oceanfront ? 'Oceanfront' : 'Inland'}</b></div>
-                <div className="spec"><span className="muted small">Title</span><b>{listing.titled ? 'Free & clear' : 'Not confirmed'}</b></div>
+                <div className="spec"><span className="muted small">Title</span><b>{titleOk ? 'Free & clear' : 'Not confirmed'}</b></div>
                 <div className="spec"><span className="muted small">Type</span><b>{TYPE_LABELS[listing.type]}</b></div>
               </>
             ) : (
@@ -129,10 +133,58 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <span className="chip">{TYPE_LABELS[listing.type]}</span>
             <span className="chip">{DEAL_LABELS[listing.deal]}</span>
             {listing.oceanfront && <span className="chip"><Icon name="wave" size={16} /> Oceanfront</span>}
-            {listing.titled && <span className="chip"><Icon name="deed" size={16} /> Free &amp; clear title</span>}
+            {titleOk && <span className="chip"><Icon name="deed" size={16} /> Free &amp; clear title</span>}
             {listing.lotAcres > 0 && !isLand && <span className="chip">{listing.lotAcres} ac lot</span>}
             {listing.tags.map((t) => <span key={t} className="chip">{t}</span>)}
           </div>
+
+          {/* Паспорт ділянки: відповіді на те, що покупець землі питає першим */}
+          {isLand && (() => {
+            const land = listing.land;
+            const r = readiness(land);
+            const checked = isChecked(land);
+            return (
+              <section className="land" id="land-check">
+                <div className="land__head">
+                  <div>
+                    <h3>Land check</h3>
+                    <span className="muted small">
+                      {checked
+                        ? <>Checked {fmtDay(land.checkedAt!)}{land.checkedBy && <> by {land.checkedBy}</>}</>
+                        : 'Nobody has confirmed these details yet — ask the agent before you commit.'}
+                    </span>
+                  </div>
+                  <span className={`land__score land__score--${r.tone}`}>
+                    {r.label}{checked && <small> · {r.score}/{r.of}</small>}
+                  </span>
+                </div>
+                <div className="land__rows">
+                  {LAND_FIELDS.map((f) => {
+                    const value = checked ? land[f.key] : 'unknown';
+                    const state = value === 'unknown' ? 'na' : f.good ? (f.good.includes(value) ? 'ok' : 'bad') : 'info';
+                    return (
+                      <div key={f.key} className={`land__row land__row--${state}`}>
+                        <span className="land__k">{f.label}</span>
+                        <span className="land__v">
+                          {state === 'ok' && <Icon name="check" size={15} />}
+                          {landLabel(f, value)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="land__foot">
+                  <a className="btn btn--sm btn--ghost" href={`/listings/${listing.id}/report`} target="_blank" rel="noreferrer">
+                    <Icon name="link" size={16} /> Download land report (PDF)
+                  </a>
+                  <span className="tiny muted">
+                    “Ready to build” means title, road, electricity and water are all in place. Always verify the title
+                    at the Instituto de la Propiedad before paying a deposit.
+                  </span>
+                </div>
+              </section>
+            );
+          })()}
 
           <h3 style={{ marginTop: 26 }}>About this property</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 15.5 }}>{listing.text}</p>

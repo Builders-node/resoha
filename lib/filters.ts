@@ -18,6 +18,8 @@ export type Filters = {
   oceanfront: boolean;
   titled: boolean;
   ownerFinancing: boolean;
+  /** земля, готова до будівництва — має сенс лише при type = land */
+  ready: boolean;
   tags: string[];
   agentId: string;
   agencyId: string;
@@ -28,7 +30,7 @@ export type Filters = {
 export const EMPTY_FILTERS: Filters = {
   deal: '', type: '', neighborhoods: [], beds: [], bathsMin: '',
   priceMin: '', priceMax: '', sqftMin: '', sqftMax: '', lotMin: '', lotMax: '',
-  hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false,
+  hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false, ready: false,
   tags: [], agentId: '', agencyId: '', q: '', sort: '',
 };
 
@@ -56,6 +58,7 @@ export function toQuery(f: Filters): string {
   if (f.oceanfront) p.set('oceanfront', '1');
   if (f.titled) p.set('titled', '1');
   if (f.ownerFinancing) p.set('ownerFinancing', '1');
+  if (f.ready && f.type === 'land') p.set('ready', '1');
   put('tags', f.tags.join(','));
   put('agentId', f.agentId);
   put('agencyId', f.agencyId);
@@ -84,6 +87,7 @@ export function fromParams(bag: ParamBag): Filters {
     oceanfront: get('oceanfront') === '1',
     titled: get('titled') === '1',
     ownerFinancing: get('ownerFinancing') === '1',
+    ready: get('ready') === '1',
     tags: arr('tags'), agentId: get('agentId'), agencyId: get('agencyId'), q: get('q'), sort: get('sort'),
   };
 }
@@ -103,6 +107,7 @@ export function countActive(f: Filters): number {
   if (f.oceanfront) n++;
   if (f.titled) n++;
   if (f.ownerFinancing) n++;
+  if (f.ready && f.type === 'land') n++;
   n += f.tags.length;
   if (f.q) n++;
   return n;
@@ -136,6 +141,7 @@ export function toListingQuery(sp: URLSearchParams): ListingQuery {
     oceanfront: flag('oceanfront'),
     titled: flag('titled'),
     ownerFinancing: flag('ownerFinancing'),
+    ready: sp.get('type') === 'land' ? flag('ready') : undefined,
     tags: list('tags'),
     q: sp.get('q') || undefined,
     agentId: sp.get('agentId') || undefined,

@@ -170,6 +170,12 @@ export default function ListingsExplorer({
           <button className={`btn btn--sm filters__ocean ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
             onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> Oceanfront</button>
 
+          {/* лише в режимі Land: титул + дорога + світло + вода на місці */}
+          {filters.type === 'land' && (
+            <button className={`btn btn--sm filters__ocean ${filters.ready ? 'btn--primary' : 'btn--ghost'}`}
+              onClick={() => set({ ready: !filters.ready })}><Icon name="check" size={17} /> Ready to build</button>
+          )}
+
           <button className="btn btn--sm btn--orange filters__more" onClick={() => setModal(true)}>
             <Icon name="sliders" size={17} /> Filters {active > 0 && <span className="f-badge">{active}</span>}
           </button>

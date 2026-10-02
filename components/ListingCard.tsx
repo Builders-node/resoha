@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DEAL_LABELS, fmtPrice, specLine } from '@/lib/format';
+import { readiness } from '@/lib/land';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
 import Photo from './Photo';
@@ -29,7 +30,11 @@ export default function ListingCard({
       <div className="card__badges">
         <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{DEAL_LABELS[l.deal]}</span>
         {l.oceanfront && <span className="badge">Oceanfront</span>}
-        {l.type === 'land' && l.titled && <span className="badge">Titled</span>}
+        {/* земля: один бейдж готовності замість «Titled»; без перевірки — нічого */}
+        {l.type === 'land' && l.land?.checkedAt && (
+          <span className={`badge badge--${readiness(l.land).tone}`}>{readiness(l.land).label}</span>
+        )}
+        {l.type === 'land' && !l.land?.checkedAt && l.titled && <span className="badge">Titled</span>}
       </div>
       <FavButton listingId={l.id} initial={isFav} />
       <div className="ov__b">

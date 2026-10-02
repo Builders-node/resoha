@@ -261,6 +261,15 @@ export default function FiltersModal({
                 <button className={`switch ${draft.titled ? 'is-on' : ''}`}
                   onClick={() => set({ titled: !draft.titled })} aria-label="Titled" />
               </div>
+              {draft.type === 'land' && (
+                <div className="switch-row">
+                  <span className="switch-row__label">
+                    Ready to build <span className="muted small">title, road, power and water in place</span>
+                  </span>
+                  <button className={`switch ${draft.ready ? 'is-on' : ''}`}
+                    onClick={() => set({ ready: !draft.ready })} aria-label="Ready to build" />
+                </div>
+              )}
               <div className="switch-row">
                 <span className="switch-row__label">
                   Owner financing <span className="muted small">({facets?.ownerFinancing ?? 0})</span>
