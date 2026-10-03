@@ -94,6 +94,8 @@ export const mapStyle: StyleSpecification = {
     },
     {
       id: BUILDINGS_LAYER, type: 'fill-extrusion', source: 'omt', 'source-layer': 'building', minzoom: 15,
+      // hide_3d — частини будинку, що дублюють контур; без фільтра стіни мерехтять
+      filter: ['!', ['to-boolean', ['get', 'hide_3d']]],
       paint: {
         'fill-extrusion-color': C.building,
         'fill-extrusion-height': ['coalesce', ['get', 'render_height'], 6],

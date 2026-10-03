@@ -221,7 +221,9 @@ textarea.input{resize:vertical;min-height:96px}
   background:var(--orange);transform:rotate(45deg);border-radius:2px}
 
 /* Кнопки карти: компас, шари, лінійка, «де я», зум — праворуч унизу, як у ЛУН */
-.map-canvas{position:absolute;inset:0}
+/* id-селектор важливий: maplibre-gl.css вантажиться пізніше й ставить контейнеру
+   position:relative — тоді в нього нульова висота і карти не видно */
+#map > .map-canvas{position:absolute;inset:0}
 .map-ctrl{position:absolute;right:14px;bottom:28px;z-index:2;display:flex;flex-direction:column;gap:10px}
 .map-ctrl__group{display:flex;flex-direction:column;background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
 .map-ctrl__group .map-ctrl__btn{border-radius:0;box-shadow:none}

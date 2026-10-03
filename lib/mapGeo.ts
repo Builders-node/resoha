@@ -88,6 +88,7 @@ export function listingFootprint(
   const near: { ring: XY[]; d: number; props: Record<string, unknown> }[] = [];
 
   for (const f of features) {
+    if (f.properties.hide_3d) continue;
     const g = f.geometry as { type: string; coordinates: Position[][] | Position[][][] };
     const polys = g.type === 'Polygon' ? [g.coordinates as Position[][]]
       : g.type === 'MultiPolygon' ? (g.coordinates as Position[][][]) : [];
