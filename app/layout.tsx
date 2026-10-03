@@ -2,8 +2,6 @@ import { Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import SidebarSlot from '@/components/SidebarSlot';
-import Footer from '@/components/Footer';
 import Toaster from '@/components/Toaster';
 import AuthModal from '@/components/AuthModal';
 import JsonLd from '@/components/JsonLd';
@@ -32,15 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         {/* хто ми — на кожній сторінці, щоб пошуковики й AI-асистенти звʼязували всі сторінки з одним брендом */}
         <JsonLd data={graph(organizationLd(), websiteLd())} />
-        <div className="app">
-          <Suspense fallback={<aside className="sidebar" />}>
-            <SidebarSlot />
-          </Suspense>
-          <div className="shell">
-            <main>{children}</main>
-            <Footer />
-          </div>
-        </div>
+        {children}
         <Toaster />
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>

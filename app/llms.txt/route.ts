@@ -1,5 +1,5 @@
 import { AREAS } from '@/lib/content/areas';
-import { SITE_FAQ } from '@/lib/content/faq';
+import { HELP_SECTIONS } from '@/lib/content/help';
 import { GUIDES } from '@/lib/content/guides';
 import { MARKET_FACTS, MARKET_UPDATED } from '@/lib/content/market';
 import { plain } from '@/components/Rich';
@@ -29,7 +29,7 @@ export function GET() {
     `- [Roatán market report](${u('/market')}): key figures with sources`,
     `- [Areas of Roatán](${u('/areas')}): prices and character of each neighbourhood`,
     `- [Buying guides](${u('/guides')})`,
-    `- [FAQ](${u('/faq')})`,
+    `- [Questions and answers](${u('/faq')}): every common buyer question in one place`,
     `- [About Resoha](${u('/about')})`,
     `- [For agents](${u('/for-agents')})`,
     '',
@@ -42,8 +42,7 @@ export function GET() {
     `## Roatán market figures (checked ${MARKET_UPDATED})`,
     ...MARKET_FACTS.map((f) => `- ${f.label}: ${f.value}${f.note ? ` (${f.note})` : ''}. Source: ${f.source.name}, ${f.source.url}`),
     '',
-    '## FAQ',
-    ...SITE_FAQ.flatMap((f) => [`### ${f.q}`, plain(f.a), '']),
+    ...HELP_SECTIONS.flatMap((s) => [`## ${s.title}`, '', ...s.items.flatMap((it) => [`### ${it.q}`, it.a.map(plain).join(' '), ''])]),
   ].join('\n');
 
   return new Response(body, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
