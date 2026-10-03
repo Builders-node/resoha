@@ -26,15 +26,27 @@ export default function Footer() {
             </ul>
           </div>
           <div>
+            <h4>Buying on Roatán</h4>
+            <ul>
+              <li><Link href="/guides">Buying guides</Link></li>
+              <li><Link href="/areas">Areas of Roatán</Link></li>
+              <li><Link href="/market">Market report</Link></li>
+              <li><Link href="/land-passport">Land passport</Link></li>
+              <li><Link href="/faq">FAQ</Link></li>
+            </ul>
+          </div>
+          <div>
             <h4>Accounts</h4>
             <ul>
               <li><Link href="/account">Buyer account</Link></li>
               <li><Link href="/agent">Agent dashboard</Link></li>
+              <li><Link href="/for-agents">List your properties</Link></li>
             </ul>
           </div>
           <div>
             <h4>Resoha</h4>
             <ul>
+              <li><Link href="/about">About Resoha</Link></li>
               <li><Link href="/privacy">Privacy policy</Link></li>
               <li><Link href="/terms">Terms of use</Link></li>
               {CONTACT_EMAIL && <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>}

@@ -19,6 +19,7 @@ const NAV: { href: string; ico: string; cap: string; deskOnly?: boolean; match: 
   { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: (p, _deal, type) => p === '/listings' && type === 'land' },
   { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p) => p === '/account' },
   { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p) => p.startsWith('/agents') },
+  { href: '/guides', ico: 'list', cap: 'Guides', deskOnly: true, match: (p) => p.startsWith('/guides') || p.startsWith('/areas') },
 ];
 
 export default function Sidebar({ session }: { session: Session | null }) {
@@ -112,6 +113,10 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
             <Link className="sheet__item" href="/listings?type=land">
               <Icon name="land" size={19} /> Land &amp; lots
+            </Link>
+
+            <Link className="sheet__item" href="/guides">
+              <Icon name="list" size={19} /> Buying guides
             </Link>
 
             {session?.isAdmin && (

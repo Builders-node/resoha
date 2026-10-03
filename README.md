@@ -44,13 +44,22 @@ Neither can be set from SQL, both take a click in **Authentication → Sign In /
 
 | Route | What it is |
 |---|---|
-| `/` | Home: island picker, category tiles, featured, areas, agency board, “Buying on Roatán” explainer |
+| `/` | Home: category tiles, positioning (the page’s h1), featured, areas, agency board, guides, FAQ |
+| `/guides`, `/guides/[slug]` | Buyer guides: foreign ownership, buying process, closing costs, title checks, rental income, areas |
+| `/areas`, `/areas/[slug]` | Area pages with sourced price ranges and live listings from that area |
+| `/land-passport`, `/market` | Land passport explainer; market report with sourced figures and live catalogue counts |
+| `/about`, `/for-agents`, `/faq` | Company page, agency offer, site-wide FAQ |
+| `/llms.txt` | Plain-text site summary for AI assistants, built from the same content |
 | `/listings` | Compact filter bar + full filters sheet, result list, island map with price pins, hover cards and “Search this area” after you pan or zoom |
 | `/listings/[id]` | Property page: gallery, specs, map, agent card with phone/WhatsApp, enquiry form |
 | `/admin` | Admin: overview with listing-quality checks, listings, enquiries, agencies, people, reviews, log |
 | `/agents` | Public directory: agencies board and every realtor with their listing count |
 | `/agent` | Agent dashboard: stats, my listings, leads, new-listing form |
 | `/account` | Buyer account: saved properties, saved searches, profile |
+
+Guide, area, FAQ and market copy lives in `lib/content/` (every figure carries its source in
+`lib/content/sources.ts`); schema.org JSON-LD builders are in `lib/seo.ts`. When a figure changes,
+update `MARKET_UPDATED` or the guide's `updated` date with it.
 
 `npm run lint` runs ESLint (flat config in `eslint.config.mjs`; `next lint` is gone in Next 16).
 

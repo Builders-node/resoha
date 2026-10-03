@@ -1,10 +1,27 @@
+import type { Metadata } from 'next';
 import Link from 'next/link';
+import Faq from '@/components/Faq';
 import Icon from '@/components/Icon';
+import JsonLd from '@/components/JsonLd';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import { agencyBoard, getFavorites, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import { areaForNeighborhood } from '@/lib/content/areas';
+import { SITE_FAQ } from '@/lib/content/faq';
+import { GUIDES } from '@/lib/content/guides';
+import { faqLd, graph } from '@/lib/seo';
+
+export const metadata: Metadata = { alternates: { canonical: '/' } };
+
+const HOME_FAQ = SITE_FAQ.slice(0, 6);
+
+/** Район із бази веде на сторінку-гайд району, якщо така є; інакше — на фільтр. */
+function areaHref(name: string) {
+  const area = areaForNeighborhood(name);
+  return area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(name)}`;
+}
 
 const SALE_TILES = [
   { label: 'Condos', href: '/listings?deal=sale&type=condo', icon: 'building' },
@@ -49,6 +66,7 @@ export default async function HomePage() {
 
   return (
     <>
+      <JsonLd data={graph(faqLd(HOME_FAQ))} />
       <section className="wrap home-top">
         <div className="tiles-block">
           <h3>For sale</h3>
@@ -73,13 +91,15 @@ export default async function HomePage() {
         </div>
 
         <aside className="promo">
-          <h2>Every listing says where it came from</h2>
+          {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}
+          <h1>Every property on Roatán, checked before you fly</h1>
           <p>
-            Resoha is starting with a small, checked set: real units at real addresses, each one
-            linking back to the island agency that holds it. No stock photos, no filler.
+            Homes, condos, rentals and land from island agencies in one place. Every listing links back to the
+            agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.
           </p>
-          <div>
+          <div className="promo__btns">
             <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">Browse the listings <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--lg promo__ghost" href="/land-passport">How the land passport works</Link>
           </div>
         </aside>
       </section>
@@ -104,11 +124,13 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>Browse by area</h2>
+            <Link className="btn btn--primary" href="/areas">All areas compared <Icon name="arrowRight" size={18} /></Link>
             <p>From West Bay&apos;s beach condos to the quiet East End</p>
           </div>
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
-              <Link key={name} className="ov ov--area ov--plain" href={`/listings?neighborhoods=${encodeURIComponent(name)}`}>
+              <Link key={name} className="ov ov--area ov--plain"
+                href={areaHref(name)}>
                 <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 19 }}>{name}</div>
@@ -149,6 +171,38 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="section section--soft">
+        <div className="wrap">
+          <div className="section__head">
+            <h2>Know before you buy</h2>
+            <Link className="btn btn--primary" href="/guides">All guides <Icon name="arrowRight" size={18} /></Link>
+            <p>Straight answers for buyers from abroad, with every figure linked to its source</p>
+          </div>
+          <div className="guide-list guide-list--wide">
+            {GUIDES.map((g) => (
+              <Link key={g.slug} className="guide-card" href={`/guides/${g.slug}`}>
+                <b>{g.short}</b>
+                <span className="small muted">{g.description}</span>
+              </Link>
+            ))}
+          </div>
+          <p className="small muted" style={{ marginTop: 16 }}>
+            Looking for numbers? Read the <Link className="link-accent" href="/market">Roatán market report</Link>.
+          </p>
+        </div>
+      </section>
+
+      <section className="section">
+        <div className="wrap home-faq">
+          <div>
+            <h2 style={{ fontSize: 26 }}>Questions buyers ask</h2>
+            <p className="muted" style={{ margin: '10px 0 18px' }}>About Roatán property and about how Resoha works.</p>
+            <Link className="btn btn--ghost" href="/faq">All questions</Link>
+          </div>
+          <Faq items={HOME_FAQ} open={1} />
+        </div>
+      </section>
+
       <section className="section">
         <div className="wrap cta">
           <div>
@@ -157,8 +211,8 @@ export default async function HomePage() {
               Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link className="btn btn--primary btn--lg" href="/agent">Agent dashboard</Link>
-              <Link className="btn btn--ghost btn--lg" href="/account">Buyer account</Link>
+              <Link className="btn btn--primary btn--lg" href="/for-agents">List for free</Link>
+              <Link className="btn btn--ghost btn--lg" href="/agent">Agent dashboard</Link>
             </div>
           </div>
           {/* лише те, що щось означає: «Agencies 0» на головній працює проти запрошення,

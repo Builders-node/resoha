@@ -7,6 +7,7 @@ import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
 import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
+import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
 import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
@@ -15,6 +16,8 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { LAND_FIELDS, isChecked, landLabel, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
 import { currentUser } from '@/lib/session';
+import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
+import { areaForNeighborhood } from '@/lib/content/areas';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -58,16 +61,25 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const favIds = session ? await getFavorites(session.id) : [];
   const similar = similarAll.filter((l) => l.id !== listing.id).slice(0, 4);
 
+  const area = areaForNeighborhood(listing.neighborhood);
+  const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
+
   const isLand = listing.type === 'land';
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
   return (
     <div className="wrap">
+      <JsonLd data={graph(listingLd(listing, agent.name), breadcrumbLd([
+        { name: 'Home', path: '/' },
+        { name: DEAL_LABELS[listing.deal], path: `/listings?deal=${listing.deal}` },
+        { name: listing.neighborhood, path: areaPath },
+        { name: listing.title, path: `/listings/${listing.id}` },
+      ]))} />
       <div className="crumbs small muted">
         <Link href="/">Home</Link> ·{' '}
         <Link href={`/listings?deal=${listing.deal}`}>{DEAL_LABELS[listing.deal]}</Link> ·{' '}
-        <Link href={`/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`}>{listing.neighborhood}</Link>
+        <Link href={areaPath}>{listing.neighborhood}</Link>
       </div>
 
       <div className="gallery-wrap">
