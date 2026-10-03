@@ -8,10 +8,10 @@ import type { Bbox } from '@/lib/filters';
 import { DEAL_LABELS, fmtPrice, fmtPriceShort, photoUrl, specLine } from '@/lib/format';
 import { fmtDistance, listingFootprint, pathLength } from '@/lib/mapGeo';
 import { BUILDINGS_LAYER, FILL_LAYERS, SATELLITE_LAYER, mapStyle } from '@/lib/mapStyle';
-import type { Deal, Listing } from '@/lib/types';
+import type { Deal, Listing, PropertyType } from '@/lib/types';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
-export type Pin = { id: string; lat: number; lng: number; price: number; deal: Deal };
+export type Pin = { id: string; lat: number; lng: number; price: number; deal: Deal; type?: PropertyType };
 
 type Props = {
   items: Pin[];
@@ -33,6 +33,8 @@ type Props = {
 };
 
 const ORANGE = '#ff6a2b';
+/** Висота умовного будинку, коли OSM його не знає; земля — лише ділянка. */
+const FALLBACK_HEIGHT: Record<PropertyType, number> = { condo: 12, commercial: 9, house: 6, land: 0 };
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
 /** Скелет картки: показуємо одразу, поки вантажиться сам обʼєкт. */
@@ -151,7 +153,7 @@ export default function MapView({
         container: el.current,
         style: mapStyle,
         center: [center[1], center[0]],
-        zoom: detail ? 17 : zoom,
+        zoom: detail ? 17.6 : zoom,
         pitch: detail ? 52 : 0,
         bearing: detail ? -18 : 0,
         maxPitch: 70,
@@ -268,7 +270,7 @@ export default function MapView({
       node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
       node.textContent = fmtPriceShort(l.price, l.deal);
       // на сторінці обʼєкта цінник висить над будинком, як прапорець
-      const mk = new ml.Marker({ element: node, anchor: detail ? 'bottom' : 'center', offset: detail ? [0, -18] : [0, 0] })
+      const mk = new ml.Marker({ element: node, anchor: detail ? 'bottom' : 'center', offset: detail ? [0, -30] : [0, 0] })
         .setLngLat([l.lng, l.lat])
         .addTo(m);
 
@@ -336,20 +338,45 @@ export default function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items, ready, zoomTick]);
 
-  /* --- сторінка обʼєкта: знаходимо його будинки у векторних тайлах і підсвічуємо --- */
+  /*
+   * --- будинки обʼєктів помаранчеві: шукаємо їх у векторних тайлах біля пінів ---
+   * На сторінці обʼєкта ще й заливаємо ділянку і, якщо OSM будинку не знає,
+   * малюємо умовний; у пошуку підсвічуємо лише справжні будинки, від 15-го зуму.
+   */
   useEffect(() => {
     const m = map.current;
-    const pin = items[0];
-    if (!ready || !m || !detail || !pin) return;
-    let done = false;
+    if (!ready || !m || !items.length) return;
+    const hl = m.getSource('hl') as GeoJSONSource;
+    const plotSrc = m.getSource('plot') as GeoJSONSource;
+    // setData сам знову будить карту, і після нього прийде ще один idle —
+    // оновлюємо джерела лише коли результат справді змінився, інакше вийде цикл
+    let last = '';
+    const put = (buildings: FeatureCollection, plot: FeatureCollection) => {
+      const key = JSON.stringify([buildings, plot]);
+      if (key === last) return;
+      last = key;
+      hl.setData(buildings);
+      plotSrc.setData(plot);
+    };
     const highlight = () => {
-      if (done || m.getZoom() < 14) return;
-      const feats = m.querySourceFeatures('omt', { sourceLayer: 'building' });
-      if (!feats.length) return;
-      const { buildings, plot } = listingFootprint(pin.lat, pin.lng, feats as never);
-      (m.getSource('hl') as GeoJSONSource).setData({ type: 'FeatureCollection', features: buildings });
-      (m.getSource('plot') as GeoJSONSource).setData(plot ? { type: 'FeatureCollection', features: [plot] } : EMPTY);
-      done = true;
+      if (!m.isSourceLoaded('omt')) return;
+      if (m.getZoom() < 15) { put(EMPTY, EMPTY); return; }
+      const feats = m.querySourceFeatures('omt', { sourceLayer: 'building' }) as never;
+      if (detail) {
+        const pin = items[0];
+        const { buildings, plot, center } = listingFootprint(pin.lat, pin.lng, feats, {
+          radius: 30, reach: 80, fallbackHeight: FALLBACK_HEIGHT[pin.type ?? 'condo'],
+        });
+        put({ type: 'FeatureCollection', features: buildings }, plot ? { type: 'FeatureCollection', features: [plot] } : EMPTY);
+        markers.current[pin.id]?.setLngLat((center ?? [pin.lng, pin.lat]) as [number, number]);
+        return;
+      }
+      const view = m.getBounds();
+      const inView = items.filter((p) => view.contains([p.lng, p.lat])).slice(0, 60);
+      put({
+        type: 'FeatureCollection',
+        features: inView.flatMap((p) => listingFootprint(p.lat, p.lng, feats, { radius: 25 }).buildings),
+      }, EMPTY);
     };
     highlight();
     m.on('idle', highlight);

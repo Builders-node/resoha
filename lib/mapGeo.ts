@@ -75,13 +75,27 @@ function grow(ring: XY[], by: number, scale = 1): XY[] {
 
 type Building = Feature<Polygon, { render_height?: number; render_min_height?: number }>;
 
+type FootprintOpts = {
+  /** будинки ближче за стільки метрів вважаємо будинками обʼєкта */
+  radius?: number;
+  /** якщо поруч нічого — беремо найближчий будинок у межах стількох метрів */
+  reach?: number;
+  /**
+   * Якщо будинків немає зовсім (на Роатані OSM знає далеко не всі): висота умовного
+   * будинку, який малюємо самі; 0 — лише ділянка (земля), null — нічого.
+   */
+  fallbackHeight?: number | null;
+};
+
 /**
  * Будинки обʼєкта: ті, що містять точку або стоять ближче за `radius` метрів.
- * Повертає підсвічені будинки (трохи збільшені, щоб стіни не мерехтіли поверх
- * звичайних) і контур ділянки навколо них.
+ * Координати обʼєктів часто приблизні, тому інакше беремо найближчий будинок,
+ * а коли й такого немає — малюємо умовний. Повертає підсвічені будинки (трохи
+ * збільшені, щоб стіни не мерехтіли поверх звичайних) і контур ділянки навколо них.
  */
 export function listingFootprint(
-  lat: number, lng: number, features: { geometry: unknown; properties: Record<string, unknown> }[], radius = 30,
+  lat: number, lng: number, features: { geometry: unknown; properties: Record<string, unknown> }[],
+  { radius = 30, reach = radius, fallbackHeight = null }: FootprintOpts = {},
 ) {
   const { toXY, toLngLat } = localProjection(lat, lng);
   const seen = new Set<string>();
@@ -100,11 +114,22 @@ export function listingFootprint(
       seen.add(key);
       const ring = outer.map(toXY);
       const d = distTo([0, 0], ring);
-      if (d <= radius) near.push({ ring, d, props: f.properties });
+      if (d <= Math.max(radius, reach)) near.push({ ring, d, props: f.properties });
     }
   }
   near.sort((a, b) => a.d - b.d);
-  const picked = near.slice(0, 8);
+  let picked = near.filter((b) => b.d <= radius).slice(0, 8);
+  if (!picked.length && near.length) picked = [near[0]];
+  if (!picked.length && fallbackHeight !== null) {
+    // умовний будинок 16×11 м (для землі — лише ділянка 40×40 м)
+    const [w, h] = fallbackHeight > 0 ? [8, 5.5] : [20, 20];
+    const ring: XY[] = [[-w, -h], [w, -h], [w, h], [-w, h], [-w, -h]];
+    picked = fallbackHeight > 0 ? [{ ring, d: 0, props: { render_height: fallbackHeight } }] : [];
+    if (!picked.length) {
+      const r = ring.map(toLngLat);
+      return { buildings: [], center: null, plot: { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [r] } } as Feature<Polygon> };
+    }
+  }
 
   const buildings: Building[] = picked.map(({ ring, props }) => ({
     type: 'Feature',
@@ -123,7 +148,12 @@ export function listingFootprint(
       plot = { type: 'Feature', properties: {}, geometry: { type: 'Polygon', coordinates: [[...ring, ring[0]]] } };
     }
   }
-  return { buildings, plot };
+  // центр підсвічених будинків — туди ставимо цінник (координати обʼєкта бувають приблизні)
+  const pts = picked.flatMap((b) => b.ring);
+  const center = pts.length
+    ? toLngLat([pts.reduce((a, p) => a + p[0], 0) / pts.length, pts.reduce((a, p) => a + p[1], 0) / pts.length])
+    : null;
+  return { buildings, plot, center };
 }
 
 /** Довжина ламаної в метрах (гаверсинус — лінійка може тягнутися на кілометри). */
