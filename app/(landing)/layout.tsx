@@ -4,7 +4,7 @@ import Icon from '@/components/Icon';
 import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 
 /**
- * Лендинги живуть без рейки каталогу: власна легка шапка з виходом у каталог
+ * Контентна частина (FAQ, гайди, райони, ринок, паспорт ділянки, про нас) живе без рейки каталогу: власна легка шапка з виходом у каталог
  * і короткий футер. Так сторінка читається як окремий сайт, а не як розділ кабінету.
  */
 export default function LandingLayout({ children }: { children: React.ReactNode }) {
@@ -17,9 +17,11 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
             <span>Resoha<span className="logo__sub"> Roatán</span></span>
           </Link>
           <nav className="lp-head__nav">
-            <Link href="/listings?deal=sale">Buy</Link>
-            <Link href="/listings?deal=rent">Rent</Link>
-            <Link href="/listings?type=land">Land</Link>
+            <Link href="/guides">Guides</Link>
+            <Link href="/areas">Areas</Link>
+            <Link href="/market">Market</Link>
+            <Link href="/land-passport">Land passport</Link>
+            <Link href="/faq">FAQ</Link>
             <Link href="/for-agents">For agents</Link>
           </nav>
           <Link className="btn btn--orange" href="/listings?deal=sale" aria-label="Browse listings">
@@ -43,8 +45,7 @@ export default function LandingLayout({ children }: { children: React.ReactNode 
           </div>
           <nav className="lp-foot__nav small">
             <Link href="/">Catalogue</Link>
-            <Link href="/guides">Guides</Link>
-            <Link href="/market">Market report</Link>
+            <Link href="/about">About</Link>
             <Link href="/privacy">Privacy</Link>
             <Link href="/terms">Terms</Link>
             {CONTACT_EMAIL && <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>}

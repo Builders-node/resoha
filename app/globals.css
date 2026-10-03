@@ -854,6 +854,7 @@ textarea.input{resize:vertical;min-height:96px}
 .lp-head__in{display:flex;align-items:center;gap:28px;height:64px}
 .lp-head__nav{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:14px}
 .lp-head__nav a:hover{color:var(--orange)}
+.lp .wrap{max-width:1200px}
 
 .lp-hero{background:#131316;color:#fff;padding:64px 0 56px}
 .lp-hero__eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
@@ -918,8 +919,10 @@ textarea.input{resize:vertical;min-height:96px}
   .lp-topics{grid-template-columns:repeat(3,1fr)}
   .lp-body{grid-template-columns:1fr;gap:0}
   .lp-side{display:none}
-  .lp-head__nav{display:none}
+  .lp-head__in{flex-wrap:wrap;height:auto;padding-top:10px;row-gap:6px}
   .lp-head__in .btn{margin-left:auto}
+  .lp-head__nav{order:3;flex:1 0 100%;margin:0;gap:18px;overflow-x:auto;white-space:nowrap;padding-bottom:10px;scrollbar-width:none}
+  .lp-head__nav::-webkit-scrollbar{display:none}
 }
 @media (max-width:560px){
   .lp-wrap{padding:0 16px}
