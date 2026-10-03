@@ -162,6 +162,8 @@ export interface ListingQuery {
   agentId?: string;
   agencyId?: string;
   sort?: SortKey;
+  /** межі карти: [south, west, north, east] */
+  bbox?: [number, number, number, number];
   ids?: string[];
   includeInactive?: boolean;
   /** лише земля, готова до будівництва (land_facts.ready) */

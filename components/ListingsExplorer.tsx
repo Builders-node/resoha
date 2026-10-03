@@ -7,7 +7,9 @@ import Icon from './Icon';
 import ListingCard from './ListingCard';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
-import { EMPTY_FILTERS, type Filters, countActive, fromParams, toQuery } from '@/lib/filters';
+import {
+  type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
+} from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { Listing } from '@/lib/types';
 
@@ -32,6 +34,8 @@ export default function ListingsExplorer({
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
+  // межі, куди користувач посунув карту після останнього пошуку — тоді й зʼявляється «Search this area»
+  const [movedTo, setMovedTo] = useState<Bbox | null>(null);
   // на вузьких екранах показуємо щось одне: список або карту
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
@@ -56,6 +60,7 @@ export default function ListingsExplorer({
   }, []);
 
   const qs = useMemo(() => toQuery(filters), [filters]);
+  const area = useMemo(() => parseBbox(filters.bbox) ?? null, [filters.bbox]);
 
   // Що вже завантажено: стартове значення — запит, який віддав сервер, тож на
   // монтуванні той самий список не тягнеться вдруге (і StrictMode це не ламає).
@@ -85,6 +90,7 @@ export default function ListingsExplorer({
     setHasMore(initialHasMore);
     setPage(0);
     setActiveId(null);
+    setMovedTo(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlQs]);
 
@@ -95,6 +101,8 @@ export default function ListingsExplorer({
     let cancelled = false;
     setLoading(true);
     setPage(0);
+    // нова вибірка переставить карту сама — стара пропозиція шукати тут уже ні до чого
+    setMovedTo(null);
 
     // список — першою сторінкою, карта — всіма збігами одразу
     Promise.all([
@@ -148,6 +156,12 @@ export default function ListingsExplorer({
     toast(res.ok ? 'Search saved to your account' : 'Could not save the search');
   }
 
+  const searchArea = () => {
+    if (!movedTo) return;
+    set({ bbox: formatBbox(movedTo) });
+    setMovedTo(null);
+  };
+
   const active = countActive(filters);
 
   return (
@@ -184,6 +198,13 @@ export default function ListingsExplorer({
             <Icon name="bookmark" size={17} /> <span className="btn__t">Save search</span>
           </button>
 
+          {filters.bbox && (
+            <button className="btn btn--sm btn--primary filters__area" onClick={() => set({ bbox: '' })}
+              aria-label="Clear map area">
+              <Icon name="map" size={17} /> <span className="btn__t">Map area</span> <Icon name="close" size={15} />
+            </button>
+          )}
+
           {active > 0 && (
             <button className="btn btn--sm btn--ghost filters__reset"
               onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>Reset all</button>
@@ -211,7 +232,9 @@ export default function ListingsExplorer({
           {total === 0 && !loading ? (
             <div className="empty">
               <div className="empty__ico"><Icon name="island" size={40} /></div>
-              {active > 0
+              {filters.bbox
+                ? 'Nothing in this part of the map. Zoom out or move the map, then search again.'
+                : active > 0
                 ? 'Nothing matches these filters. Drop one of them and try again.'
                 : `Nothing on Roatán ${filters.deal === 'rent' ? 'for rent' : 'for sale'} in this section yet.`}
             </div>
@@ -241,7 +264,13 @@ export default function ListingsExplorer({
         </div>
 
         <div className="split__map">
-          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId} />
+          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId}
+            area={area} onMoved={setMovedTo} />
+          {movedTo && (
+            <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>
+              <Icon name="search" size={16} /> Search this area
+            </button>
+          )}
         </div>
       </div>
 

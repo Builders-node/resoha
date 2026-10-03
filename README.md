@@ -45,7 +45,7 @@ Neither can be set from SQL, both take a click in **Authentication → Sign In /
 | Route | What it is |
 |---|---|
 | `/` | Home: island picker, category tiles, featured, areas, agency board, “Buying on Roatán” explainer |
-| `/listings` | Compact filter bar + full filters sheet, result list, island map with price pins and hover cards |
+| `/listings` | Compact filter bar + full filters sheet, result list, island map with price pins, hover cards and “Search this area” after you pan or zoom |
 | `/listings/[id]` | Property page: gallery, specs, map, agent card with phone/WhatsApp, enquiry form |
 | `/admin` | Admin: overview with listing-quality checks, listings, enquiries, agencies, people, reviews, log |
 | `/agents` | Public directory: agencies board and every realtor with their listing count |
@@ -292,7 +292,6 @@ Checked by probing PostgREST directly with the anon key, not just through the ap
 |---|---|
 | **Transactional email** | Supabase's built-in SMTP is rate-limited, so confirmation and password-reset letters stall. The flows are built and handled gracefully; connect your own SMTP (or switch *Confirm email* off) to make them real |
 | **Saved-search alerts** | Counts are live, but nothing emails you when a match appears — same SMTP dependency |
-| **Map viewport search** | Clusters work; “search this area” as you pan does not exist yet |
 
 ## Deliberately out of scope
 

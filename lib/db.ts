@@ -140,6 +140,10 @@ function applyFilters(sel: any, q: ListingQuery) {
   if (q.lotMax) sel = sel.gt('lot_acres', 0).lte('lot_acres', q.lotMax);
   if (q.hoaMax !== undefined) sel = sel.lte('hoa', q.hoaMax);
   if (q.yearMin) sel = sel.gte('year', q.yearMin);
+  if (q.bbox) {
+    const [south, west, north, east] = q.bbox;
+    sel = sel.gte('lat', south).lte('lat', north).gte('lng', west).lte('lng', east);
+  }
   if (q.oceanfront) sel = sel.eq('oceanfront', true);
   if (q.titled) sel = sel.eq('titled', true);
   if (q.ownerFinancing) sel = sel.eq('owner_financing', true);
