@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Map as LeafletMap, Marker } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import type { Bbox } from '@/lib/filters';
 import { DEAL_LABELS, fmtPrice, fmtPriceShort, photoUrl, specLine } from '@/lib/format';
 import type { Deal, Listing } from '@/lib/types';
 
@@ -17,6 +18,10 @@ type Props = {
   center?: [number, number];
   zoom?: number;
   interactive?: boolean;
+  /** активний пошук по області: карта стоїть на цих межах, а не підганяється під піни */
+  area?: Bbox | null;
+  /** користувач посунув або наблизив карту — межі нового виду */
+  onMoved?: (bounds: Bbox) => void;
 };
 
 /** Скелет картки: показуємо одразу, поки вантажиться сам обʼєкт. */
@@ -49,7 +54,7 @@ function buildPopupNode(l: Listing, onClick: () => void) {
 }
 
 export default function MapView({
-  items, activeId, onSelect, onHover, center = [16.36, -86.45], zoom = 11, interactive = true,
+  items, activeId, onSelect, onHover, area, onMoved, center = [16.36, -86.45], zoom = 11, interactive = true,
 }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<LeafletMap | null>(null);
@@ -61,12 +66,24 @@ export default function MapView({
   const refit = useRef<(() => void) | null>(null);
   const lastSize = useRef({ w: 0, h: 0 });
   const [zoomTick, setZoomTick] = useState(0);
+  // вибірка, під яку карту вже підігнали: перегрупування після зуму її не міняє
+  const fittedFor = useRef<Pin[] | null>(null);
+  // >0, поки карту рухаємо ми самі — такі moveend не мають показувати «Search this area»
+  const quiet = useRef(0);
+  const quietly = (fn: () => void) => {
+    quiet.current++;
+    try { fn(); } finally { quiet.current--; }
+  };
   // колбеки тримаємо у рефах, щоб не перестворювати карту на кожен рендер батька;
   // писати в них треба в ефекті — під час рендера React це забороняє
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
+  const onMovedRef = useRef(onMoved);
+  const areaRef = useRef(area);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
   useEffect(() => { onHoverRef.current = onHover; }, [onHover]);
+  useEffect(() => { onMovedRef.current = onMoved; }, [onMoved]);
+  useEffect(() => { areaRef.current = area; }, [area]);
 
   const [ready, setReady] = useState(false);
   const router = useRouter();
@@ -94,6 +111,11 @@ export default function MapView({
 
       // перегруповуємо після кожної зміни масштабу
       m.on('zoomend', () => setZoomTick((t) => t + 1));
+      m.on('moveend', () => {
+        if (quiet.current) return;
+        const b = m.getBounds();
+        onMovedRef.current?.([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]);
+      });
       map.current = m;
       ro = new ResizeObserver((entries) => {
         const box = entries[0].contentRect;
@@ -101,11 +123,11 @@ export default function MapView({
         // масштаб по нулю, тож після invalidateSize повертаємо межі на місце
         const wasHidden = lastSize.current.w === 0 || lastSize.current.h === 0;
         lastSize.current = { w: box.width, h: box.height };
-        m.invalidateSize();
+        quietly(() => m.invalidateSize());
         if (wasHidden && box.width > 0 && box.height > 0) refit.current?.();
       });
       ro.observe(el.current);
-      setTimeout(() => m.invalidateSize(), 0);
+      setTimeout(() => quietly(() => m.invalidateSize()), 0);
       setReady(true);
     })();
 
@@ -115,6 +137,7 @@ export default function MapView({
       map.current?.remove();
       map.current = null;
       markers.current = {};
+      fittedFor.current = null;
       setReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -228,19 +251,29 @@ export default function MapView({
         markers.current[l.id] = mk;
       });
 
-      const fitToItems = () => {
+      const fitToItems = (first: boolean) => quietly(() => {
+        const a = areaRef.current;
+        if (a) {
+          // пошук по області: карта лишається там, де її поставили; підганяємо
+          // лише коли вид цю область не вміщає (відкрили посилання з bbox)
+          const b = L.latLngBounds([a[0], a[1]], [a[2], a[3]]);
+          if (first || !m.getBounds().pad(0.02).contains(b)) m.fitBounds(b, { animate: false });
+          return;
+        }
         if (!items.length) return;
         if (items.length > 1) {
           m.fitBounds(L.latLngBounds(items.map((l) => [l.lat, l.lng] as [number, number])).pad(0.2), { animate: false });
         } else {
           m.setView([items[0].lat, items[0].lng], Math.max(zoom, 14), { animate: false });
         }
-      };
-      refit.current = fitToItems;
+      });
+      refit.current = () => fitToItems(true);
 
-      m.invalidateSize();
-      if (zoomTick > 0) return;          // це перегрупування, а не нова вибірка
-      fitToItems();
+      quietly(() => m.invalidateSize());
+      if (fittedFor.current === items) return;   // це перегрупування, а не нова вибірка
+      const first = fittedFor.current === null;
+      fittedFor.current = items;
+      fitToItems(first);
     })();
 
     return () => { cancelled = true; };

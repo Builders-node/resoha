@@ -25,13 +25,15 @@ export type Filters = {
   agencyId: string;
   q: string;
   sort: string;
+  /** «шукати в цій області»: межі карти як `south,west,north,east` */
+  bbox: string;
 };
 
 export const EMPTY_FILTERS: Filters = {
   deal: '', type: '', neighborhoods: [], beds: [], bathsMin: '',
   priceMin: '', priceMax: '', sqftMin: '', sqftMax: '', lotMin: '', lotMax: '',
   hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false, ready: false,
-  tags: [], agentId: '', agencyId: '', q: '', sort: '',
+  tags: [], agentId: '', agencyId: '', q: '', sort: '', bbox: '',
 };
 
 export const AMENITIES = [
@@ -64,6 +66,7 @@ export function toQuery(f: Filters): string {
   put('agencyId', f.agencyId);
   put('q', f.q);
   put('sort', f.sort);
+  put('bbox', f.bbox);
   return p.toString();
 }
 
@@ -89,6 +92,7 @@ export function fromParams(bag: ParamBag): Filters {
     ownerFinancing: get('ownerFinancing') === '1',
     ready: get('ready') === '1',
     tags: arr('tags'), agentId: get('agentId'), agencyId: get('agencyId'), q: get('q'), sort: get('sort'),
+    bbox: parseBbox(get('bbox')) ? get('bbox') : '',
   };
 }
 
@@ -110,7 +114,25 @@ export function countActive(f: Filters): number {
   if (f.ready && f.type === 'land') n++;
   n += f.tags.length;
   if (f.q) n++;
+  if (f.bbox) n++;
   return n;
+}
+
+export type Bbox = [south: number, west: number, north: number, east: number];
+
+/** `south,west,north,east` → числа; криві або перевернуті межі відкидаємо. */
+export function parseBbox(v: string | null | undefined): Bbox | undefined {
+  if (!v) return undefined;
+  const n = v.split(',').map(Number);
+  if (n.length !== 4 || !n.every(Number.isFinite)) return undefined;
+  const [s, w, no, e] = n;
+  if (s >= no || w >= e || s < -90 || no > 90 || w < -180 || e > 180) return undefined;
+  return [s, w, no, e];
+}
+
+/** Межі карти → рядок для URL. 4 знаки — це ~11 м, точніше не треба, а адреса коротша. */
+export function formatBbox(b: Bbox): string {
+  return b.map((x) => x.toFixed(4)).join(',');
 }
 
 /** Рядок запиту → фільтр для бази. Один розбір на всі місця, де він потрібен. */
@@ -147,6 +169,7 @@ export function toListingQuery(sp: URLSearchParams): ListingQuery {
     agentId: sp.get('agentId') || undefined,
     agencyId: sp.get('agencyId') || undefined,
     sort: (sp.get('sort') as SortKey) || undefined,
+    bbox: parseBbox(sp.get('bbox')),
     ids: list('ids'),
     includeInactive: sp.get('includeInactive') === '1',
   };

@@ -194,6 +194,11 @@ textarea.input{resize:vertical;min-height:96px}
 .split__list{overflow-y:auto;padding:18px 24px 60px}
 .split__map{position:relative;z-index:0;background:var(--bg-soft)}
 #map{position:absolute;inset:0}
+/* «Search this area»: зʼявляється над картою, щойно її посунули після пошуку */
+.map-area-btn{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:1000;
+  background:#fff;border-color:var(--line);box-shadow:var(--shadow);border-radius:999px}
+.map-area-btn:hover{background:var(--bg-soft)}
+.map-area-btn:disabled{opacity:.6;cursor:default}
 .list-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .list-head h1{font-size:21px}
 .grid--list{grid-template-columns:repeat(2,1fr);gap:18px}
@@ -411,8 +416,8 @@ textarea.input{resize:vertical;min-height:96px}
   .filters__in{flex-wrap:wrap;row-gap:8px}
   .filters .filters__q{flex:1 0 100%;min-width:0}
   .filters .filters__type{flex:1 1 auto;min-width:0}
-  .filters__more,.filters__save{flex:none}
-  .filters__save .btn__t{display:none}
+  .filters__more,.filters__save,.filters__area{flex:none}
+  .filters__save .btn__t,.filters__area .btn__t{display:none}
   .filters__ocean,.filters__reset,.filters__count{display:none}
   .grid--3,.grid--4,.grid--list{grid-template-columns:repeat(2,1fr)}
   .tiles{grid-template-columns:repeat(2,1fr)}
