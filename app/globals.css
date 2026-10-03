@@ -734,3 +734,114 @@ textarea.input{resize:vertical;min-height:96px}
   .quality__row{grid-template-columns:1fr auto;row-gap:6px}
   .quality__row .btn{grid-column:1/-1}
 }
+
+/* ===== Контентні сторінки: гайди, райони, паспорт ділянки, звіт по ринку ===== */
+.promo h1{font-size:clamp(26px,3vw,40px);text-transform:uppercase;color:var(--orange);line-height:1.02}
+.promo__btns{display:flex;gap:10px;flex-wrap:wrap}
+.promo__ghost,.hero__ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
+.promo__ghost:hover,.hero__ghost:hover{background:rgba(255,255,255,.1)}
+
+.page{padding-bottom:56px}
+.page > h1{font-size:clamp(28px,3.4vw,40px);margin:6px 0 14px;max-width:900px}
+.page__lead{font-size:17px;color:var(--ink-2);max-width:760px;margin:0 0 26px;line-height:1.5}
+.page__cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:36px;align-items:start;margin-top:8px}
+.page__aside{position:sticky;top:20px}
+.page__aside-btns{display:grid;gap:8px}
+.rounded{border-radius:var(--radius-lg);padding-left:28px;padding-right:28px;margin:10px 0}
+
+.hero{border-radius:var(--radius-lg);padding:44px 40px;margin:10px 0 8px}
+.hero--dark{background:#131316;color:#fff}
+.hero h1{font-size:clamp(30px,4vw,52px);line-height:1.02;max-width:900px;margin:10px 0 16px}
+.hero__eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
+.hero__sub{color:#c9c9d2;font-size:17px;line-height:1.55;max-width:720px;margin:0 0 24px}
+.hero__cta{display:flex;gap:10px;flex-wrap:wrap}
+.hero__note{color:#9a9aa3;margin:18px 0 0}
+
+.prose{max-width:780px}
+.prose--flush{padding:0}
+.prose h1{font-size:clamp(28px,3.4vw,40px);margin:6px 0 10px}
+.prose h2{font-size:22px;margin:34px 0 12px}
+.prose h3{font-size:17px}
+.prose p,.prose li{font-size:16px;line-height:1.62}
+.prose p{margin:0 0 14px}
+.prose ul,.prose ol{margin:0 0 14px;padding-left:22px}
+.prose li{margin-bottom:8px}
+.prose__meta{margin:0 0 20px}
+.prose__note{background:var(--orange-soft);border-radius:var(--radius);padding:14px 16px;font-size:14.5px!important}
+.prose__table{overflow-x:auto;margin:0 0 16px;border:1px solid var(--line);border-radius:var(--radius)}
+.prose__table .table td,.prose__table .table th{font-size:14.5px}
+.prose__table .table tr:last-child td{border-bottom:0}
+.prose__facts{background:var(--bg-soft);border-radius:var(--radius);padding:4px 22px 8px;margin:18px 0}
+.prose__facts h2{font-size:17px;margin:16px 0 10px}
+.prose__cta{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
+  background:#131316;color:#fff;border-radius:var(--radius-lg);padding:26px 28px;margin:36px 0 10px}
+.prose__cta h2{margin:0 0 6px;font-size:21px}
+.prose__cta p{margin:0;color:#c9c9d2}
+.prose__cta-btns{display:flex;gap:10px;flex-wrap:wrap}
+.prose__cta .btn--ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
+
+.answer{border-left:4px solid var(--orange);background:var(--bg-soft);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:0 0 18px;max-width:880px}
+.answer__k{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}
+.answer p{margin:6px 0 0;font-size:17px;line-height:1.55}
+
+.toc{border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin:18px 0 8px}
+.toc ol{margin:8px 0 0;padding-left:20px}
+.toc li{margin-bottom:4px;font-size:14px}
+.toc a:hover{color:var(--orange)}
+
+.sources{padding-left:20px}
+.sources li{margin-bottom:6px;font-size:14px!important}
+
+.faq{display:grid;gap:10px}
+.faq details{border:1px solid var(--line);border-radius:var(--radius);padding:0 18px;background:#fff}
+.faq summary{cursor:pointer;list-style:none;padding:16px 28px 16px 0;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:0;top:12px;font-size:22px;font-weight:500;color:var(--ink-3)}
+.faq details[open] summary::after{content:"−"}
+.faq summary h3{font-size:16px;letter-spacing:-.01em;line-height:1.35}
+.faq details p{margin:0 0 16px;color:var(--ink-2);font-size:15px;line-height:1.6}
+.home-faq{display:grid;grid-template-columns:minmax(0,.7fr) minmax(0,1.3fr);gap:40px;align-items:start}
+
+.guide-list{display:grid;gap:12px}
+.guide-list--wide{grid-template-columns:repeat(3,1fr)}
+.guide-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:#fff;transition:.15s}
+.guide-card:hover{border-color:var(--ink);box-shadow:var(--shadow)}
+.guide-card b{font-size:16px;letter-spacing:-.01em;line-height:1.3}
+
+.facts{align-items:stretch}
+.fact{background:var(--bg-soft);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:8px}
+.fact h3{font-size:17px}
+.fact p{margin:0}
+.fact__ico{color:var(--orange)}
+.fact__tag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--chip);border-radius:6px;padding:3px 7px}
+.fact__tag--core{background:var(--orange);color:#fff}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.steps p{margin:10px 0 0}
+.steps-list{padding-left:20px;margin:12px 0 0}
+.steps-list li{margin-bottom:10px;line-height:1.5}
+
+.area-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:var(--radius);padding:20px;transition:.15s}
+.area-card:hover{border-color:var(--ink);box-shadow:var(--shadow)}
+.area-card__top{display:flex;justify-content:space-between;align-items:center;font-size:18px}
+.area-card__price{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--orange)}
+.area-stats{grid-template-columns:1fr 1fr 2fr}
+.area-stats .stat{display:flex;flex-direction:column;gap:2px}
+.stat__text{font-size:18px!important;letter-spacing:-.01em!important;line-height:1.3}
+
+@media (max-width:1080px){
+  .page__cols,.home-faq{grid-template-columns:1fr}
+  .page__aside{position:static}
+  .guide-list--wide{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:860px){
+  .area-stats{grid-template-columns:1fr 1fr}
+  .stat--wide{grid-column:span 2}
+}
+@media (max-width:560px){
+  .hero{padding:28px 20px}
+  .rounded{padding-left:16px;padding-right:16px}
+  .guide-list--wide,.steps{grid-template-columns:1fr}
+}
+.rounded .stat{background:#fff}
+.faq + p{margin-top:16px}

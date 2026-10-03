@@ -6,6 +6,8 @@ import SidebarSlot from '@/components/SidebarSlot';
 import Footer from '@/components/Footer';
 import Toaster from '@/components/Toaster';
 import AuthModal from '@/components/AuthModal';
+import JsonLd from '@/components/JsonLd';
+import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
@@ -18,8 +20,8 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'Resoha Roatán — property on the Bay Islands',
-  description: 'Homes, condos and titled land on Roatán, Honduras — mapped listings, direct agent contacts, buyer and agent accounts.',
+  title: 'Roatán Real Estate: Homes, Condos & Land for Sale | Resoha',
+  description: 'Every property on Roatán in one checked place: homes, condos, rentals and land from island agencies, with a land passport on every lot and direct WhatsApp contact with agents.',
   openGraph: { siteName: SITE_NAME, type: 'website', locale: 'en_US' },
   twitter: { card: 'summary_large_image' },
 };
@@ -28,6 +30,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={inter.variable}>
       <body>
+        {/* хто ми — на кожній сторінці, щоб пошуковики й AI-асистенти звʼязували всі сторінки з одним брендом */}
+        <JsonLd data={graph(organizationLd(), websiteLd())} />
         <div className="app">
           <Suspense fallback={<aside className="sidebar" />}>
             <SidebarSlot />
