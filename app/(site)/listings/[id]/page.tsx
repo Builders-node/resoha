@@ -219,7 +219,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
           <div id="miniMap">
-            <MapView items={[listing]} zoom={14} center={[listing.lat, listing.lng]} interactive={false} />
+            <MapView items={[listing]} center={[listing.lat, listing.lng]} detail />
           </div>
 
           <p className="tiny muted" style={{ marginTop: 14 }}>
