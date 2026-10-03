@@ -206,15 +206,41 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* Маркери */
 .price-pin{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-weight:800;font-size:12.5px;
-  box-shadow:var(--shadow);white-space:nowrap;transition:.15s}
+  box-shadow:var(--shadow);white-space:nowrap;transition:.15s;position:relative}
+/* хвостик цінника вказує на будинок під ним */
+.price-pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;background:inherit;
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
 .price-pin.is-active,.price-pin:hover{background:var(--ink);color:#fff;border-color:var(--ink);transform:scale(1.06)}
 
 /* Картка на карті */
-/* leaflet.css вантажиться після цього файлу — тому !important, інакше повертається
-   його власний padding і навколо картки зʼявляється біла рамка */
-.leaflet-popup-content{margin:0 !important;width:240px !important}
-.leaflet-popup-content-wrapper{padding:0 !important;border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg)}
-.leaflet-popup-tip{box-shadow:none}
+/* знімаємо власні відступи й рамку попапа MapLibre — картка займає його цілком */
+.map-pop-wrap .maplibregl-popup-content{padding:0;border-radius:16px;overflow:hidden;box-shadow:var(--shadow-lg);width:240px}
+.map-pop-wrap .maplibregl-popup-tip{display:none}
+
+/* Цінник обʼєкта на його сторінці: помаранчевий «прапорець» над будинком */
+.price-pin--hero,.price-pin--hero:hover{background:var(--orange);color:#fff;border-color:var(--orange);
+  font-size:15px;padding:8px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(255,72,0,.35);transform:none;position:relative}
+.price-pin--hero::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;margin-left:-6px;
+  background:var(--orange);transform:rotate(45deg);border-radius:2px;border:0}
+
+/* Кнопки карти: компас, шари, лінійка, «де я», зум — праворуч унизу, як у ЛУН */
+/* id-селектор важливий: maplibre-gl.css вантажиться пізніше й ставить контейнеру
+   position:relative — тоді в нього нульова висота і карти не видно */
+#map > .map-canvas{position:absolute;inset:0}
+.map-ctrl{position:absolute;right:14px;bottom:28px;z-index:2;display:flex;flex-direction:column;gap:10px}
+.map-ctrl__group{display:flex;flex-direction:column;background:#fff;border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.map-ctrl__group .map-ctrl__btn{border-radius:0;box-shadow:none}
+.map-ctrl__group .map-ctrl__btn + .map-ctrl__btn{border-top:1px solid var(--line)}
+.map-ctrl__btn{width:44px;height:44px;display:grid;place-items:center;border:0;background:#fff;color:var(--ink);
+  border-radius:12px;box-shadow:var(--shadow);cursor:pointer;padding:0}
+.map-ctrl__btn svg{transition:transform .15s}
+.map-ctrl__btn:hover{background:var(--bg-soft)}
+.map-ctrl__btn.is-on{color:var(--orange)}
+.map-ruler{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;display:flex;gap:10px;align-items:center;
+  background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);white-space:nowrap}
+.map-ruler button{border:0;background:var(--chip);border-radius:999px;padding:3px 10px;font-weight:600;font-size:12.5px;cursor:pointer}
+.map-me{width:16px;height:16px;border-radius:50%;background:#2f80ff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,128,255,.2)}
+.maplibregl-ctrl-attrib{font-size:11px}
 .map-pop{position:relative;width:240px;height:190px;cursor:pointer;color:#fff}
 .map-pop img{width:100%;height:100%;object-fit:cover}
 .map-pop::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,
@@ -292,7 +318,7 @@ textarea.input{resize:vertical;min-height:96px}
 .agent-card__top .ava{width:56px;height:56px;border-radius:50%;object-fit:cover}
 .phone-box{background:var(--bg-soft);border-radius:12px;padding:12px 14px;font-weight:800;font-size:17px;text-align:center;margin:12px 0}
 .rating{display:inline-flex;gap:4px;align-items:center;font-weight:800}
-#miniMap{height:260px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
+#miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
 
 /* ===== Кабінети ===== */
 .dash{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:26px 0 70px;align-items:start}
