@@ -327,6 +327,18 @@ password reset and saved-search alerts all wait on the same thing. Pick one:
 - **Proper:** connect SMTP (Resend, Postmark, SES) under Authentication → Emails, then leave
   confirmation on.
 
+### Legal pages and contact address
+
+`/privacy` and `/terms` describe what the site actually does (enquiries, accounts, Google sign-in,
+WhatsApp hand-off, Land check). Two env variables fill in the blanks:
+
+- `NEXT_PUBLIC_OPERATOR` — the legal name behind the site (default "Resoha Roatán")
+- `NEXT_PUBLIC_CONTACT_EMAIL` — the address shown in the footer and on both pages; without it the
+  pages point people to the enquiry form
+
+Google's OAuth consent screen needs the privacy policy URL before the app can leave "Testing" mode.
+Have a Honduran lawyer read both pages before launch — they are drafts, not legal advice.
+
 ### Google sign-in
 
 The code is in place (`/api/auth/google` → Google → `/auth/callback`), but the provider is off in

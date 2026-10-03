@@ -9,6 +9,12 @@ export const SITE_URL = (
   || 'http://localhost:3000'
 ).replace(/\/$/, '');
 
+/** Куди писати з питань даних і умов. Без адреси сторінки відсилають до форми на обʼєкті. */
+export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
+/** Хто юридично стоїть за сайтом — підставляється в політику й умови. */
+export const OPERATOR = process.env.NEXT_PUBLIC_OPERATOR ?? 'Resoha Roatán';
+export const LEGAL_UPDATED = '2 October 2026';
+
 export const SITE_NAME = 'Resoha Roatán';
 
 /** Шлях для редиректу після входу: лише всередині сайту, щоб ?next= не вів на чужий домен. */

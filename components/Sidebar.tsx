@@ -131,6 +131,10 @@ export default function Sidebar({ session }: { session: Session | null }) {
               </>
             )}
 
+            {/* футер на телефоні схований — правові сторінки мають бути досяжні звідси */}
+            <p className="tiny muted" style={{ textAlign: 'center', margin: '6px 0 10px' }}>
+              <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
+            </p>
             <button className="btn btn--ghost btn--block" onClick={() => setMore(false)}>Close</button>
           </div>
         </div>

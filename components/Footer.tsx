@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Logo from './Logo';
+import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 
 export default function Footer() {
   return (
@@ -31,10 +32,19 @@ export default function Footer() {
               <li><Link href="/agent">Agent dashboard</Link></li>
             </ul>
           </div>
+          <div>
+            <h4>Resoha</h4>
+            <ul>
+              <li><Link href="/privacy">Privacy policy</Link></li>
+              <li><Link href="/terms">Terms of use</Link></li>
+              {CONTACT_EMAIL && <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>}
+            </ul>
+          </div>
         </div>
       </div>
       <div className="wrap tiny muted" style={{ marginTop: 26 }}>
-        © 2026 Resoha — prototype. Listing details are as published by the agency holding each property.
+        © 2026 {OPERATOR}. Resoha is a listing platform, not a broker — listing details are as published by the
+        agency holding each property.
       </div>
     </footer>
   );

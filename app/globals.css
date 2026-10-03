@@ -318,6 +318,15 @@ textarea.input{resize:vertical;min-height:96px}
 .cta{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
 
 /* ===== Футер ===== */
+/* правові сторінки: вузька колонка, читається як документ */
+.legal{max-width:720px;padding:36px 0 64px}
+.legal h1{font-size:32px;margin-bottom:12px}
+.legal__lead{font-size:16px;color:var(--ink-2);margin-bottom:28px}
+.legal section{margin-bottom:26px}
+.legal h2{font-size:18px;margin-bottom:8px}
+.legal p{margin:0 0 10px;font-size:15px;line-height:1.55}
+.legal ul{margin:0 0 10px;padding-left:20px}
+.legal li{margin-bottom:6px;font-size:15px;line-height:1.5}
 .footer{border-top:1px solid var(--line);padding:36px 0;color:var(--ink-2);font-size:14px;background:var(--bg-soft)}
 .footer__in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .footer__cols{display:flex;gap:56px;flex-wrap:wrap}

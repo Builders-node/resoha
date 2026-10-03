@@ -195,6 +195,11 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
           <button className="btn btn--primary btn--lg btn--block" disabled={busy}>
             {busy ? 'Creating…' : mode === 'agency' ? 'Create agency account' : 'Create account'}
           </button>
+          <span className="tiny muted">
+            By creating an account — with email or Google — you agree to the{' '}
+            <a className="link-accent" href="/terms" target="_blank" rel="noreferrer">Terms of use</a> and{' '}
+            <a className="link-accent" href="/privacy" target="_blank" rel="noreferrer">Privacy policy</a>.
+          </span>
         </form>
 
         <p className="small muted" style={{ marginTop: 18 }}>
