@@ -206,7 +206,10 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* Маркери */
 .price-pin{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-weight:800;font-size:12.5px;
-  box-shadow:var(--shadow);white-space:nowrap;transition:.15s}
+  box-shadow:var(--shadow);white-space:nowrap;transition:.15s;position:relative}
+/* хвостик цінника вказує на будинок під ним */
+.price-pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;background:inherit;
+  border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
 .price-pin.is-active,.price-pin:hover{background:var(--ink);color:#fff;border-color:var(--ink);transform:scale(1.06)}
 
 /* Картка на карті */
@@ -218,7 +221,7 @@ textarea.input{resize:vertical;min-height:96px}
 .price-pin--hero,.price-pin--hero:hover{background:var(--orange);color:#fff;border-color:var(--orange);
   font-size:15px;padding:8px 14px;border-radius:10px;box-shadow:0 6px 18px rgba(255,72,0,.35);transform:none;position:relative}
 .price-pin--hero::after{content:"";position:absolute;left:50%;bottom:-6px;width:12px;height:12px;margin-left:-6px;
-  background:var(--orange);transform:rotate(45deg);border-radius:2px}
+  background:var(--orange);transform:rotate(45deg);border-radius:2px;border:0}
 
 /* Кнопки карти: компас, шари, лінійка, «де я», зум — праворуч унизу, як у ЛУН */
 /* id-селектор важливий: maplibre-gl.css вантажиться пізніше й ставить контейнеру

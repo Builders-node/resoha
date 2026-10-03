@@ -71,14 +71,30 @@ function addOverlays(m: MLMap) {
   m.addSource('plot', { type: 'geojson', data: EMPTY });
   m.addSource('hl', { type: 'geojson', data: EMPTY });
   m.addSource('ruler', { type: 'geojson', data: EMPTY });
+  m.addSource('glow', { type: 'geojson', data: EMPTY });
   // ділянку кладемо під будинки, але над дорогами
   m.addLayer({ id: 'plot-fill', type: 'fill', source: 'plot', paint: { 'fill-color': ORANGE, 'fill-opacity': 0.16 } }, 'building-flat');
   m.addLayer({ id: 'plot-line', type: 'line', source: 'plot', paint: { 'line-color': ORANGE, 'line-opacity': 0.35, 'line-width': 1.5 } }, 'building-flat');
+  // помаранчеве сяйво під кожним обʼєктом — видно ще здалеку, поки будинків не розгледіти
   m.addLayer({
-    id: 'hl-3d', type: 'fill-extrusion', source: 'hl',
+    id: 'glow', type: 'circle', source: 'glow', maxzoom: 16.5,
+    paint: {
+      'circle-color': ORANGE,
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 8, 12, 12, 20, 15, 34],
+      'circle-blur': 0.55,
+      'circle-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 14, 0.4, 16.5, 0],
+    },
+  }, 'building-flat');
+  // з 13-го зуму будинки обʼєктів уже залиті помаранчевим, з 15-го — обʼємні
+  m.addLayer({
+    id: 'hl-flat', type: 'fill', source: 'hl', maxzoom: 15,
+    paint: { 'fill-color': ORANGE, 'fill-outline-color': '#e0541a' },
+  }, 'housenumber');
+  m.addLayer({
+    id: 'hl-3d', type: 'fill-extrusion', source: 'hl', minzoom: 15,
     paint: {
       'fill-extrusion-color': ORANGE,
-      'fill-extrusion-height': ['interpolate', ['linear'], ['zoom'], 14.5, 0, 15, ['get', 'render_height']],
+      'fill-extrusion-height': ['get', 'render_height'],
       'fill-extrusion-base': ['get', 'render_min_height'],
       'fill-extrusion-opacity': 1,
       'fill-extrusion-vertical-gradient': true,
@@ -244,6 +260,11 @@ export default function MapView({
       return b;
     };
 
+    (m.getSource('glow') as GeoJSONSource).setData({
+      type: 'FeatureCollection',
+      features: items.map((p) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } })),
+    });
+
     const groups = detail ? items.map((p) => ({ pins: [p], lat: p.lat, lng: p.lng })) : clusterize(m, items);
     const singles: Pin[] = [];
     groups.forEach((g) => {
@@ -269,14 +290,14 @@ export default function MapView({
       const node = document.createElement('div');
       node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
       node.textContent = fmtPriceShort(l.price, l.deal);
-      // на сторінці обʼєкта цінник висить над будинком, як прапорець
-      const mk = new ml.Marker({ element: node, anchor: detail ? 'bottom' : 'center', offset: detail ? [0, -30] : [0, 0] })
+      // цінник висить над будинком, як прапорець, — сам будинок і сяйво під ним лишаються видні
+      const mk = new ml.Marker({ element: node, anchor: 'bottom', offset: detail ? [0, -30] : [0, -12] })
         .setLngLat([l.lng, l.lat])
         .addTo(m);
 
       if (interactive && !detail) {
         const popup = new ml.Popup({
-          closeButton: false, closeOnClick: false, offset: 16, maxWidth: '240px', className: 'map-pop-wrap',
+          closeButton: false, closeOnClick: false, offset: 46, maxWidth: '240px', className: 'map-pop-wrap',
         }).setDOMContent(skeletonNode(l));
         popups.current[l.id] = popup;
 
@@ -341,7 +362,7 @@ export default function MapView({
   /*
    * --- будинки обʼєктів помаранчеві: шукаємо їх у векторних тайлах біля пінів ---
    * На сторінці обʼєкта ще й заливаємо ділянку і, якщо OSM будинку не знає,
-   * малюємо умовний; у пошуку підсвічуємо лише справжні будинки, від 15-го зуму.
+   * малюємо умовний. Від 13-го зуму, коли в тайлах зʼявляються будинки.
    */
   useEffect(() => {
     const m = map.current;
@@ -360,7 +381,7 @@ export default function MapView({
     };
     const highlight = () => {
       if (!m.isSourceLoaded('omt')) return;
-      if (m.getZoom() < 15) { put(EMPTY, EMPTY); return; }
+      if (m.getZoom() < 13) { put(EMPTY, EMPTY); return; }
       const feats = m.querySourceFeatures('omt', { sourceLayer: 'building' }) as never;
       if (detail) {
         const pin = items[0];
@@ -375,7 +396,9 @@ export default function MapView({
       const inView = items.filter((p) => view.contains([p.lng, p.lat])).slice(0, 60);
       put({
         type: 'FeatureCollection',
-        features: inView.flatMap((p) => listingFootprint(p.lat, p.lng, feats, { radius: 25 }).buildings),
+        features: inView.flatMap((p) => listingFootprint(p.lat, p.lng, feats, {
+          radius: 25, reach: 60, fallbackHeight: FALLBACK_HEIGHT[p.type ?? 'condo'],
+        }).buildings),
       }, EMPTY);
     };
     highlight();

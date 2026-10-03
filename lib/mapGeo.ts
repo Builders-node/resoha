@@ -108,6 +108,9 @@ export function listingFootprint(
       : g.type === 'MultiPolygon' ? (g.coordinates as Position[][][]) : [];
     for (const poly of polys) {
       const outer = poly[0];
+      // швидко відкидаємо далекі будинки, не проєктуючи весь контур
+      const [x0, y0] = toXY(outer[0]);
+      if (Math.abs(x0) > 300 + Math.max(radius, reach) || Math.abs(y0) > 300 + Math.max(radius, reach)) continue;
       // один будинок приходить кількома шматками з сусідніх тайлів — відкидаємо повтори
       const key = outer.map((p) => p.map((v) => v.toFixed(6)).join(',')).join(';');
       if (seen.has(key)) continue;
