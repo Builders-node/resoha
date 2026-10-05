@@ -159,7 +159,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <section className="land" id="land-check">
                 <div className="land__head">
                   <div>
-                    <h3>Land check</h3>
+                    <h3>Land passport</h3>
                     <span className="muted small">
                       {checked
                         ? <>Checked {fmtDay(land.checkedAt!)}{land.checkedBy && <> by {land.checkedBy}</>}</>
@@ -178,7 +178,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                       <div key={f.key} className={`land__row land__row--${state}`}>
                         <span className="land__k">{f.label}</span>
                         <span className="land__v">
-                          {state === 'ok' && <Icon name="check" size={15} />}
+                          {state === 'ok' && <Icon name="check" size={20} />}
                           {landLabel(f, value)}
                         </span>
                       </div>
@@ -186,7 +186,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                   })}
                 </div>
                 <div className="land__foot">
-                  <a className="btn btn--sm btn--ghost" href={`/listings/${listing.id}/report`} target="_blank" rel="noreferrer">
+                  <a className="btn btn--ghost" href={`/listings/${listing.id}/report`} target="_blank" rel="noreferrer">
                     <Icon name="link" size={16} /> Download land report (PDF)
                   </a>
                   <span className="tiny muted">
