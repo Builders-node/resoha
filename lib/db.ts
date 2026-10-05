@@ -42,6 +42,8 @@ export const mapAgent = (r: Row): Agent => ({
 const mapLand = (r: Row | null | undefined): LandFacts | null => r ? ({
   titleStatus: r.title_status, survey: r.survey, roadAccess: r.road_access, power: r.power,
   water: r.water, zolitur: r.zolitur, zone: r.zone, slope: r.slope,
+  // поля з міграції 0027: до її накату колонок немає — показуємо «Not confirmed»
+  view: r.sea_view ?? 'unknown', beach: r.beach ?? 'unknown', internet: r.internet ?? 'unknown', flood: r.flood ?? 'unknown',
   ready: Boolean(r.ready), checkedAt: r.checked_at ?? null, checkedBy: r.checker?.name ?? '',
 }) : null;
 
@@ -247,6 +249,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
 const LAND_COLUMNS: Record<string, string> = {
   titleStatus: 'title_status', survey: 'survey', roadAccess: 'road_access', power: 'power',
   water: 'water', zolitur: 'zolitur', zone: 'zone', slope: 'slope',
+  view: 'sea_view', beach: 'beach', internet: 'internet', flood: 'flood',
 };
 
 /** Паспорт ділянки: upsert за listing_id. Права — ті самі, що на саме оголошення (RLS land_facts). */

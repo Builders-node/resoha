@@ -169,7 +169,7 @@ export default function ListingForm({
         {/* Паспорт ділянки — лише для землі; у кондо й будинків цієї секції немає */}
         {type === 'land' && (
           <div className="field full land-form">
-            <label>Land check</label>
+            <label>Land passport</label>
             <span className="tiny muted" style={{ marginBottom: 10 }}>
               What a buyer asks first. Leave a field on “Not confirmed” rather than guessing —
               title, road, electricity and water make up the “Ready to build” badge.

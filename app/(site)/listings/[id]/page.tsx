@@ -13,7 +13,7 @@ import Photo from '@/components/Photo';
 import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
-import { LAND_FIELDS, isChecked, landLabel, readiness } from '@/lib/land';
+import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
@@ -49,10 +49,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, me, similarAll] = await Promise.all([
+  const [agent, me, similarAll, landPeers] = await Promise.all([
     getAgent(listing.agentId),
     currentUser(),
     queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }),
+    // уся земля на продаж — для медіани $/акр у паспорті
+    listing.type === 'land' ? queryListings({ deal: 'sale', type: 'land' }) : Promise.resolve([]),
   ]);
   // Автор може бути прихованим (заблокований акаунт) — тоді оголошення теж не показуємо
   if (!agent) notFound();
@@ -155,6 +157,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             const land = listing.land;
             const r = readiness(land);
             const checked = isChecked(land);
+            const n = landNumbers(listing, landPeers);
             return (
               <section className="land" id="land-check">
                 <div className="land__head">
@@ -170,10 +173,76 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     {r.label}{checked && <small> · {r.score}/{r.of}</small>}
                   </span>
                 </div>
+
+                <h4 className="land__sub">The lot in numbers</h4>
+                <div className="land__stats">
+                  {n.acres > 0 && (
+                    <div className="land__stat">
+                      <span className="land__k">Size</span>
+                      <b>{fmtNumber(n.sqm)} m²</b>
+                      <span className="small muted">{n.acres} ac · {fmtNumber(n.sqft)} ft²</span>
+                    </div>
+                  )}
+                  {n.perAcre > 0 && (
+                    <div className="land__stat">
+                      <span className="land__k">Price per acre</span>
+                      <b>{fmtUsd(Math.round(n.perAcre))}</b>
+                      <span className="small muted">
+                        {fmtUsd(Math.round(n.perSqm))}/m²
+                        {n.benchmark && n.vsBenchmark !== null && (
+                          <> · <span className={n.vsBenchmark > 10 ? 'land__up' : n.vsBenchmark < -10 ? 'land__down' : ''}>
+                            {n.vsBenchmark === 0 ? 'at' : `${Math.abs(n.vsBenchmark)}% ${n.vsBenchmark > 0 ? 'above' : 'below'}`}
+                          </span>{' '}the {n.benchmark.where} median of {fmtUsd(Math.round(n.benchmark.perAcre))}/ac
+                          {' '}({n.benchmark.count} lots)</>
+                        )}
+                      </span>
+                    </div>
+                  )}
+                  {n.closing && (
+                    <div className="land__stat">
+                      <span className="land__k">Cost to buy</span>
+                      <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
+                      <span className="small muted">
+                        Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.{' '}
+                        <Link href="/guides/roatan-closing-costs">How it adds up</Link>
+                      </span>
+                    </div>
+                  )}
+                  {n.taxMax > 0 && (
+                    <div className="land__stat">
+                      <span className="land__k">Property tax</span>
+                      <b>up to {fmtUsd(Math.round(n.taxMax))}/yr</b>
+                      <span className="small muted">0.25% of the cadastral value, which is usually below the asking price.</span>
+                    </div>
+                  )}
+                  {n.foreign && (
+                    <div className={`land__stat land__stat--${n.foreign === 'personal' ? 'ok' : 'warn'}`}>
+                      <span className="land__k">Foreign buyers</span>
+                      <b>{n.foreign === 'personal' ? 'Can own in your name' : 'Needs a Honduran company'}</b>
+                      <span className="small muted">
+                        {n.foreign === 'personal'
+                          ? `Under the ${fmtNumber(FOREIGN_LIMIT_SQM)} m² limit for a foreigner’s home (Decree 90-90).`
+                          : `Over the ${fmtNumber(FOREIGN_LIMIT_SQM)} m² a foreigner can hold personally; larger lots are usually bought through a company.`}
+                        {' '}<Link href="/guides/can-foreigners-buy-property-in-roatan">The 3,000 m² rule</Link>
+                      </span>
+                    </div>
+                  )}
+                  <div className="land__stat">
+                    <span className="land__k">Distances</span>
+                    <ul className="land__dist">
+                      {n.distances.map((d) => (
+                        <li key={d.name}><span>{d.name}</span><b>{d.km < 1 ? '<1' : d.km.toFixed(d.km < 10 ? 1 : 0)} km</b></li>
+                      ))}
+                    </ul>
+                    <span className="tiny muted">Straight line; roads are longer.</span>
+                  </div>
+                </div>
+
+                <h4 className="land__sub">Checked on the ground</h4>
                 <div className="land__rows">
                   {LAND_FIELDS.map((f) => {
                     const value = checked ? land[f.key] : 'unknown';
-                    const state = value === 'unknown' ? 'na' : f.good ? (f.good.includes(value) ? 'ok' : 'bad') : 'info';
+                    const state = landState(f, value);
                     return (
                       <div key={f.key} className={`land__row land__row--${state}`}>
                         <span className="land__k">{f.label}</span>
@@ -190,8 +259,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                     <Icon name="link" size={16} /> Download land report (PDF)
                   </a>
                   <span className="tiny muted">
-                    “Ready to build” means title, road, electricity and water are all in place. Always verify the title
-                    at the Instituto de la Propiedad before paying a deposit.
+                    “Ready to build” means title, road, electricity and water are all in place. Costs and limits are
+                    estimates from our guides, not legal advice: always verify the title at the Instituto de la Propiedad
+                    and check the numbers with your attorney before paying a deposit.
                   </span>
                 </div>
               </section>

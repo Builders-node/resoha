@@ -1,8 +1,8 @@
 import { NextResponse } from 'next/server';
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
-import { getAgent, getListing } from '@/lib/db';
-import { fmtDate, fmtPrice, photoUrl } from '@/lib/format';
-import { LAND_FIELDS, isChecked, landLabel, readiness } from '@/lib/land';
+import { getAgent, getListing, queryListings } from '@/lib/db';
+import { fmtDate, fmtNumber, fmtPrice, fmtUsd, photoUrl } from '@/lib/format';
+import { LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -24,7 +24,8 @@ export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params;
   const listing = await getListing(id);
   if (!listing || listing.type !== 'land') return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  const agent = await getAgent(listing.agentId);
+  const [agent, peers] = await Promise.all([getAgent(listing.agentId), queryListings({ deal: 'sale', type: 'land' })]);
+  const n = landNumbers(listing, peers);
 
   const pdf = await PDFDocument.create();
   pdf.setTitle(`${listing.title} - land report`);
@@ -66,7 +67,7 @@ export async function GET(_req: Request, { params }: Ctx) {
       const bytes = new Uint8Array(await res.arrayBuffer());
       const ct = res.headers.get('content-type') ?? '';
       const img = ct.includes('png') ? await pdf.embedPng(bytes) : await pdf.embedJpg(bytes);
-      const h = 200, w = Math.min(W - 2 * M, img.width * (h / img.height));
+      const h = 120, w = Math.min(W - 2 * M, img.width * (h / img.height));
       y -= h;
       page.drawImage(img, { x: M, y, width: w, height: h });
       y -= 18;
@@ -76,7 +77,7 @@ export async function GET(_req: Request, { params }: Ctx) {
   // оцінка
   const land = listing.land;
   const r = readiness(land);
-  text('Land check', M, 15, bold);
+  text('Land passport', M, 15, bold);
   const badge = ascii(isChecked(land) ? `${r.label}  ${r.score}/${r.of}` : r.label);
   const bw = bold.widthOfTextAtSize(badge, 11) + 20;
   page.drawRectangle({ x: W - M - bw, y: y - 6, width: bw, height: 24, color: rgb(0.96, 0.96, 0.97), borderColor: LINE, borderWidth: 1 });
@@ -89,22 +90,41 @@ export async function GET(_req: Request, { params }: Ctx) {
 
   for (const f of LAND_FIELDS) {
     const value = isChecked(land) ? land[f.key] : 'unknown';
-    const state = value === 'unknown' ? 'muted' : f.good ? (f.good.includes(value) ? 'ok' : 'bad') : 'info';
+    const state = landState(f, value);
     page.drawLine({ start: { x: M, y: y + 16 }, end: { x: W - M, y: y + 16 }, thickness: 0.5, color: LINE });
     text(f.label, M, 11, reg, MUTED);
     const v = landLabel(f, value);
     page.drawText(ascii(v), {
       x: W - M - bold.widthOfTextAtSize(ascii(v), 11), y, size: 11, font: bold,
-      color: state === 'ok' ? TONE.ok : state === 'bad' ? TONE.bad : state === 'muted' ? MUTED : INK,
+      color: state === 'ok' ? TONE.ok : state === 'bad' ? TONE.bad : state === 'na' ? MUTED : INK,
     });
-    y -= 24;
+    y -= 18;
+  }
+  y -= 10;
+
+  // цифри — та сама landNumbers, що й на сторінці
+  const nums: [string, string][] = [];
+  if (n.acres) nums.push(['Size', `${fmtNumber(n.sqm)} m2  ·  ${n.acres} ac  ·  ${fmtNumber(n.sqft)} ft2`]);
+  if (n.perAcre) nums.push(['Price per acre', `${fmtUsd(Math.round(n.perAcre))}${n.benchmark && n.vsBenchmark !== null
+    ? `  (${n.vsBenchmark === 0 ? 'at' : `${Math.abs(n.vsBenchmark)}% ${n.vsBenchmark > 0 ? 'above' : 'below'}`} ${n.benchmark.where} median ${fmtUsd(Math.round(n.benchmark.perAcre))})`
+    : ''}`]);
+  if (n.closing) nums.push(['Cost to buy (4-5.5%)', `${fmtUsd(Math.round(n.closing.low))} - ${fmtUsd(Math.round(n.closing.high))}`]);
+  if (n.taxMax) nums.push(['Property tax', `up to ${fmtUsd(Math.round(n.taxMax))} a year`]);
+  if (n.foreign) nums.push(['Foreign buyers', n.foreign === 'personal' ? 'Under 3,000 m2: can own in own name' : 'Over 3,000 m2: usually via a Honduran company']);
+  nums.push(['Distances (straight line)', n.distances.map((d) => `${d.name.replace(' (RTB)', '')} ${d.km.toFixed(1)} km`).join('  ·  ')]);
+  text('The lot in numbers', M, 13, bold); y -= 18;
+  for (const [k, v] of nums) {
+    text(k, M, 10, reg, MUTED);
+    const vs = ascii(v), size = bold.widthOfTextAtSize(vs, 10) > W - 2 * M - 150 ? 8.5 : 10;
+    page.drawText(vs, { x: W - M - bold.widthOfTextAtSize(vs, size), y, size, font: bold, color: INK });
+    y -= 15;
   }
   y -= 10;
 
   // опис (коротко)
   if (listing.text) {
     text('About this lot', M, 13, bold); y -= 18;
-    for (const l of wrap(listing.text, 10.5, W - 2 * M).slice(0, 8)) { text(l, M, 10.5); y -= 14; }
+    for (const l of wrap(listing.text, 10.5, W - 2 * M).slice(0, 3)) { text(l, M, 10.5); y -= 14; }
     y -= 10;
   }
 
@@ -122,7 +142,7 @@ export async function GET(_req: Request, { params }: Ctx) {
 
   // підвал
   const foot = `Generated ${fmtDate(new Date().toISOString())} by ${SITE_NAME}. "Ready to build" means title, road, electricity and water are in place. `
-    + 'Verify the title at the Instituto de la Propiedad before paying a deposit.';
+    + 'Costs and limits are estimates, not legal advice. Verify the title at the Instituto de la Propiedad before paying a deposit.';
   let fy = M - 6;
   for (const l of wrap(foot, 8.5, W - 2 * M).reverse()) { page.drawText(l, { x: M, y: fy, size: 8.5, font: reg, color: MUTED }); fy += 11; }
 
