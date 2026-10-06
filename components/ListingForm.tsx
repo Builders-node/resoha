@@ -7,7 +7,7 @@ import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
-import { cleanUnits, fromPrice, type Unit } from '@/lib/units';
+import { EMPTY_PROJECT, SALES_STATUSES, cleanUnits, fromPrice, type ProjectInfo, type Unit } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -26,6 +26,7 @@ export default function ListingForm({
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
   const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
   const [units, setUnits] = useState<Unit[]>(listing?.units ?? []);
+  const [project, setProject] = useState<ProjectInfo>(listing?.project ?? EMPTY_PROJECT);
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
@@ -82,6 +83,7 @@ export default function ListingForm({
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
         units: cleanList,
+        project,
         ...(unitsFrom !== null ? { price: unitsFrom } : {}),
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
@@ -93,7 +95,7 @@ export default function ListingForm({
 
     if (!res.ok) return toast((await res.json()).error ?? 'Something went wrong');
     toast(editing ? 'Listing updated' : 'Listing published');
-    if (!editing) { form.reset(); setPhotos([]); setNearby([]); setUnits([]); }
+    if (!editing) { form.reset(); setPhotos([]); setNearby([]); setUnits([]); setProject(EMPTY_PROJECT); }
     onSaved();
   }
 
@@ -200,6 +202,26 @@ export default function ListingForm({
         )}
 
         <UnitsEditor value={units} onChange={setUnits} />
+
+        {/* Дані новобудови показуються над прайсом — лише коли є юніти */}
+        {units.length > 0 && (
+          <>
+            <div className="field"><label>Developer</label>
+              <input className="input" value={project.developer} maxLength={80} placeholder="Developer name"
+                onChange={(e) => setProject({ ...project, developer: e.target.value })} /></div>
+            <div className="field"><label>Completion</label>
+              <input className="input" value={project.completion} maxLength={40} placeholder="Q4 2026"
+                onChange={(e) => setProject({ ...project, completion: e.target.value })} /></div>
+            <div className="field"><label>Sales</label>
+              <select className="input" value={project.sales}
+                onChange={(e) => setProject({ ...project, sales: e.target.value as ProjectInfo['sales'] })}>
+                {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+              </select></div>
+            <div className="field"><label>Project website</label>
+              <input className="input" value={project.website} maxLength={200} placeholder="example.com"
+                onChange={(e) => setProject({ ...project, website: e.target.value })} /></div>
+          </>
+        )}
 
         <NearbyEditor value={nearby} onChange={setNearby} pin={pin} />
 

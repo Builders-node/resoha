@@ -57,7 +57,7 @@ export default function AgentContact({ agent, listing, listingUrl, me }: {
   }
 
   return (
-    <aside className="agent-card">
+    <aside className="agent-card" id="contact">
       <div className="agent-card__top">
         <Link href={`/agents/${agent.id}`}>
           <Avatar src={agent.avatar} name={agent.name} />
