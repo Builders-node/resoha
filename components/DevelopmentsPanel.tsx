@@ -154,6 +154,24 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
           <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev?.floors ?? ''} /></div>
         <div className="field"><label>Construction</label>
           <input className="input" name="construction" maxLength={120} defaultValue={dev?.construction} placeholder="Reinforced concrete" /></div>
+        <div className="field"><label>Class</label>
+          <input className="input" name="projectClass" maxLength={60} defaultValue={dev?.projectClass} placeholder="Luxury" /></div>
+        <div className="field"><label>Walls</label>
+          <input className="input" name="walls" maxLength={120} defaultValue={dev?.walls} placeholder="Concrete block" /></div>
+        <div className="field"><label>Insulation</label>
+          <input className="input" name="insulation" maxLength={120} defaultValue={dev?.insulation} /></div>
+        <div className="field"><label>Cooling &amp; heating</label>
+          <input className="input" name="climate" maxLength={120} defaultValue={dev?.climate} placeholder="Split A/C in every room" /></div>
+        <div className="field"><label>Ceiling height</label>
+          <input className="input" name="ceiling" maxLength={60} defaultValue={dev?.ceiling} placeholder="2.8 m" /></div>
+        <div className="field"><label>Finish</label>
+          <input className="input" name="finish" maxLength={120} defaultValue={dev?.finish} placeholder="Turnkey, furnished" /></div>
+        <div className="field"><label>Grounds</label>
+          <input className="input" name="territory" maxLength={120} defaultValue={dev?.territory} placeholder="Gated, 24/7 security" /></div>
+        <div className="field"><label>Backup power</label>
+          <input className="input" name="backupPower" maxLength={120} defaultValue={dev?.backupPower} placeholder="Generator for common areas" /></div>
+        <div className="field"><label>Water supply</label>
+          <input className="input" name="water" maxLength={120} defaultValue={dev?.water} placeholder="Cistern + municipal" /></div>
         <div className="field"><label>Parking</label>
           <input className="input" name="parking" maxLength={120} defaultValue={dev?.parking} placeholder="Covered, 1 space per unit" /></div>
         <div className="field"><label>HOA, $ per month</label>

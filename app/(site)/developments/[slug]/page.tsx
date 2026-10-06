@@ -16,7 +16,8 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
-import { fromPrice, rentalsLabel, toM2 } from '@/lib/units';
+import { BUILDING_STAGES, fromPrice, rentalsLabel, salesLabel, stageLabel, toM2 } from '@/lib/units';
+import Icon from '@/components/Icon';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -70,17 +71,34 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
     { id: '', name: 'Other units', units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
   ].filter((g) => g.units.some((u) => u.floor !== null));
   // характеристики будинку: показуємо лише заповнене
-  const facts: [string, string][] = [
-    ['Developer', dev.developer],
-    ['Completion', dev.completion],
-    ['Floors', dev.floors ? String(dev.floors) : floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : ''],
-    ['Buildings', buildings.length > 1 ? String(buildings.length) : ''],
-    ['Units', units.length ? String(units.length) : ''],
-    ['Construction', dev.construction],
-    ['Parking', dev.parking],
-    ['HOA', dev.hoa !== null ? (dev.hoa ? `${fmtUsd(dev.hoa)}/mo` : 'None') : ''],
-    ['Rentals', dev.rentals ? rentalsLabel(dev.rentals) : ''],
-  ].filter((f): f is [string, string] => Boolean(f[1]));
+  // «Характеристики проєкту»: іконка, значення, підпис; порожнє не показуємо
+  const bFloors = buildings.flatMap((b) => (b.floors ? [b.floors] : []));
+  const floorsText = bFloors.length
+    ? (Math.min(...bFloors) === Math.max(...bFloors) ? String(bFloors[0]) : `${Math.min(...bFloors)}–${Math.max(...bFloors)}`)
+    : dev.floors ? String(dev.floors) : floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '';
+  const facts: [string, string, string][] = [
+    ['star', dev.projectClass, 'class'],
+    ['building', buildings.length ? String(buildings.length) : '', buildings.length === 1 ? 'building' : 'buildings'],
+    ['layers', floorsText, 'floors'],
+    ['crane', dev.construction, 'construction'],
+    ['bricks', dev.walls, 'walls'],
+    ['shieldHome', dev.insulation, 'insulation'],
+    ['snow', dev.climate, 'cooling & heating'],
+    ['height', dev.ceiling, 'ceiling height'],
+    ['grid', units.length ? String(units.length) : '', 'units'],
+    ['brush', dev.finish, 'finish'],
+    ['fence', dev.territory, 'grounds'],
+    ['car', dev.parking, 'parking'],
+    ['bolt', dev.backupPower, 'backup power'],
+    ['drop', dev.water, 'water supply'],
+    ['wallet', dev.hoa !== null ? (dev.hoa ? `${fmtUsd(dev.hoa)}/mo` : 'None') : '', 'HOA fees'],
+    ['key', dev.rentals ? rentalsLabel(dev.rentals) : '', 'rentals'],
+    ['briefcase', dev.developer, 'developer'],
+    ['calendar', dev.completion, 'completion'],
+  ].filter((f): f is [string, string, string] => Boolean(f[1]));
+  // зведення по домах: «1 delivered · 2 under construction»
+  const stageCounts = BUILDING_STAGES.map(([k]) => [k, buildings.filter((b) => b.stage === k).length] as const)
+    .filter(([, n]) => n > 0).reverse();
 
   return (
     <div className="wrap">
@@ -162,13 +180,29 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
           )}
 
           {(facts.length > 0 || dev.amenities.length > 0) && (
-            <section className="dev">
-              <h2 className="dev__title">The building</h2>
-              <dl className="dev__specs">
-                {facts.map(([k, v]) => <div key={k}><dt className="small muted">{k}</dt><dd>{v}</dd></div>)}
-              </dl>
+            <section className="dev" id="features">
+              <h2 className="dev__title">Project features</h2>
+              <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
+              <div className="feat">
+                <ul className="feat__grid">
+                  {facts.map(([icon, value, label]) => (
+                    <li key={label}><Icon name={icon} size={26} /><div><b>{value}</b><span>{label}</span></div></li>
+                  ))}
+                </ul>
+                {(stageCounts.length > 0 || buildings.length > 0) && (
+                  <ul className="feat__status">
+                    <li><Icon name="verified" size={18} /> {salesLabel(dev.sales)}</li>
+                    {stageCounts.map(([k, n]) => (
+                      <li key={k} className={`is-${k}`}>
+                        <Icon name={k === 'delivered' || k === 'built' ? 'check' : k === 'planned' ? 'deed' : 'crane'} size={18} />
+                        {n} {n === 1 ? 'building' : 'buildings'} · {stageLabel(k).toLowerCase()}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
               {dev.amenities.length > 0 && (
-                <ul className="dev__facts">{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
+                <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
               )}
             </section>
           )}

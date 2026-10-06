@@ -156,6 +156,16 @@ export interface Development {
   hoa: number | null;          // $ на місяць
   rentals: RentalRule;
   payment: string;             // умови оплати, вільним текстом по рядках
+  /* «Характеристики проєкту»: вільний текст, порожнє не показуємо */
+  projectClass: string;
+  walls: string;
+  insulation: string;
+  climate: string;
+  ceiling: string;
+  finish: string;
+  territory: string;
+  backupPower: string;
+  water: string;
   agentId: string;
   agencyId: string | null;
   active: boolean;
