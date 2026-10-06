@@ -7,7 +7,7 @@ type Props = {
   role: Role;
   title: string;
   text: string;
-  /** Хтось уже залогінений, але не тією роллю — пропонувати «Sign in» безглуздо. */
+  /** Ріелтор у /account: пропонувати «Sign in» безглуздо. Покупця в /agent веде BecomeRealtor. */
   signedInAs?: string | null;
 };
 
@@ -25,11 +25,8 @@ export default function LoginGate({ role, title, text, signedInAs }: Props) {
         <p className="muted" style={{ margin: '10px 0 22px' }}>
           {signedInAs ? (
             <>
-              You are signed in as <b>{signedInAs}</b>, and this area is for{' '}
-              {wantsAgent ? 'realtor accounts' : 'buyer accounts'}.{' '}
-              {wantsAgent
-                ? 'Register a realtor account to publish listings — this one stays for browsing.'
-                : 'Your realtor account has its own dashboard.'}
+              You are signed in as <b>{signedInAs}</b>, and this area is for buyer accounts.
+              Your realtor account has its own dashboard.
             </>
           ) : text}
         </p>
