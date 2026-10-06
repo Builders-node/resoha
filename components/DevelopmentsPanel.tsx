@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
-import { RENTAL_RULES, SALES_STATUSES, salesLabel } from '@/lib/units';
-import type { Development } from '@/lib/types';
+import { BUILDING_STAGES, RENTAL_RULES, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
+import type { Building, Development } from '@/lib/types';
 
 /**
  * Вкладка «Developments» у кабінеті: ЖК ріелтора, форма ЖК і заливка прайсу.
@@ -74,6 +74,15 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
   const [saving, setSaving] = useState(false);
   const [paste, setPaste] = useState('');
   const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
+  const [buildings, setBuildings] = useState<Building[]>([]);
+  const [buildingId, setBuildingId] = useState('');
+
+  const loadBuildings = useCallback(async () => {
+    if (!dev) return;
+    const d = await fetch(`/api/developments/${dev.id}/buildings`).then((r) => r.json()).catch(() => ({}));
+    setBuildings(d.items ?? []);
+  }, [dev]);
+  useEffect(() => { loadBuildings(); }, [loadBuildings]);
 
   function pickArea(next: string) {
     setArea(next);
@@ -105,7 +114,7 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
     setSaving(true);
     const res = await fetch(`/api/developments/${dev.id}/units`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: paste, deal }),
+      body: JSON.stringify({ text: paste, deal, buildingId: buildingId || null }),
     });
     setSaving(false);
     const data = await res.json().catch(() => ({}));
@@ -174,6 +183,8 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
         </div>
       </form>
 
+      {dev && <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />}
+
       {dev && (
         <div className="units-form" style={{ marginTop: 22 }}>
           <label><b>Add units from a price list</b></label>
@@ -186,12 +197,109 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
             <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => setDeal('sale')}>For sale</button>
             <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => setDeal('rent')}>For rent</button>
           </div>
+          {buildings.length > 0 && (
+            <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)} style={{ maxWidth: 320 }}>
+              <option value="">No building</option>
+              {buildings.map((b) => <option key={b.id} value={b.id}>Into {b.name}</option>)}
+            </select>
+          )}
           <textarea className="input" rows={6} value={paste} onChange={(e) => setPaste(e.target.value)}
             placeholder={'201\tStudio\t2\t41.6\t448\t$143,368\n507\t2 Bedroom\t5\t65.5\t705\t$239,319'} />
           <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} disabled={saving || !paste.trim()} onClick={addUnits}>
             Add units
           </button>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** Доми ЖК: список, додавання й правка в рядку. Квартири привʼязуються при заливці прайсу або у формі квартири. */
+function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Building[]; onChange: () => void }) {
+  const [editing, setEditing] = useState<Building | 'new' | null>(null);
+  const [photo, setPhoto] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
+
+  function open(b: Building | 'new') {
+    setEditing(b);
+    setPhoto(b !== 'new' && b.photo ? [b.photo] : []);
+  }
+
+  async function save(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editing) return;
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    const res = await fetch(editing === 'new' ? `/api/developments/${devId}/buildings` : `/api/buildings/${editing.id}`, {
+      method: editing === 'new' ? 'POST' : 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...Object.fromEntries(fd.entries()), photo: photo[0] ?? '' }),
+    });
+    setSaving(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(data.error ?? 'Something went wrong');
+    toast(editing === 'new' ? 'Building added' : 'Building updated');
+    setEditing(null);
+    onChange();
+  }
+
+  async function remove(b: Building) {
+    if (!confirm(`Delete ${b.name}? Its units stay in the development.`)) return;
+    const res = await fetch(`/api/buildings/${b.id}`, { method: 'DELETE' });
+    if (!res.ok) return toast('Could not delete');
+    onChange();
+  }
+
+  const b = editing === 'new' ? null : editing;
+  return (
+    <div className="units-form" style={{ marginTop: 22 }}>
+      <div className="fgroup__head">
+        <label><b>Buildings</b></label>
+        {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add building</button>}
+      </div>
+      <span className="tiny muted">Each building gets its own card with construction status and its own floor grid on the page.</span>
+      {!editing && (
+        <div className="dev-list">
+          {!items.length && <p className="muted small">No buildings yet — units without a building are shown together.</p>}
+          {items.map((x) => (
+            <div key={x.id} className="dev-list__row">
+              <div>
+                <b>{x.name}</b>
+                <div className="small muted">
+                  {stageLabel(x.stage)}{x.floors ? ` · ${x.floors} floors` : ''}{x.completion && ` · ${x.completion}`}
+                </div>
+              </div>
+              <div className="chip-row">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <form className="form-grid" onSubmit={save} key={b?.id ?? 'new'}>
+          <div className="field"><label>Name</label>
+            <input className="input" name="name" required maxLength={60} defaultValue={b?.name} placeholder="Building A" /></div>
+          <div className="field"><label>Stage</label>
+            <select className="input" name="stage" defaultValue={b?.stage ?? 'construction'}>
+              {BUILDING_STAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            </select></div>
+          <div className="field"><label>Floors</label>
+            <input className="input" name="floors" type="number" min={1} max={200} defaultValue={b?.floors ?? ''} /></div>
+          <div className="field"><label>Completion</label>
+            <input className="input" name="completion" maxLength={40} defaultValue={b?.completion} placeholder="Q4 2026" /></div>
+          <div className="field full"><label>Address</label>
+            <input className="input" name="address" maxLength={120} defaultValue={b?.address} /></div>
+          <div className="field"><label>Order on the page</label>
+            <input className="input" name="sort" type="number" defaultValue={b?.sort ?? items.length} /></div>
+          <div className="field full"><label>Photo</label>
+            <PhotoUploader value={photo} onChange={setPhoto} max={1} /></div>
+          <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+            <button className="btn" disabled={saving}>{b ? 'Save building' : 'Add building'}</button>
+            <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
+          </div>
+        </form>
       )}
     </div>
   );

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PAGE_SIZE, adminLog, createListing, getDevelopment, getListing, queryPins, saveLandFacts, searchListings } from '@/lib/db';
+import { PAGE_SIZE, adminLog, createListing, getBuilding, getDevelopment, getListing, queryPins, saveLandFacts, searchListings } from '@/lib/db';
 import { canManageDevelopment } from '@/lib/units';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
@@ -39,6 +39,11 @@ export async function POST(req: Request) {
   if (body.developmentId) {
     const dev = await getDevelopment(String(body.developmentId));
     if (!dev || !canManageDevelopment(dev, user)) return NextResponse.json({ error: 'Not your development' }, { status: 403 });
+  }
+  // дім — лише з того самого ЖК
+  if (body.buildingId) {
+    const b = await getBuilding(String(body.buildingId));
+    if (!b || b.developmentId !== body.developmentId) return NextResponse.json({ error: 'Building is not in this development' }, { status: 400 });
   }
   try {
     let listing = await createListing({

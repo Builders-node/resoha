@@ -30,6 +30,20 @@ const SALES_KEYS = new Set<string>(SALES_STATUSES.map(([k]) => k));
 export const cleanSales = (s: unknown): SalesStatus => (SALES_KEYS.has(String(s)) ? s : 'open') as SalesStatus;
 export const salesLabel = (s: string) => SALES_STATUSES.find(([k]) => k === s)?.[1] ?? 'Sales open';
 
+/** Стадії будівництва дому — по порядку, як точки на шкалі */
+export const BUILDING_STAGES = [
+  ['planned', 'Planned'],
+  ['prep', 'Site preparation'],
+  ['construction', 'Under construction'],
+  ['built', 'Built'],
+  ['delivered', 'Delivered'],
+] as const;
+export type BuildingStage = (typeof BUILDING_STAGES)[number][0];
+const STAGE_KEYS = new Set<string>(BUILDING_STAGES.map(([k]) => k));
+export const cleanStage = (s: unknown): BuildingStage => (STAGE_KEYS.has(String(s)) ? s : 'construction') as BuildingStage;
+export const stageLabel = (s: string) => BUILDING_STAGES.find(([k]) => k === s)?.[1] ?? 'Under construction';
+export const stageIndex = (s: string) => Math.max(0, BUILDING_STAGES.findIndex(([k]) => k === s));
+
 /** Чи можна здавати квартиру: на Роатані інвестора це цікавить першим */
 export const RENTAL_RULES = [
   ['', 'Not specified'],

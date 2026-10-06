@@ -5,11 +5,12 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import BackButton from '@/components/BackButton';
+import DevelopmentBuildings from '@/components/DevelopmentBuildings';
 import DevelopmentChess from '@/components/DevelopmentChess';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
 import JsonLd from '@/components/JsonLd';
 import Photo from '@/components/Photo';
-import { getAgent, getDevelopment, queryListings } from '@/lib/db';
+import { getAgent, getDevelopment, listBuildings, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { currentUser } from '@/lib/session';
@@ -41,10 +42,11 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
   const dev = await loadDevelopment(slug);
   if (!dev) notFound();
 
-  const [agent, me, units] = await Promise.all([
+  const [agent, me, units, buildings] = await Promise.all([
     getAgent(dev.agentId),
     currentUser(),
     queryListings({ developmentId: dev.id, sort: 'price_asc' }),
+    listBuildings(dev.id),
   ]);
   // Автор може бути прихованим (заблокований акаунт) — тоді й ЖК не показуємо
   if (!agent) notFound();
@@ -63,11 +65,16 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
   // заявку з форми привʼязуємо до найдешевшої вільної квартири — лід завжди про конкретний обʼєкт
   const leadUnit = units.find((u) => u.status === 'available') ?? units[0];
   const url = `${SITE_URL}/developments/${dev.slug}`;
+  const chessGroups = [
+    ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
+    { id: '', name: 'Other units', units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
+  ].filter((g) => g.units.some((u) => u.floor !== null));
   // характеристики будинку: показуємо лише заповнене
   const facts: [string, string][] = [
     ['Developer', dev.developer],
     ['Completion', dev.completion],
     ['Floors', dev.floors ? String(dev.floors) : floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : ''],
+    ['Buildings', buildings.length > 1 ? String(buildings.length) : ''],
     ['Units', units.length ? String(units.length) : ''],
     ['Construction', dev.construction],
     ['Parking', dev.parking],
@@ -130,7 +137,8 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
 
           <section className="dev" id="units">
             <h2 className="dev__title">Units &amp; prices</h2>
-            <DevelopmentUnits units={units} developer={dev.developer} completion={dev.completion} sales={dev.sales}
+            <DevelopmentUnits units={units}
+              buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} completion={dev.completion} sales={dev.sales}
               contactHref="#contact" />
             <ul className="dev__facts">
               {dev.website && (
@@ -143,10 +151,23 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             </p>
           </section>
 
+          {buildings.length > 0 && (
+            <section className="dev" id="buildings">
+              <h2 className="dev__title">{buildings.length > 1 ? 'Buildings' : 'Construction status'}</h2>
+              <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''} />
+            </section>
+          )}
+
           {units.some((u) => u.floor !== null) && (
             <section className="dev" id="floors">
               <h2 className="dev__title">Availability by floor</h2>
-              <DevelopmentChess units={units} />
+              {/* у кожного дому своя шахматка; квартири без дому — окремим блоком наприкінці */}
+              {chessGroups.map((g) => (
+                <div key={g.id} id={g.id ? `bld-${g.id}` : undefined} className="chess-group">
+                  {chessGroups.length > 1 && <h3 className="chess-group__title">{g.name}</h3>}
+                  <DevelopmentChess units={g.units} />
+                </div>
+              ))}
             </section>
           )}
 

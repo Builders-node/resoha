@@ -3,8 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanNearby } from './nearby';
-import { OPEN_STATUSES, cleanRentals, cleanSales, cleanStatus, slugify, splitList } from './units';
-import type { AdminLogEntry, Agency, Agent, Deal, Development, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
+import { OPEN_STATUSES, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -73,6 +73,7 @@ const mapListing = (r: Row): Listing => ({
   nearby: cleanNearby(r.nearby),
   developmentId: r.development_id ?? null,
   development: r.development ? { name: r.development.name, slug: r.development.slug } : null,
+  buildingId: r.building_id ?? null,
   unitNo: r.unit_no ?? '',
   floor: r.floor ?? null,
   status: cleanStatus(r.status),
@@ -270,6 +271,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     source_url: safeUrl(input.sourceUrl),
     ...(input.nearby?.length ? { nearby: cleanNearby(input.nearby) } : {}),
     development_id: input.developmentId || null,
+    ...(input.buildingId ? { building_id: input.buildingId } : {}),
     unit_no: String(input.unitNo ?? '').trim().slice(0, 20),
     floor: intOrNull(input.floor),
     status: cleanStatus(input.status),
@@ -304,7 +306,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   text: 'body', active: 'active',
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
   nearby: 'nearby',
-  developmentId: 'development_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
+  developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);
@@ -316,7 +318,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
     if (value === undefined) continue;
     row[column] = key === 'sourceUrl' ? safeUrl(value)
       : key === 'nearby' ? cleanNearby(value)
-      : key === 'developmentId' ? value || null
+      : key === 'developmentId' || key === 'buildingId' ? value || null
       : key === 'unitNo' ? String(value).trim().slice(0, 20)
       : key === 'floor' ? intOrNull(value)
       : key === 'status' ? cleanStatus(value)
@@ -430,6 +432,57 @@ export async function updateDevelopment(id: string, input: Record<string, unknow
 
 export async function deleteDevelopment(id: string) {
   const { error, count } = await (await db()).from('developments').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/* ---------- buildings (доми в ЖК) ---------- */
+const mapBuilding = (r: Row): Building => ({
+  id: r.id, developmentId: r.development_id, name: r.name, photo: r.photo ?? '', floors: r.floors ?? null,
+  stage: cleanStage(r.stage), completion: r.completion ?? '', address: r.address ?? '', sort: r.sort ?? 0,
+});
+
+/** До міграції 0035 таблиці немає — тоді ЖК просто без домів */
+export async function listBuildings(developmentId: string): Promise<Building[]> {
+  const { data, error } = await (await db()).from('buildings').select('*')
+    .eq('development_id', developmentId).order('sort').order('created_at');
+  if (error) return [];
+  return (data ?? []).map(mapBuilding);
+}
+
+export async function getBuilding(id: string): Promise<Building | null> {
+  const { data } = await (await db()).from('buildings').select('*').eq('id', id).maybeSingle();
+  return data ? mapBuilding(data) : null;
+}
+
+function buildingRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  if (typeof input.name === 'string') row.name = input.name.trim().slice(0, 60);
+  if (typeof input.completion === 'string') row.completion = input.completion.trim().slice(0, 40);
+  if (typeof input.address === 'string') row.address = input.address.trim().slice(0, 120);
+  if (input.photo !== undefined) row.photo = safeUrl(String(input.photo ?? ''));
+  if (input.floors !== undefined) row.floors = intOrNull(input.floors);
+  if (input.sort !== undefined) row.sort = intOrNull(input.sort) ?? 0;
+  if (input.stage !== undefined) row.stage = cleanStage(input.stage);
+  return row;
+}
+
+export async function createBuilding(developmentId: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('buildings')
+    .insert({ ...buildingRow(input), development_id: developmentId }).select('*').single();
+  if (error) throw error;
+  return mapBuilding(data);
+}
+
+export async function updateBuilding(id: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('buildings').update(buildingRow(input)).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapBuilding(data) : null;
+}
+
+/** Квартири дому лишаються в ЖК — посилання на дім просто обнуляється */
+export async function deleteBuilding(id: string) {
+  const { error, count } = await (await db()).from('buildings').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
   return (count ?? 0) > 0;
 }

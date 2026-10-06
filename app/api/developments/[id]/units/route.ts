@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createListing, getDevelopment } from '@/lib/db';
+import { createListing, getBuilding, getDevelopment } from '@/lib/db';
 import { currentUser } from '@/lib/session';
 import { canManageDevelopment, parsePriceList, unitTypeLabel } from '@/lib/units';
 
@@ -20,6 +20,8 @@ export async function POST(req: Request, { params }: Ctx) {
   const rows = parsePriceList(String(body.text ?? '')).slice(0, 300);
   if (!rows.length) return NextResponse.json({ error: 'No units found — one row per unit: unit, type, floor, m², ft², price' }, { status: 400 });
   const deal = body.deal === 'rent' ? 'rent' : 'sale';
+  const building = body.buildingId ? await getBuilding(String(body.buildingId)) : null;
+  if (body.buildingId && building?.developmentId !== dev.id) return NextResponse.json({ error: 'Building is not in this development' }, { status: 400 });
 
   const created: string[] = [];
   try {
@@ -29,11 +31,11 @@ export async function POST(req: Request, { params }: Ctx) {
         agentId: user.isAdmin ? dev.agentId : user.id, agencyId: dev.agencyId,
         deal, type: 'condo',
         title: `${dev.name} · Unit ${r.unit} · ${unitTypeLabel(r.beds)}`,
-        island: dev.island, neighborhood: dev.neighborhood, address: dev.address,
+        island: dev.island, neighborhood: dev.neighborhood, address: building?.address || dev.address,
         // санвузлів у прайсі немає — лишаємо порожнім, а не вигадуємо
         price: r.price, beds: r.beds, baths: 0, sqft: r.sqft,
         lat: dev.lat, lng: dev.lng, photos: dev.photos, text: dev.text,
-        titled: false, developmentId: dev.id, unitNo: r.unit, floor: r.floor, status: 'available',
+        titled: false, developmentId: dev.id, buildingId: building?.id ?? null, unitNo: r.unit, floor: r.floor, status: 'available',
       });
       created.push(l.id);
     }
