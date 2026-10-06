@@ -111,6 +111,14 @@ export default function AgentDashboard({ session }: { session: Session }) {
           </div>
         </div>
 
+        {/* Телефон при реєстрації не питаємо — без нього на картці обʼєкта немає кнопки WhatsApp */}
+        {!agent.phone && !agent.whatsapp && tab !== 'profile' && (
+          <div className="note-ok" style={{ margin: '0 0 18px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <span style={{ flex: 1 }}>Add your phone or WhatsApp so buyers can reach you straight from your listings.</span>
+            <button type="button" className="btn btn--ghost" onClick={() => setTab('profile')}>Add contacts</button>
+          </div>
+        )}
+
         <div className="stats">
           <div className="stat"><span className="muted small">Listings</span><b>{stats.total}</b></div>
           <div className="stat"><span className="muted small">Published</span><b>{stats.active}</b></div>

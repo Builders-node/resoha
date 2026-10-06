@@ -105,8 +105,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode,
-        name: fd.get('name'), email: fd.get('email'), password: fd.get('password'),
-        phone: fd.get('phone'), agencyName: fd.get('agencyName'), inviteCode: fd.get('inviteCode'),
+        email: fd.get('email'), password: fd.get('password'), agencyName: fd.get('agencyName'), inviteCode: fd.get('inviteCode'),
         website: fd.get('website'), ts: shownAt.current,
       }),
     });
@@ -165,15 +164,8 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
               <input className="input" name="agencyName" required placeholder="Blue Harbour Estates" /></div>
           )}
 
-          <div className="field"><label>{mode === 'agency' ? 'Owner name' : 'Full name'}</label>
-            <input className="input" name="name" required placeholder="Marla Bennett" /></div>
-
-          <div className="auth__row">
-            <div className="field"><label>Email</label>
-              <input className="input" name="email" type="email" required autoComplete="email" placeholder="you@example.com" /></div>
-            <div className="field"><label>Phone / WhatsApp</label>
-              <input className="input" name="phone" placeholder="+504 9812-4471" /></div>
-          </div>
+          <div className="field"><label>Email</label>
+            <input className="input" name="email" type="email" required autoComplete="email" placeholder="you@example.com" /></div>
 
           <div className="field"><label>Password</label>
             <input className="input" name="password" type="password" required minLength={8}
