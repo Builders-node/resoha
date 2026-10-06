@@ -24,7 +24,6 @@ export async function POST(req: Request) {
     );
   }
 
-  if (!b.name?.trim()) return NextResponse.json({ error: 'Name is required' }, { status: 400 });
   if (!b.email) return NextResponse.json({ error: 'Enter a valid email' }, { status: 400 });
   if (!b.password || b.password.length < 8) {
     return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 });
@@ -33,12 +32,16 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Agency name is required' }, { status: 400 });
   }
 
+  // Імʼя й телефон форма більше не питає — їх додають у профілі. Поки імені немає,
+  // показуємо частину пошти до «@», щоб шапка, аватар і картка ріелтора не були порожні.
+  const name = b.name?.trim() || b.email.split('@')[0];
+
   const supabase = await supabaseServer();
   const { data: signUp, error } = await supabase.auth.signUp({
     email: b.email,
     password: b.password,
     options: {
-      data: { name: b.name.trim(), role: mode === 'buyer' ? 'user' : 'agent', phone: b.phone ?? '' },
+      data: { name, role: mode === 'buyer' ? 'user' : 'agent', phone: b.phone ?? '' },
     },
   });
   if (error) {
