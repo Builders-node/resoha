@@ -76,6 +76,18 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
   // зведення по домах: «1 delivered · 2 under construction»
   const stageCounts = BUILDING_STAGES.map(([k]) => [k, buildings.filter((b) => b.stage === k).length] as const)
     .filter(([, n]) => n > 0).reverse();
+  // статус продажів і будівництва — у бічній колонці під «Request a viewing», як у LUN
+  const statusBox = stageCounts.length > 0 || buildings.length > 0 ? (
+    <ul className="feat__status">
+      <li><Icon name="verified" size={18} /> {salesLabel(dev.sales)}</li>
+      {stageCounts.map(([k, n]) => (
+        <li key={k} className={`is-${k}`}>
+          <Icon name={k === 'delivered' || k === 'built' ? 'check' : k === 'planned' ? 'deed' : 'crane'} size={18} />
+          {n} {n === 1 ? 'building' : 'buildings'} · {stageLabel(k).toLowerCase()}
+        </li>
+      ))}
+    </ul>
+  ) : null;
 
   return (
     <div className="wrap">
@@ -156,24 +168,12 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             </section>
           )}
 
-          {(facts.length > 0 || dev.amenities.length > 0) && (
+          {(facts.length > 0 || dev.amenities.length > 0 || (!leadUnit && statusBox)) && (
             <section className="dev" id="features">
               <h2 className="dev__title">Project features</h2>
               <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
-              <div className="feat">
-                <FeatureGrid items={facts} />
-                {(stageCounts.length > 0 || buildings.length > 0) && (
-                  <ul className="feat__status">
-                    <li><Icon name="verified" size={18} /> {salesLabel(dev.sales)}</li>
-                    {stageCounts.map(([k, n]) => (
-                      <li key={k} className={`is-${k}`}>
-                        <Icon name={k === 'delivered' || k === 'built' ? 'check' : k === 'planned' ? 'deed' : 'crane'} size={18} />
-                        {n} {n === 1 ? 'building' : 'buildings'} · {stageLabel(k).toLowerCase()}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+              <FeatureGrid items={facts} />
+              {!leadUnit && statusBox}
               {dev.amenities.length > 0 && (
                 <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
               )}
@@ -205,7 +205,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
         </div>
 
         {leadUnit && (
-          <AgentContact agent={agent} listing={leadUnit} listingUrl={url} topic={dev.name} fromPrice={from}
+          <AgentContact agent={agent} listing={leadUnit} listingUrl={url} topic={dev.name} fromPrice={from} extra={statusBox}
             me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
         )}
       </div>
