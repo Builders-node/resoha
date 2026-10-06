@@ -261,6 +261,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
               <div className="field"><label>Name</label><input className="input" name="name" defaultValue={agent.name} /></div>
               <div className="field"><label>Phone</label><input className="input" name="phone" defaultValue={agent.phone} /></div>
               <div className="field"><label>WhatsApp</label><input className="input" name="whatsapp" defaultValue={agent.whatsapp} /></div>
+              <div className="field"><label>Viber</label><input className="input" name="viber" defaultValue={agent.viber} placeholder="+504 9999 0000" /></div>
+              <div className="field"><label>Telegram</label><input className="input" name="telegram" defaultValue={agent.telegram} placeholder="@username" /></div>
               <div className="field"><label>Years on island</label><input className="input" name="experience" type="number" defaultValue={agent.experience} /></div>
               <div className="field full"><label>About</label><textarea className="input" name="about" defaultValue={agent.about} /></div>
               <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>

@@ -32,6 +32,8 @@ export interface Profile {
   avatar: string;
   phone: string;
   whatsapp: string;
+  viber: string;           // номер для viber:// — порожньо, якщо немає
+  telegram: string;        // @username або номер
   createdAt: string;
   active: boolean;
 
@@ -79,6 +81,8 @@ export interface Listing {
   neighborhood: string;
   address: string;
   price: number;
+  /** Найвища попередня ціна, поки поточна нижча (веде тригер у базі); 0 — не знижували */
+  oldPrice: number;
   hoa: number;
   beds: number;
   baths: number;

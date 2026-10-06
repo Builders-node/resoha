@@ -34,7 +34,9 @@ export const mapAgency = (r: Row): Agency => ({
 
 export const mapAgent = (r: Row): Agent => ({
   id: r.id, role: r.role, name: r.name, email: r.email ?? '', avatar: r.avatar,
-  phone: r.phone, whatsapp: r.whatsapp, createdAt: r.created_at, active: r.active,
+  phone: r.phone, whatsapp: r.whatsapp,
+  // до міграції 0032 колонок немає — тоді порожньо
+  viber: r.viber ?? '', telegram: r.telegram ?? '', createdAt: r.created_at, active: r.active,
   agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
   experience: r.experience, rating: Number(r.rating), reviews: r.reviews,
@@ -51,7 +53,8 @@ const mapLand = (r: Row | null | undefined): LandFacts | null => r ? ({
 
 const mapListing = (r: Row): Listing => ({
   id: r.id, deal: r.deal, type: r.type, title: r.title, island: r.island,
-  neighborhood: r.neighborhood, address: r.address, price: Number(r.price), hoa: Number(r.hoa),
+  neighborhood: r.neighborhood, address: r.address, price: Number(r.price),
+  oldPrice: Number(r.old_price ?? 0), hoa: Number(r.hoa),
   beds: r.beds, baths: Number(r.baths), sqft: r.sqft, lotAcres: Number(r.lot_acres), year: r.year,
   oceanfront: r.oceanfront, titled: r.titled, ownerFinancing: r.owner_financing,
   lat: r.lat, lng: r.lng, agentId: r.agent_id, agencyId: r.agency_id,
@@ -96,7 +99,12 @@ const AGENCY_PUBLIC_COLS = 'id, name, brand, phone, email, about, verified, owne
 
 /* ---------- profiles / agents ---------- */
 export async function getAgent(id: string): Promise<Agent | null> {
-  const { data } = await (await db()).from('profiles').select(AGENT_PUBLIC_COLS).eq('id', id).maybeSingle();
+  const client = await db();
+  const full = await client.from('profiles').select(`${AGENT_PUBLIC_COLS}, viber, telegram`).eq('id', id).maybeSingle();
+  // до міграції 0032 колонок viber/telegram немає — тоді беремо профіль без них
+  const { data } = full.error
+    ? await client.from('profiles').select(AGENT_PUBLIC_COLS).eq('id', id).maybeSingle()
+    : full;
   return data ? mapAgent(data) : null;
 }
 
