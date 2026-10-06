@@ -10,7 +10,7 @@ import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
-import { bumpViewsAfterResponse, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
+import { bumpViewsAfterResponse, getAgency, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
@@ -51,8 +51,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, me, similarAll, landPeers] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers] = await Promise.all([
     getAgent(listing.agentId),
+    getAgency(listing.agencyId),
     currentUser(),
     queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }),
     // уся земля на продаж — для медіани $/акр у паспорті
@@ -337,7 +338,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </p>
         </div>
 
-        <AgentContact agent={agent} listing={listing} listingUrl={`${SITE_URL}/listings/${listing.id}`}
+        <AgentContact agent={agent} agency={agency} listing={listing} listingUrl={`${SITE_URL}/listings/${listing.id}`}
+          isFav={favIds.includes(listing.id)}
           me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
       </div>
 

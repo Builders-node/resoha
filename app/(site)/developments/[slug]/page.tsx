@@ -187,7 +187,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
         </div>
 
         {leadUnit && (
-          <AgentContact agent={agent} listing={leadUnit} listingUrl={url} topic={dev.name}
+          <AgentContact agent={agent} listing={leadUnit} listingUrl={url} topic={dev.name} fromPrice={from}
             me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
         )}
       </div>

@@ -3,7 +3,9 @@ import { useState } from 'react';
 import { HeartIcon } from './Icon';
 import { toast } from './Toaster';
 
-export default function FavButton({ listingId, initial = false }: { listingId: string; initial?: boolean }) {
+export default function FavButton({ listingId, initial = false, className = 'fav', size = 18 }: {
+  listingId: string; initial?: boolean; className?: string; size?: number;
+}) {
   const [on, setOn] = useState(initial);
 
   async function toggle(e: React.MouseEvent) {
@@ -21,8 +23,8 @@ export default function FavButton({ listingId, initial = false }: { listingId: s
   }
 
   return (
-    <button className={`fav ${on ? 'is-on' : ''}`} onClick={toggle} aria-label="Save listing" title="Save listing">
-      <HeartIcon filled={on} size={18} />
+    <button className={`${className} ${on ? 'is-on' : ''}`} onClick={toggle} aria-label="Save listing" title="Save listing">
+      <HeartIcon filled={on} size={size} />
     </button>
   );
 }
