@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
+import DevelopmentsPanel from './DevelopmentsPanel';
 import Icon from './Icon';
 import Photo from './Photo';
 import AvatarPicker from './AvatarPicker';
@@ -13,7 +14,7 @@ import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-type Tab = 'listings' | 'leads' | 'new' | 'team' | 'profile';
+type Tab = 'listings' | 'leads' | 'new' | 'developments' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 
@@ -87,6 +88,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         <a className={tab === 'new' ? 'is-active' : ''} onClick={() => { setEditing(null); setTab('new'); }}>
           <Icon name="plus" size={18} /> {editing ? 'Edit listing' : 'Add listing'}
         </a>
+        <a className={tab === 'developments' ? 'is-active' : ''} onClick={() => setTab('developments')}>
+          <Icon name="building" size={18} /> Developments
+        </a>
         <a className={tab === 'team' ? 'is-active' : ''} onClick={() => setTab('team')}>
           <Icon name="building" size={18} /> {agency ? 'Team' : 'Agency'}
         </a>
@@ -125,6 +129,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(stats.views)}</b></div>
           <div className="stat"><span className="muted small">Leads</span><b>{stats.leads}</b></div>
         </div>
+
+        {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} />}
 
         {tab === 'listings' && (
           <div className="panel">

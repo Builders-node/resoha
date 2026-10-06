@@ -3,8 +3,8 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanNearby } from './nearby';
-import { cleanProject, cleanUnits } from './units';
-import type { AdminLogEntry, Agency, Agent, Deal, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
+import { OPEN_STATUSES, cleanSales, cleanStatus, slugify } from './units';
+import type { AdminLogEntry, Agency, Agent, Deal, Development, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -17,6 +17,13 @@ const db = async (): Promise<DB> => supabaseServer();
 // Рядок PostgREST: форма залежить від select, тож типізувати його жорстко нема сенсу
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Row = Record<string, any>;
+
+/** Поверх: ціле число або нічого — порожнє поле форми не має ставати нулем */
+const intOrNull = (v: unknown) => {
+  if (v === null || v === undefined || v === '') return null;
+  const n = Math.round(Number(v));
+  return Number.isFinite(n) ? n : null;
+};
 
 /**
  * Посилання на джерело потрапляє в href, тож пускаємо лише http(s):
@@ -35,7 +42,7 @@ export const mapAgency = (r: Row): Agency => ({
 export const mapAgent = (r: Row): Agent => ({
   id: r.id, role: r.role, name: r.name, email: r.email ?? '', avatar: r.avatar,
   phone: r.phone, whatsapp: r.whatsapp,
-  // до міграції 0032 колонок немає — тоді порожньо
+  // до міграції 0034 колонок немає — тоді порожньо
   viber: r.viber ?? '', telegram: r.telegram ?? '', createdAt: r.created_at, active: r.active,
   agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
@@ -64,16 +71,17 @@ const mapListing = (r: Row): Listing => ({
   land: mapLand(r.land_facts),
   // до міграції 0028 колонки немає — тоді просто порожньо
   nearby: cleanNearby(r.nearby),
-  // до міграції 0030 колонки немає — тоді просто порожньо
-  units: cleanUnits(r.units),
-  // до міграції 0031 колонки немає — тоді порожній обʼєкт
-  project: cleanProject(r.project),
+  developmentId: r.development_id ?? null,
+  development: r.development ? { name: r.development.name, slug: r.development.slug } : null,
+  unitNo: r.unit_no ?? '',
+  floor: r.floor ?? null,
+  status: cleanStatus(r.status),
 });
 
 /** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
 const LAND_EMBED = '*, checker:profiles!land_facts_checked_by_fkey(name)';
 const listingCols = (q: ListingQuery, base = '*') =>
-  `${base}, land_facts${q.ready ? '!inner' : ''}(${LAND_EMBED})`;
+  `${base}, land_facts${q.ready ? '!inner' : ''}(${LAND_EMBED}), development:developments(name, slug)`;
 
 const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
@@ -101,7 +109,7 @@ const AGENCY_PUBLIC_COLS = 'id, name, brand, phone, email, about, verified, owne
 export async function getAgent(id: string): Promise<Agent | null> {
   const client = await db();
   const full = await client.from('profiles').select(`${AGENT_PUBLIC_COLS}, viber, telegram`).eq('id', id).maybeSingle();
-  // до міграції 0032 колонок viber/telegram немає — тоді беремо профіль без них
+  // до міграції 0034 колонок viber/telegram немає — тоді беремо профіль без них
   const { data } = full.error
     ? await client.from('profiles').select(AGENT_PUBLIC_COLS).eq('id', id).maybeSingle()
     : full;
@@ -142,6 +150,9 @@ export async function agencyBoard() {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyFilters(sel: any, q: ListingQuery) {
   if (!q.includeInactive) sel = sel.eq('active', true);
+  // продані й здані квартири лишаються на сторінці ЖК, але не в пошуку
+  if (q.developmentId) sel = sel.eq('development_id', q.developmentId);
+  else if (!q.includeInactive) sel = sel.in('status', OPEN_STATUSES);
   if (q.ids?.length) sel = sel.in('id', q.ids);
   if (q.deal) sel = sel.eq('deal', q.deal);
   if (q.type) sel = sel.eq('type', q.type);
@@ -258,7 +269,10 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     source_ref: input.sourceRef ?? '',
     source_url: safeUrl(input.sourceUrl),
     ...(input.nearby?.length ? { nearby: cleanNearby(input.nearby) } : {}),
-    ...(input.units?.length ? { units: cleanUnits(input.units), project: cleanProject(input.project) } : {}),
+    development_id: input.developmentId || null,
+    unit_no: String(input.unitNo ?? '').trim().slice(0, 20),
+    floor: intOrNull(input.floor),
+    status: cleanStatus(input.status),
   }).select(listingCols({})).single();
   if (error) throw error;
   return mapListing(data);
@@ -289,7 +303,8 @@ const LISTING_COLUMNS: Record<string, string> = {
   ownerFinancing: 'owner_financing', lat: 'lat', lng: 'lng', tags: 'tags', photos: 'photos',
   text: 'body', active: 'active',
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
-  nearby: 'nearby', units: 'units', project: 'project',
+  nearby: 'nearby',
+  developmentId: 'development_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);
@@ -301,8 +316,10 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
     if (value === undefined) continue;
     row[column] = key === 'sourceUrl' ? safeUrl(value)
       : key === 'nearby' ? cleanNearby(value)
-      : key === 'units' ? cleanUnits(value)
-      : key === 'project' ? cleanProject(value)
+      : key === 'developmentId' ? value || null
+      : key === 'unitNo' ? String(value).trim().slice(0, 20)
+      : key === 'floor' ? intOrNull(value)
+      : key === 'status' ? cleanStatus(value)
       : NUMERIC.has(key) ? Number(value) || 0
         : BOOLEAN.has(key) ? Boolean(value) : value;
   }
@@ -335,6 +352,79 @@ export async function bumpViewsAfterResponse(id: string) {
     const { error } = await client.rpc('bump_views', { p_listing: id });
     if (error) console.error('bump_views failed:', error.message);
   });
+}
+
+/* ---------- developments (ЖК) ---------- */
+const mapDevelopment = (r: Row): Development => ({
+  id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', completion: r.completion ?? '',
+  sales: cleanSales(r.sales), website: r.website ?? '', island: r.island, neighborhood: r.neighborhood,
+  address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
+  agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
+});
+
+export async function getDevelopment(slugOrId: string): Promise<Development | null> {
+  const isId = /^[0-9a-f-]{36}$/i.test(slugOrId);
+  const { data } = await (await db()).from('developments').select('*').eq(isId ? 'id' : 'slug', slugOrId).maybeSingle();
+  return data ? mapDevelopment(data) : null;
+}
+
+/** agentId — свої ЖК у кабінеті (разом із прихованими); без нього — публічний список */
+export async function listDevelopments(opts: { agentId?: string; agencyId?: string } = {}): Promise<Development[]> {
+  let sel = (await db()).from('developments').select('*').order('created_at', { ascending: false });
+  if (opts.agencyId) sel = sel.eq('agency_id', opts.agencyId);
+  else if (opts.agentId) sel = sel.eq('agent_id', opts.agentId);
+  else sel = sel.eq('active', true);
+  const { data, error } = await sel.limit(200);
+  if (error) throw error;
+  return (data ?? []).map(mapDevelopment);
+}
+
+const DEVELOPMENT_TEXT = ['name', 'developer', 'completion', 'island', 'neighborhood', 'address'] as const;
+
+/** Те, що прийшло з форми, — у рядок таблиці. Порожні поля не чіпаємо (для PATCH). */
+function developmentRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  for (const k of DEVELOPMENT_TEXT) if (typeof input[k] === 'string') row[k] = (input[k] as string).trim().slice(0, 120);
+  if (input.text !== undefined) row.body = String(input.text).slice(0, 8000);
+  if (input.website !== undefined) {
+    const w = String(input.website).trim();
+    row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
+  }
+  if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  if (input.lat !== undefined) row.lat = Number(input.lat) || 16.3;
+  if (input.lng !== undefined) row.lng = Number(input.lng) || -86.59;
+  if (Array.isArray(input.photos)) row.photos = input.photos.filter((p) => typeof p === 'string').slice(0, 30);
+  if (input.active !== undefined) row.active = Boolean(input.active);
+  return row;
+}
+
+export async function createDevelopment(input: Record<string, unknown> & { agentId: string }) {
+  const row = developmentRow(input);
+  const base = slugify(String(input.slug || row.name || '')) || 'development';
+  const client = await db();
+  // адреса має бути унікальною: duna-tower, duna-tower-2…
+  const { data: taken } = await client.from('developments').select('slug').like('slug', `${base}%`);
+  const used = new Set((taken ?? []).map((r: Row) => r.slug));
+  let slug = base;
+  for (let i = 2; used.has(slug); i++) slug = `${base}-${i}`;
+  const { data, error } = await client.from('developments')
+    .insert({ ...row, slug, agent_id: input.agentId }).select('*').single();
+  if (error) throw error;
+  return mapDevelopment(data);
+}
+
+export async function updateDevelopment(id: string, input: Record<string, unknown>) {
+  const row = developmentRow(input);
+  if (!Object.keys(row).length) return getDevelopment(id);
+  const { data, error } = await (await db()).from('developments').update(row).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapDevelopment(data) : null;
+}
+
+export async function deleteDevelopment(id: string) {
+  const { error, count } = await (await db()).from('developments').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
 }
 
 /* ---------- favorites ---------- */

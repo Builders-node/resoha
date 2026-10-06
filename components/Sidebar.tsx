@@ -17,6 +17,7 @@ const NAV: { href: string; ico: string; cap: string; deskOnly?: boolean; match: 
   { href: '/listings?deal=rent', ico: 'key', cap: 'Rent', match: (p, deal) => p === '/listings' && deal === 'rent' },
   // deskOnly — пункт лишається у вертикальній рейці, а на телефоні їде в лист «Other»
   { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: (p, _deal, type) => p === '/listings' && type === 'land' },
+  { href: '/developments', ico: 'building', cap: 'New builds', deskOnly: true, match: (p) => p.startsWith('/developments') },
   { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p) => p === '/account' },
   { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p) => p.startsWith('/agents') },
 ];
@@ -105,6 +106,9 @@ export default function Sidebar({ session }: { session: Session | null }) {
               <Icon name="building" size={19} /> Agents &amp; agencies
             </Link>
 
+            <Link className="sheet__item" href="/developments">
+              <Icon name="building" size={19} /> New developments
+            </Link>
             <Link className="sheet__item" href="/listings?type=land">
               <Icon name="land" size={19} /> Land &amp; lots
             </Link>

@@ -2,12 +2,11 @@
 import { useEffect, useState } from 'react';
 import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
-import UnitsEditor from './UnitsEditor';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
-import { EMPTY_PROJECT, SALES_STATUSES, cleanUnits, fromPrice, type ProjectInfo, type Unit } from '@/lib/units';
+import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -25,8 +24,9 @@ export default function ListingForm({
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
   const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
-  const [units, setUnits] = useState<Unit[]>(listing?.units ?? []);
-  const [project, setProject] = useState<ProjectInfo>(listing?.project ?? EMPTY_PROJECT);
+  // ЖК автора — щоб квартиру можна було привʼязати до будинку
+  const [developments, setDevelopments] = useState<{ id: string; name: string }[]>([]);
+  const [developmentId, setDevelopmentId] = useState(listing?.developmentId ?? '');
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
@@ -45,6 +45,13 @@ export default function ListingForm({
   const [areas, setAreas] = useState<string[]>(NEIGHBORHOODS);
   const [saving, setSaving] = useState(false);
   const editing = Boolean(listing);
+
+  useEffect(() => {
+    fetch('/api/developments?mine=1')
+      .then((r) => r.json())
+      .then((d: { items?: { id: string; name: string }[] }) => setDevelopments(d.items ?? []))
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetch('/api/facets')
@@ -69,8 +76,6 @@ export default function ListingForm({
       if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
     }
     // юніти без номера чи ціни — недописані; з юнітами ціна оголошення = найдешевший вільний
-    const cleanList = cleanUnits(units);
-    const unitsFrom = fromPrice(cleanList);
     setSaving(true);
 
     const res = await fetch(editing ? `/api/listings/${listing!.id}` : '/api/listings', {
@@ -82,9 +87,7 @@ export default function ListingForm({
         photos,
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
-        units: cleanList,
-        project,
-        ...(unitsFrom !== null ? { price: unitsFrom } : {}),
+        developmentId: developmentId || null,
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
@@ -95,7 +98,7 @@ export default function ListingForm({
 
     if (!res.ok) return toast((await res.json()).error ?? 'Something went wrong');
     toast(editing ? 'Listing updated' : 'Listing published');
-    if (!editing) { form.reset(); setPhotos([]); setNearby([]); setUnits([]); setProject(EMPTY_PROJECT); }
+    if (!editing) { form.reset(); setPhotos([]); setNearby([]); }
     onSaved();
   }
 
@@ -138,8 +141,7 @@ export default function ListingForm({
           </select></div>
 
         <div className="field"><label>Price, USD</label>
-          <input className="input" name="price" type="number" required={!units.length} defaultValue={v?.price} placeholder="649000"
-            disabled={units.length > 0} title={units.length ? 'Set from the cheapest available unit below' : undefined} /></div>
+          <input className="input" name="price" type="number" required defaultValue={v?.price} placeholder="649000" /></div>
         <div className="field"><label>HOA, USD/mo</label>
           <input className="input" name="hoa" type="number" defaultValue={v?.hoa ?? 0} /></div>
 
@@ -201,25 +203,28 @@ export default function ListingForm({
           </div>
         )}
 
-        <UnitsEditor value={units} onChange={setUnits} />
+        {/* Продане чи здане зникає з пошуку, але лишається на сторінці ЖК */}
+        <div className="field"><label>Status</label>
+          <select className="input" name="status" defaultValue={v?.status ?? 'available'}>
+            {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></div>
 
-        {/* Дані новобудови показуються над прайсом — лише коли є юніти */}
-        {units.length > 0 && (
+        {/* Квартира в ЖК: номер і поверх показуються на сторінці будинку */}
+        {developments.length > 0 && (
           <>
-            <div className="field"><label>Developer</label>
-              <input className="input" value={project.developer} maxLength={80} placeholder="Developer name"
-                onChange={(e) => setProject({ ...project, developer: e.target.value })} /></div>
-            <div className="field"><label>Completion</label>
-              <input className="input" value={project.completion} maxLength={40} placeholder="Q4 2026"
-                onChange={(e) => setProject({ ...project, completion: e.target.value })} /></div>
-            <div className="field"><label>Sales</label>
-              <select className="input" value={project.sales}
-                onChange={(e) => setProject({ ...project, sales: e.target.value as ProjectInfo['sales'] })}>
-                {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            <div className="field"><label>Development</label>
+              <select className="input" value={developmentId} onChange={(e) => setDevelopmentId(e.target.value)}>
+                <option value="">— Standalone property —</option>
+                {developments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select></div>
-            <div className="field"><label>Project website</label>
-              <input className="input" value={project.website} maxLength={200} placeholder="example.com"
-                onChange={(e) => setProject({ ...project, website: e.target.value })} /></div>
+            {developmentId && (
+              <>
+                <div className="field"><label>Unit number</label>
+                  <input className="input" name="unitNo" maxLength={20} defaultValue={v?.unitNo} placeholder="303" /></div>
+                <div className="field"><label>Floor</label>
+                  <input className="input" name="floor" type="number" defaultValue={v?.floor ?? ''} placeholder="3" /></div>
+              </>
+            )}
           </>
         )}
 

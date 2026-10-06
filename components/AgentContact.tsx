@@ -35,8 +35,12 @@ const TelegramMark = () => (
   </svg>
 );
 
-export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me }: {
+export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me, topic, fromPrice }: {
   agent: Agent; listing: Listing;
+  /** Про що питають у месенджері, якщо не про сам обʼєкт — напр. про весь ЖК */
+  topic?: string;
+  /** Для ЖК: найнижча ціна серед квартир — показуємо «From» замість ціни одного юніта */
+  fromPrice?: number | null;
   /** Агенція, від імені якої опубліковано обʼєкт, — для шапки картки */
   agency?: Agency | null;
   /** Повна адреса сторінки обʼєкта — для копіювання і тексту повідомлення в месенджері */
@@ -53,14 +57,17 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const shownAt = useRef(0);
   useEffect(() => { shownAt.current = Date.now(); }, []);
 
-  const hasUnits = listing.units.length > 0;
+  // картка ЖК стоїть на першій вільній квартирі, але говорить про весь будинок
+  const forBuilding = topic !== undefined;
+  const hasUnits = forBuilding;
+  const price = forBuilding ? fromPrice ?? 0 : listing.price;
   const dropped = !hasUnits && listing.oldPrice > listing.price;
   const perSqft = !hasUnits && listing.deal === 'sale' && listing.sqft > 0
     ? `${fmtUsd(Math.round(listing.price / listing.sqft))}/ft²` : '';
   const place = [listing.address, listing.neighborhood].filter(Boolean).join(', ');
 
-  const msg = `Hi ${agent.name.split(' ')[0]}, I'm interested in "${listing.title}" `
-    + `(${fmtPrice(listing.price, listing.deal)}) — ${listingUrl}`;
+  const msg = `Hi ${agent.name.split(' ')[0]}, I'm interested in "${topic ?? listing.title}" `
+    + `${topic ? '' : `(${fmtPrice(listing.price, listing.deal)}) `}— ${listingUrl}`;
   // WhatsApp — основний канал на цьому ринку; без окремого номера пробуємо звичайний телефон
   const wa = digits(agent.whatsapp || agent.phone);
   const waHref = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '';
@@ -127,15 +134,19 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
         <div className="cc__body">
           <div className="cc__top">
             <div className="cc__price">
-              {hasUnits && <span className="cc__from">From</span>}
-              {fmtPrice(listing.price, listing.deal)}
+              {price > 0 ? (
+                <>
+                  {hasUnits && <span className="cc__from">From</span>}
+                  {fmtPrice(price, listing.deal)}
+                </>
+              ) : 'Price on request'}
               {dropped && <Icon name="arrowDown" size={26} className="ico cc__drop" aria-label="Price reduced" />}
             </div>
             <div className="cc__acts">
               <button className="cc__act" onClick={copyLink} aria-label="Copy link" title="Copy link">
                 <Icon name="link" size={26} />
               </button>
-              <FavButton listingId={listing.id} initial={isFav} className="cc__act cc__fav" size={26} />
+              {!forBuilding && <FavButton listingId={listing.id} initial={isFav} className="cc__act cc__fav" size={26} />}
             </div>
           </div>
 
@@ -227,7 +238,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               <input className="input" name="name" placeholder="Your name" defaultValue={me?.name ?? ''} required maxLength={120} />
               <input className="input" name="phone" placeholder="Phone / WhatsApp" defaultValue={me?.phone ?? ''} required maxLength={40} />
               <input className="input" name="email" type="email" placeholder="Email (optional)" defaultValue={me?.email ?? ''} maxLength={200} />
-              <textarea className="input" name="message" rows={3} placeholder="When are you on the island?" maxLength={2000} />
+              <textarea className="input" name="message" rows={3} placeholder="When are you on the island?" maxLength={2000}
+                defaultValue={topic ? `Interested in ${topic}. ` : undefined} />
               {/* приманка для ботів: людина цього поля не бачить і не заповнює */}
               <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <button className="btn btn--primary btn--block" disabled={sending}>

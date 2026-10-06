@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
-import { bumpViews, deleteListing, getAgency, getAgent, getListing, saveLandFacts, updateListing } from '@/lib/db';
+import { bumpViews, deleteListing, getAgency, getAgent, getDevelopment, getListing, saveLandFacts, updateListing } from '@/lib/db';
+import { currentUser } from '@/lib/session';
+import { canManageDevelopment } from '@/lib/units';
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -20,6 +22,11 @@ export async function GET(req: Request, { params }: Ctx) {
 export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params;
   const patch = await req.json().catch(() => ({}));
+  // квартиру можна перенести лише у свій ЖК (або ЖК своєї агенції)
+  if (patch.developmentId) {
+    const [user, dev] = await Promise.all([currentUser(), getDevelopment(String(patch.developmentId))]);
+    if (!user || !dev || !canManageDevelopment(dev, user)) return NextResponse.json({ error: 'Not your development' }, { status: 403 });
+  }
   let listing = await updateListing(id, patch);
   if (!listing) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   // паспорт ділянки — окрема таблиця; зберігаємо лише для землі

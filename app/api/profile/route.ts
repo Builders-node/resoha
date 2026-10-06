@@ -26,7 +26,7 @@ export async function PATCH(req: Request) {
   const save = (p: Record<string, unknown>) => supabase.from('profiles').update(p)
     .eq('id', user.id).select('*, agency:agencies!profiles_agency_id_fkey(name)').maybeSingle();
   let { data, error } = await save(patch);
-  // до міграції 0032 колонок viber/telegram немає — решту профілю все одно зберігаємо
+  // до міграції 0034 колонок viber/telegram немає — решту профілю все одно зберігаємо
   if (error && ('viber' in patch || 'telegram' in patch) && /viber|telegram/.test(error.message)) {
     delete patch.viber; delete patch.telegram;
     ({ data, error } = await save(patch));

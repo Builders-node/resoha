@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
-import { PAGE_SIZE, adminLog, createListing, getListing, queryPins, saveLandFacts, searchListings } from '@/lib/db';
+import { PAGE_SIZE, adminLog, createListing, getDevelopment, getListing, queryPins, saveLandFacts, searchListings } from '@/lib/db';
+import { canManageDevelopment } from '@/lib/units';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 
@@ -33,6 +34,11 @@ export async function POST(req: Request) {
   }
   if (!body.title || !body.price) {
     return NextResponse.json({ error: 'Title and price are required' }, { status: 400 });
+  }
+  // квартиру можна покласти лише у свій ЖК (або ЖК своєї агенції)
+  if (body.developmentId) {
+    const dev = await getDevelopment(String(body.developmentId));
+    if (!dev || !canManageDevelopment(dev, user)) return NextResponse.json({ error: 'Not your development' }, { status: 403 });
   }
   try {
     let listing = await createListing({
