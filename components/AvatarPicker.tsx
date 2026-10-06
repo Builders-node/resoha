@@ -3,6 +3,7 @@ import { useRef, useState } from 'react';
 import Icon from './Icon';
 import Avatar from './Avatar';
 import { toast } from './Toaster';
+import { uploadPhotos } from '@/lib/uploadPhotos';
 
 /** Завантаження аватара: той самий бакет, тека користувача, потім PATCH профілю. */
 export default function AvatarPicker({
@@ -12,12 +13,9 @@ export default function AvatarPicker({
   const input = useRef<HTMLInputElement>(null);
 
   async function pick(file: File) {
-    const fd = new FormData();
-    fd.append('files', file);
     setBusy(true);
-    const up = await fetch('/api/uploads', { method: 'POST', body: fd });
-    const data = await up.json().catch(() => ({}));
-    if (!up.ok) { setBusy(false); return toast(data.error ?? 'Upload failed'); }
+    const data = await uploadPhotos([file]);
+    if ('error' in data) { setBusy(false); return toast(data.error); }
 
     const res = await fetch('/api/profile', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },

@@ -2,8 +2,9 @@
 import { useRef, useState } from 'react';
 import Icon from './Icon';
 import { toast } from './Toaster';
+import { uploadPhotos } from '@/lib/uploadPhotos';
 
-/** Завантаження фото обʼєкта: файли одразу летять на /api/uploads, у формі лишаються URL. */
+/** Завантаження фото обʼєкта: файли одразу летять у Storage, у формі лишаються URL. */
 export default function PhotoUploader({
   value, onChange, max = 12,
 }: { value: string[]; onChange: (urls: string[]) => void; max?: number }) {
@@ -16,14 +17,11 @@ export default function PhotoUploader({
     if (!list.length) return;
     if (value.length + list.length > max) return toast(`Up to ${max} photos per listing`);
 
-    const fd = new FormData();
-    list.forEach((f) => fd.append('files', f));
     setBusy(true);
-    const res = await fetch('/api/uploads', { method: 'POST', body: fd });
-    const data = await res.json().catch(() => ({}));
+    const data = await uploadPhotos(list);
     setBusy(false);
 
-    if (!res.ok) return toast(data.error ?? 'Upload failed');
+    if ('error' in data) return toast(data.error);
     onChange([...value, ...data.urls]);
     toast(`${data.urls.length} ${data.urls.length === 1 ? 'photo' : 'photos'} uploaded`);
   }
