@@ -17,9 +17,9 @@ type Tab = 'listings' | 'leads' | 'new' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 
-export default function AgentDashboard({ session }: { session: Session }) {
+export default function AgentDashboard({ session, initialTab }: { session: Session; initialTab?: Tab }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('listings');
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'listings');
   const [scope, setScope] = useState<'own' | 'agency'>('own');
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agency, setAgency] = useState<Agency | null>(null);
