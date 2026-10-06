@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { DEAL_LABELS, fmtPrice, specLine } from '@/lib/format';
 import { readiness } from '@/lib/land';
+import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
 import Photo from './Photo';
@@ -29,6 +30,7 @@ export default function ListingCard({
       <Photo src={l.photos[0]} alt={l.title} />
       <div className="card__badges">
         <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{DEAL_LABELS[l.deal]}</span>
+        {l.status !== 'available' && <span className="badge">{statusLabel(l.status)}</span>}
         {l.oceanfront && <span className="badge">Oceanfront</span>}
         {/* земля: один бейдж готовності замість «Titled»; без перевірки — нічого */}
         {l.type === 'land' && l.land?.checkedAt && (
@@ -38,10 +40,12 @@ export default function ListingCard({
       </div>
       <FavButton listingId={l.id} initial={isFav} />
       <div className="ov__b">
-        {agentName && <div className="ov__agency">{agentName}</div>}
+        {l.development
+          ? <div className="ov__agency">{l.development.name}{l.unitNo && ` · Unit ${l.unitNo}`}</div>
+          : agentName && <div className="ov__agency">{agentName}</div>}
         <div className="ov__title">{l.title}</div>
         <div className="ov__meta">{l.neighborhood} · {specLine(l)}</div>
-        <div className="ov__price">{l.units.length > 1 && 'From '}{fmtPrice(l.price, l.deal)}</div>
+        <div className="ov__price">{fmtPrice(l.price, l.deal)}</div>
       </div>
     </Link>
   );

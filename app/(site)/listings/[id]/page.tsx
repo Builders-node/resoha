@@ -19,7 +19,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
-import UnitsSummary from '@/components/UnitsSummary';
+import { statusLabel, toM2 } from '@/lib/units';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -69,15 +69,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
 
   const isLand = listing.type === 'land';
-  const hasUnits = listing.units.length > 0;
-  const available = listing.units.filter((u) => u.status === 'available').length;
-  // зведення для плиток угорі: «Studio – 2 BR», «31 – 66 m²»
-  const beds = listing.units.map((u) => u.beds);
-  const unitTypes = hasUnits
-    ? [Math.min(...beds), Math.max(...beds)].map((b) => (b ? `${b} BR` : 'Studio')).filter((v, i, a) => a.indexOf(v) === i).join(' – ')
-    : '';
-  const sizes = listing.units.flatMap((u) => (u.m2 !== null ? [u.m2] : []));
-  const unitSizes = sizes.length ? `${Math.round(Math.min(...sizes))} – ${Math.round(Math.max(...sizes))} m²` : '—';
+  const inDevelopment = listing.development !== null;
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
@@ -93,6 +85,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         <Link href="/">Home</Link> ·{' '}
         <Link href={`/listings?deal=${listing.deal}`}>{DEAL_LABELS[listing.deal]}</Link> ·{' '}
         <Link href={areaPath}>{listing.neighborhood}</Link>
+        {listing.development && <> · <Link href={`/developments/${listing.development.slug}`}>{listing.development.name}</Link></>}
       </div>
 
       <div className="gallery-wrap">
@@ -116,21 +109,21 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <div>
               <h1 style={{ fontSize: 28 }}>{listing.title}</h1>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                {listing.address} · {listing.neighborhood}, {listing.island}, Bay Islands
+                {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, Bay Islands
               </p>
+              {listing.development && (
+                <Link href={`/developments/${listing.development.slug}`} className="in-dev">
+                  <Icon name="building" size={16} /> Unit in <b>{listing.development.name}</b> · see all units
+                </Link>
+              )}
             </div>
             <div className="prop__fav"><FavButton listingId={listing.id} initial={favIds.includes(listing.id)} /></div>
           </div>
 
           <div className="prop__price">
-            {hasUnits && <span className="muted small" style={{ fontWeight: 500 }}>From </span>}
             {fmtPrice(listing.price, listing.deal)}
-            {hasUnits && (
-              <span className="muted small" style={{ fontWeight: 500 }}>
-                {' '}· {available} of {listing.units.length} units available
-              </span>
-            )}
-            {!hasUnits && listing.deal === 'sale' && listing.sqft > 0 && (
+            {listing.status !== 'available' && <span className={`unit-status unit-status--${listing.status}`}>{statusLabel(listing.status)}</span>}
+            {listing.deal === 'sale' && listing.sqft > 0 && (
               <span className="muted small" style={{ fontWeight: 500 }}>
                 {' '}· {fmtUsd(Math.round(listing.price / listing.sqft))}/ft²
               </span>
@@ -148,21 +141,20 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 <div className="spec"><span className="muted small">Title</span><b>{titleOk ? 'Free & clear' : 'Not confirmed'}</b></div>
                 <div className="spec"><span className="muted small">Type</span><b>{TYPE_LABELS[listing.type]}</b></div>
               </>
-            ) : hasUnits ? (
-              <>
-                <div className="spec"><span className="muted small">Units</span><b>{listing.units.length}</b></div>
-                <div className="spec"><span className="muted small">Types</span><b>{unitTypes}</b></div>
-                <div className="spec"><span className="muted small">Sizes</span><b>{unitSizes}</b></div>
-                <div className="spec"><span className="muted small">Completion</span><b>{listing.project.completion || listing.year || '—'}</b></div>
-              </>
             ) : (
               <>
                 <div className="spec"><span className="muted small">Bedrooms</span>
                   <b>{listing.beds > 0 ? listing.beds : 'Studio'}</b></div>
-                <div className="spec"><span className="muted small">Bathrooms</span><b>{listing.baths}</b></div>
+                <div className="spec"><span className="muted small">Bathrooms</span><b>{listing.baths || '—'}</b></div>
                 <div className="spec"><span className="muted small">Interior</span>
-                  <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b></div>
-                <div className="spec"><span className="muted small">Built</span><b>{listing.year || '—'}</b></div>
+                  <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b>
+                  {inDevelopment && listing.sqft > 0 && <span className="muted small">{toM2(listing.sqft)} m²</span>}</div>
+                {inDevelopment ? (
+                  <div className="spec"><span className="muted small">Unit · floor</span>
+                    <b>{listing.unitNo || '—'}{listing.floor !== null && ` · ${listing.floor}`}</b></div>
+                ) : (
+                  <div className="spec"><span className="muted small">Built</span><b>{listing.year || '—'}</b></div>
+                )}
               </>
             )}
           </div>
@@ -175,8 +167,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             {listing.lotAcres > 0 && !isLand && <span className="chip">{listing.lotAcres} ac lot</span>}
             {listing.tags.map((t) => <span key={t} className="chip">{t}</span>)}
           </div>
-
-          {hasUnits && <UnitsSummary units={listing.units} project={listing.project} contactHref="#contact" />}
 
           {/* Паспорт ділянки: відповіді на те, що покупець землі питає першим */}
           {isLand && (() => {

@@ -1,5 +1,5 @@
 import type { NearbyPlace } from './nearby';
-import type { ProjectInfo, Unit } from './units';
+import type { SalesStatus, UnitStatus } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -106,10 +106,35 @@ export interface Listing {
   land: LandFacts | null;
   /** Місця поблизости, додані ріелтором вручну */
   nearby: NearbyPlace[];
-  /** Квартири в будинку з цінами; порожньо — звичайне одиночне оголошення */
-  units: Unit[];
-  /** Забудовник, термін здачі, стан продажів — для новобудов з юнітами */
-  project: ProjectInfo;
+  /** Квартира в ЖК: посилання на ЖК, номер, поверх. null — окремий обʼєкт */
+  developmentId: string | null;
+  development: { name: string; slug: string } | null;
+  unitNo: string;
+  floor: number | null;
+  /** вільна / бронь / продана / здана */
+  status: UnitStatus;
+}
+
+/** ЖК (новобудова): окрема сторінка, а квартири в ньому — звичайні оголошення */
+export interface Development {
+  id: string;
+  slug: string;
+  name: string;
+  developer: string;
+  completion: string;
+  sales: SalesStatus;
+  website: string;
+  island: string;
+  neighborhood: string;
+  address: string;
+  lat: number;
+  lng: number;
+  photos: string[];
+  text: string;
+  agentId: string;
+  agencyId: string | null;
+  active: boolean;
+  createdAt: string;
 }
 
 export interface Lead {
@@ -179,6 +204,8 @@ export interface ListingQuery {
   bbox?: [number, number, number, number];
   ids?: string[];
   includeInactive?: boolean;
+  /** квартири одного ЖК — разом із проданими */
+  developmentId?: string;
   /** лише земля, готова до будівництва (land_facts.ready) */
   ready?: boolean;
 }

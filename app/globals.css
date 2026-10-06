@@ -1005,6 +1005,18 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* «Units & prices»: блок новобудови — зведення по типах, а в розкритті прайс по юнітах */
 .dev{margin-top:30px}
+.dev__kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
+.dev__deal + .dev__deal{margin-top:18px;border-top:1px solid var(--line)}
+.dev__dealhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:16px 0 4px}
+.dev__dealhead h3{font-size:18px}
+.units__link{display:block}
+.units__link:hover b{text-decoration:underline}
+.in-dev{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:999px;background:var(--orange-soft);font-size:13.5px}
+.in-dev b{color:var(--orange)}
+.unit-status{display:inline-block;margin-left:10px;padding:3px 10px;border-radius:999px;background:var(--chip);font-size:13px;font-weight:700;vertical-align:middle}
+.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.dev-list{display:flex;flex-direction:column;gap:8px}
+.dev-list__row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius)}
 .dev__title{font-size:24px;margin-bottom:14px}
 .dev__box{background:var(--bg-soft);border-radius:var(--radius-lg);overflow:hidden}
 .dev__head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 22px;background:#ebebf0}
@@ -1051,10 +1063,4 @@ textarea.input{resize:vertical;min-height:96px}
   .units__table .units__ppm{display:none}
 }
 .units-form{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
-.units-edit{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto}
-.units-edit__head,.units-edit__row{display:grid;grid-template-columns:.8fr 1fr .6fr .7fr .7fr 1.1fr 1fr auto;gap:6px;align-items:center}
-.units-edit__head{padding:0 2px}
-@media (max-width:720px){
-  .units-edit__head{display:none}
-  .units-edit__row{grid-template-columns:1fr 1fr 1fr;padding:8px;border:1px solid var(--line);border-radius:var(--radius)}
 }

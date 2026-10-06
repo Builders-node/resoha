@@ -7,8 +7,10 @@ import { fmtPrice } from '@/lib/format';
 import type { Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
 
-export default function AgentContact({ agent, listing, listingUrl, me }: {
+export default function AgentContact({ agent, listing, listingUrl, me, topic }: {
   agent: Agent; listing: Listing;
+  /** Про що питають у WhatsApp, якщо не про сам обʼєкт — напр. про весь ЖК */
+  topic?: string;
   /** Повна адреса сторінки обʼєкта — іде в текст повідомлення для WhatsApp */
   listingUrl: string;
   me?: { name: string; phone: string; email: string } | null;
@@ -23,8 +25,8 @@ export default function AgentContact({ agent, listing, listingUrl, me }: {
 
   // WhatsApp — основний канал на цьому ринку; форма нижче лишається запасним
   const wa = (agent.whatsapp || agent.phone).replace(/[^\d]/g, '');
-  const waText = `Hi ${agent.name.split(' ')[0]}, I'm interested in "${listing.title}" `
-    + `(${fmtPrice(listing.price, listing.deal)}) — ${listingUrl}`;
+  const waText = `Hi ${agent.name.split(' ')[0]}, I'm interested in "${topic ?? listing.title}" `
+    + `${topic ? '' : `(${fmtPrice(listing.price, listing.deal)}) `}— ${listingUrl}`;
   const waHref = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(waText)}` : '';
 
   /** Розмова піде в месенджері; тут лишаємо відмітку, щоб ріелтор і платформа бачили звернення. */
@@ -136,7 +138,8 @@ export default function AgentContact({ agent, listing, listingUrl, me }: {
           <input className="input" name="name" placeholder="Your name" defaultValue={me?.name ?? ''} required maxLength={120} />
           <input className="input" name="phone" placeholder="Phone / WhatsApp" defaultValue={me?.phone ?? ''} required maxLength={40} />
           <input className="input" name="email" type="email" placeholder="Email (optional)" defaultValue={me?.email ?? ''} maxLength={200} />
-          <textarea className="input" name="message" rows={3} placeholder="When are you on the island?" maxLength={2000} />
+          <textarea className="input" name="message" rows={3} placeholder="When are you on the island?" maxLength={2000}
+            defaultValue={topic ? `Interested in ${topic}. ` : undefined} />
           {/* приманка для ботів: людина цього поля не бачить і не заповнює */}
           <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
           <button className="btn btn--primary btn--block" disabled={sending}>
