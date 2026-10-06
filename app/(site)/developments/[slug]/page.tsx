@@ -9,7 +9,7 @@ import DevelopmentBuildings from '@/components/DevelopmentBuildings';
 import DevelopmentChess from '@/components/DevelopmentChess';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
 import JsonLd from '@/components/JsonLd';
-import Photo from '@/components/Photo';
+import Gallery from '@/components/Gallery';
 import { getAgent, getDevelopment, listBuildings, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -95,17 +95,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
 
       <div className="gallery-wrap">
         <BackButton fallback="/developments" />
-        {dev.photos.length > 0 ? (
-          <div className="gallery">
-            {dev.photos.slice(0, 5).map((p, i) => (
-              <Photo key={p} src={p} alt={`${dev.name} — photo ${i + 1}`} eager={i === 0} />
-            ))}
-          </div>
-        ) : (
-          <div className="gallery gallery--empty">
-            <Photo label="No photos yet — ask the agency for the full set" />
-          </div>
-        )}
+        <Gallery photos={dev.photos} title={dev.name} />
       </div>
 
       <div className="prop">
