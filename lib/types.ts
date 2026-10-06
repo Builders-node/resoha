@@ -1,4 +1,5 @@
 import type { NearbyPlace } from './nearby';
+import type { Unit } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -105,6 +106,8 @@ export interface Listing {
   land: LandFacts | null;
   /** Місця поблизости, додані ріелтором вручну */
   nearby: NearbyPlace[];
+  /** Квартири в будинку з цінами; порожньо — звичайне одиночне оголошення */
+  units: Unit[];
 }
 
 export interface Lead {

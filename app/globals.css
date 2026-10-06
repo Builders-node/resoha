@@ -1002,3 +1002,19 @@ textarea.input{resize:vertical;min-height:96px}
   .nearby__list{grid-template-columns:1fr}
   .nearby-row{grid-template-columns:1fr}
 }
+
+/* «Units & prices»: прайс по квартирах у будинку */
+.units__wrap{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius)}
+.units__table{width:100%;border-collapse:collapse;font-size:14px}
+.units__table th{text-align:left;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--ink-2);background:var(--bg-soft);padding:10px 14px}
+.units__table td{padding:10px 14px;border-top:1px solid var(--line);white-space:nowrap}
+.units__table .units__num{text-align:right}
+.units__table tr.is-sold td{opacity:.55}
+.units-form{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
+.units-edit{display:flex;flex-direction:column;gap:6px;max-height:420px;overflow:auto}
+.units-edit__head,.units-edit__row{display:grid;grid-template-columns:.8fr 1fr .6fr .7fr .7fr 1.1fr 1fr auto;gap:6px;align-items:center}
+.units-edit__head{padding:0 2px}
+@media (max-width:720px){
+  .units-edit__head{display:none}
+  .units-edit__row{grid-template-columns:1fr 1fr 1fr;padding:8px;border:1px solid var(--line);border-radius:var(--radius)}
+}

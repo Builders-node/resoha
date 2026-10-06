@@ -2,10 +2,12 @@
 import { useEffect, useState } from 'react';
 import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
+import UnitsEditor from './UnitsEditor';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
+import { cleanUnits, fromPrice, type Unit } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -23,6 +25,7 @@ export default function ListingForm({
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
   const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
+  const [units, setUnits] = useState<Unit[]>(listing?.units ?? []);
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
@@ -64,6 +67,9 @@ export default function ListingForm({
       const v = fd.get(`land_${f.key}`);
       if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
     }
+    // юніти без номера чи ціни — недописані; з юнітами ціна оголошення = найдешевший вільний
+    const cleanList = cleanUnits(units);
+    const unitsFrom = fromPrice(cleanList);
     setSaving(true);
 
     const res = await fetch(editing ? `/api/listings/${listing!.id}` : '/api/listings', {
@@ -75,6 +81,8 @@ export default function ListingForm({
         photos,
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
+        units: cleanList,
+        ...(unitsFrom !== null ? { price: unitsFrom } : {}),
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
@@ -85,7 +93,7 @@ export default function ListingForm({
 
     if (!res.ok) return toast((await res.json()).error ?? 'Something went wrong');
     toast(editing ? 'Listing updated' : 'Listing published');
-    if (!editing) { form.reset(); setPhotos([]); setNearby([]); }
+    if (!editing) { form.reset(); setPhotos([]); setNearby([]); setUnits([]); }
     onSaved();
   }
 
@@ -128,7 +136,8 @@ export default function ListingForm({
           </select></div>
 
         <div className="field"><label>Price, USD</label>
-          <input className="input" name="price" type="number" required defaultValue={v?.price} placeholder="649000" /></div>
+          <input className="input" name="price" type="number" required={!units.length} defaultValue={v?.price} placeholder="649000"
+            disabled={units.length > 0} title={units.length ? 'Set from the cheapest available unit below' : undefined} /></div>
         <div className="field"><label>HOA, USD/mo</label>
           <input className="input" name="hoa" type="number" defaultValue={v?.hoa ?? 0} /></div>
 
@@ -189,6 +198,8 @@ export default function ListingForm({
             </div>
           </div>
         )}
+
+        <UnitsEditor value={units} onChange={setUnits} />
 
         <NearbyEditor value={nearby} onChange={setNearby} pin={pin} />
 
