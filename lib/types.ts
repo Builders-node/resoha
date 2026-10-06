@@ -1,5 +1,5 @@
 import type { NearbyPlace } from './nearby';
-import type { Unit } from './units';
+import type { ProjectInfo, Unit } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -108,6 +108,8 @@ export interface Listing {
   nearby: NearbyPlace[];
   /** Квартири в будинку з цінами; порожньо — звичайне одиночне оголошення */
   units: Unit[];
+  /** Забудовник, термін здачі, стан продажів — для новобудов з юнітами */
+  project: ProjectInfo;
 }
 
 export interface Lead {

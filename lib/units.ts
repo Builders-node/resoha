@@ -80,3 +80,72 @@ export function parseUnits(text: string): Unit[] {
     return [{ unit, beds, floor, m2, sqft, price, status: 'available' }];
   }));
 }
+
+/** Новобудова: хто будує, коли здача, чи йдуть продажі. Зберігається в listings.project (міграція 0031). */
+export const SALES_STATUSES = [
+  ['open', 'Sales open'],
+  ['presale', 'Pre-sale'],
+  ['closed', 'Sold out'],
+] as const;
+
+export type SalesStatus = (typeof SALES_STATUSES)[number][0];
+
+export interface ProjectInfo {
+  developer: string;
+  /** вільним текстом, як у забудовника: «Q4 2026», «Dec 2027» */
+  completion: string;
+  sales: SalesStatus;
+  website: string;
+}
+
+export const EMPTY_PROJECT: ProjectInfo = { developer: '', completion: '', sales: 'open', website: '' };
+
+const SALES_KEYS = new Set<string>(SALES_STATUSES.map(([k]) => k));
+export const salesLabel = (s: string) => SALES_STATUSES.find(([k]) => k === s)?.[1] ?? 'Sales open';
+
+export function cleanProject(input: unknown): ProjectInfo {
+  const r = input && typeof input === 'object' ? (input as Record<string, unknown>) : {};
+  const str = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+  const website = str(r.website, 200);
+  return {
+    developer: str(r.developer, 80),
+    completion: str(r.completion, 40),
+    sales: (SALES_KEYS.has(String(r.sales)) ? r.sales : 'open') as SalesStatus,
+    website: /^https?:\/\//i.test(website) ? website : website ? `https://${website}` : '',
+  };
+}
+
+export interface UnitGroup {
+  beds: number;
+  label: string;
+  units: Unit[];
+  available: number;
+  m2: [number, number] | null;
+  sqft: [number, number] | null;
+  /** ціна за м² — лише по юнітах, де площа відома */
+  perM2: [number, number] | null;
+  from: number;
+}
+
+const range = (xs: number[]): [number, number] | null => (xs.length ? [Math.min(...xs), Math.max(...xs)] : null);
+
+export const groupLabel = (beds: number) => (beds === 0 ? 'Studios' : beds === 1 ? '1 bedroom' : `${beds} bedrooms`);
+
+/** Зведення «як у забудовника»: рядок на тип квартири з діапазонами площ і цін. */
+export function groupUnits(units: Unit[]): UnitGroup[] {
+  const byBeds = new Map<number, Unit[]>();
+  for (const u of units) byBeds.set(u.beds, [...(byBeds.get(u.beds) ?? []), u]);
+  return [...byBeds.entries()].sort(([a], [b]) => a - b).map(([beds, list]) => {
+    const sorted = [...list].sort((a, b) => (a.floor ?? 0) - (b.floor ?? 0) || a.unit.localeCompare(b.unit, 'en', { numeric: true }));
+    return {
+      beds,
+      label: groupLabel(beds),
+      units: sorted,
+      available: list.filter((u) => u.status === 'available').length,
+      m2: range(list.flatMap((u) => (u.m2 !== null ? [u.m2] : []))),
+      sqft: range(list.flatMap((u) => (u.sqft !== null ? [u.sqft] : []))),
+      perM2: range(list.flatMap((u) => (u.m2 ? [Math.round(u.price / u.m2)] : []))),
+      from: fromPrice(list) ?? 0,
+    };
+  });
+}

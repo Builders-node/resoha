@@ -19,7 +19,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
-import { bedsLabel, statusLabel } from '@/lib/units';
+import UnitsSummary from '@/components/UnitsSummary';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -71,6 +71,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const isLand = listing.type === 'land';
   const hasUnits = listing.units.length > 0;
   const available = listing.units.filter((u) => u.status === 'available').length;
+  // зведення для плиток угорі: «Studio – 2 BR», «31 – 66 m²»
+  const beds = listing.units.map((u) => u.beds);
+  const unitTypes = hasUnits
+    ? [Math.min(...beds), Math.max(...beds)].map((b) => (b ? `${b} BR` : 'Studio')).filter((v, i, a) => a.indexOf(v) === i).join(' – ')
+    : '';
+  const sizes = listing.units.flatMap((u) => (u.m2 !== null ? [u.m2] : []));
+  const unitSizes = sizes.length ? `${Math.round(Math.min(...sizes))} – ${Math.round(Math.max(...sizes))} m²` : '—';
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
@@ -141,6 +148,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 <div className="spec"><span className="muted small">Title</span><b>{titleOk ? 'Free & clear' : 'Not confirmed'}</b></div>
                 <div className="spec"><span className="muted small">Type</span><b>{TYPE_LABELS[listing.type]}</b></div>
               </>
+            ) : hasUnits ? (
+              <>
+                <div className="spec"><span className="muted small">Units</span><b>{listing.units.length}</b></div>
+                <div className="spec"><span className="muted small">Types</span><b>{unitTypes}</b></div>
+                <div className="spec"><span className="muted small">Sizes</span><b>{unitSizes}</b></div>
+                <div className="spec"><span className="muted small">Completion</span><b>{listing.project.completion || listing.year || '—'}</b></div>
+              </>
             ) : (
               <>
                 <div className="spec"><span className="muted small">Bedrooms</span>
@@ -161,6 +175,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             {listing.lotAcres > 0 && !isLand && <span className="chip">{listing.lotAcres} ac lot</span>}
             {listing.tags.map((t) => <span key={t} className="chip">{t}</span>)}
           </div>
+
+          {hasUnits && <UnitsSummary units={listing.units} project={listing.project} contactHref="#contact" />}
 
           {/* Паспорт ділянки: відповіді на те, що покупець землі питає першим */}
           {isLand && (() => {
@@ -295,39 +311,6 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 )}
               </span>
             </p>
-          )}
-
-          {/* Прайс по квартирах — коли оголошення це цілий будинок */}
-          {hasUnits && (
-            <section className="units" id="units">
-              <h3 style={{ marginTop: 26, marginBottom: 12 }}>Units &amp; prices</h3>
-              <div className="units__wrap">
-                <table className="units__table">
-                  <thead>
-                    <tr><th>Unit</th><th>Type</th><th>Floor</th><th>Size</th><th className="units__num">Price</th></tr>
-                  </thead>
-                  <tbody>
-                    {listing.units.map((u, i) => (
-                      <tr key={i} className={u.status === 'sold' ? 'is-sold' : undefined}>
-                        <td><b>{u.unit}</b></td>
-                        <td>{bedsLabel(u.beds)}</td>
-                        <td>{u.floor ?? '—'}</td>
-                        <td>
-                          {u.m2 !== null && <>{u.m2} m²</>}
-                          {u.sqft !== null && <span className="muted"> · {fmtNumber(u.sqft)} ft²</span>}
-                        </td>
-                        <td className="units__num">
-                          {u.status === 'available' ? <b>{fmtUsd(u.price)}</b> : <span className="muted">{statusLabel(u.status)}</span>}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="tiny muted" style={{ marginTop: 8 }}>
-                Prices from the developer&apos;s price list — ask the agent which units are still open.
-              </p>
-            </section>
           )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
