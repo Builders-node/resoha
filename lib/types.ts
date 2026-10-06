@@ -58,6 +58,10 @@ export interface LandFacts {
   zolitur: string;
   zone: string;
   slope: string;
+  view: string;
+  beach: string;
+  internet: string;
+  flood: string;
   ready: boolean;
   checkedAt: string | null;
   checkedBy: string;     // імʼя того, хто заповнив
