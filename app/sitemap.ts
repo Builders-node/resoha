@@ -30,7 +30,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...developments.map((d) => ({ url: `${SITE_URL}/developments/${d.slug}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.9 })),
     ...listings.map((l) => ({
       url: `${SITE_URL}/listings/${l.id}`,
-      lastModified: new Date(l.createdAt),
+      lastModified: new Date(l.updatedAt),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
     })),

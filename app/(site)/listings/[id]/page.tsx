@@ -9,8 +9,9 @@ import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
-import Photo from '@/components/Photo';
-import { bumpViewsAfterResponse, getAgency, getAgent, getFavorites, getListing, queryListings } from '@/lib/db';
+import Gallery from '@/components/Gallery';
+import PriceHistory from '@/components/PriceHistory';
+import { bumpViewsAfterResponse, getAgency, getAgent, getFavorites, getListing, getPriceHistory, queryListings } from '@/lib/db';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
@@ -19,7 +20,8 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
-import { statusLabel, toM2 } from '@/lib/units';
+import { OPEN_STATUSES, statusLabel, toM2 } from '@/lib/units';
+import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -51,20 +53,51 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
     queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }),
     // уся земля на продаж — для медіани $/акр у паспорті
     listing.type === 'land' ? queryListings({ deal: 'sale', type: 'land' }) : Promise.resolve([]),
+    getPriceHistory(listing.id),
+    // інші квартири того самого ЖК
+    listing.developmentId ? queryListings({ developmentId: listing.developmentId }) : Promise.resolve([]),
   ]);
   // Автор може бути прихованим (заблокований акаунт) — тоді оголошення теж не показуємо
   if (!agent) notFound();
 
   const session = me;
   const favIds = session ? await getFavorites(session.id) : [];
-  const similar = similarAll.filter((l) => l.id !== listing.id).slice(0, 4);
+  // сусіди по ЖК: спершу той самий дім, потім та сама угода, потім найближчі поверхи
+  const siblings = devAll
+    .filter((l) => l.id !== listing.id && l.active && OPEN_STATUSES.includes(l.status))
+    .sort((a, b) =>
+      Number(b.buildingId === listing.buildingId) - Number(a.buildingId === listing.buildingId)
+      || Number(b.deal === listing.deal) - Number(a.deal === listing.deal)
+      || Math.abs((a.floor ?? 0) - (listing.floor ?? 0)) - Math.abs((b.floor ?? 0) - (listing.floor ?? 0)))
+    .slice(0, 8);
+  const siblingIds = new Set(siblings.map((l) => l.id));
+  const similar = similarAll.filter((l) => l.id !== listing.id && !siblingIds.has(l.id)).slice(0, 4);
+
+  // таблиця характеристик: лише заповнені рядки
+  const floorText = floorLine(listing.floor, listing.details.floorsTotal);
+  const detailRows: [string, string][] = isLandType(listing.type) ? [] : ([
+    ['Property type', TYPE_LABELS[listing.type]],
+    ['Deal', DEAL_LABELS[listing.deal]],
+    ['Bedrooms', listing.beds > 0 ? String(listing.beds) : 'Studio'],
+    ['Bathrooms', listing.baths ? String(listing.baths) : ''],
+    ['Interior', listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft² · ${toM2(listing.sqft)} m²` : ''],
+    ['Lot', listing.lotAcres > 0 ? `${listing.lotAcres} ac` : ''],
+    ['Unit', listing.unitNo],
+    ['Floor', floorText],
+    ['Year built', listing.year ? String(listing.year) : ''],
+    ...DETAIL_FIELDS.filter((f) => !f.rentOnly || listing.deal === 'rent')
+      .map((f): [string, string] => [f.label, detailLabel(f, listing.details[f.key])]),
+    ['HOA', listing.hoa > 0 ? `${fmtUsd(listing.hoa)}/mo` : ''],
+    ['Owner financing', listing.ownerFinancing ? 'Available' : ''],
+  ] as [string, string][]).filter(([, v]) => v);
+  const updatedAgo = ago(listing.updatedAt);
 
   const area = areaForNeighborhood(listing.neighborhood);
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
@@ -91,17 +124,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       <div className="gallery-wrap">
         <BackButton fallback={`/listings?deal=${listing.deal}`} />
-        {listing.photos.length > 0 ? (
-          <div className="gallery">
-            {listing.photos.slice(0, 5).map((p, i) => (
-              <Photo key={p} src={p} alt={`${listing.title} — photo ${i + 1}`} eager={i === 0} />
-            ))}
-          </div>
-        ) : (
-          <div className="gallery gallery--empty">
-            <Photo label="No photos yet — ask the agency for the full set" />
-          </div>
-        )}
+        <Gallery photos={listing.photos} title={listing.title} />
       </div>
 
       <div className="prop">
@@ -133,6 +156,9 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <span className="muted small" style={{ fontWeight: 500 }}> · HOA {fmtUsd(listing.hoa)}/mo</span>
             )}
           </div>
+          <p className="prop__updated" title={`Updated ${fmtDate(listing.updatedAt)}`}>
+            <Icon name="calendar" size={14} /> Updated {updatedAgo} · listed {fmtDate(listing.createdAt)}
+          </p>
 
           <div className="specs">
             {isLand ? (
@@ -304,6 +330,22 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             </p>
           )}
 
+          {detailRows.length > 0 && (
+            <section id="details">
+              <h3 style={{ marginTop: 26 }}>Details</h3>
+              <dl className="details">
+                {detailRows.map(([k, v]) => (
+                  <div key={k} className="details__row"><dt>{k}</dt><dd>{v}</dd></div>
+                ))}
+              </dl>
+            </section>
+          )}
+
+          <section id="price-history">
+            <h3 style={{ marginTop: 26 }}>Price history</h3>
+            <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
+          </section>
+
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
           {listing.nearby.length > 0 && (
             <section className="nearby" id="nearby">
@@ -334,7 +376,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           <p className="tiny muted" style={{ marginTop: 14 }}>
-            Listing ID {listing.id} · listed {fmtDate(listing.createdAt)} · {fmtNumber(listing.views)} views
+            Listing ID {listing.id} · listed {fmtDate(listing.createdAt)} · updated {fmtDate(listing.updatedAt)} · {fmtNumber(listing.views)} views
           </p>
         </div>
 
@@ -342,6 +384,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           isFav={favIds.includes(listing.id)}
           me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
       </div>
+
+      {siblings.length > 0 && listing.development && (
+        <section className="section" style={{ paddingTop: 0 }}>
+          <div className="section__head">
+            <div><h2>Other units in {listing.development.name}</h2></div>
+            <Link className="btn btn--ghost" href={`/developments/${listing.development.slug}`}>See all units <Icon name="arrowRight" size={18} /></Link>
+          </div>
+          <div className="grid grid--4">
+            {siblings.map((l) => <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} />)}
+          </div>
+        </section>
+      )}
 
       {similar.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
@@ -353,4 +407,18 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       )}
     </div>
   );
+}
+
+const isLandType = (t: string) => t === 'land';
+
+/** «today», «yesterday», «5 days ago», «3 months ago» — як «Оновлено» у LUN */
+function ago(iso: string) {
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
+  if (days <= 0) return 'today';
+  if (days === 1) return 'yesterday';
+  if (days < 30) return `${days} days ago`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return months === 1 ? 'a month ago' : `${months} months ago`;
+  const years = Math.floor(months / 12);
+  return years === 1 ? 'a year ago' : `${years} years ago`;
 }
