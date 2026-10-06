@@ -37,6 +37,21 @@ const PATHS: Record<string, React.ReactNode> = {
   briefcase: <><rect x="3.4" y="7.4" width="17.2" height="11.6" rx="2" /><path d="M9 7.4V6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 6v1.4" /><path d="M3.4 12.4h17.2" /></>,
   camera: <><path d="M3.4 8.6h3.4l1.5-2.4h7.4l1.5 2.4h3.4v10H3.4z" /><circle cx="12" cy="13.2" r="3.4" /></>,
   link: <><path d="M10.4 13.6a3.8 3.8 0 0 0 5.4 0l2.6-2.6a3.8 3.8 0 0 0-5.4-5.4l-1.3 1.3" /><path d="M13.6 10.4a3.8 3.8 0 0 0-5.4 0l-2.6 2.6a3.8 3.8 0 0 0 5.4 5.4l1.3-1.3" /></>,
+  /* характеристики ЖК */
+  layers: <><path d="m12 3.6 8.4 4.2L12 12 3.6 7.8z" /><path d="m3.6 12 8.4 4.2 8.4-4.2" /><path d="m3.6 16.2 8.4 4.2 8.4-4.2" /></>,
+  crane: <><path d="M6.5 20.5V4.5" /><path d="M3.5 20.5h6" /><path d="M6.5 6.5h13" /><path d="M17.5 6.5v5" /><rect x="15.5" y="11.5" width="4" height="3" /><path d="M6.5 4.5 10 6.5" /></>,
+  bricks: <><rect x="3.4" y="5" width="17.2" height="14" rx="1" /><path d="M3.4 9.7h17.2M3.4 14.3h17.2M9 5v4.7M15 9.7v4.6M9 14.3V19" /></>,
+  shieldHome: <><path d="M3.6 11 12 4l8.4 7" /><path d="M6 9.2v11.3h12V9.2" /><path d="M9.5 20.5v-5.2h5v5.2" /></>,
+  snow: <><path d="M12 3.5v17M4.6 7.7l14.8 8.6M4.6 16.3l14.8-8.6" /><path d="m9.6 4.8 2.4 2 2.4-2M9.6 19.2l2.4-2 2.4 2" /></>,
+  height: <><path d="M12 3.8v16.4" /><path d="m8.6 7 3.4-3.2L15.4 7M8.6 17l3.4 3.2 3.4-3.2" /><path d="M4 3.8h4M16 3.8h4M4 20.2h4M16 20.2h4" /></>,
+  grid: <><rect x="4" y="4" width="6.6" height="6.6" rx="1" /><rect x="13.4" y="4" width="6.6" height="6.6" rx="1" /><rect x="4" y="13.4" width="6.6" height="6.6" rx="1" /><rect x="13.4" y="13.4" width="6.6" height="6.6" rx="1" /></>,
+  brush: <><path d="M14.8 4.2 19.8 9.2 11 18H6v-5z" /><path d="m12.4 6.6 5 5" /></>,
+  fence: <><path d="M4.4 20V6.5L6 4.5l1.6 2V20M10.4 20V6.5L12 4.5l1.6 2V20M16.4 20V6.5L18 4.5l1.6 2V20" /><path d="M3 9.5h18M3 15.5h18" /></>,
+  car: <><path d="M4.4 16.6V12l1.9-5h11.4l1.9 5v4.6z" /><path d="M4.4 12h15.2" /><circle cx="7.8" cy="16.6" r="1.6" /><circle cx="16.2" cy="16.6" r="1.6" /></>,
+  bolt: <><path d="M13.2 3.4 5.6 13.4h6l-1 7.2 7.8-10.2h-6z" /></>,
+  drop: <><path d="M12 3.6s6.2 6.6 6.2 11a6.2 6.2 0 0 1-12.4 0c0-4.4 6.2-11 6.2-11z" /></>,
+  wallet: <><rect x="3.4" y="6.2" width="17.2" height="13" rx="2" /><path d="M3.4 9.8h17.2" /><circle cx="16.4" cy="14.4" r="1.1" /></>,
+  sparkle: <><path d="M12 3.8 13.8 10.2 20.2 12l-6.4 1.8L12 20.2l-1.8-6.4L3.8 12l6.4-1.8z" /></>,
 };
 
 type Props = SVGProps<SVGSVGElement> & { name: keyof typeof PATHS | string; size?: number };

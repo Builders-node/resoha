@@ -396,6 +396,9 @@ const mapDevelopment = (r: Row): Development => ({
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
   floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
   hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
+  projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
+  ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
+  water: r.water ?? '',
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
 });
 
@@ -418,6 +421,11 @@ export async function listDevelopments(opts: { agentId?: string; agencyId?: stri
 
 const DEVELOPMENT_TEXT = ['name', 'developer', 'completion', 'island', 'neighborhood', 'address', 'construction', 'parking'] as const;
 
+const DEVELOPMENT_SPECS = [
+  ['projectClass', 'project_class'], ['walls', 'walls'], ['insulation', 'insulation'], ['climate', 'climate'],
+  ['ceiling', 'ceiling'], ['finish', 'finish'], ['territory', 'territory'], ['backupPower', 'backup_power'], ['water', 'water'],
+] as const;
+
 /** Те, що прийшло з форми, — у рядок таблиці. Порожні поля не чіпаємо (для PATCH). */
 function developmentRow(input: Record<string, unknown>): Row {
   const row: Row = {};
@@ -428,6 +436,7 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
   if (input.payment !== undefined) row.payment = String(input.payment).trim().slice(0, 2000);
   if (input.amenities !== undefined) row.amenities = splitList(input.amenities);

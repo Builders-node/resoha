@@ -11,7 +11,8 @@ import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Gallery from '@/components/Gallery';
 import PriceHistory from '@/components/PriceHistory';
-import { bumpViewsAfterResponse, getAgency, getAgent, getFavorites, getListing, getPriceHistory, queryListings } from '@/lib/db';
+import { bumpViewsAfterResponse, getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, queryListings } from '@/lib/db';
+import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
@@ -20,7 +21,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
-import { OPEN_STATUSES, statusLabel, toM2 } from '@/lib/units';
+import { OPEN_STATUSES, stageLabel, statusLabel, toM2 } from '@/lib/units';
 import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
 
 const MapView = dynamic(() => import('@/components/MapView'));
@@ -53,7 +54,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers, prices, devAll] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
@@ -63,7 +64,21 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     getPriceHistory(listing.id),
     // інші квартири того самого ЖК
     listing.developmentId ? queryListings({ developmentId: listing.developmentId }) : Promise.resolve([]),
+    // ЖК і його доми — для блоків «About the building» і «About the development»
+    listing.developmentId ? getDevelopment(listing.developmentId) : Promise.resolve(null),
+    listing.developmentId ? listBuildings(listing.developmentId) : Promise.resolve([]),
   ]);
+  const building = devBuildings.find((b) => b.id === listing.buildingId) ?? null;
+  const buildingFacts: Feature[] = dev ? ([
+    ['layers', String(building?.floors ?? dev.floors ?? ''), 'floors'],
+    ['sparkle', 'New build', 'type'],
+    ['crane', building ? `${stageLabel(building.stage)}${building.completion ? ` · ${building.completion}` : ''}` : dev.completion, 'status'],
+    ['bricks', dev.construction, 'construction'],
+    ['snow', dev.climate, 'cooling & heating'],
+    ['height', dev.ceiling, 'ceiling height'],
+    ['bolt', dev.backupPower, 'backup power'],
+    ['drop', dev.water, 'water supply'],
+  ] as Feature[]).filter((f) => Boolean(f[1])) : [];
   // Автор може бути прихованим (заблокований акаунт) — тоді оголошення теж не показуємо
   if (!agent) notFound();
 
@@ -374,6 +389,29 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           <div id="miniMap">
             <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} />
           </div>
+
+          {dev && (
+            <section className="about-dev" id="building">
+              <h3 style={{ marginTop: 30 }}>About the building</h3>
+              <p className="small" style={{ margin: '4px 0 12px', fontWeight: 600 }}>
+                {building?.name ?? dev.name}{(building?.address || dev.address) && ` · ${building?.address || dev.address}`}
+              </p>
+              <PhotoStrip photos={building?.photo ? [building.photo, ...dev.photos.filter((p) => p !== building.photo)] : dev.photos}
+                title={building?.name ?? dev.name} />
+              <FeatureGrid items={buildingFacts} />
+            </section>
+          )}
+
+          {dev && (
+            <section className="about-dev" id="development">
+              <h3 style={{ marginTop: 30 }}>About {dev.name}</h3>
+              <PhotoStrip photos={dev.photos} title={dev.name} />
+              <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll)} />
+              <Link href={`/developments/${dev.slug}`} className="btn btn--ghost" style={{ marginTop: 16 }}>
+                Open {dev.name} <Icon name="arrowRight" size={18} />
+              </Link>
+            </section>
+          )}
 
           <p className="tiny muted" style={{ marginTop: 14 }}>
             Listing ID {listing.id} · listed {fmtDate(listing.createdAt)} · updated {fmtDate(listing.updatedAt)} · {fmtNumber(listing.views)} views
