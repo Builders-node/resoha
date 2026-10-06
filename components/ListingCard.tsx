@@ -41,7 +41,7 @@ export default function ListingCard({
         {agentName && <div className="ov__agency">{agentName}</div>}
         <div className="ov__title">{l.title}</div>
         <div className="ov__meta">{l.neighborhood} · {specLine(l)}</div>
-        <div className="ov__price">{fmtPrice(l.price, l.deal)}</div>
+        <div className="ov__price">{l.units.length > 1 && 'From '}{fmtPrice(l.price, l.deal)}</div>
       </div>
     </Link>
   );

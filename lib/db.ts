@@ -3,6 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanNearby } from './nearby';
+import { cleanUnits } from './units';
 import type { AdminLogEntry, Agency, Agent, Deal, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
@@ -60,6 +61,8 @@ const mapListing = (r: Row): Listing => ({
   land: mapLand(r.land_facts),
   // до міграції 0028 колонки немає — тоді просто порожньо
   nearby: cleanNearby(r.nearby),
+  // до міграції 0030 колонки немає — тоді просто порожньо
+  units: cleanUnits(r.units),
 });
 
 /** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
@@ -245,6 +248,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     source_ref: input.sourceRef ?? '',
     source_url: safeUrl(input.sourceUrl),
     ...(input.nearby?.length ? { nearby: cleanNearby(input.nearby) } : {}),
+    ...(input.units?.length ? { units: cleanUnits(input.units) } : {}),
   }).select(listingCols({})).single();
   if (error) throw error;
   return mapListing(data);
@@ -275,7 +279,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   ownerFinancing: 'owner_financing', lat: 'lat', lng: 'lng', tags: 'tags', photos: 'photos',
   text: 'body', active: 'active',
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
-  nearby: 'nearby',
+  nearby: 'nearby', units: 'units',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);
@@ -287,6 +291,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
     if (value === undefined) continue;
     row[column] = key === 'sourceUrl' ? safeUrl(value)
       : key === 'nearby' ? cleanNearby(value)
+      : key === 'units' ? cleanUnits(value)
       : NUMERIC.has(key) ? Number(value) || 0
         : BOOLEAN.has(key) ? Boolean(value) : value;
   }

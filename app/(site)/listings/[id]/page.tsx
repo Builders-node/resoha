@@ -19,6 +19,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
+import { bedsLabel, statusLabel } from '@/lib/units';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -68,6 +69,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
 
   const isLand = listing.type === 'land';
+  const hasUnits = listing.units.length > 0;
+  const available = listing.units.filter((u) => u.status === 'available').length;
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
@@ -113,8 +116,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="prop__price">
+            {hasUnits && <span className="muted small" style={{ fontWeight: 500 }}>From </span>}
             {fmtPrice(listing.price, listing.deal)}
-            {listing.deal === 'sale' && listing.sqft > 0 && (
+            {hasUnits && (
+              <span className="muted small" style={{ fontWeight: 500 }}>
+                {' '}· {available} of {listing.units.length} units available
+              </span>
+            )}
+            {!hasUnits && listing.deal === 'sale' && listing.sqft > 0 && (
               <span className="muted small" style={{ fontWeight: 500 }}>
                 {' '}· {fmtUsd(Math.round(listing.price / listing.sqft))}/ft²
               </span>
@@ -286,6 +295,39 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 )}
               </span>
             </p>
+          )}
+
+          {/* Прайс по квартирах — коли оголошення це цілий будинок */}
+          {hasUnits && (
+            <section className="units" id="units">
+              <h3 style={{ marginTop: 26, marginBottom: 12 }}>Units &amp; prices</h3>
+              <div className="units__wrap">
+                <table className="units__table">
+                  <thead>
+                    <tr><th>Unit</th><th>Type</th><th>Floor</th><th>Size</th><th className="units__num">Price</th></tr>
+                  </thead>
+                  <tbody>
+                    {listing.units.map((u, i) => (
+                      <tr key={i} className={u.status === 'sold' ? 'is-sold' : undefined}>
+                        <td><b>{u.unit}</b></td>
+                        <td>{bedsLabel(u.beds)}</td>
+                        <td>{u.floor ?? '—'}</td>
+                        <td>
+                          {u.m2 !== null && <>{u.m2} m²</>}
+                          {u.sqft !== null && <span className="muted"> · {fmtNumber(u.sqft)} ft²</span>}
+                        </td>
+                        <td className="units__num">
+                          {u.status === 'available' ? <b>{fmtUsd(u.price)}</b> : <span className="muted">{statusLabel(u.status)}</span>}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="tiny muted" style={{ marginTop: 8 }}>
+                Prices from the developer&apos;s price list — ask the agent which units are still open.
+              </p>
+            </section>
           )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
