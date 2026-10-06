@@ -5,13 +5,15 @@ import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
-import { agencyBoard, getFavorites, queryListings } from '@/lib/db';
+import Photo from '@/components/Photo';
+import { agencyBoard, getFavorites, listDevelopments, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { SITE_FAQ } from '@/lib/content/faq';
 import { GUIDES } from '@/lib/content/guides';
 import { faqLd, graph } from '@/lib/seo';
+import { fromPrice, salesLabel } from '@/lib/units';
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
@@ -36,11 +38,12 @@ const RENT_TILES = [
 
 export default async function HomePage() {
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
-  const [session, all, newest, board] = await Promise.all([
+  const [session, all, newest, board, devs] = await Promise.all([
     getSession(),
     queryListings(),
     queryListings({ sort: 'new' }),
     agencyBoard(),
+    listDevelopments(),
   ]);
   const favIds = session ? await getFavorites(session.id) : [];
 
@@ -60,6 +63,12 @@ export default async function HomePage() {
     });
   });
   const areas = [...byArea.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 4);
+
+  // квартири ЖК — звичайні оголошення, тож кількість і ціну «від» беремо з уже завантаженого каталогу
+  const developments = devs.slice(0, 4).map((d) => {
+    const units = all.filter((l) => l.developmentId === d.id);
+    return { d, count: units.length, from: fromPrice(units.filter((u) => u.deal === 'sale')) };
+  });
 
   const agencies = board.slice(0, 5);
   const agencyNameById = new Map(board.map((b) => [b.agency.id, b.agency.name]));
@@ -155,6 +164,32 @@ export default async function HomePage() {
             {fresh.map((l) => (
               <ListingCard key={l.id} listing={l} ratio="tall" isFav={favIds.includes(l.id)}
                 agentName={agencyNameById.get(l.agencyId ?? '')} />
+            ))}
+          </div>
+        </div>
+      </section>
+      )}
+
+      {developments.length > 0 && (
+      <section className="section">
+        <div className="wrap">
+          <div className="section__head">
+            <h2>New developments</h2>
+            <Link className="btn btn--primary" href="/developments">All developments <Icon name="arrowRight" size={18} /></Link>
+            <p>Condo towers and new builds with every unit and price from the developer</p>
+          </div>
+          <div className="grid grid--4">
+            {developments.map(({ d, count, from }) => (
+              <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--tall">
+                <Photo src={d.photos[0]} alt={d.name} />
+                <div className="card__badges"><span className="badge badge--brand">{salesLabel(d.sales)}</span></div>
+                <div className="ov__b">
+                  {d.developer && <div className="ov__agency">{d.developer}</div>}
+                  <div className="ov__title">{d.name}</div>
+                  <div className="ov__meta">{d.neighborhood} · {count} units{d.completion && ` · ${d.completion}`}</div>
+                  {from !== null && <div className="ov__price">From {fmtUsd(from)}</div>}
+                </div>
+              </Link>
             ))}
           </div>
         </div>
