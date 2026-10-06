@@ -35,7 +35,7 @@ const TelegramMark = () => (
   </svg>
 );
 
-export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me, topic, fromPrice }: {
+export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me, topic, fromPrice, extra }: {
   agent: Agent; listing: Listing;
   /** Про що питають у месенджері, якщо не про сам обʼєкт — напр. про весь ЖК */
   topic?: string;
@@ -47,6 +47,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   listingUrl: string;
   isFav?: boolean;
   me?: { name: string; phone: string; email: string } | null;
+  /** Додатковий блок під «Request a viewing» — напр. статус продажів ЖК */
+  extra?: React.ReactNode;
 }) {
   const [shown, setShown] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -253,6 +255,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
           )}
         </div>
       )}
+
+      {extra}
     </aside>
   );
 }
