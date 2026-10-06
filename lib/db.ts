@@ -3,7 +3,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanNearby } from './nearby';
-import { OPEN_STATUSES, cleanSales, cleanStatus, slugify } from './units';
+import { OPEN_STATUSES, cleanRentals, cleanSales, cleanStatus, slugify, splitList } from './units';
 import type { AdminLogEntry, Agency, Agent, Deal, Development, LandFacts, Lead, Listing, ListingQuery, Review, SavedSearch } from './types';
 
 /**
@@ -351,6 +351,8 @@ const mapDevelopment = (r: Row): Development => ({
   id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', completion: r.completion ?? '',
   sales: cleanSales(r.sales), website: r.website ?? '', island: r.island, neighborhood: r.neighborhood,
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
+  floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
+  hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
 });
 
@@ -371,7 +373,7 @@ export async function listDevelopments(opts: { agentId?: string; agencyId?: stri
   return (data ?? []).map(mapDevelopment);
 }
 
-const DEVELOPMENT_TEXT = ['name', 'developer', 'completion', 'island', 'neighborhood', 'address'] as const;
+const DEVELOPMENT_TEXT = ['name', 'developer', 'completion', 'island', 'neighborhood', 'address', 'construction', 'parking'] as const;
 
 /** Те, що прийшло з форми, — у рядок таблиці. Порожні поля не чіпаємо (для PATCH). */
 function developmentRow(input: Record<string, unknown>): Row {
@@ -383,6 +385,11 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
+  if (input.payment !== undefined) row.payment = String(input.payment).trim().slice(0, 2000);
+  if (input.amenities !== undefined) row.amenities = splitList(input.amenities);
+  if (input.floors !== undefined) row.floors = intOrNull(input.floors);
+  if (input.hoa !== undefined) row.hoa = intOrNull(input.hoa);
   if (input.lat !== undefined) row.lat = Number(input.lat) || 16.3;
   if (input.lng !== undefined) row.lng = Number(input.lng) || -86.59;
   if (Array.isArray(input.photos)) row.photos = input.photos.filter((p) => typeof p === 'string').slice(0, 30);
