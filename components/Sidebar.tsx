@@ -63,16 +63,11 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
         <div className="sidebar__foot">
           {session ? (
-            <>
-              <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
-                <Avatar className="sidebar__avatar" src={session.avatar} name={session.name} />
-                <span className="sidebar__cap">Me</span>
-              </Link>
-              <button className="sidelink desk-only" onClick={logout}>
-                <span className="sidebar__ico"><Icon name="logout" size={22} /></span>
-                <span className="sidebar__cap">Out</span>
-              </button>
-            </>
+            // вихід живе на сторінці профілю (Me) і в листі «Other» на телефоні
+            <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
+              <Avatar className="sidebar__avatar" src={session.avatar} name={session.name} />
+              <span className="sidebar__cap">Me</span>
+            </Link>
           ) : (
             <AuthLink className="desk-only">
               <span className="sidebar__ico"><Icon name="user" size={22} /></span>
