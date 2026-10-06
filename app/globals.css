@@ -1063,4 +1063,3 @@ textarea.input{resize:vertical;min-height:96px}
   .units__table .units__ppm{display:none}
 }
 .units-form{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
-}
