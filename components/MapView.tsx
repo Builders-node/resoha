@@ -8,6 +8,7 @@ import type { Bbox } from '@/lib/filters';
 import { DEAL_LABELS, fmtPrice, fmtPriceShort, photoUrl, specLine } from '@/lib/format';
 import { fmtDistance, listingFootprint, pathLength } from '@/lib/mapGeo';
 import { BUILDINGS_LAYER, FILL_LAYERS, SATELLITE_LAYER, mapStyle } from '@/lib/mapStyle';
+import { categoryLabel, type NearbyPlace } from '@/lib/nearby';
 import type { Deal, Listing, PropertyType } from '@/lib/types';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
@@ -30,6 +31,8 @@ type Props = {
   area?: Bbox | null;
   /** користувач посунув або наблизив карту — межі нового виду */
   onMoved?: (bounds: Bbox) => void;
+  /** сторінка обʼєкта: місця поблизости, яким ріелтор поставив точку */
+  places?: NearbyPlace[];
 };
 
 const ORANGE = '#ff6a2b';
@@ -113,7 +116,7 @@ function addOverlays(m: MLMap) {
 
 export default function MapView({
   items, activeId, onSelect, onHover, area, onMoved, center = [16.36, -86.45], zoom = 11,
-  interactive = true, detail = false,
+  interactive = true, detail = false, places,
 }: Props) {
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
@@ -153,6 +156,10 @@ export default function MapView({
   const [rulerPts, setRulerPts] = useState<[number, number][]>([]);
   const rulerRef = useRef(false);
   const locMarker = useRef<Marker | null>(null);
+  const placeMarkers = useRef<Marker[]>([]);
+  // лише ті, що мають точку; памʼятаємо за вмістом, щоб не перемальовувати на кожен рендер
+  const pinned = (places ?? []).filter((p) => p.lat !== null && p.lng !== null);
+  const pinnedKey = JSON.stringify(pinned);
   const router = useRouter();
 
   /* --- ініціалізація --- */
@@ -330,6 +337,12 @@ export default function MapView({
 
     const fitToItems = (first: boolean) => quietly(() => {
       if (detail && items[0]) {
+        if (pinned.length) {
+          // є місця поблизости — показуємо їх разом з обʼєктом, але не відлітаємо далеко
+          m.fitBounds(boundsOf([items[0], ...pinned.map((p) => ({ lat: p.lat!, lng: p.lng! }))]),
+            { padding: 70, maxZoom: 17, animate: false });
+          return;
+        }
         m.jumpTo({ center: [items[0].lng, items[0].lat] });
         return;
       }
@@ -405,6 +418,22 @@ export default function MapView({
     m.on('idle', highlight);
     return () => { m.off('idle', highlight); };
   }, [items, ready, detail]);
+
+  /* --- місця поблизости: підписані точки навколо обʼєкта --- */
+  useEffect(() => {
+    const ml = lib.current;
+    const m = map.current;
+    if (!ready || !ml || !m) return;
+    placeMarkers.current.forEach((mk) => mk.remove());
+    placeMarkers.current = pinned.map((p) => {
+      const node = document.createElement('div');
+      node.className = 'place-pin';
+      node.title = categoryLabel(p.category);
+      node.textContent = p.name;
+      return new ml.Marker({ element: node, anchor: 'bottom' }).setLngLat([p.lng!, p.lat!]).addTo(m);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, pinnedKey]);
 
   /* --- підсвітка активного --- */
   useEffect(() => {

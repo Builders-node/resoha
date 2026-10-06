@@ -1,9 +1,11 @@
 'use client';
 import { useEffect, useState } from 'react';
+import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
+import type { NearbyPlace } from '@/lib/nearby';
 import type { Listing } from '@/lib/types';
 
 /** Одна форма і для створення, і для редагування — щоб поля не розходились. */
@@ -20,6 +22,7 @@ export default function ListingForm({
   onCancel?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
+  const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
@@ -70,6 +73,8 @@ export default function ListingForm({
         ...body,
         land: type === 'land' ? land : undefined,
         photos,
+        // рядки без назви — недописані, їх не зберігаємо
+        nearby: nearby.filter((p) => p.name.trim()),
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
@@ -80,7 +85,7 @@ export default function ListingForm({
 
     if (!res.ok) return toast((await res.json()).error ?? 'Something went wrong');
     toast(editing ? 'Listing updated' : 'Listing published');
-    if (!editing) { form.reset(); setPhotos([]); }
+    if (!editing) { form.reset(); setPhotos([]); setNearby([]); }
     onSaved();
   }
 
@@ -184,6 +189,8 @@ export default function ListingForm({
             </div>
           </div>
         )}
+
+        <NearbyEditor value={nearby} onChange={setNearby} pin={pin} />
 
         <div className="field full"><label>Photos</label>
           <PhotoUploader value={photos} onChange={setPhotos} /></div>

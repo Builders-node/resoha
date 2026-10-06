@@ -18,6 +18,7 @@ import { fmtDate as fmtDay } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
+import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -287,9 +288,33 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             </p>
           )}
 
+          {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
+          {listing.nearby.length > 0 && (
+            <section className="nearby" id="nearby">
+              <h3 style={{ marginTop: 26, marginBottom: 12 }}>What&apos;s nearby</h3>
+              <ul className="nearby__list">
+                {listing.nearby.map((p, i) => {
+                  const dist = nearbyDistance(p, listing);
+                  return (
+                    <li key={i} className="nearby__item">
+                      <span className="nearby__name">
+                        <b>{p.name}</b>
+                        <span className="small muted">{categoryLabel(p.category)}</span>
+                      </span>
+                      {dist && <span className="nearby__dist">{dist}</span>}
+                    </li>
+                  );
+                })}
+              </ul>
+              <p className="tiny muted" style={{ marginTop: 8 }}>
+                Added by the listing agent — check opening hours before you go.
+              </p>
+            </section>
+          )}
+
           <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
           <div id="miniMap">
-            <MapView items={[listing]} center={[listing.lat, listing.lng]} detail />
+            <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} />
           </div>
 
           <p className="tiny muted" style={{ marginTop: 14 }}>
