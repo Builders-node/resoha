@@ -15,8 +15,10 @@ const money = (v: number, deal: Deal) => (deal === 'rent' ? `${fmtUsd(v)}/mo` : 
  * рядок на тип квартир із діапазонами, а по кліку — список квартир із посиланнями.
  * Окремо для продажу й оренди. Без клієнтського JS: розкриття тримає <details>.
  */
-export default function DevelopmentUnits({ units, developer, completion, sales, contactHref }: {
+export default function DevelopmentUnits({ units, buildings, developer, completion, sales, contactHref }: {
   units: Listing[];
+  /** id → назва дому; лише коли домів кілька — тоді в таблиці зʼявляється колонка «Building» */
+  buildings?: Record<string, string>;
   developer: string;
   completion: string;
   sales: SalesStatus;
@@ -74,12 +76,13 @@ export default function DevelopmentUnits({ units, developer, completion, sales, 
                   <div className="units__wrap">
                     <table className="units__table">
                       <thead>
-                        <tr><th>Unit</th><th>Floor</th><th>Size</th>{deal === 'sale' && <th className="units__ppm">$/m²</th>}<th className="units__num">Price</th></tr>
+                        <tr><th>Unit</th>{buildings && <th>Building</th>}<th>Floor</th><th>Size</th>{deal === 'sale' && <th className="units__ppm">$/m²</th>}<th className="units__num">Price</th></tr>
                       </thead>
                       <tbody>
                         {g.units.map((u) => (
                           <tr key={u.id} className={u.status === 'sold' || u.status === 'rented' ? 'is-sold' : undefined}>
                             <td><Link href={`/listings/${u.id}`} className="units__link"><b>{u.unitNo || '—'}</b></Link></td>
+                            {buildings && <td>{(u.buildingId && buildings[u.buildingId]) || '—'}</td>}
                             <td>{u.floor ?? '—'}</td>
                             <td>
                               {u.sqft > 0 ? <>{toM2(u.sqft)} m²<span className="muted"> · {fmtNumber(u.sqft)} ft²</span></> : '—'}

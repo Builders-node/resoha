@@ -12,7 +12,7 @@ const kind = (beds: number) => (beds ? `${beds}BR` : 'ST');
  */
 export default function DevelopmentChess({ units }: { units: Listing[] }) {
   const placed = units.filter((u) => u.floor !== null);
-  if (placed.length < 4) return null;
+  if (!placed.length) return null;
   const floors = [...new Set(placed.map((u) => u.floor as number))].sort((a, b) => b - a);
   const byNo = (a: Listing, b: Listing) => a.unitNo.localeCompare(b.unitNo, undefined, { numeric: true });
 

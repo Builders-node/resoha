@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { bumpViews, deleteListing, getAgency, getAgent, getDevelopment, getListing, saveLandFacts, updateListing } from '@/lib/db';
+import { bumpViews, deleteListing, getAgency, getAgent, getBuilding, getDevelopment, getListing, saveLandFacts, updateListing } from '@/lib/db';
 import { currentUser } from '@/lib/session';
 import { canManageDevelopment } from '@/lib/units';
 
@@ -26,6 +26,12 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (patch.developmentId) {
     const [user, dev] = await Promise.all([currentUser(), getDevelopment(String(patch.developmentId))]);
     if (!user || !dev || !canManageDevelopment(dev, user)) return NextResponse.json({ error: 'Not your development' }, { status: 403 });
+  }
+  // дім — лише з ЖК цієї квартири
+  if (patch.buildingId) {
+    const [b, current] = await Promise.all([getBuilding(String(patch.buildingId)), getListing(id)]);
+    const devId = patch.developmentId ?? current?.developmentId;
+    if (!b || b.developmentId !== devId) return NextResponse.json({ error: 'Building is not in this development' }, { status: 400 });
   }
   let listing = await updateListing(id, patch);
   if (!listing) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

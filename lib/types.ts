@@ -1,5 +1,5 @@
 import type { NearbyPlace } from './nearby';
-import type { RentalRule, SalesStatus, UnitStatus } from './units';
+import type { BuildingStage, RentalRule, SalesStatus, UnitStatus } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -113,6 +113,7 @@ export interface Listing {
   /** Квартира в ЖК: посилання на ЖК, номер, поверх. null — окремий обʼєкт */
   developmentId: string | null;
   development: { name: string; slug: string } | null;
+  buildingId: string | null;   // дім у ЖК
   unitNo: string;
   floor: number | null;
   /** вільна / бронь / продана / здана */
@@ -147,6 +148,19 @@ export interface Development {
   agencyId: string | null;
   active: boolean;
   createdAt: string;
+}
+
+/** Дім (корпус, секція) у ЖК */
+export interface Building {
+  id: string;
+  developmentId: string;
+  name: string;            // «Building A», «Будинок 7»
+  photo: string;
+  floors: number | null;
+  stage: BuildingStage;
+  completion: string;      // «Q4 2026», «Delivered 2021»
+  address: string;
+  sort: number;
 }
 
 export interface Lead {

@@ -27,6 +27,9 @@ export default function ListingForm({
   // ЖК автора — щоб квартиру можна було привʼязати до будинку
   const [developments, setDevelopments] = useState<{ id: string; name: string }[]>([]);
   const [developmentId, setDevelopmentId] = useState(listing?.developmentId ?? '');
+  // доми обраного ЖК
+  const [buildings, setBuildings] = useState<{ id: string; name: string }[]>([]);
+  const [buildingId, setBuildingId] = useState(listing?.buildingId ?? '');
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
@@ -52,6 +55,14 @@ export default function ListingForm({
       .then((d: { items?: { id: string; name: string }[] }) => setDevelopments(d.items ?? []))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    if (!developmentId) return;
+    fetch(`/api/developments/${developmentId}/buildings`)
+      .then((r) => r.json())
+      .then((d: { items?: { id: string; name: string }[] }) => setBuildings(d.items ?? []))
+      .catch(() => {});
+  }, [developmentId]);
 
   useEffect(() => {
     fetch('/api/facets')
@@ -88,6 +99,8 @@ export default function ListingForm({
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
         developmentId: developmentId || null,
+        // дім має сенс лише разом зі своїм ЖК
+        buildingId: developmentId ? buildingId || null : null,
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
@@ -213,12 +226,20 @@ export default function ListingForm({
         {developments.length > 0 && (
           <>
             <div className="field"><label>Development</label>
-              <select className="input" value={developmentId} onChange={(e) => setDevelopmentId(e.target.value)}>
+              <select className="input" value={developmentId}
+                onChange={(e) => { setDevelopmentId(e.target.value); setBuildings([]); setBuildingId(''); }}>
                 <option value="">— Standalone property —</option>
                 {developments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
               </select></div>
             {developmentId && (
               <>
+                {buildings.length > 0 && (
+                  <div className="field"><label>Building</label>
+                    <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)}>
+                      <option value="">—</option>
+                      {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                    </select></div>
+                )}
                 <div className="field"><label>Unit number</label>
                   <input className="input" name="unitNo" maxLength={20} defaultValue={v?.unitNo} placeholder="303" /></div>
                 <div className="field"><label>Floor</label>
