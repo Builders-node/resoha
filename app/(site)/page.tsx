@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import Faq from '@/components/Faq';
 import Icon from '@/components/Icon';
-import JsonLd from '@/components/JsonLd';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
@@ -10,14 +8,9 @@ import { agencyBoard, getFavorites, listDevelopments, queryListings } from '@/li
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { areaForNeighborhood } from '@/lib/content/areas';
-import { SITE_FAQ } from '@/lib/content/faq';
-import { GUIDES } from '@/lib/content/guides';
-import { faqLd, graph } from '@/lib/seo';
 import { fromPrice, salesLabel } from '@/lib/units';
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
-
-const HOME_FAQ = SITE_FAQ.slice(0, 6);
 
 /** Район із бази веде на сторінку-гайд району, якщо така є; інакше — на фільтр. */
 function areaHref(name: string) {
@@ -75,7 +68,6 @@ export default async function HomePage() {
 
   return (
     <>
-      <JsonLd data={graph(faqLd(HOME_FAQ))} />
       <section className="wrap home-top">
         <div className="tiles-block">
           <h3>For sale</h3>
@@ -204,38 +196,6 @@ export default async function HomePage() {
             <p>Licensed agencies working the island — open one to see everything they have listed</p>
           </div>
           <AgencyRow rows={agencies} />
-        </div>
-      </section>
-
-      <section className="section section--soft">
-        <div className="wrap">
-          <div className="section__head">
-            <h2>Know before you buy</h2>
-            <Link className="btn btn--primary" href="/guides">All guides <Icon name="arrowRight" size={18} /></Link>
-            <p>Straight answers for buyers from abroad, with every figure linked to its source</p>
-          </div>
-          <div className="guide-list guide-list--wide">
-            {GUIDES.map((g) => (
-              <Link key={g.slug} className="guide-card" href={`/guides/${g.slug}`}>
-                <b>{g.short}</b>
-                <span className="small muted">{g.description}</span>
-              </Link>
-            ))}
-          </div>
-          <p className="small muted" style={{ marginTop: 16 }}>
-            Looking for numbers? Read the <Link className="link-accent" href="/market">Roatán market report</Link>.
-          </p>
-        </div>
-      </section>
-
-      <section className="section">
-        <div className="wrap home-faq">
-          <div>
-            <h2 style={{ fontSize: 26 }}>Questions buyers ask</h2>
-            <p className="muted" style={{ margin: '10px 0 18px' }}>About Roatán property and about how Resoha works.</p>
-            <Link className="btn btn--ghost" href="/faq">All questions</Link>
-          </div>
-          <Faq items={HOME_FAQ} open={1} />
         </div>
       </section>
 
