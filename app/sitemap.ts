@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { agencyBoard, listAgents, queryListings } from '@/lib/db';
+import { agencyBoard, listAgents, listDevelopments, queryListings } from '@/lib/db';
 import { SITE_URL } from '@/lib/site';
 import { AREAS } from '@/lib/content/areas';
 import { GUIDES } from '@/lib/content/guides';
@@ -7,7 +7,7 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 
 /** Карта сайту: контентні сторінки плюс із бази кожне активне оголошення, ріелтор і агенція. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [listings, agents, agencies] = await Promise.all([queryListings(), listAgents(), agencyBoard()]);
+  const [listings, agents, agencies, developments] = await Promise.all([queryListings(), listAgents(), agencyBoard(), listDevelopments()]);
 
   return [
     { url: `${SITE_URL}/`, changeFrequency: 'daily', priority: 1 },
@@ -26,6 +26,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/for-agents`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
+    { url: `${SITE_URL}/developments`, changeFrequency: 'weekly', priority: 0.8 },
+    ...developments.map((d) => ({ url: `${SITE_URL}/developments/${d.slug}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.9 })),
     ...listings.map((l) => ({
       url: `${SITE_URL}/listings/${l.id}`,
       lastModified: new Date(l.createdAt),
