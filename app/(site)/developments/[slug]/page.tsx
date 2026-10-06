@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import BackButton from '@/components/BackButton';
+import DevelopmentChess from '@/components/DevelopmentChess';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
 import JsonLd from '@/components/JsonLd';
 import Photo from '@/components/Photo';
@@ -14,7 +15,7 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
-import { fromPrice, toM2 } from '@/lib/units';
+import { fromPrice, rentalsLabel, toM2 } from '@/lib/units';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -62,6 +63,17 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
   // заявку з форми привʼязуємо до найдешевшої вільної квартири — лід завжди про конкретний обʼєкт
   const leadUnit = units.find((u) => u.status === 'available') ?? units[0];
   const url = `${SITE_URL}/developments/${dev.slug}`;
+  // характеристики будинку: показуємо лише заповнене
+  const facts: [string, string][] = [
+    ['Developer', dev.developer],
+    ['Completion', dev.completion],
+    ['Floors', dev.floors ? String(dev.floors) : floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : ''],
+    ['Units', units.length ? String(units.length) : ''],
+    ['Construction', dev.construction],
+    ['Parking', dev.parking],
+    ['HOA', dev.hoa !== null ? (dev.hoa ? `${fmtUsd(dev.hoa)}/mo` : 'None') : ''],
+    ['Rentals', dev.rentals ? rentalsLabel(dev.rentals) : ''],
+  ].filter((f): f is [string, string] => Boolean(f[1]));
 
   return (
     <div className="wrap">
@@ -121,7 +133,6 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             <DevelopmentUnits units={units} developer={dev.developer} completion={dev.completion} sales={dev.sales}
               contactHref="#contact" />
             <ul className="dev__facts">
-              {floors.length > 0 && <li>Floors {Math.min(...floors)}–{Math.max(...floors)}</li>}
               {dev.website && (
                 <li><a href={dev.website} target="_blank" rel="noopener noreferrer nofollow">
                   {dev.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></li>
@@ -131,6 +142,35 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
               Prices from the developer&apos;s price list — ask the agent which units are still open.
             </p>
           </section>
+
+          {units.some((u) => u.floor !== null) && (
+            <section className="dev" id="floors">
+              <h2 className="dev__title">Availability by floor</h2>
+              <DevelopmentChess units={units} />
+            </section>
+          )}
+
+          {(facts.length > 0 || dev.amenities.length > 0) && (
+            <section className="dev">
+              <h2 className="dev__title">The building</h2>
+              <dl className="dev__specs">
+                {facts.map(([k, v]) => <div key={k}><dt className="small muted">{k}</dt><dd>{v}</dd></div>)}
+              </dl>
+              {dev.amenities.length > 0 && (
+                <ul className="dev__facts">{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
+              )}
+            </section>
+          )}
+
+          {dev.payment && (
+            <section className="dev">
+              <h2 className="dev__title">Payment plan</h2>
+              <ol className="dev__pay">
+                {dev.payment.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
+              </ol>
+              <p className="tiny muted" style={{ marginTop: 8 }}>Terms come from the developer — confirm the current plan with the agent.</p>
+            </section>
+          )}
 
           {dev.text && (
             <>

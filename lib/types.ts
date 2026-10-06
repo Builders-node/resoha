@@ -1,5 +1,5 @@
 import type { NearbyPlace } from './nearby';
-import type { SalesStatus, UnitStatus } from './units';
+import type { RentalRule, SalesStatus, UnitStatus } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -135,6 +135,14 @@ export interface Development {
   lng: number;
   photos: string[];
   text: string;
+  /* характеристики будинку */
+  floors: number | null;
+  construction: string;
+  parking: string;
+  amenities: string[];
+  hoa: number | null;          // $ на місяць
+  rentals: RentalRule;
+  payment: string;             // умови оплати, вільним текстом по рядках
   agentId: string;
   agencyId: string | null;
   active: boolean;

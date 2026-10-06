@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
-import { SALES_STATUSES, salesLabel } from '@/lib/units';
+import { RENTAL_RULES, SALES_STATUSES, salesLabel } from '@/lib/units';
 import type { Development } from '@/lib/types';
 
 /**
@@ -141,6 +141,26 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
           <input className="input" type="number" step="0.0001" value={pin[0]} onChange={(e) => setPin([Number(e.target.value), pin[1]])} /></div>
         <div className="field"><label>Longitude</label>
           <input className="input" type="number" step="0.0001" value={pin[1]} onChange={(e) => setPin([pin[0], Number(e.target.value)])} /></div>
+        <div className="field"><label>Floors</label>
+          <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev?.floors ?? ''} /></div>
+        <div className="field"><label>Construction</label>
+          <input className="input" name="construction" maxLength={120} defaultValue={dev?.construction} placeholder="Reinforced concrete" /></div>
+        <div className="field"><label>Parking</label>
+          <input className="input" name="parking" maxLength={120} defaultValue={dev?.parking} placeholder="Covered, 1 space per unit" /></div>
+        <div className="field"><label>HOA, $ per month</label>
+          <input className="input" name="hoa" type="number" min={0} defaultValue={dev?.hoa ?? ''} placeholder="Leave empty if unknown" /></div>
+        <div className="field"><label>Rentals</label>
+          <select className="input" name="rentals" defaultValue={dev?.rentals ?? ''}>
+            {RENTAL_RULES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></div>
+        <div className="field full"><label>Amenities</label>
+          <input className="input" name="amenities" maxLength={600} defaultValue={dev?.amenities.join(', ')}
+            placeholder="Pool, gym, rooftop terrace, 24/7 security" />
+          <span className="tiny muted">Comma-separated.</span></div>
+        <div className="field full"><label>Payment plan</label>
+          <textarea className="input" name="payment" rows={4} maxLength={2000} defaultValue={dev?.payment}
+            placeholder={'10% reservation deposit\n40% on signing\n50% on delivery'} />
+          <span className="tiny muted">One step per line.</span></div>
         <div className="field full"><label>Photos</label>
           <PhotoUploader value={photos} onChange={setPhotos} /></div>
         <div className="field full"><label>Description</label>

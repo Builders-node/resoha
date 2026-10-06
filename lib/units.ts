@@ -30,6 +30,23 @@ const SALES_KEYS = new Set<string>(SALES_STATUSES.map(([k]) => k));
 export const cleanSales = (s: unknown): SalesStatus => (SALES_KEYS.has(String(s)) ? s : 'open') as SalesStatus;
 export const salesLabel = (s: string) => SALES_STATUSES.find(([k]) => k === s)?.[1] ?? 'Sales open';
 
+/** Чи можна здавати квартиру: на Роатані інвестора це цікавить першим */
+export const RENTAL_RULES = [
+  ['', 'Not specified'],
+  ['short', 'Short-term rentals allowed'],
+  ['long', 'Long-term rentals only'],
+  ['none', 'No rentals'],
+] as const;
+export type RentalRule = (typeof RENTAL_RULES)[number][0];
+const RENTAL_KEYS = new Set<string>(RENTAL_RULES.map(([k]) => k));
+export const cleanRentals = (s: unknown): RentalRule => (RENTAL_KEYS.has(String(s)) ? s : '') as RentalRule;
+export const rentalsLabel = (s: string) => RENTAL_RULES.find(([k]) => k === s)?.[1] ?? '';
+
+/** «Pool, gym,  24/7 security» → ['Pool', 'gym', '24/7 security'] */
+export const splitList = (v: unknown, max = 30) =>
+  (Array.isArray(v) ? v.map(String) : String(v ?? '').split(/[,\n]/))
+    .map((s) => s.trim().slice(0, 60)).filter(Boolean).slice(0, max);
+
 /** «Duna Tower» → «duna-tower»; для адреси сторінки ЖК */
 export const slugify = (s: string) =>
   s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase()
