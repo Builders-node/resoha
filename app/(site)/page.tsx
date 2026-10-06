@@ -153,7 +153,8 @@ export default async function HomePage() {
           </div>
           <div className="grid grid--4">
             {fresh.map((l) => (
-              <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} agentName={agencyNameById.get(l.agencyId ?? '')} />
+              <ListingCard key={l.id} listing={l} ratio="tall" isFav={favIds.includes(l.id)}
+                agentName={agencyNameById.get(l.agencyId ?? '')} />
             ))}
           </div>
         </div>
