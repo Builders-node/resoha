@@ -4,6 +4,7 @@ import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
+import { DETAIL_FIELDS } from '@/lib/details';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
 import { UNIT_STATUSES } from '@/lib/units';
@@ -32,6 +33,8 @@ export default function ListingForm({
   const [buildingId, setBuildingId] = useState(listing?.buildingId ?? '');
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
+  // угода керована: поле «Pets» має сенс лише для оренди
+  const [deal, setDeal] = useState(listing?.deal ?? 'sale');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
   const [area, setArea] = useState(listing?.neighborhood ?? 'West Bay');
   const [pin, setPin] = useState<[number, number]>(
@@ -86,6 +89,14 @@ export default function ListingForm({
       const v = fd.get(`land_${f.key}`);
       if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
     }
+    // характеристики: поля detail_* і floorsTotal → обʼєкт details
+    const details: Record<string, string> = {};
+    for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal']) {
+      const name = key === 'floorsTotal' ? key : `detail_${key}`;
+      const v = fd.get(name);
+      if (typeof v === 'string' && v) details[key] = v;
+      delete body[name];
+    }
     // юніти без номера чи ціни — недописані; з юнітами ціна оголошення = найдешевший вільний
     setSaving(true);
 
@@ -95,6 +106,8 @@ export default function ListingForm({
       body: JSON.stringify({
         ...body,
         land: type === 'land' ? land : undefined,
+        // у землі цих характеристик немає
+        details: type === 'land' ? {} : details,
         photos,
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
@@ -144,7 +157,7 @@ export default function ListingForm({
             placeholder="2BR oceanfront condo at West Bay" /></div>
 
         <div className="field"><label>Listing type</label>
-          <select className="input" name="deal" defaultValue={v?.deal ?? 'sale'}>
+          <select className="input" name="deal" value={deal} onChange={(e) => setDeal(e.target.value as Listing['deal'])}>
             <option value="sale">For sale</option><option value="rent">For rent</option>
           </select></div>
         <div className="field"><label>Property type</label>
@@ -197,6 +210,30 @@ export default function ListingForm({
           <label><input type="checkbox" name="ownerFinancing" defaultChecked={v?.ownerFinancing} /> Owner financing</label>
         </div>
 
+        {/* Характеристики — таблиця на сторінці обʼєкта; порожнє поле там не показується */}
+        {type !== 'land' && (
+          <div className="field full land-form">
+            <label>Details</label>
+            <span className="tiny muted" style={{ marginBottom: 10 }}>
+              These fill the details table on the listing page. Leave a field on “—” if you are not sure.
+            </span>
+            <div className="form-grid">
+              <div className="field"><label>Floor</label>
+                <input className="input" name="floor" type="number" defaultValue={v?.floor ?? ''} placeholder="3" /></div>
+              <div className="field"><label>Floors in the building</label>
+                <input className="input" name="floorsTotal" type="number" min={1} max={200}
+                  defaultValue={v?.details.floorsTotal ?? ''} placeholder="8" /></div>
+              {DETAIL_FIELDS.filter((f) => !f.rentOnly || deal === 'rent').map((f) => (
+                <div key={f.key} className="field"><label>{f.label}</label>
+                  <select className="input" name={`detail_${f.key}`} defaultValue={v?.details[f.key] ?? ''}>
+                    <option value="">—</option>
+                    {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                  </select></div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Паспорт ділянки — лише для землі; у кондо й будинків цієї секції немає */}
         {type === 'land' && (
           <div className="field full land-form">
@@ -242,8 +279,6 @@ export default function ListingForm({
                 )}
                 <div className="field"><label>Unit number</label>
                   <input className="input" name="unitNo" maxLength={20} defaultValue={v?.unitNo} placeholder="303" /></div>
-                <div className="field"><label>Floor</label>
-                  <input className="input" name="floor" type="number" defaultValue={v?.floor ?? ''} placeholder="3" /></div>
               </>
             )}
           </>

@@ -322,7 +322,22 @@ textarea.input{resize:vertical;min-height:96px}
 .crumbs a:hover{color:var(--orange)}
 .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:180px 180px;gap:8px;border-radius:var(--radius-lg);overflow:hidden;margin-top:10px}
 .gallery img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
-.gallery img:first-child{grid-row:span 2}
+.gallery{position:relative}
+.gallery__tile{position:relative;display:block;padding:0;border:0;background:var(--bg-soft);cursor:zoom-in;overflow:hidden;min-height:0}
+.gallery__tile img{transition:transform .3s}
+.gallery__tile:hover img{transform:scale(1.03)}
+.gallery__tile:first-child{grid-row:span 2}
+.gallery__more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,15,16,.5);
+  color:#fff;font-size:26px;font-weight:800;pointer-events:none}
+.gallery__all{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:7px;
+  border:0;border-radius:999px;padding:8px 14px;background:#fff;color:var(--ink);font-weight:700;font-size:13px;
+  cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18)}
+.gallery--n1{grid-template-columns:1fr;grid-template-rows:380px}
+.gallery--n1 .gallery__tile:first-child{grid-row:auto}
+.gallery--n2{grid-template-columns:2fr 1fr}
+.gallery--n2 .gallery__tile{grid-row:span 2}
+.gallery--n3{grid-template-columns:2fr 1fr}
+.gallery--n4 .gallery__tile:nth-child(2){grid-row:span 2}
 .prop{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:44px;padding:30px 0 60px;align-items:start}
 .prop__head{display:flex;gap:16px;justify-content:space-between;align-items:flex-start}
 .prop__fav{position:relative;width:44px;height:44px;flex:none}
@@ -514,8 +529,11 @@ textarea.input{resize:vertical;min-height:96px}
   .tiles{grid-template-columns:repeat(2,1fr)}
   .specs,.stats{grid-template-columns:repeat(2,1fr)}
   .form-grid{grid-template-columns:1fr}
-  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:150px 150px}
-  .gallery img:first-child{grid-column:span 2;grid-row:auto}
+  .gallery{grid-template-columns:1fr 1fr;grid-template-rows:230px;grid-auto-rows:150px}
+  .gallery .gallery__tile{grid-row:auto}
+  .gallery .gallery__tile:first-child{grid-column:span 2}
+  .gallery--n2 .gallery__tile:nth-child(2),.gallery--n4 .gallery__tile:nth-child(4){grid-column:span 2}
+  .gallery--n1{grid-auto-rows:auto}
   .toast{left:50%}
 }
 @media (max-width:560px){
@@ -1152,3 +1170,45 @@ textarea.input{resize:vertical;min-height:96px}
 .bld__facts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
 .chess-group + .chess-group{margin-top:22px}
 .chess-group__title{font-size:17px;margin-bottom:10px}
+
+/* ===== Повноекранні фото ===== */
+.lightbox{position:fixed;inset:0;z-index:1000;background:#0b0b0d;color:#fff;display:flex;flex-direction:column}
+.lightbox__bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
+.lightbox__count{font-weight:700;font-size:14px;opacity:.85}
+.lightbox__close{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;
+  display:grid;place-items:center;cursor:pointer}
+.lightbox__close:hover{background:rgba(255,255,255,.2)}
+.lightbox__stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 64px}
+.lightbox__stage img{max-width:100%;max-height:100%;object-fit:contain;user-select:none}
+.lightbox__nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:0;
+  background:rgba(255,255,255,.12);color:#fff;font-size:30px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.lightbox__nav:hover{background:rgba(255,255,255,.24)}
+.lightbox__nav--prev{left:10px}
+.lightbox__nav--next{right:10px}
+.lightbox__thumbs{display:flex;gap:6px;overflow-x:auto;padding:12px 16px 16px;scrollbar-width:none}
+.lightbox__thumbs button{flex:none;width:76px;height:54px;padding:0;border:2px solid transparent;border-radius:8px;
+  overflow:hidden;background:none;cursor:pointer;opacity:.55}
+.lightbox__thumbs button.is-on{border-color:var(--orange);opacity:1}
+.lightbox__thumbs img{width:100%;height:100%;object-fit:cover}
+@media (max-width:760px){
+  .lightbox__stage{padding:0}
+  .lightbox__nav{display:none}
+  .lightbox__thumbs button{width:58px;height:42px}
+}
+
+/* ===== Характеристики, історія ціни ===== */
+.details{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;margin:12px 0 0}
+.details__row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.details__row dt{color:var(--ink-2)}
+.details__row dd{margin:0;font-weight:600;text-align:right}
+.prop__updated{font-size:13px;color:var(--ink-2);margin-top:6px;display:flex;gap:6px;align-items:center}
+.ph{margin-top:12px}
+.ph__chart{width:100%;height:120px;display:block}
+.ph__list{list-style:none;padding:0;margin:10px 0 0}
+.ph__list li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.ph__list b{font-weight:700}
+.ph__down{color:#11845b;font-weight:700}
+.ph__up{color:#c0392b;font-weight:700}
+@media (max-width:760px){
+  .details{grid-template-columns:1fr}
+}

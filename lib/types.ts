@@ -1,3 +1,4 @@
+import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
 import type { BuildingStage, RentalRule, SalesStatus, UnitStatus } from './units';
 
@@ -118,6 +119,17 @@ export interface Listing {
   floor: number | null;
   /** вільна / бронь / продана / здана */
   status: UnitStatus;
+  /** Характеристики для таблиці на сторінці (lib/details.ts) */
+  details: ListingDetails;
+  /** Коли оголошення востаннє міняли; до міграції 0036 — дата публікації */
+  updatedAt: string;
+}
+
+/** Одна точка в історії ціни */
+export interface PricePoint {
+  price: number;
+  deal: Deal;
+  at: string;
 }
 
 /** ЖК (новобудова): окрема сторінка, а квартири в ньому — звичайні оголошення */
