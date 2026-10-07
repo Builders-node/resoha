@@ -28,6 +28,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.2 },
     { url: `${SITE_URL}/developments`, changeFrequency: 'weekly', priority: 0.8 },
     ...developments.map((d) => ({ url: `${SITE_URL}/developments/${d.slug}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.9 })),
+    // вкладки, які є в кожного ЖК; решта (стройка, документи, новини) — лише коли заповнені
+    ...developments.flatMap((d) => ['layouts', 'contacts'].map((t) => ({ url: `${SITE_URL}/developments/${d.slug}/${t}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 }))),
     ...listings.map((l) => ({
       url: `${SITE_URL}/listings/${l.id}`,
       lastModified: new Date(l.updatedAt),

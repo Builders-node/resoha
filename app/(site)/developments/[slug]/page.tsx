@@ -1,247 +1,187 @@
-import { cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import AgentContact from '@/components/AgentContact';
 import BackButton from '@/components/BackButton';
 import DevelopmentBuildings from '@/components/DevelopmentBuildings';
 import DevelopmentChess from '@/components/DevelopmentChess';
-import DevelopmentDocs from '@/components/DevelopmentDocs';
-import DevelopmentMedia from '@/components/DevelopmentMedia';
-import DevelopmentNav from '@/components/DevelopmentNav';
+import DevelopmentShell from '@/components/DevelopmentShell';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
-import JsonLd from '@/components/JsonLd';
 import Gallery from '@/components/Gallery';
-import { getAgent, getDevelopment, listBuildings, listDocuments, queryListings } from '@/lib/db';
-import { fmtUsd } from '@/lib/format';
-import { SITE_NAME, SITE_URL } from '@/lib/site';
-import { currentUser } from '@/lib/session';
-import { breadcrumbLd, graph } from '@/lib/seo';
-import { areaForNeighborhood } from '@/lib/content/areas';
-import { BUILDING_STAGES, fromPrice, salesLabel, stageLabel, toM2 } from '@/lib/units';
 import Icon from '@/components/Icon';
 import { FeatureGrid, developmentFeatures } from '@/components/DevelopmentFeatures';
+import { ProgressPhotos } from '@/components/DevelopmentProgress';
+import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
+import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
-// метадані й сама сторінка питають той самий ЖК — один запит на двох
-const loadDevelopment = cache(getDevelopment);
-
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
-  const { slug } = await params;
-  const d = await loadDevelopment(slug);
-  if (!d) return { title: `Development not found — ${SITE_NAME}` };
-  const title = `${d.name} — new development in ${d.neighborhood}, Roatán`;
-  const description = (d.text || `${d.name}: apartments for sale and rent in ${d.neighborhood}, Roatán.`).slice(0, 200);
-  return {
-    title: `${title} | ${SITE_NAME}`,
-    description,
-    alternates: { canonical: `/developments/${d.slug}` },
-    openGraph: { title, description, url: `/developments/${d.slug}`, type: 'website', siteName: SITE_NAME, images: d.photos.slice(0, 1) },
-  };
+  return developmentMetadata((await params).slug);
 }
 
 export default async function DevelopmentPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const dev = await loadDevelopment(slug);
-  if (!dev) notFound();
+  const ctx = await developmentContext(slug);
+  const { dev, units, buildings, docs, progress, news, base, from } = ctx;
 
-  const [agent, me, units, buildings, docs] = await Promise.all([
-    getAgent(dev.agentId),
-    currentUser(),
-    queryListings({ developmentId: dev.id, sort: 'price_asc' }),
-    listBuildings(dev.id),
-    listDocuments(dev.id),
-  ]);
-  // Автор може бути прихованим (заблокований акаунт) — тоді й ЖК не показуємо
-  if (!agent) notFound();
-
-  const area = areaForNeighborhood(dev.neighborhood);
-  const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(dev.neighborhood)}`;
-
-  const forSale = units.filter((u) => u.deal === 'sale');
-  const from = fromPrice(forSale);
   const beds = units.map((u) => u.beds);
   const types = units.length
     ? [...new Set([Math.min(...beds), Math.max(...beds)])].map((b) => (b ? `${b} BR` : 'Studio')).join(' – ')
     : '—';
   const sizes = units.filter((u) => u.sqft > 0).map((u) => toM2(u.sqft));
   const floors = units.flatMap((u) => (u.floor !== null ? [u.floor] : []));
-  // заявку з форми привʼязуємо до найдешевшої вільної квартири — лід завжди про конкретний обʼєкт
-  const leadUnit = units.find((u) => u.status === 'available') ?? units[0];
-  const url = `${SITE_URL}/developments/${dev.slug}`;
   const chessGroups = [
     ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
     { id: '', name: 'Other units', units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
   ].filter((g) => g.units.some((u) => u.floor !== null));
   // характеристики будинку: показуємо лише заповнене
   const facts = developmentFeatures(dev, buildings, units);
-  // зведення по домах: «1 delivered · 2 under construction»
-  const stageCounts = BUILDING_STAGES.map(([k]) => [k, buildings.filter((b) => b.stage === k).length] as const)
-    .filter(([, n]) => n > 0).reverse();
-  // статус продажів і будівництва — у бічній колонці під «Request a viewing», як у LUN
-  const statusBox = stageCounts.length > 0 || buildings.length > 0 ? (
-    <ul className="feat__status">
-      <li><Icon name="verified" size={18} /> {salesLabel(dev.sales)}</li>
-      {stageCounts.map(([k, n]) => (
-        <li key={k} className={`is-${k}`}>
-          <Icon name={k === 'delivered' || k === 'built' ? 'check' : k === 'planned' ? 'deed' : 'crane'} size={18} />
-          {n} {n === 1 ? 'building' : 'buildings'} · {stageLabel(k).toLowerCase()}
-        </li>
-      ))}
-    </ul>
-  ) : null;
-
-  const hasFeatures = facts.length > 0 || dev.amenities.length > 0 || (!leadUnit && !!statusBox);
-  // вкладки зверху — лише ті розділи, які на сторінці справді є
-  const nav = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'units', label: 'Units & prices' },
-    buildings.length > 0 && { id: 'buildings', label: buildings.length > 1 ? 'Buildings' : 'Construction' },
-    hasFeatures && { id: 'features', label: 'Features' },
-    (dev.video || dev.tour) && { id: 'media', label: dev.tour ? 'Video & 360°' : 'Video' },
-    docs.length > 0 && { id: 'documents', label: 'Documents' },
-    { id: 'location', label: 'Location' },
-    leadUnit && { id: 'contact', label: 'Contact' },
-  ].filter(Boolean) as { id: string; label: string }[];
+  const latest = progress.find((p) => p.photos.length);
 
   return (
-    <div className="wrap has-dnav">
-      <JsonLd data={graph(breadcrumbLd([
-        { name: 'Home', path: '/' },
-        { name: 'Developments', path: '/developments' },
-        { name: dev.name, path: `/developments/${dev.slug}` },
-      ]))} />
-      <div className="crumbs small muted">
-        <Link href="/">Home</Link> · <Link href="/developments">Developments</Link> · <Link href={areaPath}>{dev.neighborhood}</Link>
-      </div>
-
+    <DevelopmentShell ctx={ctx} active="overview" top={(
       <div className="gallery-wrap">
         <BackButton fallback="/developments" />
         <Gallery photos={dev.photos} title={dev.name} />
       </div>
-
-      <DevelopmentNav items={nav} />
-
-      <div className="prop">
-        <div>
-          <div className="prop__head" id="overview">
-            <div>
-              <span className="dev__kicker">New development</span>
-              <h1 style={{ fontSize: 30 }}>{dev.name}</h1>
-              <p className="muted" style={{ margin: '8px 0 0' }}>
-                {dev.address && <>{dev.address} · </>}{dev.neighborhood}, {dev.island}, Bay Islands
-              </p>
-            </div>
-          </div>
-
-          {from !== null && (
-            <div className="prop__price">
-              <span className="muted small" style={{ fontWeight: 500 }}>From </span>{fmtUsd(from)}
-            </div>
-          )}
-
-          <div className="specs">
-            <div className="spec"><span className="muted small">Units</span><b>{units.length || '—'}</b></div>
-            <div className="spec"><span className="muted small">Types</span><b>{types}</b></div>
-            <div className="spec"><span className="muted small">Sizes</span>
-              <b>{sizes.length ? `${Math.round(Math.min(...sizes))} – ${Math.round(Math.max(...sizes))} m²` : '—'}</b></div>
-            <div className="spec"><span className="muted small">{dev.completion ? 'Completion' : 'Floors'}</span>
-              <b>{dev.completion || (floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '—')}</b></div>
-          </div>
-
-          <section className="dev" id="units">
-            <h2 className="dev__title">Units &amp; prices</h2>
-            <DevelopmentUnits units={units}
-              buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} completion={dev.completion} sales={dev.sales}
-              contactHref="#contact" />
-            <ul className="dev__facts">
-              {dev.website && (
-                <li><a href={dev.website} target="_blank" rel="noopener noreferrer nofollow">
-                  {dev.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></li>
-              )}
-            </ul>
-            <p className="tiny muted" style={{ marginTop: 8 }}>
-              Prices from the developer&apos;s price list — ask the agent which units are still open.
-            </p>
-          </section>
-
-          {buildings.length > 0 && (
-            <section className="dev" id="buildings">
-              <h2 className="dev__title">{buildings.length > 1 ? 'Buildings' : 'Construction status'}</h2>
-              <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''} />
-            </section>
-          )}
-
-          {units.some((u) => u.floor !== null) && (
-            <section className="dev" id="floors">
-              <h2 className="dev__title">Availability by floor</h2>
-              {/* у кожного дому своя шахматка; квартири без дому — окремим блоком наприкінці */}
-              {chessGroups.map((g) => (
-                <div key={g.id} id={g.id ? `bld-${g.id}` : undefined} className="chess-group">
-                  {chessGroups.length > 1 && <h3 className="chess-group__title">{g.name}</h3>}
-                  <DevelopmentChess units={g.units} />
-                </div>
-              ))}
-            </section>
-          )}
-
-          {hasFeatures && (
-            <section className="dev" id="features">
-              <h2 className="dev__title">Project features</h2>
-              <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
-              <FeatureGrid items={facts} />
-              {!leadUnit && statusBox}
-              {dev.amenities.length > 0 && (
-                <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
-              )}
-            </section>
-          )}
-
-          {(dev.video || dev.tour) && (
-            <section className="dev" id="media">
-              <h2 className="dev__title">{dev.tour ? 'Video & 360° tour' : 'Video'}</h2>
-              <DevelopmentMedia video={dev.video} tour={dev.tour} name={dev.name} />
-            </section>
-          )}
-
-          {dev.payment && (
-            <section className="dev">
-              <h2 className="dev__title">Payment plan</h2>
-              <ol className="dev__pay">
-                {dev.payment.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
-              </ol>
-              <p className="tiny muted" style={{ marginTop: 8 }}>Terms come from the developer — confirm the current plan with the agent.</p>
-            </section>
-          )}
-
-          {docs.length > 0 && (
-            <section className="dev" id="documents">
-              <h2 className="dev__title">Documents</h2>
-              <DevelopmentDocs docs={docs} />
-            </section>
-          )}
-
-          {dev.text && (
-            <>
-              <h3 style={{ marginTop: 26 }}>About {dev.name}</h3>
-              <p className="muted" style={{ marginTop: 8, fontSize: 15.5, whiteSpace: 'pre-line' }}>{dev.text}</p>
-            </>
-          )}
-
-          <h3 id="location" style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
-          <div id="miniMap">
-            <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
-              center={[dev.lat, dev.lng]} detail />
-          </div>
-        </div>
-
-        {leadUnit && (
-          <AgentContact agent={agent} listing={leadUnit} listingUrl={url} topic={dev.name} fromPrice={from} extra={statusBox}
-            me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
-        )}
+    )}>
+      <div className="specs" style={{ marginTop: 0 }}>
+        <div className="spec"><span className="muted small">Units</span><b>{units.length || '—'}</b></div>
+        <div className="spec"><span className="muted small">Types</span><b>{types}</b></div>
+        <div className="spec"><span className="muted small">Sizes</span>
+          <b>{sizes.length ? `${Math.round(Math.min(...sizes))} – ${Math.round(Math.max(...sizes))} m²` : '—'}</b></div>
+        <div className="spec"><span className="muted small">{dev.completion ? 'Completion' : 'Floors'}</span>
+          <b>{dev.completion || (floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '—')}</b></div>
       </div>
-    </div>
+
+      <section className="dev" id="units">
+        <div className="dev__head">
+          <h2 className="dev__title">Units &amp; prices</h2>
+          {units.length > 0 && <Link className="dev__more" href={`${base}/layouts`}>Layouts →</Link>}
+        </div>
+        <DevelopmentUnits units={units}
+          buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} completion={dev.completion} sales={dev.sales}
+          contactHref="#contact" />
+        <ul className="dev__facts">
+          {dev.website && (
+            <li><a href={dev.website} target="_blank" rel="noopener noreferrer nofollow">
+              {dev.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a></li>
+          )}
+        </ul>
+        <p className="tiny muted" style={{ marginTop: 8 }}>
+          Prices from the developer&apos;s price list — ask the agent which units are still open.
+        </p>
+      </section>
+
+      {buildings.length > 0 && (
+        <section className="dev" id="buildings">
+          <div className="dev__head">
+            <h2 className="dev__title">{buildings.length > 1 ? 'Buildings' : 'Construction status'}</h2>
+            <Link className="dev__more" href={`${base}/construction`}>Construction progress →</Link>
+          </div>
+          <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''} />
+        </section>
+      )}
+
+      {units.some((u) => u.floor !== null) && (
+        <section className="dev" id="floors">
+          <h2 className="dev__title">Availability by floor</h2>
+          {/* у кожного дому своя шахматка; квартири без дому — окремим блоком наприкінці */}
+          {chessGroups.map((g) => (
+            <div key={g.id} id={g.id ? `bld-${g.id}` : undefined} className="chess-group">
+              {chessGroups.length > 1 && <h3 className="chess-group__title">{g.name}</h3>}
+              <DevelopmentChess units={g.units} />
+            </div>
+          ))}
+        </section>
+      )}
+
+      {(facts.length > 0 || dev.amenities.length > 0) && (
+        <section className="dev" id="features">
+          <h2 className="dev__title">Project features</h2>
+          <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
+          <FeatureGrid items={facts} />
+          {dev.amenities.length > 0 && (
+            <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
+          )}
+        </section>
+      )}
+
+      {latest && (
+        <section className="dev">
+          <div className="dev__head">
+            <h2 className="dev__title">Construction progress</h2>
+            <Link className="dev__more" href={`${base}/construction`}>All updates →</Link>
+          </div>
+          <p className="small muted" style={{ margin: '-6px 0 12px' }}>
+            {fmtMonth(latest.month)}{latest.buildingId && buildings.length > 1 ? ` · ${buildings.find((b) => b.id === latest.buildingId)?.name ?? ''}` : ''}
+          </p>
+          <ProgressPhotos photos={latest.photos} max={4} title={`${dev.name}, ${fmtMonth(latest.month)}`} />
+        </section>
+      )}
+
+      {(dev.video || dev.tour) && (
+        <section className="dev">
+          <Link className="dteaser" href={`${base}/tour`}>
+            <Icon name={dev.tour ? 'orbit' : 'play'} size={28} />
+            <span><b>{dev.tour ? 'Video & 360° tour' : 'Video'}</b><span className="small muted">Walk around {dev.name} without leaving home</span></span>
+            <Icon name="arrowRight" size={20} />
+          </Link>
+        </section>
+      )}
+
+      {dev.payment && (
+        <section className="dev">
+          <h2 className="dev__title">Payment plan</h2>
+          <ol className="dev__pay">
+            {dev.payment.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
+          </ol>
+          <p className="tiny muted" style={{ marginTop: 8 }}>Terms come from the developer — confirm the current plan with the agent.</p>
+        </section>
+      )}
+
+      {docs.length > 0 && (
+        <section className="dev">
+          <div className="dev__head">
+            <h2 className="dev__title">Documents</h2>
+            <Link className="dev__more" href={`${base}/documents`}>All {docs.length} →</Link>
+          </div>
+          <ul className="dteaser-list">
+            {docs.slice(0, 4).map((d) => (
+              <li key={d.id}><Icon name="deed" size={18} /> <span>{d.title}</span>
+                {d.verified && <span className="docs__ok tiny"><Icon name="check" size={13} strokeWidth={2.6} /> Checked</span>}</li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {news.length > 0 && (
+        <section className="dev">
+          <div className="dev__head">
+            <h2 className="dev__title">News</h2>
+            <Link className="dev__more" href={`${base}/news`}>All news →</Link>
+          </div>
+          <ul className="dteaser-list">
+            {news.slice(0, 3).map((n) => (
+              <li key={n.id}><span className="small muted" style={{ minWidth: 110 }}>{fmtDay(n.publishedOn)}</span>
+                <Link href={`${base}/news#n-${n.id}`}>{n.title}</Link></li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {dev.text && (
+        <>
+          <h3 style={{ marginTop: 26 }}>About {dev.name}</h3>
+          <p className="muted" style={{ marginTop: 8, fontSize: 15.5, whiteSpace: 'pre-line' }}>{dev.text}</p>
+        </>
+      )}
+
+      <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
+      <div id="miniMap">
+        <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
+          center={[dev.lat, dev.lng]} detail />
+      </div>
+    </DevelopmentShell>
   );
 }

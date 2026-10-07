@@ -1234,16 +1234,74 @@ textarea.input{resize:vertical;min-height:96px}
 .about-dev .feat__grid{gap:16px 18px}
 .about-dev h3 + .pstrip{margin-top:12px}
 
-/* Вкладки сторінки ЖК (як у LUN): липнуть до верху, підсвічують поточний розділ */
-.dnav{position:sticky;top:0;z-index:700;background:#fff;border-bottom:1px solid var(--line);margin:14px 0 4px}
+/* Сторінки ЖК (як у LUN): назва зверху, вкладки — окремі сторінки, крихти — унизу */
+.dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-top:22px;flex-wrap:wrap}
+.dhead__title{font-size:30px;line-height:1.15}
+.dhead__sub{color:var(--ink-2);font-weight:600}
+.dhead__price{font-size:26px;font-weight:800;white-space:nowrap}
+.dnav{position:sticky;top:0;z-index:700;background:#fff;border-bottom:1px solid var(--line);margin:14px 0 18px}
 .dnav__row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
 .dnav__row::-webkit-scrollbar{display:none}
 .dnav__tab{flex:none;padding:13px 14px 11px;font-size:15px;font-weight:500;color:var(--ink-2);white-space:nowrap;
   border-bottom:2.5px solid transparent;text-decoration:none}
 .dnav__tab:hover{color:var(--ink)}
 .dnav__tab.is-on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
-.has-dnav .dev,.has-dnav #overview,.has-dnav #location{scroll-margin-top:64px}
-.has-dnav .cc-wrap{top:66px;scroll-margin-top:66px}
+.dnav ~ .prop .cc-wrap{top:66px;scroll-margin-top:66px}
+.dnav ~ .prop{padding-top:6px}
+.crumbs--foot{padding:0 0 28px;border-top:1px solid var(--line);padding-top:16px}
+.dev__head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.dev__more{font-weight:600;font-size:15px;white-space:nowrap}
+.dev__more:hover{color:var(--orange)}
+.dteaser{display:flex;align-items:center;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);text-decoration:none}
+.dteaser:hover{background:var(--bg-soft)}
+.dteaser > span{display:flex;flex-direction:column;gap:2px;flex:1}
+.dteaser-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
+.dteaser-list li{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dteaser-list .ico{color:var(--ink-2);flex:none}
+
+/* Планування */
+.lay{display:grid;gap:30px}
+.lay__kind{font-size:21px;margin-bottom:14px}
+.lay__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.lay__card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
+.lay__img{display:block;aspect-ratio:4/3;background:var(--bg-soft)}
+.lay__img img{width:100%;height:100%;object-fit:cover;display:block}
+.lay__img.is-plan img{object-fit:contain;background:#fff;padding:8px}
+.lay__body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:4px}
+.lay__title{font-size:16px}
+.lay__price{font-size:18px;font-weight:800}
+.lay__facts{list-style:none;margin:0;padding:0;display:grid;gap:1px}
+.lay__units{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.lay__unit{font-size:13px;font-weight:600;padding:4px 9px;border-radius:999px;background:#e7f6ec;color:var(--ink);text-decoration:none}
+.lay__unit.is-off{background:var(--bg-soft);color:var(--ink-3)}
+
+/* Хід будівництва */
+.prog__month{padding:18px 0;border-top:1px solid var(--line)}
+.prog__month:first-of-type{border-top:0;padding-top:0}
+.prog__title{font-size:18px}
+.prog__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.prog__ph{position:relative;display:block;aspect-ratio:4/3;border-radius:10px;overflow:hidden;background:var(--bg-soft)}
+.prog__ph img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s}
+.prog__ph:hover img{transform:scale(1.03)}
+.prog__more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,15,16,.45);color:#fff;font-size:20px;font-weight:700}
+@media (max-width:640px){.prog__grid{grid-template-columns:repeat(2,1fr)}}
+
+/* Новини */
+.news{display:grid;gap:22px}
+.news__item{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.news__item:not(:has(.news__img)){grid-template-columns:1fr}
+.news__img{aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg-soft)}
+.news__img img{width:100%;height:100%;object-fit:cover;display:block}
+.news__title{font-size:20px;margin:4px 0 6px}
+.news__body{margin:0;white-space:pre-line;color:var(--ink-2)}
+@media (max-width:640px){.news__item{grid-template-columns:1fr}}
+
+/* Контакти */
+.contacts{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--radius)}
+.contacts li{display:flex;gap:14px;align-items:center;padding:14px 18px}
+.contacts li + li{border-top:1px solid var(--line)}
+.contacts li > .ico{flex:none;color:var(--ink-2)}
+.contacts li > div{display:flex;flex-direction:column;gap:2px}
 
 /* Документи ЖК */
 .docs{display:grid;gap:18px}

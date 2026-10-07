@@ -5,10 +5,12 @@ import type { Building, Listing } from '@/lib/types';
  * «Статус будівництва»: картка на кожен дім ЖК — фото, назва, стадія зі шкалою,
  * поверхи й кількість квартир, термін здачі, адреса. Клік веде до шахматки цього дому.
  */
-export default function DevelopmentBuildings({ buildings, units, fallbackPhoto }: {
+export default function DevelopmentBuildings({ buildings, units, fallbackPhoto, hrefFor }: {
   buildings: Building[];
   units: Listing[];
   fallbackPhoto: string;
+  /** Куди веде картка; за замовчуванням — до шахматки дому на тій самій сторінці */
+  hrefFor?: (b: Building) => string;
 }) {
   return (
     <div className="bld-grid">
@@ -18,7 +20,7 @@ export default function DevelopmentBuildings({ buildings, units, fallbackPhoto }
         const photo = b.photo || fallbackPhoto;
         const done = b.stage === 'built' || b.stage === 'delivered';
         return (
-          <a key={b.id} href={`#bld-${b.id}`} className="bld">
+          <a key={b.id} href={hrefFor ? hrefFor(b) : `#bld-${b.id}`} className="bld">
             {photo ? <img src={photo} alt="" className="bld__img" loading="lazy" /> : <div className="bld__img bld__img--empty" />}
             <span className="bld__name">{b.name}</span>
             <div className="bld__body">

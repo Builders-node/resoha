@@ -31,6 +31,8 @@ export default function ListingForm({
   // доми обраного ЖК
   const [buildings, setBuildings] = useState<{ id: string; name: string }[]>([]);
   const [buildingId, setBuildingId] = useState(listing?.buildingId ?? '');
+  // план квартири для вкладки «Layouts»; спільний для однакових квартир ЖК
+  const [floorplan, setFloorplan] = useState<string[]>(listing?.floorplan ? [listing.floorplan] : []);
   // тип керований: від нього залежить, чи показувати секцію «Land check»
   const [type, setType] = useState(listing?.type ?? 'condo');
   // угода керована: поле «Pets» має сенс лише для оренди
@@ -114,6 +116,7 @@ export default function ListingForm({
         developmentId: developmentId || null,
         // дім має сенс лише разом зі своїм ЖК
         buildingId: developmentId ? buildingId || null : null,
+        floorplan: developmentId ? floorplan[0] ?? '' : '',
         oceanfront: fd.get('oceanfront') === 'on',
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
@@ -279,6 +282,9 @@ export default function ListingForm({
                 )}
                 <div className="field"><label>Unit number</label>
                   <input className="input" name="unitNo" maxLength={20} defaultValue={v?.unitNo} placeholder="303" /></div>
+                <div className="field full"><label>Floor plan</label>
+                  <PhotoUploader value={floorplan} onChange={setFloorplan} max={1} />
+                  <span className="tiny muted">Shown on the development&apos;s Layouts page for every unit of the same type and size — one upload per layout is enough.</span></div>
               </>
             )}
           </>
