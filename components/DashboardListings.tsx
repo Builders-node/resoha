@@ -212,11 +212,11 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                           {l.status !== 'available' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{statusLabel(l.status)}</span>}
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
-                          <button className="btn btn--sm btn--ghost" onClick={() => onEdit(l)}>Edit</button>{' '}
+                          <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
                           <button className="btn btn--sm btn--ghost" onClick={() => onToggle(l)}>
                             {l.active ? 'Unpublish' : 'Publish'}
                           </button>{' '}
-                          <button className="btn btn--sm btn--danger" onClick={() => onDelete(l)}>Delete</button>
+                          <button className="btn btn--sm btn--danger btn--icon" title="Delete" aria-label="Delete" onClick={() => onDelete(l)}><Icon name="trash" size={16} /></button>
                         </td>
                       </tr>
                     ))}

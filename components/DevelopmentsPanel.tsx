@@ -376,7 +376,7 @@ function OverviewSection({ dev, patch, onDelete, onGo }: {
             placeholder="What makes this project special: location, views, finishes, who it suits…" /></div>
       </SectionForm>
       <div style={{ marginTop: 26, display: 'flex', justifyContent: 'flex-end' }}>
-        <button type="button" className="btn btn--danger btn--sm" onClick={onDelete}>Delete development</button>
+        <button type="button" className="btn btn--danger btn--sm" onClick={onDelete}><Icon name="trash" size={16} /> Delete development</button>
       </div>
     </>
   );
@@ -569,8 +569,8 @@ function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Bui
                 </div>
               </div>
               <div className="chip-row">
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+                <button type="button" className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => open(x)}><Icon name="pencil" size={16} /></button>
+                <button type="button" className="btn btn--danger btn--sm btn--icon" title="Delete" aria-label="Delete" onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
               </div>
             </div>
           ))}
@@ -679,8 +679,8 @@ function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }
                 </div>
               </div>
               <div className="chip-row">
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+                <button type="button" className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => open(x)}><Icon name="pencil" size={16} /></button>
+                <button type="button" className="btn btn--danger btn--sm btn--icon" title="Delete" aria-label="Delete" onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
               </div>
             </div>
           ))}
@@ -709,7 +709,7 @@ function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }
                 <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden onChange={pick} disabled={busy} />
               </label>
               {file && <a className="small" href={file} target="_blank" rel="noreferrer">Open current file</a>}
-              {file && <button type="button" className="btn btn--ghost btn--sm" onClick={() => setFile('')}>Remove</button>}
+              {file && <button type="button" className="btn btn--danger btn--sm btn--icon" title="Remove file" aria-label="Remove file" onClick={() => setFile('')}><Icon name="trash" size={16} /></button>}
             </div>
             <span className="tiny muted">PDF up to 20 MB, or a photo up to 8 MB.</span></div>
           {isAdmin && (
@@ -790,8 +790,8 @@ function ProgressEditor({ devId, buildings }: { devId: string; buildings: Buildi
                 <div className="small muted">{[bname(x.buildingId), `${x.photos.length} photos`].filter(Boolean).join(' · ')}</div>
               </div>
               <div className="chip-row">
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+                <button type="button" className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => open(x)}><Icon name="pencil" size={16} /></button>
+                <button type="button" className="btn btn--danger btn--sm btn--icon" title="Delete" aria-label="Delete" onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
               </div>
             </div>
           ))}
@@ -898,8 +898,8 @@ function NewsEditor({ devId }: { devId: string }) {
                 <div className="small muted">{fmtDay(x.publishedOn)}</div>
               </div>
               <div className="chip-row">
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
-                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+                <button type="button" className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => open(x)}><Icon name="pencil" size={16} /></button>
+                <button type="button" className="btn btn--danger btn--sm btn--icon" title="Delete" aria-label="Delete" onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
               </div>
             </div>
           ))}

@@ -54,7 +54,7 @@ export default function DeveloperPanel() {
             </div>
             <div className="chip-row">
               <Link className="btn btn--ghost btn--sm" href={`/developers/${d.slug}`} target="_blank">Open page</Link>
-              <button className="btn btn--ghost btn--sm" onClick={() => setEditing(d)}>Edit</button>
+              <button className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
             </div>
           </div>
         ))}
@@ -121,7 +121,7 @@ function DeveloperForm({ dev, onCancel, onSaved }: {
         <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : dev ? 'Save' : 'Create company page'}</button>
           {onCancel && <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>}
-          {dev && <button type="button" className="btn btn--danger" style={{ marginLeft: 'auto' }} onClick={remove}>Delete</button>}
+          {dev && <button type="button" className="btn btn--danger btn--icon" title="Delete" aria-label="Delete company page" style={{ marginLeft: 'auto' }} onClick={remove}><Icon name="trash" size={16} /></button>}
         </div>
       </form>
     </div>

@@ -67,7 +67,7 @@ export default function PhotoUploader({
                 <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, -1)} disabled={i === 0} aria-label="Move left">←</button>
                 {i !== 0 && <button type="button" className="btn btn--sm btn--ghost" onClick={() => makeCover(url)}>Cover</button>}
                 <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, 1)} disabled={i === value.length - 1} aria-label="Move right">→</button>
-                <button type="button" className="btn btn--sm btn--danger" onClick={() => remove(url)}>Remove</button>
+                <button type="button" className="btn btn--sm btn--danger btn--icon" title="Remove photo" aria-label="Remove photo" onClick={() => remove(url)}><Icon name="trash" size={16} /></button>
               </div>
             </figure>
           ))}
