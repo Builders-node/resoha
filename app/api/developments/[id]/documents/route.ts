@@ -8,7 +8,7 @@ type Ctx = { params: Promise<{ id: string }> };
 /** Документи ЖК — для кабінету */
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params;
-  return NextResponse.json({ items: await listDocuments(id) });
+  return NextResponse.json({ items: await listDocuments(id, true) });
 }
 
 export async function POST(req: Request, { params }: Ctx) {

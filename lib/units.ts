@@ -46,11 +46,13 @@ export const stageIndex = (s: string) => Math.max(0, BUILDING_STAGES.findIndex((
 
 /** Документи ЖК — групи, як на LUN: земля, дозволи, введення в експлуатацію, учасники */
 export const DOC_KINDS = [
+  ['unit', 'Unit plan'],
   ['land', 'Land title'],
   ['permit', 'Construction permit'],
   ['environment', 'Environmental licence'],
   ['completion', 'Completion certificate'],
   ['company', 'Developer & contractor'],
+  ['condo', 'Condominium & HOA'],
   ['other', 'Other'],
 ] as const;
 export type DocKind = (typeof DOC_KINDS)[number][0];

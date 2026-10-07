@@ -304,6 +304,7 @@ export const ES_CATALOG: Record<string, string> = {
   'Added by the listing agent — check opening hours before you go.': 'Agregado por el agente del anuncio: consulte los horarios antes de ir.',
   'Location': 'Ubicación',
   'About the building': 'Sobre el edificio',
+  'Documents': 'Documentos',
   'About {name}': 'Sobre {name}',
   'Open {name}': 'Ver {name}',
   'Listing ID {id} · listed {created} · updated {updated} · {views} views':

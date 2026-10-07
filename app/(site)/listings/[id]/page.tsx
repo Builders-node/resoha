@@ -10,8 +10,9 @@ import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Gallery from '@/components/Gallery';
+import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
-import { bumpViewsAfterResponse, getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, queryListings } from '@/lib/db';
+import { bumpViewsAfterResponse, getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -56,7 +57,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
@@ -70,8 +71,12 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     listing.developmentId ? getDevelopment(listing.developmentId) : Promise.resolve(null),
     listing.developmentId ? listBuildings(listing.developmentId) : Promise.resolve([]),
     getLang(),
+    // документи: спершу цієї квартири (план юніта), потім спільні для ЖК (декларація тощо)
+    listing.developmentId ? listUnitDocuments(listing.id) : Promise.resolve([]),
+    listing.developmentId ? listDocuments(listing.developmentId) : Promise.resolve([]),
   ]);
   const t = makeT(lang);
+  const docs = [...unitDocs, ...devDocs];
   const building = devBuildings.find((b) => b.id === listing.buildingId) ?? null;
   const buildingFacts: Feature[] = dev ? ([
     ['layers', String(building?.floors ?? dev.floors ?? ''), 'floors'],
@@ -401,6 +406,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <PhotoStrip photos={building?.photo ? [building.photo, ...dev.photos.filter((p) => p !== building.photo)] : dev.photos}
                 title={building?.name ?? dev.name} />
               <FeatureGrid items={buildingFacts} />
+            </section>
+          )}
+
+          {dev && docs.length > 0 && (
+            <section id="documents">
+              <h3 style={{ marginTop: 30, marginBottom: 12 }}>{t('Documents')}</h3>
+              <DevelopmentDocs docs={docs} />
             </section>
           )}
 

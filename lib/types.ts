@@ -181,6 +181,7 @@ export interface Development {
 export interface DevelopmentDocument {
   id: string;
   developmentId: string;
+  listingId: string | null;  // null — документ усього ЖК, інакше — однієї квартири
   kind: DocKind;
   title: string;
   number: string;          // номер реєстрації / дозволу
