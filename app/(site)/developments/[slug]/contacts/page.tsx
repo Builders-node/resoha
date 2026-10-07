@@ -33,7 +33,10 @@ export default async function ContactsPage({ params }: Props) {
         {rows.map(([icon, label, value]) => (
           <li key={label}>
             <Icon name={icon} size={22} />
-            <div><span className="small muted">{label}</span><b style={{ whiteSpace: 'pre-line' }}>{value}</b></div>
+            <div><span className="small muted">{label}</span>
+              {label === 'Developer' && dev.developerId
+                ? <Link href={`/developers/${dev.developerId}`}><b>{value}</b></Link>
+                : <b style={{ whiteSpace: 'pre-line' }}>{value}</b>}</div>
           </li>
         ))}
         {dev.website && (

@@ -20,7 +20,9 @@ export default async function DevelopmentsPage() {
   return (
     <div className="wrap" style={{ padding: '30px 32px 60px' }}>
       <h1 style={{ fontSize: 30, marginBottom: 6 }}>New developments</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>Buildings on Roatán with every unit and price in one place.</p>
+      <p className="muted" style={{ marginBottom: 22 }}>
+        Buildings on Roatán with every unit and price in one place. <Link className="link-accent" href="/developers">Browse developers</Link>
+      </p>
       {!devs.length && <p className="muted">No developments listed yet.</p>}
       <div className="dev-grid">
         {devs.map((d, i) => {

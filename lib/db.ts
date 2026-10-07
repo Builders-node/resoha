@@ -5,7 +5,7 @@ import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanDetails } from './details';
 import { cleanNearby } from './nearby';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -421,7 +421,8 @@ export async function bumpViewsAfterResponse(id: string) {
 
 /* ---------- developments (ЖК) ---------- */
 const mapDevelopment = (r: Row): Development => ({
-  id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', completion: r.completion ?? '',
+  id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', developerId: r.developer_id ?? null,
+  completion: r.completion ?? '',
   sales: cleanSales(r.sales), website: r.website ?? '', island: r.island, neighborhood: r.neighborhood,
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
   floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
@@ -439,9 +440,10 @@ export async function getDevelopment(slugOrId: string): Promise<Development | nu
 }
 
 /** agentId — свої ЖК у кабінеті (разом із прихованими); без нього — публічний список */
-export async function listDevelopments(opts: { agentId?: string; agencyId?: string } = {}): Promise<Development[]> {
+export async function listDevelopments(opts: { agentId?: string; agencyId?: string; developerId?: string } = {}): Promise<Development[]> {
   let sel = (await db()).from('developments').select('*').order('created_at', { ascending: false });
-  if (opts.agencyId) sel = sel.eq('agency_id', opts.agencyId);
+  if (opts.developerId) sel = sel.eq('developer_id', opts.developerId).eq('active', true);
+  else if (opts.agencyId) sel = sel.eq('agency_id', opts.agencyId);
   else if (opts.agentId) sel = sel.eq('agent_id', opts.agentId);
   else sel = sel.eq('active', true);
   const { data, error } = await sel.limit(200);
@@ -466,6 +468,11 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  // профіль забудовника; без нього назва лишається вільним текстом
+  if (input.developerId !== undefined) {
+    const id = String(input.developerId ?? '');
+    row.developer_id = /^[0-9a-f-]{36}$/i.test(id) ? id : null;
+  }
   if (typeof input.office === 'string') row.office = input.office.trim().slice(0, 160);
   if (typeof input.hours === 'string') row.hours = input.hours.trim().slice(0, 200);
   for (const k of ['video', 'tour'] as const) if (input[k] !== undefined) row[k] = safeUrl(String(input[k] ?? '').trim()).slice(0, 500);
@@ -507,6 +514,76 @@ export async function updateDevelopment(id: string, input: Record<string, unknow
 
 export async function deleteDevelopment(id: string) {
   const { error, count } = await (await db()).from('developments').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/* ---------- developers (забудовники) ---------- */
+const mapDeveloper = (r: Row): Developer => ({
+  id: r.id, slug: r.slug, name: r.name, logo: r.logo ?? '', about: r.about ?? '', website: r.website ?? '',
+  phone: r.phone ?? '', email: r.email ?? '', founded: r.founded ?? null, ownerId: r.owner_id ?? null,
+  verified: !!r.verified, createdAt: r.created_at,
+});
+
+/** До міграції 0042 таблиці немає — тоді список просто порожній */
+export async function listDevelopers(opts: { ownerId?: string } = {}): Promise<Developer[]> {
+  let sel = (await db()).from('developers').select('*').order('name');
+  if (opts.ownerId) sel = sel.eq('owner_id', opts.ownerId);
+  const { data, error } = await sel.limit(500);
+  if (error) return [];
+  return (data ?? []).map(mapDeveloper);
+}
+
+export async function getDeveloper(slugOrId: string): Promise<Developer | null> {
+  const isId = /^[0-9a-f-]{36}$/i.test(slugOrId);
+  const { data } = await (await db()).from('developers').select('*').eq(isId ? 'id' : 'slug', slugOrId).maybeSingle();
+  return data ? mapDeveloper(data) : null;
+}
+
+function developerRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  if (typeof input.name === 'string') row.name = input.name.trim().slice(0, 120);
+  if (typeof input.about === 'string') row.about = input.about.trim().slice(0, 4000);
+  if (typeof input.phone === 'string') row.phone = input.phone.trim().slice(0, 40);
+  if (typeof input.email === 'string') row.email = input.email.trim().slice(0, 120);
+  if (input.logo !== undefined) row.logo = String(input.logo ?? '').trim().slice(0, 500);
+  if (input.website !== undefined) {
+    const w = String(input.website).trim();
+    row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
+  }
+  if (input.founded !== undefined) {
+    const y = intOrNull(input.founded);
+    row.founded = y && y >= 1900 && y <= 2100 ? y : null;
+  }
+  return row;
+}
+
+export async function createDeveloper(input: Record<string, unknown> & { ownerId: string }) {
+  const row = developerRow(input);
+  const base = slugify(String(row.name || '')) || 'developer';
+  const client = await db();
+  const { data: taken } = await client.from('developers').select('slug').like('slug', `${base}%`);
+  const used = new Set((taken ?? []).map((r: Row) => r.slug));
+  let slug = base;
+  for (let i = 2; used.has(slug); i++) slug = `${base}-${i}`;
+  const { data, error } = await client.from('developers')
+    .insert({ ...row, slug, owner_id: input.ownerId }).select('*').single();
+  if (error) throw error;
+  return mapDeveloper(data);
+}
+
+/** Права задає RLS: власник профілю або адмін */
+export async function updateDeveloper(id: string, input: Record<string, unknown>) {
+  const row = developerRow(input);
+  if (row.name === '') delete row.name;
+  if (!Object.keys(row).length) return getDeveloper(id);
+  const { data, error } = await (await db()).from('developers').update(row).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapDeveloper(data) : null;
+}
+
+export async function deleteDeveloper(id: string) {
+  const { error, count } = await (await db()).from('developers').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
   return (count ?? 0) > 0;
 }

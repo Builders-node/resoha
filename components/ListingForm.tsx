@@ -27,7 +27,7 @@ export default function ListingForm({
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
   const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
   // ЖК автора — щоб квартиру можна було привʼязати до будинку
-  const [developments, setDevelopments] = useState<{ id: string; name: string }[]>([]);
+  const [developments, setDevelopments] = useState<{ id: string; name: string; developer: string }[]>([]);
   const [developmentId, setDevelopmentId] = useState(listing?.developmentId ?? '');
   // доми обраного ЖК
   const [buildings, setBuildings] = useState<{ id: string; name: string }[]>([]);
@@ -58,7 +58,7 @@ export default function ListingForm({
   useEffect(() => {
     fetch('/api/developments?mine=1')
       .then((r) => r.json())
-      .then((d: { items?: { id: string; name: string }[] }) => setDevelopments(d.items ?? []))
+      .then((d: { items?: { id: string; name: string; developer: string }[] }) => setDevelopments(d.items ?? []))
       .catch(() => {});
   }, []);
 
@@ -264,8 +264,18 @@ export default function ListingForm({
               <select className="input" value={developmentId}
                 onChange={(e) => { setDevelopmentId(e.target.value); setBuildings([]); setBuildingId(''); }}>
                 <option value="">— Standalone property —</option>
-                {developments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-              </select></div>
+                {/* ЖК згруповані за забудовником — так легше знайти потрібний */}
+                {[...new Set(developments.map((d) => d.developer))].sort((a, b) => (a ? (b ? a.localeCompare(b) : -1) : 1)).map((by) => (
+                  <optgroup key={by || '—'} label={by || 'Developer not specified'}>
+                    {developments.filter((d) => d.developer === by).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+              {developmentId && (
+                <span className="tiny muted">
+                  Developer: {developments.find((d) => d.id === developmentId)?.developer || 'not specified'}
+                </span>
+              )}</div>
             {developmentId && (
               <>
                 {buildings.length > 0 && (

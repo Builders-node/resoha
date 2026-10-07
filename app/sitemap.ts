@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { agencyBoard, listAgents, listDevelopments, queryListings } from '@/lib/db';
+import { agencyBoard, listAgents, listDevelopers, listDevelopments, queryListings } from '@/lib/db';
 import { SITE_URL } from '@/lib/site';
 import { AREAS } from '@/lib/content/areas';
 import { GUIDES } from '@/lib/content/guides';
@@ -7,7 +7,7 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 
 /** Карта сайту: контентні сторінки плюс із бази кожне активне оголошення, ріелтор і агенція. */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [listings, agents, agencies, developments] = await Promise.all([queryListings(), listAgents(), agencyBoard(), listDevelopments()]);
+  const [listings, agents, agencies, developments, developers] = await Promise.all([queryListings(), listAgents(), agencyBoard(), listDevelopments(), listDevelopers()]);
 
   return [
     { url: `${SITE_URL}/`, changeFrequency: 'daily', priority: 1 },
@@ -30,6 +30,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...developments.map((d) => ({ url: `${SITE_URL}/developments/${d.slug}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.9 })),
     // вкладки, які є в кожного ЖК; решта (стройка, документи, новини) — лише коли заповнені
     ...developments.flatMap((d) => ['layouts', 'contacts'].map((t) => ({ url: `${SITE_URL}/developments/${d.slug}/${t}`, lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 }))),
+    { url: `${SITE_URL}/developers`, changeFrequency: 'weekly', priority: 0.6 },
+    ...developers.map((d) => ({ url: `${SITE_URL}/developers/${d.slug}`, changeFrequency: 'weekly' as const, priority: 0.6 })),
     ...listings.map((l) => ({
       url: `${SITE_URL}/listings/${l.id}`,
       lastModified: new Date(l.updatedAt),

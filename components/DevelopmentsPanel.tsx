@@ -7,7 +7,7 @@ import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, fmtDay, fmtMonth, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
-import type { Building, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry } from '@/lib/types';
+import type { Building, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry } from '@/lib/types';
 
 /**
  * Вкладка «Developments» у кабінеті: ЖК ріелтора, форма ЖК і заливка прайсу.
@@ -80,6 +80,21 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
   const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
   const [buildings, setBuildings] = useState<Building[]>([]);
   const [buildingId, setBuildingId] = useState('');
+  // забудовник — зі списку профілів; «new» — завести новий профіль просто з форми
+  const [developers, setDevelopers] = useState<Developer[]>([]);
+  const [developerId, setDeveloperId] = useState(dev?.developerId ?? '');
+  const [newDeveloper, setNewDeveloper] = useState(!dev?.developerId && dev?.developer ? dev.developer : '');
+  useEffect(() => {
+    fetch('/api/developers').then((r) => r.json()).then((d) => {
+      const list: Developer[] = d.items ?? [];
+      setDevelopers(list);
+      // старий ЖК із назвою текстом — підхоплюємо профіль з такою ж назвою
+      if (!dev?.developerId && dev?.developer) {
+        const same = list.find((x) => x.name.toLowerCase() === dev.developer.toLowerCase());
+        if (same) { setDeveloperId(same.id); setNewDeveloper(''); } else setDeveloperId('new');
+      }
+    }).catch(() => {});
+  }, [dev]);
 
   const loadBuildings = useCallback(async () => {
     if (!dev) return;
@@ -97,12 +112,29 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setSaving(true);
+    let devId = developerId === 'new' ? '' : developerId;
+    let devName = developers.find((x) => x.id === devId)?.name ?? '';
+    if (developerId === 'new' && newDeveloper.trim()) {
+      const r = await fetch('/api/developers', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newDeveloper.trim() }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { setSaving(false); return toast(d.error ?? 'Could not add the developer'); }
+      devId = d.developer.id;
+      devName = d.developer.name;
+      setDevelopers((list) => [...list, d.developer]);
+      setDeveloperId(devId);
+      setNewDeveloper('');
+    }
     const res = await fetch(dev ? `/api/developments/${dev.id}` : '/api/developments', {
       method: dev ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         ...Object.fromEntries(fd.entries()),
         neighborhood: area, lat: pin[0], lng: pin[1], photos,
+        developerId: devId || null,
+        developer: devName,
         active: fd.get('active') === 'on',
       }),
     });
@@ -135,7 +167,21 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
         <div className="field full"><label>Name</label>
           <input className="input" name="name" required maxLength={120} defaultValue={dev?.name} placeholder="Ocean View Residences" /></div>
         <div className="field"><label>Developer</label>
-          <input className="input" name="developer" maxLength={120} defaultValue={dev?.developer} /></div>
+          <select className="input" value={developerId} onChange={(e) => setDeveloperId(e.target.value)}>
+            <option value="">— Not specified —</option>
+            {developers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            <option value="new">+ Add a new developer…</option>
+          </select>
+          {developerId === 'new' && (
+            <input className="input" style={{ marginTop: 8 }} maxLength={120} autoFocus value={newDeveloper}
+              onChange={(e) => setNewDeveloper(e.target.value)} placeholder="Company name" />
+          )}
+          {developerId && developerId !== 'new' && (
+            <span className="tiny muted">
+              <Link href={`/developers/${developers.find((d) => d.id === developerId)?.slug ?? ''}`} target="_blank">Open the company page</Link>
+            </span>
+          )}
+        </div>
         <div className="field"><label>Completion</label>
           <input className="input" name="completion" maxLength={40} defaultValue={dev?.completion} placeholder="Q4 2026" /></div>
         <div className="field"><label>Sales</label>

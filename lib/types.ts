@@ -138,7 +138,8 @@ export interface Development {
   id: string;
   slug: string;
   name: string;
-  developer: string;
+  developer: string;           // назва забудовника (дзеркало developers.name, якщо обрано профіль)
+  developerId: string | null;
   completion: string;
   sales: SalesStatus;
   website: string;
@@ -174,6 +175,22 @@ export interface Development {
   agentId: string;
   agencyId: string | null;
   active: boolean;
+  createdAt: string;
+}
+
+/** Забудовник: окремий профіль зі своєю сторінкою, веде його власник акаунта */
+export interface Developer {
+  id: string;
+  slug: string;
+  name: string;
+  logo: string;
+  about: string;
+  website: string;
+  phone: string;
+  email: string;
+  founded: number | null;
+  ownerId: string | null;
+  verified: boolean;
   createdAt: string;
 }
 

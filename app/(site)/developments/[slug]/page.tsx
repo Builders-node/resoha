@@ -60,7 +60,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
           {units.length > 0 && <Link className="dev__more" href={`${base}/layouts`}>Layouts →</Link>}
         </div>
         <DevelopmentUnits units={units}
-          buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} completion={dev.completion} sales={dev.sales}
+          buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} developerHref={dev.developerId ? `/developers/${dev.developerId}` : undefined} completion={dev.completion} sales={dev.sales}
           contactHref="#contact" />
         <ul className="dev__facts">
           {dev.website && (

@@ -3,18 +3,19 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
+import DashboardListings from './DashboardListings';
+import DeveloperPanel from './DeveloperPanel';
 import DevelopmentsPanel from './DevelopmentsPanel';
 import Icon from './Icon';
-import Photo from './Photo';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import { toast } from './Toaster';
-import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
+import { fmtDate, fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-type Tab = 'listings' | 'leads' | 'new' | 'developments' | 'team' | 'profile';
+export type Tab = 'listings' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
@@ -106,6 +107,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         <a className={tab === 'developments' ? 'is-active' : ''} onClick={() => setTab('developments')}>
           <Icon name="building" size={18} /> Developments
         </a>
+        <a className={tab === 'developer' ? 'is-active' : ''} onClick={() => setTab('developer')}>
+          <Icon name="briefcase" size={18} /> Developer
+        </a>
         <a className={tab === 'team' ? 'is-active' : ''} onClick={() => setTab('team')}>
           <Icon name="building" size={18} /> {agency ? 'Team' : 'Agency'}
         </a>
@@ -166,46 +170,13 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
             </div>
 
             {listings.length > 0 && (
-            <div style={{ overflowX: 'auto' }}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Property</th>
-                    {scope === 'agency' && <th>Agent</th>}
-                    <th>Price</th><th>Views</th><th>Status</th><th></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {listings.map((l) => (
-                    <tr key={l.id}>
-                      <td data-label="Property">
-                        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                          <Photo className="thumb" src={l.photos[0]} label="" />
-                          <div>
-                            <Link href={`/listings/${l.id}`} style={{ fontWeight: 600 }}>{l.title}</Link>
-                            <div className="tiny muted">{DEAL_LABELS[l.deal]} · {l.neighborhood} · {fmtDate(l.createdAt)}</div>
-                          </div>
-                        </div>
-                      </td>
-                      {scope === 'agency' && (
-                        <td className="small" data-label="Agent">{members.find((m) => m.id === l.agentId)?.name ?? '—'}</td>
-                      )}
-                      <td data-label="Price" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
-                      <td data-label="Views">{fmtNumber(l.views)}</td>
-                      <td data-label="Status"><span className={`pill ${l.active ? 'pill--on' : 'pill--off'}`}>{l.active ? 'Live' : 'Hidden'}</span></td>
-                      <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
-                        <button className="btn btn--sm btn--ghost"
-                          onClick={() => { setEditing(l); setTab('new'); }}>Edit</button>{' '}
-                        <button className="btn btn--sm btn--ghost" onClick={() => toggleActive(l)}>
-                          {l.active ? 'Unpublish' : 'Publish'}
-                        </button>{' '}
-                        <button className="btn btn--sm btn--danger" onClick={() => remove(l)}>Delete</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+              <DashboardListings
+                listings={listings}
+                agentName={scope === 'agency' ? (id) => members.find((m) => m.id === id)?.name ?? '—' : undefined}
+                onEdit={(l) => { setEditing(l); setTab('new'); }}
+                onToggle={toggleActive}
+                onDelete={remove}
+              />
             )}
             {listings.length === 0 && (
               <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>
@@ -266,6 +237,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
             onCancel={editing ? () => { setEditing(null); setTab('listings'); } : undefined}
           />
         )}
+
+        {tab === 'developer' && <DeveloperPanel />}
 
         {tab === 'team' && <AgencyPanel meId={session.id} onChanged={load} />}
 
