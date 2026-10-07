@@ -66,7 +66,6 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   return (
     <div className="wrap page">
       <JsonLd data={graph(place, list, faqLd(a.faq), breadcrumbLd(crumbs))} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <h1>{t('{area}, Roatán: property and area guide', { area: name })}</h1>
       <section className="answer" aria-label={t('Summary')}>
@@ -154,6 +153,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{t(o.name)}</Link>)}
         </div>
       </section>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

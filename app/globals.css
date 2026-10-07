@@ -881,7 +881,7 @@ textarea.input{resize:vertical;min-height:96px}
 .promo__ghost,.hero__ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
 .promo__ghost:hover,.hero__ghost:hover{background:rgba(255,255,255,.1)}
 
-.page{padding-bottom:56px}
+.page{padding-top:18px;padding-bottom:56px}
 .page > h1{font-size:clamp(28px,3.4vw,40px);margin:6px 0 14px;max-width:900px}
 .page__lead{font-size:17px;color:var(--ink-2);max-width:760px;margin:0 0 26px;line-height:1.5}
 .page__cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:36px;align-items:start;margin-top:8px}
@@ -1334,7 +1334,9 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dnav__tab.is-on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
 .dnav ~ .prop .cc-wrap{top:66px;scroll-margin-top:66px}
 .dnav ~ .prop{padding-top:6px}
-.crumbs--foot{padding:0 0 28px;border-top:1px solid var(--line);padding-top:16px}
+.crumbs--foot{padding:16px 0 28px;margin-top:24px;border-top:1px solid var(--line)}
+/* крихти тепер унизу: верхній відступ, який вони давали, переходить на перший блок */
+.page-top{margin-top:18px}
 .dev__head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .dev__more{font-weight:600;font-size:15px;white-space:nowrap}
 .dev__more:hover{color:var(--orange)}

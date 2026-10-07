@@ -3,11 +3,11 @@ import Link from 'next/link';
 import { Fragment } from 'react';
 import { useT } from './LangProvider';
 
-/** Видимі хлібні крихти. Ту саму послідовність сторінка віддає як BreadcrumbList у JSON-LD. */
+/** Видимі хлібні крихти — внизу сторінки, як на LUN. Ту саму послідовність сторінка віддає як BreadcrumbList у JSON-LD. */
 export default function Crumbs({ items }: { items: { name: string; path: string }[] }) {
   const t = useT();
   return (
-    <nav className="crumbs small muted" aria-label={t('Breadcrumb')}>
+    <nav className="crumbs crumbs--foot small muted" aria-label={t('Breadcrumb')}>
       {items.map((it, i) => (
         <Fragment key={it.path}>
           {i > 0 && ' · '}

@@ -139,14 +139,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         { name: listing.neighborhood, path: areaPath },
         { name: listing.title, path: `/listings/${listing.id}` },
       ]))} />
-      <div className="crumbs small muted">
-        <Link href="/">{t('Home')}</Link> ·{' '}
-        <Link href={`/listings?deal=${listing.deal}`}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
-        <Link href={areaPath}>{listing.neighborhood}</Link>
-        {listing.development && <> · <Link href={`/developments/${listing.development.slug}`}>{listing.development.name}</Link></>}
-      </div>
-
-      <div className="gallery-wrap">
+      <div className="gallery-wrap page-top">
         <BackButton fallback={`/listings?deal=${listing.deal}`} />
         <Gallery photos={listing.photos} title={listing.title} />
       </div>
@@ -459,6 +452,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
         </section>
       )}
+
+      <div className="crumbs crumbs--foot small muted">
+        <Link href="/">{t('Home')}</Link> ·{' '}
+        <Link href={`/listings?deal=${listing.deal}`}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
+        <Link href={areaPath}>{listing.neighborhood}</Link>
+        {listing.development && <> · <Link href={`/developments/${listing.development.slug}`}>{listing.development.name}</Link></>}
+      </div>
     </div>
   );
 }

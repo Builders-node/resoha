@@ -31,7 +31,6 @@ export default async function AboutPage() {
         name: `About ${SITE_NAME}`,
         mainEntity: { '@id': `${SITE_URL}/#organization` },
       })} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <section className="hero hero--dark">
         <span className="hero__eyebrow">{t('About Resoha')}</span>
@@ -93,6 +92,7 @@ export default async function AboutPage() {
           <Link className="link-accent" href="/privacy">{t('Privacy policy')}</Link> · <Link className="link-accent" href="/terms">{t('Terms of use')}</Link>
         </p>
       </section>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

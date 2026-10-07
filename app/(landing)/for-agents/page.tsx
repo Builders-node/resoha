@@ -34,7 +34,6 @@ export default async function ForAgentsPage() {
   return (
     <div className="wrap page">
       <JsonLd data={graph(breadcrumbLd(crumbs), faqLd(FAQ))} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <section className="hero hero--dark">
         <span className="hero__eyebrow">{t('For agencies and agents on Roatán')}</span>
@@ -85,6 +84,7 @@ export default async function ForAgentsPage() {
         <h2>{t('Questions from agents')}</h2>
         <Faq items={FAQ} open={FAQ.length} />
       </section>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

@@ -48,7 +48,6 @@ export default async function LandPassportPage() {
         name: 'Resoha land passport',
         description: 'A standard checklist of title, access, utilities, permits, zone and slope for every land listing on Roatán.',
       })} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <section className="hero hero--dark">
         <span className="hero__eyebrow">{t('Free for every lot on Resoha')}</span>
@@ -127,6 +126,7 @@ export default async function LandPassportPage() {
           {t('Learn more in')} <Link className="link-accent" href="/guides/how-to-check-land-title-in-roatan">{t('how to check a land title on Roatán')}</Link>.
         </p>
       </section>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

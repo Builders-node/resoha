@@ -29,7 +29,6 @@ export default async function AreasPage() {
         name: 'Areas of Roatán',
         itemListElement: AREAS.map((a, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE_URL}/areas/${a.slug}`, name: a.name })),
       })} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
       <h1>{t('Areas of Roatán: where to buy')}</h1>
       <p className="page__lead">
         {t('Roatán is about 77 km (48 miles) long and less than 8 km wide, and prices fall from the beaches of the west to the quiet, land-rich east. Pick an area to see typical prices, what it is like to live there and what is listed now.')}
@@ -53,6 +52,7 @@ export default async function AreasPage() {
       <p className="small muted" style={{ marginTop: 22 }}>
         {t('Not sure yet? Read')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('the best areas to live in Roatán, compared')}</Link>.
       </p>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }
