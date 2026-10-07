@@ -35,15 +35,15 @@ grant select on public.development_documents to anon, authenticated;
 grant insert, update, delete on public.development_documents to authenticated;
 
 -- Позначку «перевірено» не може поставити сам ріелтор: для не-адміна вона лишається як була
+-- is_admin() сама security definer, тож тригеру підвищені права не потрібні
 create or replace function public.development_documents_guard() returns trigger
-language plpgsql security definer set search_path = public as $$
+language plpgsql set search_path = public as $fn$
 begin
   if not public.is_admin() then
     new.verified := case when tg_op = 'UPDATE' then old.verified else false end;
   end if;
   return new;
-end $$;
-revoke all on function public.development_documents_guard() from public, anon, authenticated;
+end $fn$;
 
 drop trigger if exists development_documents_guard on public.development_documents;
 create trigger development_documents_guard before insert or update on public.development_documents
