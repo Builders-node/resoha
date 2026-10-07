@@ -30,7 +30,7 @@ export default function DevelopmentChess({ units }: { units: Listing[] }) {
             <div className="chess__units">
               {placed.filter((u) => u.floor === f).sort(byNo).map((u) => (
                 <Link key={u.id} href={`/listings/${u.id}`} className={`chess__cell chess__cell--${u.status}`}
-                  title={`Unit ${u.unitNo} · ${u.beds ? `${u.beds} BR` : 'Studio'}${u.sqft ? ` · ${toM2(u.sqft)} m²` : ''} · ${statusLabel(u.status)}`}>
+                  title={`Unit ${u.unitNo} · ${u.beds ? `${u.beds} BR` : 'Studio'}${u.sqft ? ` · ${toM2(u.sqft)} m² / ${u.sqft} ft²` : ''} · ${statusLabel(u.status)}`}>
                   <b>{u.unitNo || '—'}</b>
                   <span>{kind(u.beds)}</span>
                   <span>{u.status === 'available' || u.status === 'reserved'

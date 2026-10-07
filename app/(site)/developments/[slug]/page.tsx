@@ -14,6 +14,7 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
+import { fmtNumber } from '@/lib/format';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -34,7 +35,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
   const types = units.length
     ? [...new Set([Math.min(...beds), Math.max(...beds)])].map((b) => (b ? `${b} BR` : 'Studio')).join(' – ')
     : '—';
-  const sizes = units.filter((u) => u.sqft > 0).map((u) => toM2(u.sqft));
+  const sizes = units.filter((u) => u.sqft > 0).map((u) => u.sqft);
   const floors = units.flatMap((u) => (u.floor !== null ? [u.floor] : []));
   const chessGroups = [
     ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
@@ -55,7 +56,8 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <div className="spec"><span className="muted small">Units</span><b>{units.length || '—'}</b></div>
         <div className="spec"><span className="muted small">Types</span><b>{types}</b></div>
         <div className="spec"><span className="muted small">Sizes</span>
-          <b>{sizes.length ? `${Math.round(Math.min(...sizes))} – ${Math.round(Math.max(...sizes))} m²` : '—'}</b></div>
+          <b>{sizes.length ? `${Math.round(toM2(Math.min(...sizes)))} – ${Math.round(toM2(Math.max(...sizes)))} m²` : '—'}</b>
+          {sizes.length > 0 && <span className="muted small">{fmtNumber(Math.min(...sizes))} – {fmtNumber(Math.max(...sizes))} ft²</span>}</div>
         <div className="spec"><span className="muted small">{dev.completion ? 'Completion' : 'Floors'}</span>
           <b>{dev.completion || (floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '—')}</b></div>
       </div>

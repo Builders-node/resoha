@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Icon from './Icon';
 import FavButton from './FavButton';
 import { toast } from './Toaster';
-import { fmtPrice, fmtUsd } from '@/lib/format';
+import { fmtPerArea, fmtPrice } from '@/lib/format';
 import { CONTACT_EMAIL } from '@/lib/site';
 import type { Agency, Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
@@ -68,7 +68,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const price = forBuilding ? fromPrice ?? 0 : listing.price;
   const dropped = !hasUnits && listing.oldPrice > listing.price;
   const perSqft = !hasUnits && listing.deal === 'sale' && listing.sqft > 0
-    ? `${fmtUsd(Math.round(listing.price / listing.sqft))}${t('/ft²')}` : '';
+    ? fmtPerArea(listing.price, listing.sqft) : '';
   const place = [listing.address, listing.neighborhood].filter(Boolean).join(', ');
 
   const msg = t('Hi {name}, I\'m interested in "{what}" ', { name: agent.name.split(' ')[0], what: topic ?? listing.title })

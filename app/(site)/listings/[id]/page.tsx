@@ -16,7 +16,7 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
-import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtArea, fmtDate, fmtNumber, fmtPerArea, fmtPrice, fmtUsd, specLine, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
@@ -24,7 +24,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
-import { OPEN_STATUSES, stageLabel, statusLabel, toM2 } from '@/lib/units';
+import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
 import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
 import { getLang } from '@/lib/i18n/server';
 import { makeT, type T } from '@/lib/i18n';
@@ -116,7 +116,7 @@ export default async function PropertyPage({ params, searchParams }: {
     [t('Deal'), t(DEAL_LABELS[listing.deal])],
     [t('Bedrooms'), listing.beds > 0 ? String(listing.beds) : t('Studio')],
     [t('Bathrooms'), listing.baths ? String(listing.baths) : ''],
-    [t('Interior'), listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft² · ${toM2(listing.sqft)} m²` : ''],
+    [t('Interior'), listing.sqft > 0 ? fmtArea(listing.sqft) : ''],
     [t('Lot'), listing.lotAcres > 0 ? t('{n} ac', { n: listing.lotAcres }) : ''],
     [t('Unit'), listing.unitNo],
     [t('Floor'), floorText],
@@ -171,7 +171,7 @@ export default async function PropertyPage({ params, searchParams }: {
             {listing.status !== 'available' && <span className={`unit-status unit-status--${listing.status}`}>{t(statusLabel(listing.status))}</span>}
             {listing.deal === 'sale' && listing.sqft > 0 && (
               <span className="muted small" style={{ fontWeight: 500 }}>
-                {' '}· {fmtUsd(Math.round(listing.price / listing.sqft))}{t('/ft²')}
+                {' '}· {fmtPerArea(listing.price, listing.sqft)}
               </span>
             )}
             {listing.hoa > 0 && (
@@ -197,7 +197,7 @@ export default async function PropertyPage({ params, searchParams }: {
                 <div className="spec"><span className="muted small">{t('Bathrooms')}</span><b>{listing.baths || '—'}</b></div>
                 <div className="spec"><span className="muted small">{t('Interior')}</span>
                   <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b>
-                  {inDevelopment && listing.sqft > 0 && <span className="muted small">{toM2(listing.sqft)} m²</span>}</div>
+                  {listing.sqft > 0 && <span className="muted small">{fmtNumber(sqftToM2(listing.sqft))} m²</span>}</div>
                 {inDevelopment ? (
                   <div className="spec"><span className="muted small">{t('Unit · floor')}</span>
                     <b>{listing.unitNo || '—'}{listing.floor !== null && ` · ${listing.floor}`}</b></div>
