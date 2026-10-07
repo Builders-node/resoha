@@ -78,3 +78,31 @@ export async function trackAfterResponse(target: Target, kind: EventKind, opts: 
     console.error('track_event failed:', error.message);
   });
 }
+
+type SearchFacts = {
+  deal?: string; type?: string; neighborhoods?: string[]; priceMin?: number; priceMax?: number;
+  beds?: number[]; q?: string;
+};
+
+/** Пошук покупця (перша сторінка видачі) — для адмінської аналітики попиту (міграція 0045). */
+export async function trackSearchAfterResponse(f: SearchFacts, results: number, h: Headers) {
+  const ua = h.get('user-agent') ?? '';
+  if (!ua || BOT.test(ua)) return;
+  if (h.get('next-router-prefetch') || h.get('purpose') === 'prefetch') return;
+  const areas = (f.neighborhoods ?? []).slice(0, 10).sort();
+  const beds = (f.beds ?? []).slice(0, 10).sort();
+  const facts = {
+    p_deal: f.deal ?? '', p_type: f.type ?? '', p_areas: areas,
+    p_price_min: f.priceMin ?? null, p_price_max: f.priceMax ?? null, p_beds: beds,
+    p_q: (f.q ?? '').trim().toLowerCase().slice(0, 120),
+  };
+  const sig = createHash('sha256').update(JSON.stringify(facts)).digest('hex').slice(0, 32);
+  const client = await supabaseServer();
+  after(async () => {
+    const { error } = await client.rpc('track_search', {
+      ...facts, p_results: results, p_device: deviceOf(ua), p_visitor: visitorOf(h), p_sig: sig,
+    });
+    // до міграції 0045 функції немає — пошук від цього не страждає
+    if (error && !/track_search/.test(error.message)) console.error('track_search failed:', error.message);
+  });
+}
