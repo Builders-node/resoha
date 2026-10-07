@@ -1,16 +1,21 @@
 'use client';
 import Link from 'next/link';
 import { Fragment, useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import type { Agency, Agent } from '@/lib/types';
 import Avatar from './Avatar';
 
 type Member = Agent & { listings?: number };
+type Team = { agency: Agency; isOwner: boolean; active: boolean };
 
 const SWATCHES = ['#16305c', '#ff5a00', '#a4145a', '#1b2450', '#0f766e', '#2b2b30', '#7c3aed', '#b45309'];
 
 export default function AgencyPanel({ meId, onChanged }: { meId: string; onChanged: () => void }) {
+  const router = useRouter();
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [adding, setAdding] = useState<'create' | 'join' | null>(null);
   const [agency, setAgency] = useState<Agency | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -19,7 +24,11 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
-    const d = await fetch('/api/agency/members').then((r) => r.json());
+    const [d, t] = await Promise.all([
+      fetch('/api/agency/members').then((r) => r.json()),
+      fetch('/api/agency/teams').then((r) => r.json()),
+    ]);
+    setTeams(t.teams ?? []);
     setAgency(d.agency ?? null);
     setMembers(d.members ?? []);
     setInviteCode(d.inviteCode ?? null);
@@ -28,6 +37,20 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // після зміни команди оновлюємо й серверні частини (бокове меню, сесію)
+  const changed = () => { setAdding(null); load(); onChanged(); router.refresh(); };
+
+  async function switchTeam(t: Team) {
+    const res = await fetch('/api/agency/teams', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agencyId: t.agency.id }),
+    });
+    const d = await res.json();
+    if (!res.ok) return toast(d.error ?? 'Could not switch');
+    toast(`Now working in ${t.agency.name}`);
+    changed();
+  }
 
   const me = members.find((m) => m.id === meId);
   const isOwner = Boolean(me?.isOwner && agency);
@@ -59,8 +82,10 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     });
     const d = await res.json();
     if (!res.ok) return toast(d.error ?? 'Could not open the agency');
-    toast(`${d.agency.name} is live — your listings now publish under it`);
-    load(); onChanged();
+    toast(teams.length
+      ? `${d.agency.name} is live — new listings you add now go under it`
+      : `${d.agency.name} is live — your listings now publish under it`);
+    changed();
   }
 
   async function join(e: React.FormEvent<HTMLFormElement>) {
@@ -73,7 +98,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     const d = await res.json();
     if (!res.ok) return toast(d.error ?? 'Could not join');
     toast(`You joined ${d.agency.name}`);
-    load(); onChanged();
+    changed();
   }
 
   async function saveMember(id: string, e: React.FormEvent<HTMLFormElement>) {
@@ -118,15 +143,41 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   }
 
   async function leave() {
-    if (!confirm(`Leave ${agency?.name}? You keep your account and go back to listing independently.`)) return;
+    const next = teams.find((t) => !t.active);
+    if (!confirm(next
+      ? `Leave ${agency?.name}? Your listings there go back to your own name and the dashboard switches to ${next.agency.name}.`
+      : `Leave ${agency?.name}? You keep your account and go back to listing independently.`)) return;
     const res = await fetch('/api/agency/leave', { method: 'POST' });
     const d = await res.json();
     if (!res.ok) return toast(d.error);
-    toast(d.closed ? 'Agency closed — you are independent again' : 'You left the agency');
-    load(); onChanged();
+    const rest = teams.length > 1;
+    toast(d.closed
+      ? (rest ? 'Agency closed' : 'Agency closed — you are independent again')
+      : 'You left the agency');
+    changed();
   }
 
   if (loading) return <div className="panel">Loading agency…</div>;
+
+  const createForm = (
+    <form className="form-grid" onSubmit={openAgency}>
+      <div className="field full"><label>Agency name</label>
+        <input className="input" name="name" required placeholder="Palm Ridge Realty" /></div>
+      <div className="field"><label>Phone</label><input className="input" name="phone" placeholder="+504 …" /></div>
+      <div className="field"><label>Email</label><input className="input" name="email" type="email" placeholder="office@…" /></div>
+      <div className="field full"><label>About</label>
+        <textarea className="input" name="about" placeholder="Which areas you cover and what you are known for" /></div>
+      <div className="field full"><label>Brand colour</label><BrandPicker value={brand} onChange={setBrand} /></div>
+      <div className="full"><button className="btn btn--primary btn--lg">Create agency</button></div>
+    </form>
+  );
+
+  const joinForm = (
+    <form onSubmit={join} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+      <input className="input" name="inviteCode" placeholder="ABCD-2345" style={{ maxWidth: 220 }} required />
+      <button className="btn btn--primary">Join agency</button>
+    </form>
+  );
 
   /* ---------- незалежний ріелтор ---------- */
   if (!agency) {
@@ -136,18 +187,10 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
           <h3>Open your own agency</h3>
           <p className="muted small" style={{ margin: '8px 0 16px' }}>
             You become the owner: your listings move under the agency brand, you get an invite code for other
-            realtors, and you can edit everyone in the team. You can close it and go independent again at any time.
+            realtors, and you can edit everyone in the team. You can run several agencies from this one account
+            and close any of them at any time.
           </p>
-          <form className="form-grid" onSubmit={openAgency}>
-            <div className="field full"><label>Agency name</label>
-              <input className="input" name="name" required placeholder="Palm Ridge Realty" /></div>
-            <div className="field"><label>Phone</label><input className="input" name="phone" placeholder="+504 …" /></div>
-            <div className="field"><label>Email</label><input className="input" name="email" type="email" placeholder="office@…" /></div>
-            <div className="field full"><label>About</label>
-              <textarea className="input" name="about" placeholder="Which areas you cover and what you are known for" /></div>
-            <div className="field full"><label>Brand colour</label><BrandPicker value={brand} onChange={setBrand} /></div>
-            <div className="full"><button className="btn btn--primary btn--lg">Create agency</button></div>
-          </form>
+          {createForm}
         </div>
 
         <div className="panel" style={{ marginTop: 18 }}>
@@ -156,10 +199,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
             Ask the agency for their invite code. Your listings then publish under their brand and their owner can
             help manage them.
           </p>
-          <form onSubmit={join} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-            <input className="input" name="inviteCode" placeholder="ABCD-2345" style={{ maxWidth: 220 }} required />
-            <button className="btn btn--primary">Join agency</button>
-          </form>
+          {joinForm}
           <p className="tiny muted" style={{ marginTop: 14 }}>
             Staying independent is fine too — listings simply go out under your own name.
           </p>
@@ -171,6 +211,50 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   /* ---------- у складі агенції ---------- */
   return (
     <>
+      <div className="panel" style={{ marginBottom: 18 }}>
+        <div className="fgroup__head">
+          <h3>Your teams</h3>
+          <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className={`btn btn--sm ${adding === 'create' ? '' : 'btn--ghost'}`}
+              onClick={() => setAdding(adding === 'create' ? null : 'create')}>
+              <Icon name="plus" size={14} /> New team
+            </button>
+            <button className={`btn btn--sm ${adding === 'join' ? '' : 'btn--ghost'}`}
+              onClick={() => setAdding(adding === 'join' ? null : 'join')}>
+              Join with a code
+            </button>
+          </div>
+        </div>
+        <div className="team-list">
+          {teams.map((t) => (
+            <div key={t.agency.id} className={`team-row ${t.active ? 'is-active' : ''}`}>
+              <span className="team-row__dot" style={{ background: t.agency.brand }} />
+              <span className="team-row__name">{t.agency.name}</span>
+              <span className={`pill ${t.isOwner ? 'pill--on' : 'pill--off'}`}>{t.isOwner ? 'Owner' : 'Agent'}</span>
+              {t.active
+                ? <span className="tiny muted team-row__act">Working here</span>
+                : <button className="btn btn--sm btn--ghost team-row__act" onClick={() => switchTeam(t)}>Switch</button>}
+            </div>
+          ))}
+        </div>
+        <p className="tiny muted" style={{ marginTop: 10 }}>
+          The dashboard shows the team you are working in. New listings and developments go under it;
+          the ones you already published stay with their team.
+        </p>
+        {adding === 'create' && (
+          <div style={{ marginTop: 16 }}>
+            <h4 style={{ margin: '0 0 12px' }}>New team</h4>
+            {createForm}
+          </div>
+        )}
+        {adding === 'join' && (
+          <div style={{ marginTop: 16 }}>
+            <p className="muted small" style={{ margin: '0 0 10px' }}>Enter the invite code you got from the agency.</p>
+            {joinForm}
+          </div>
+        )}
+      </div>
+
       <div className="panel">
         <div className="fgroup__head">
           <h3>{isOwner ? 'Agency profile' : agency.name}</h3>
@@ -283,9 +367,9 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
         </table>
 
         <div style={{ marginTop: 18, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-          <button className="btn btn--danger btn--sm" onClick={leave}>Leave agency</button>
+          <button className="btn btn--danger btn--sm" onClick={leave}>Leave {agency.name}</button>
           <span className="tiny muted">
-            You keep your account and listings — they simply go back to your own name.
+            You keep your account and listings — the ones in {agency.name} simply go back to your own name.
             {isOwner && ' As the last owner, hand the role to someone first (or leave to close the agency).'}
           </span>
         </div>
