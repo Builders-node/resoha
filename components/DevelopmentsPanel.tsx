@@ -1,21 +1,23 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import Icon from './Icon';
 import LocationPicker from './LocationPicker';
+import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, fmtDay, fmtMonth, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
-import type { Building, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry } from '@/lib/types';
+import type { Building, Developer, Development, DevelopmentDocument, DevelopmentNews, Listing, ProgressEntry } from '@/lib/types';
 
 /**
- * Вкладка «Developments» у кабінеті: ЖК ріелтора, форма ЖК і заливка прайсу.
- * Кожен рядок прайсу стає окремим оголошенням-квартирою в цьому ЖК.
+ * Вкладка «Developments» у кабінеті: список ЖК ріелтора, а кожен ЖК — своя сторінка
+ * керування з розділами. Кожен розділ зберігається окремо, тож не треба гортати всі поля.
  */
 export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { onUnitsAdded: () => void; isAdmin?: boolean }) {
-  const [items, setItems] = useState<Development[]>([]);
-  const [editing, setEditing] = useState<Development | 'new' | null>(null);
+  const [items, setItems] = useState<Development[] | null>(null);
+  const [open, setOpen] = useState<{ dev: Development; section: Section } | 'new' | null>(null);
 
   const load = useCallback(async () => {
     const d = await fetch('/api/developments?mine=1').then((r) => r.json()).catch(() => ({}));
@@ -23,12 +25,18 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  if (editing) {
+  if (open === 'new') {
+    return <NewDevelopment onCancel={() => setOpen(null)}
+      onCreated={(d) => { load(); setOpen({ dev: d, section: 'units' }); }} />;
+  }
+  if (open) {
     return (
-      <DevelopmentForm
-        dev={editing === 'new' ? null : editing}
-        onCancel={() => setEditing(null)}
-        onSaved={(d) => { load(); setEditing(d); }}
+      <DevelopmentManager
+        key={open.dev.id}
+        initial={open.dev}
+        section={open.section}
+        onBack={() => { setOpen(null); load(); }}
+        onDeleted={() => { setOpen(null); load(); }}
         onUnitsAdded={onUnitsAdded}
         isAdmin={isAdmin}
       />
@@ -39,24 +47,30 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
     <div className="panel">
       <div className="fgroup__head">
         <h3>My developments</h3>
-        <button className="btn" onClick={() => setEditing('new')}>+ New development</button>
+        <button className="btn" onClick={() => setOpen('new')}>+ New development</button>
       </div>
       <p className="muted small" style={{ margin: '4px 0 14px' }}>
-        A development has its own page with every unit grouped by type. Each unit is a normal listing — for sale or for rent.
+        Each development has its own page. Open one to edit it section by section, add units or post news.
       </p>
-      {!items.length && <p className="muted">No developments yet.</p>}
-      <div className="dev-list">
-        {items.map((d) => (
-          <div key={d.id} className="dev-list__row">
-            <div>
-              <b>{d.name}</b>
-              <div className="small muted">
-                {d.neighborhood} · {salesLabel(d.sales)}{d.completion && ` · ${d.completion}`}{!d.active && ' · hidden'}
-              </div>
-            </div>
+      {items === null && <p className="muted">Loading…</p>}
+      {items?.length === 0 && <p className="muted">No developments yet.</p>}
+      <div className="dev-cards">
+        {items?.map((d) => (
+          <div key={d.id} className="dev-card">
+            <button type="button" className="dev-card__main" onClick={() => setOpen({ dev: d, section: 'overview' })}>
+              <Photo className="dev-card__img" src={d.photos[0]} label="" />
+              <span>
+                <b>{d.name}</b>
+                <span className="small muted">
+                  {[d.developer, d.neighborhood, salesLabel(d.sales), d.completion].filter(Boolean).join(' · ')}
+                </span>
+                {!d.active && <span className="pill pill--off" style={{ alignSelf: 'flex-start' }}>Hidden</span>}
+              </span>
+            </button>
             <div className="chip-row">
+              <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>Manage</button>
+              <button className="btn btn--ghost btn--sm" onClick={() => setOpen({ dev: d, section: 'news' })}>+ Post news</button>
               <Link className="btn btn--ghost btn--sm" href={`/developments/${d.slug}`} target="_blank">Open page</Link>
-              <button className="btn btn--ghost btn--sm" onClick={() => setEditing(d)}>Edit &amp; add units</button>
             </div>
           </div>
         ))}
@@ -65,22 +79,21 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
   );
 }
 
-function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
-  isAdmin: boolean;
-  dev: Development | null;
-  onCancel: () => void;
-  onSaved: (d: Development) => void;
-  onUnitsAdded: () => void;
-}) {
-  const [photos, setPhotos] = useState<string[]>(dev?.photos ?? []);
-  const [area, setArea] = useState(dev?.neighborhood ?? 'West Bay');
-  const [pin, setPin] = useState<[number, number]>(dev ? [dev.lat, dev.lng] : AREA_CENTRES['West Bay']);
-  const [saving, setSaving] = useState(false);
-  const [paste, setPaste] = useState('');
-  const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
-  const [buildings, setBuildings] = useState<Building[]>([]);
-  const [buildingId, setBuildingId] = useState('');
-  // забудовник — зі списку профілів; «new» — завести новий профіль просто з форми
+type Section = 'overview' | 'units' | 'details' | 'location' | 'media' | 'documents' | 'construction' | 'news';
+
+const SECTIONS: [Section, string, string][] = [
+  ['overview', 'Overview', 'home'],
+  ['units', 'Buildings & units', 'building'],
+  ['details', 'Features', 'list'],
+  ['location', 'Location & contacts', 'pin'],
+  ['media', 'Photos & video', 'camera'],
+  ['documents', 'Documents', 'deed'],
+  ['construction', 'Construction', 'crane'],
+  ['news', 'News', 'bell'],
+];
+
+/** Забудовник зі списку профілів; «new» — завести новий профіль просто з форми */
+function useDeveloperPicker(dev: Development | null) {
   const [developers, setDevelopers] = useState<Developer[]>([]);
   const [developerId, setDeveloperId] = useState(dev?.developerId ?? '');
   const [newDeveloper, setNewDeveloper] = useState(!dev?.developerId && dev?.developer ? dev.developer : '');
@@ -96,57 +109,370 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
     }).catch(() => {});
   }, [dev]);
 
-  const loadBuildings = useCallback(async () => {
-    if (!dev) return;
-    const d = await fetch(`/api/developments/${dev.id}/buildings`).then((r) => r.json()).catch(() => ({}));
-    setBuildings(d.items ?? []);
-  }, [dev]);
-  useEffect(() => { loadBuildings(); }, [loadBuildings]);
-
-  function pickArea(next: string) {
-    setArea(next);
-    if (AREA_CENTRES[next]) setPin(AREA_CENTRES[next]);
-  }
-
-  async function submit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    setSaving(true);
-    let devId = developerId === 'new' ? '' : developerId;
-    let devName = developers.find((x) => x.id === devId)?.name ?? '';
-    if (developerId === 'new' && newDeveloper.trim()) {
+  /** Поля для збереження; новий профіль створюється тут же. null — не вдалося. */
+  async function resolve(): Promise<{ developerId: string | null; developer: string } | null> {
+    if (developerId === 'new') {
+      if (!newDeveloper.trim()) return { developerId: null, developer: '' };
       const r = await fetch('/api/developers', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newDeveloper.trim() }),
       });
       const d = await r.json().catch(() => ({}));
-      if (!r.ok) { setSaving(false); return toast(d.error ?? 'Could not add the developer'); }
-      devId = d.developer.id;
-      devName = d.developer.name;
+      if (!r.ok) { toast(d.error ?? 'Could not add the developer'); return null; }
       setDevelopers((list) => [...list, d.developer]);
-      setDeveloperId(devId);
+      setDeveloperId(d.developer.id);
       setNewDeveloper('');
+      return { developerId: d.developer.id, developer: d.developer.name };
     }
-    const res = await fetch(dev ? `/api/developments/${dev.id}` : '/api/developments', {
-      method: dev ? 'PATCH' : 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        ...Object.fromEntries(fd.entries()),
-        neighborhood: area, lat: pin[0], lng: pin[1], photos,
-        developerId: devId || null,
-        developer: devName,
-        active: fd.get('active') === 'on',
-      }),
+    return { developerId: developerId || null, developer: developers.find((x) => x.id === developerId)?.name ?? '' };
+  }
+
+  const field = (
+    <div className="field"><label>Developer</label>
+      <select className="input" value={developerId} onChange={(e) => setDeveloperId(e.target.value)}>
+        <option value="">— Not specified —</option>
+        {developers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+        <option value="new">+ Add a new developer…</option>
+      </select>
+      {developerId === 'new' && (
+        <input className="input" style={{ marginTop: 8 }} maxLength={120} autoFocus value={newDeveloper}
+          onChange={(e) => setNewDeveloper(e.target.value)} placeholder="Company name" />
+      )}
+      {developerId && developerId !== 'new' && (
+        <span className="tiny muted">
+          <Link href={`/developers/${developers.find((d) => d.id === developerId)?.slug ?? ''}`} target="_blank">Open the company page</Link>
+        </span>
+      )}
+    </div>
+  );
+  return { field, resolve };
+}
+
+/** Новий ЖК: лише те, без чого сторінки не буде. Решта — у розділах після створення. */
+function NewDevelopment({ onCancel, onCreated }: { onCancel: () => void; onCreated: (d: Development) => void }) {
+  const picker = useDeveloperPicker(null);
+  const [area, setArea] = useState('West Bay');
+  const [saving, setSaving] = useState(false);
+
+  async function submit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    setSaving(true);
+    const developer = await picker.resolve();
+    if (!developer) return setSaving(false);
+    const [lat, lng] = AREA_CENTRES[area] ?? AREA_CENTRES['West Bay'];
+    const res = await fetch('/api/developments', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...Object.fromEntries(fd.entries()), ...developer, neighborhood: area, lat, lng, active: true }),
     });
     setSaving(false);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return toast(data.error ?? 'Something went wrong');
-    toast(dev ? 'Development updated' : 'Development created — now add its units');
-    onSaved(data.development);
+    toast('Development created — now add its buildings and units');
+    onCreated(data.development);
   }
 
+  return (
+    <div className="panel">
+      <h3 style={{ marginBottom: 4 }}>New development</h3>
+      <p className="muted small" style={{ marginBottom: 14 }}>Start with the basics — photos, features, documents and news come next, each in its own section.</p>
+      <form className="form-grid" onSubmit={submit}>
+        <div className="field full"><label>Name</label>
+          <input className="input" name="name" required maxLength={120} placeholder="Ocean View Residences" autoFocus /></div>
+        {picker.field}
+        <div className="field"><label>Area</label>
+          <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
+            {NEIGHBORHOODS.map((n) => <option key={n} value={n}>{n}</option>)}
+          </select></div>
+        <div className="field"><label>Sales</label>
+          <select className="input" name="sales" defaultValue="open">
+            {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></div>
+        <div className="field"><label>Completion</label>
+          <input className="input" name="completion" maxLength={40} placeholder="Q4 2026" /></div>
+        <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+          <button className="btn btn--primary" disabled={saving}>{saving ? 'Creating…' : 'Create development'}</button>
+          <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+/** Сторінка керування одним ЖК: шапка з цифрами, розділи зліва, один розділ за раз. */
+function DevelopmentManager({ initial, section: start, onBack, onDeleted, onUnitsAdded, isAdmin }: {
+  initial: Development;
+  section: Section;
+  onBack: () => void;
+  onDeleted: () => void;
+  onUnitsAdded: () => void;
+  isAdmin: boolean;
+}) {
+  const [dev, setDev] = useState(initial);
+  const [section, setSection] = useState<Section>(start);
+  const [units, setUnits] = useState<Listing[]>([]);
+  const [buildings, setBuildings] = useState<Building[]>([]);
+
+  const loadUnits = useCallback(async () => {
+    const d = await fetch(`/api/developments/${dev.id}`).then((r) => r.json()).catch(() => ({}));
+    setUnits(d.units ?? []);
+  }, [dev.id]);
+  const loadBuildings = useCallback(async () => {
+    const d = await fetch(`/api/developments/${dev.id}/buildings`).then((r) => r.json()).catch(() => ({}));
+    setBuildings(d.items ?? []);
+  }, [dev.id]);
+  useEffect(() => { loadUnits(); loadBuildings(); }, [loadUnits, loadBuildings]);
+
+  /** Зберегти частину полів ЖК — кожен розділ шле лише свої */
+  async function patch(fields: Record<string, unknown>, done = 'Saved') {
+    const res = await fetch(`/api/developments/${dev.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(fields),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { toast(data.error ?? 'Could not save'); return false; }
+    setDev(data.development);
+    toast(done);
+    return true;
+  }
+
+  async function remove() {
+    if (!confirm(`Delete ${dev.name}? Its units stay as separate listings.`)) return;
+    const res = await fetch(`/api/developments/${dev.id}`, { method: 'DELETE' });
+    if (!res.ok) return toast('Not allowed');
+    toast('Development deleted');
+    onDeleted();
+  }
+
+  const live = units.filter((u) => u.active).length;
+  const free = units.filter((u) => u.status === 'available').length;
+
+  return (
+    <div className="panel dev-mgr">
+      <button type="button" className="link-btn small" onClick={onBack}>← All developments</button>
+      <div className="dev-mgr__head">
+        <Photo className="dev-card__img" src={dev.photos[0]} label="" />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h3>{dev.name}</h3>
+          <div className="small muted">
+            {[dev.developer, dev.neighborhood, salesLabel(dev.sales)].filter(Boolean).join(' · ')}
+          </div>
+          <div className="dev-mgr__stats small">
+            <span><b>{units.length}</b> units</span>
+            <span><b>{live}</b> live</span>
+            <span><b>{free}</b> available</span>
+            <span><b>{buildings.length}</b> {buildings.length === 1 ? 'building' : 'buildings'}</span>
+          </div>
+        </div>
+        <div className="chip-row">
+          <button type="button" className={`btn btn--sm ${dev.active ? 'btn--ghost' : 'btn--primary'}`}
+            onClick={() => patch({ active: !dev.active }, dev.active ? 'Development hidden' : 'Development published')}>
+            {dev.active ? 'Unpublish' : 'Publish'}
+          </button>
+          <Link className="btn btn--ghost btn--sm" href={`/developments/${dev.slug}`} target="_blank">Open page</Link>
+        </div>
+      </div>
+
+      <div className="dev-mgr__body">
+        <nav className="dev-mgr__nav" aria-label="Development sections">
+          {SECTIONS.map(([k, label, icon]) => (
+            <button key={k} type="button" className={section === k ? 'is-active' : ''} onClick={() => setSection(k)}>
+              <Icon name={icon} size={17} /> {label}
+            </button>
+          ))}
+        </nav>
+
+        <div className="dev-mgr__pane">
+          {section === 'overview' && <OverviewSection dev={dev} patch={patch} onDelete={remove} onGo={setSection} />}
+          {section === 'units' && (
+            <>
+              <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />
+              <PriceListImport dev={dev} buildings={buildings} onAdded={() => { loadUnits(); onUnitsAdded(); }} />
+            </>
+          )}
+          {section === 'details' && <FeaturesSection dev={dev} patch={patch} />}
+          {section === 'location' && <LocationSection dev={dev} patch={patch} />}
+          {section === 'media' && <MediaSection dev={dev} patch={patch} />}
+          {section === 'documents' && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
+          {section === 'construction' && <ProgressEditor devId={dev.id} buildings={buildings} />}
+          {section === 'news' && <NewsEditor devId={dev.id} />}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+type Patch = (fields: Record<string, unknown>, done?: string) => Promise<boolean>;
+
+/** Форма одного розділу: збирає свої поля й зберігає лише їх */
+function SectionForm({ title, hint, onSave, children }: {
+  title: string;
+  hint?: string;
+  onSave: (fd: FormData) => Promise<unknown>;
+  children: React.ReactNode;
+}) {
+  const [saving, setSaving] = useState(false);
+  return (
+    <form className="form-grid" onSubmit={async (e) => {
+      e.preventDefault();
+      setSaving(true);
+      await onSave(new FormData(e.currentTarget));
+      setSaving(false);
+    }}>
+      <div className="field full">
+        <h4 style={{ margin: 0 }}>{title}</h4>
+        {hint && <span className="tiny muted">{hint}</span>}
+      </div>
+      {children}
+      <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+        <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+      </div>
+    </form>
+  );
+}
+
+const entries = (fd: FormData) => Object.fromEntries(fd.entries());
+
+function OverviewSection({ dev, patch, onDelete, onGo }: {
+  dev: Development; patch: Patch; onDelete: () => void; onGo: (s: Section) => void;
+}) {
+  const picker = useDeveloperPicker(dev);
+  // що ще не заповнено — підказки з переходом у потрібний розділ
+  const todo: [Section, string][] = ([
+    [!dev.photos.length, 'media', 'Add photos'],
+    [!dev.text, 'overview', 'Write a description'],
+    [!dev.amenities.length && !dev.construction, 'details', 'Fill in the building features'],
+    [!dev.address && !dev.office, 'location', 'Add the address or sales office'],
+  ] as [boolean, Section, string][]).filter(([missing]) => missing).map(([, s, label]) => [s, label]);
+
+  return (
+    <>
+      {todo.length > 0 && (
+        <div className="dev-mgr__todo">
+          <b className="small">To finish the page</b>
+          <div className="chip-row">
+            {todo.map(([s, label]) => (
+              <button key={label} type="button" className="chip-btn" onClick={() => onGo(s)}>{label}</button>
+            ))}
+          </div>
+        </div>
+      )}
+      <SectionForm title="Overview" hint="Name, developer and the description at the top of the page."
+        onSave={async (fd) => {
+          const developer = await picker.resolve();
+          if (developer) await patch({ ...entries(fd), ...developer });
+        }}>
+        <div className="field full"><label>Name</label>
+          <input className="input" name="name" required maxLength={120} defaultValue={dev.name} /></div>
+        {picker.field}
+        <div className="field"><label>Sales</label>
+          <select className="input" name="sales" defaultValue={dev.sales}>
+            {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></div>
+        <div className="field"><label>Completion</label>
+          <input className="input" name="completion" maxLength={40} defaultValue={dev.completion} placeholder="Q4 2026" /></div>
+        <div className="field full"><label>Description</label>
+          <textarea className="input" name="text" rows={7} maxLength={8000} defaultValue={dev.text}
+            placeholder="What makes this project special: location, views, finishes, who it suits…" /></div>
+      </SectionForm>
+      <div style={{ marginTop: 26, display: 'flex', justifyContent: 'flex-end' }}>
+        <button type="button" className="btn btn--danger btn--sm" onClick={onDelete}>Delete development</button>
+      </div>
+    </>
+  );
+}
+
+function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
+  const text = (name: keyof Development, label: string, placeholder = '', max = 120) => (
+    <div className="field"><label>{label}</label>
+      <input className="input" name={name} maxLength={max} defaultValue={String(dev[name] ?? '')} placeholder={placeholder} /></div>
+  );
+  return (
+    <SectionForm title="Features" hint="Shown in the features grid on the page and on every unit. Empty fields are hidden."
+      onSave={(fd) => patch(entries(fd))}>
+      <div className="field"><label>Floors</label>
+        <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev.floors ?? ''} /></div>
+      {text('projectClass', 'Class', 'Luxury', 60)}
+      {text('construction', 'Construction', 'Reinforced concrete')}
+      {text('walls', 'Walls', 'Concrete block')}
+      {text('insulation', 'Insulation')}
+      {text('climate', 'Cooling & heating', 'Split A/C in every room')}
+      {text('ceiling', 'Ceiling height', '2.8 m', 60)}
+      {text('finish', 'Finish', 'Turnkey, furnished')}
+      {text('territory', 'Grounds', 'Gated, 24/7 security')}
+      {text('backupPower', 'Backup power', 'Generator for common areas')}
+      {text('water', 'Water supply', 'Cistern + municipal')}
+      {text('parking', 'Parking', 'Covered, 1 space per unit')}
+      <div className="field"><label>HOA, $ per month</label>
+        <input className="input" name="hoa" type="number" min={0} defaultValue={dev.hoa ?? ''} placeholder="Leave empty if unknown" /></div>
+      <div className="field"><label>Rentals</label>
+        <select className="input" name="rentals" defaultValue={dev.rentals ?? ''}>
+          {RENTAL_RULES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+        </select></div>
+      <div className="field full"><label>Amenities</label>
+        <input className="input" name="amenities" maxLength={600} defaultValue={dev.amenities.join(', ')}
+          placeholder="Pool, gym, rooftop terrace, 24/7 security" />
+        <span className="tiny muted">Comma-separated.</span></div>
+      <div className="field full"><label>Payment plan</label>
+        <textarea className="input" name="payment" rows={4} maxLength={2000} defaultValue={dev.payment}
+          placeholder={'10% reservation deposit\n40% on signing\n50% on delivery'} />
+        <span className="tiny muted">One step per line.</span></div>
+    </SectionForm>
+  );
+}
+
+function LocationSection({ dev, patch }: { dev: Development; patch: Patch }) {
+  const [area, setArea] = useState(dev.neighborhood);
+  const [pin, setPin] = useState<[number, number]>([dev.lat, dev.lng]);
+  return (
+    <SectionForm title="Location & contacts" hint="Where the project is and where buyers visit the sales office."
+      onSave={(fd) => patch({ ...entries(fd), neighborhood: area, lat: pin[0], lng: pin[1] })}>
+      <div className="field"><label>Area</label>
+        <select className="input" value={area} onChange={(e) => {
+          setArea(e.target.value);
+          if (AREA_CENTRES[e.target.value]) setPin(AREA_CENTRES[e.target.value]);
+        }}>
+          {[...new Set([...NEIGHBORHOODS, area])].map((n) => <option key={n} value={n}>{n}</option>)}
+        </select></div>
+      <div className="field"><label>Address</label>
+        <input className="input" name="address" maxLength={120} defaultValue={dev.address} /></div>
+      <div className="field full"><label>Location on the map</label>
+        <LocationPicker value={pin} onChange={setPin} /></div>
+      <div className="field"><label>Sales office</label>
+        <input className="input" name="office" maxLength={160} defaultValue={dev.office} placeholder="Leave empty if on site" /></div>
+      <div className="field"><label>Office hours</label>
+        <input className="input" name="hours" maxLength={200} defaultValue={dev.hours} placeholder="Mon–Sat 9:00–17:00" /></div>
+      <div className="field"><label>Project website</label>
+        <input className="input" name="website" maxLength={200} defaultValue={dev.website} placeholder="example.com" /></div>
+    </SectionForm>
+  );
+}
+
+function MediaSection({ dev, patch }: { dev: Development; patch: Patch }) {
+  const [photos, setPhotos] = useState<string[]>(dev.photos);
+  return (
+    <SectionForm title="Photos & video" hint="The first photo is the cover on cards and at the top of the page."
+      onSave={(fd) => patch({ ...entries(fd), photos })}>
+      <div className="field full"><label>Photos</label>
+        <PhotoUploader value={photos} onChange={setPhotos} max={30} /></div>
+      <div className="field"><label>Video link</label>
+        <input className="input" name="video" maxLength={500} defaultValue={dev.video} placeholder="https://youtube.com/watch?v=…" />
+        <span className="tiny muted">YouTube or Vimeo — plays right on the page.</span></div>
+      <div className="field"><label>360° tour or drone flyover</label>
+        <input className="input" name="tour" maxLength={500} defaultValue={dev.tour} placeholder="https://my.matterport.com/show/?m=…" />
+        <span className="tiny muted">Matterport, Kuula or a YouTube 360 video.</span></div>
+    </SectionForm>
+  );
+}
+
+/** Заливка прайсу: кожен рядок стає окремим оголошенням-квартирою в ЖК */
+function PriceListImport({ dev, buildings, onAdded }: { dev: Development; buildings: Building[]; onAdded: () => void }) {
+  const [paste, setPaste] = useState('');
+  const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
+  const [buildingId, setBuildingId] = useState('');
+  const [saving, setSaving] = useState(false);
+
   async function addUnits() {
-    if (!dev) return;
     setSaving(true);
     const res = await fetch(`/api/developments/${dev.id}/units`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -157,141 +483,32 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
     if (!res.ok) return toast(data.error ?? 'Something went wrong');
     toast(`Added ${data.created} units`);
     setPaste('');
-    onUnitsAdded();
+    onAdded();
   }
 
   return (
-    <div className="panel">
-      <h3 style={{ marginBottom: 14 }}>{dev ? `Edit ${dev.name}` : 'New development'}</h3>
-      <form className="form-grid" onSubmit={submit}>
-        <div className="field full"><label>Name</label>
-          <input className="input" name="name" required maxLength={120} defaultValue={dev?.name} placeholder="Ocean View Residences" /></div>
-        <div className="field"><label>Developer</label>
-          <select className="input" value={developerId} onChange={(e) => setDeveloperId(e.target.value)}>
-            <option value="">— Not specified —</option>
-            {developers.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
-            <option value="new">+ Add a new developer…</option>
-          </select>
-          {developerId === 'new' && (
-            <input className="input" style={{ marginTop: 8 }} maxLength={120} autoFocus value={newDeveloper}
-              onChange={(e) => setNewDeveloper(e.target.value)} placeholder="Company name" />
-          )}
-          {developerId && developerId !== 'new' && (
-            <span className="tiny muted">
-              <Link href={`/developers/${developers.find((d) => d.id === developerId)?.slug ?? ''}`} target="_blank">Open the company page</Link>
-            </span>
-          )}
-        </div>
-        <div className="field"><label>Completion</label>
-          <input className="input" name="completion" maxLength={40} defaultValue={dev?.completion} placeholder="Q4 2026" /></div>
-        <div className="field"><label>Sales</label>
-          <select className="input" name="sales" defaultValue={dev?.sales ?? 'open'}>
-            {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
-          </select></div>
-        <div className="field"><label>Project website</label>
-          <input className="input" name="website" maxLength={200} defaultValue={dev?.website} placeholder="example.com" /></div>
-        <div className="field"><label>Area</label>
-          <select className="input" value={area} onChange={(e) => pickArea(e.target.value)}>
-            {[...new Set([...NEIGHBORHOODS, area])].map((n) => <option key={n} value={n}>{n}</option>)}
-          </select></div>
-        <div className="field"><label>Address</label>
-          <input className="input" name="address" maxLength={120} defaultValue={dev?.address} /></div>
-        <div className="field"><label>Sales office</label>
-          <input className="input" name="office" maxLength={160} defaultValue={dev?.office} placeholder="Leave empty if on site" /></div>
-        <div className="field"><label>Office hours</label>
-          <input className="input" name="hours" maxLength={200} defaultValue={dev?.hours} placeholder="Mon–Sat 9:00–17:00" /></div>
-        <div className="field full"><label>Location on the map</label>
-          <LocationPicker value={pin} onChange={setPin} /></div>
-        <div className="field"><label>Floors</label>
-          <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev?.floors ?? ''} /></div>
-        <div className="field"><label>Construction</label>
-          <input className="input" name="construction" maxLength={120} defaultValue={dev?.construction} placeholder="Reinforced concrete" /></div>
-        <div className="field"><label>Class</label>
-          <input className="input" name="projectClass" maxLength={60} defaultValue={dev?.projectClass} placeholder="Luxury" /></div>
-        <div className="field"><label>Walls</label>
-          <input className="input" name="walls" maxLength={120} defaultValue={dev?.walls} placeholder="Concrete block" /></div>
-        <div className="field"><label>Insulation</label>
-          <input className="input" name="insulation" maxLength={120} defaultValue={dev?.insulation} /></div>
-        <div className="field"><label>Cooling &amp; heating</label>
-          <input className="input" name="climate" maxLength={120} defaultValue={dev?.climate} placeholder="Split A/C in every room" /></div>
-        <div className="field"><label>Ceiling height</label>
-          <input className="input" name="ceiling" maxLength={60} defaultValue={dev?.ceiling} placeholder="2.8 m" /></div>
-        <div className="field"><label>Finish</label>
-          <input className="input" name="finish" maxLength={120} defaultValue={dev?.finish} placeholder="Turnkey, furnished" /></div>
-        <div className="field"><label>Grounds</label>
-          <input className="input" name="territory" maxLength={120} defaultValue={dev?.territory} placeholder="Gated, 24/7 security" /></div>
-        <div className="field"><label>Backup power</label>
-          <input className="input" name="backupPower" maxLength={120} defaultValue={dev?.backupPower} placeholder="Generator for common areas" /></div>
-        <div className="field"><label>Water supply</label>
-          <input className="input" name="water" maxLength={120} defaultValue={dev?.water} placeholder="Cistern + municipal" /></div>
-        <div className="field"><label>Parking</label>
-          <input className="input" name="parking" maxLength={120} defaultValue={dev?.parking} placeholder="Covered, 1 space per unit" /></div>
-        <div className="field"><label>HOA, $ per month</label>
-          <input className="input" name="hoa" type="number" min={0} defaultValue={dev?.hoa ?? ''} placeholder="Leave empty if unknown" /></div>
-        <div className="field"><label>Rentals</label>
-          <select className="input" name="rentals" defaultValue={dev?.rentals ?? ''}>
-            {RENTAL_RULES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
-          </select></div>
-        <div className="field full"><label>Amenities</label>
-          <input className="input" name="amenities" maxLength={600} defaultValue={dev?.amenities.join(', ')}
-            placeholder="Pool, gym, rooftop terrace, 24/7 security" />
-          <span className="tiny muted">Comma-separated.</span></div>
-        <div className="field full"><label>Payment plan</label>
-          <textarea className="input" name="payment" rows={4} maxLength={2000} defaultValue={dev?.payment}
-            placeholder={'10% reservation deposit\n40% on signing\n50% on delivery'} />
-          <span className="tiny muted">One step per line.</span></div>
-        <div className="field full"><label>Photos</label>
-          <PhotoUploader value={photos} onChange={setPhotos} /></div>
-        <div className="field"><label>Video link</label>
-          <input className="input" name="video" maxLength={500} defaultValue={dev?.video} placeholder="https://youtube.com/watch?v=…" />
-          <span className="tiny muted">YouTube or Vimeo — plays right on the page.</span></div>
-        <div className="field"><label>360° tour or drone flyover</label>
-          <input className="input" name="tour" maxLength={500} defaultValue={dev?.tour} placeholder="https://my.matterport.com/show/?m=…" />
-          <span className="tiny muted">Matterport, Kuula or a YouTube 360 video.</span></div>
-        <div className="field full"><label>Description</label>
-          <textarea className="input" name="text" rows={5} maxLength={8000} defaultValue={dev?.text} /></div>
-        <div className="field full switch-inline">
-          <label><input type="checkbox" name="active" defaultChecked={dev?.active ?? true} /> Published</label>
-        </div>
-        <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
-          <button className="btn" disabled={saving}>{dev ? 'Save' : 'Create development'}</button>
-          <button type="button" className="btn btn--ghost" onClick={onCancel}>Back</button>
-        </div>
-      </form>
-
-      {dev && <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />}
-
-      {dev && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
-
-      {dev && <ProgressEditor devId={dev.id} buildings={buildings} />}
-
-      {dev && <NewsEditor devId={dev.id} />}
-
-      {dev && (
-        <div className="units-form" style={{ marginTop: 22 }}>
-          <label><b>Add units from a price list</b></label>
-          <span className="tiny muted">
-            Paste rows from the developer&apos;s table: unit, type, floor, m², ft², price — one unit per row.
-            Each row becomes its own listing in {dev.name}, with this development&apos;s photos, address and pin.
-            Edit a single unit (status, photos, price) from the Listings tab.
-          </span>
-          <div className="chip-row">
-            <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => setDeal('sale')}>For sale</button>
-            <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => setDeal('rent')}>For rent</button>
-          </div>
-          {buildings.length > 0 && (
-            <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)} style={{ maxWidth: 320 }}>
-              <option value="">No building</option>
-              {buildings.map((b) => <option key={b.id} value={b.id}>Into {b.name}</option>)}
-            </select>
-          )}
-          <textarea className="input" rows={6} value={paste} onChange={(e) => setPaste(e.target.value)}
-            placeholder={'201\tStudio\t2\t41.6\t448\t$143,368\n507\t2 Bedroom\t5\t65.5\t705\t$239,319'} />
-          <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} disabled={saving || !paste.trim()} onClick={addUnits}>
-            Add units
-          </button>
-        </div>
+    <div className="units-form" style={{ marginTop: 22 }}>
+      <label><b>Add units from a price list</b></label>
+      <span className="tiny muted">
+        Paste rows from the developer&apos;s table: unit, type, floor, m², ft², price — one unit per row.
+        Each row becomes its own listing in {dev.name}, with this development&apos;s photos, address and pin.
+        Edit a single unit (status, photos, price) from the Listings tab.
+      </span>
+      <div className="chip-row">
+        <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => setDeal('sale')}>For sale</button>
+        <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => setDeal('rent')}>For rent</button>
+      </div>
+      {buildings.length > 0 && (
+        <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)} style={{ maxWidth: 320 }}>
+          <option value="">No building</option>
+          {buildings.map((b) => <option key={b.id} value={b.id}>Into {b.name}</option>)}
+        </select>
       )}
+      <textarea className="input" rows={6} value={paste} onChange={(e) => setPaste(e.target.value)}
+        placeholder={'201\tStudio\t2\t41.6\t448\t$143,368\n507\t2 Bedroom\t5\t65.5\t705\t$239,319'} />
+      <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} disabled={saving || !paste.trim()} onClick={addUnits}>
+        Add units
+      </button>
     </div>
   );
 }
@@ -625,19 +842,19 @@ function NewsEditor({ devId }: { devId: string }) {
 
   async function save(ev: React.FormEvent<HTMLFormElement>) {
     ev.preventDefault();
-    if (!editing) return;
     const fd = new FormData(ev.currentTarget);
     setBusy(true);
-    const res = await fetch(editing === 'new' ? `/api/developments/${devId}/news` : `/api/news/${editing.id}`, {
-      method: editing === 'new' ? 'POST' : 'PATCH',
+    const res = await fetch(!editing || editing === 'new' ? `/api/developments/${devId}/news` : `/api/news/${editing.id}`, {
+      method: !editing || editing === 'new' ? 'POST' : 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...Object.fromEntries(fd.entries()), photo: photo[0] ?? '' }),
     });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
     if (!res.ok) return toast(data.error ?? 'Something went wrong');
-    toast(editing === 'new' ? 'News published' : 'News updated');
-    setEditing(null);
+    toast(!editing || editing === 'new' ? 'News published' : 'News updated');
+    setEditing('new');
+    setPhoto([]);
     load();
   }
 
@@ -648,16 +865,31 @@ function NewsEditor({ devId }: { devId: string }) {
     load();
   }
 
-  const n = editing === 'new' ? null : editing;
+  // нова новина пишеться одразу зверху — без зайвого кліку «Add news»
+  const n = editing && editing !== 'new' ? editing : null;
   return (
-    <div className="units-form" style={{ marginTop: 22 }}>
+    <div className="units-form">
       <div className="fgroup__head">
-        <label><b>News</b></label>
-        {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add news</button>}
+        <label><b>{n ? 'Edit news' : 'Post news'}</b></label>
       </div>
       <span className="tiny muted">Sales launches, price changes, construction milestones — shown on the News tab.</span>
-      {!editing && (
-        <div className="dev-list">
+      <form className="form-grid news-compose" onSubmit={save} key={n?.id ?? `new-${items.length}`}>
+        <div className="field full">
+          <input className="input" name="title" required maxLength={160} defaultValue={n?.title} placeholder="Headline, e.g. Second release: 12 new units on floors 7–9" /></div>
+        <div className="field full">
+          <textarea className="input" name="body" rows={4} maxLength={4000} defaultValue={n?.body} placeholder="What happened and what it means for buyers…" /></div>
+        <div className="field"><label>Date</label>
+          <input className="input" name="publishedOn" type="date" required defaultValue={n?.publishedOn ?? new Date().toISOString().slice(0, 10)} /></div>
+        <div className="field full"><label>Photo</label>
+          <PhotoUploader value={photo} onChange={setPhoto} max={1} /></div>
+        <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+          <button className="btn btn--primary" disabled={busy}>{n ? 'Save news' : 'Publish'}</button>
+          {n && <button type="button" className="btn btn--ghost" onClick={() => open('new')}>Cancel</button>}
+        </div>
+      </form>
+      {!n && (
+        <div className="dev-list" style={{ marginTop: 18 }}>
+          <label><b>Published</b></label>
           {!items.length && <p className="muted small">No news yet.</p>}
           {items.map((x) => (
             <div key={x.id} className="dev-list__row">
@@ -672,22 +904,6 @@ function NewsEditor({ devId }: { devId: string }) {
             </div>
           ))}
         </div>
-      )}
-      {editing && (
-        <form className="form-grid" onSubmit={save} key={n?.id ?? 'new'}>
-          <div className="field full"><label>Title</label>
-            <input className="input" name="title" required maxLength={160} defaultValue={n?.title} placeholder="Second release: 12 new units on floors 7–9" /></div>
-          <div className="field"><label>Date</label>
-            <input className="input" name="publishedOn" type="date" required defaultValue={n?.publishedOn ?? new Date().toISOString().slice(0, 10)} /></div>
-          <div className="field full"><label>Text</label>
-            <textarea className="input" name="body" rows={5} maxLength={4000} defaultValue={n?.body} /></div>
-          <div className="field full"><label>Photo</label>
-            <PhotoUploader value={photo} onChange={setPhoto} max={1} /></div>
-          <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
-            <button className="btn" disabled={busy}>{n ? 'Save news' : 'Publish'}</button>
-            <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
-          </div>
-        </form>
       )}
     </div>
   );
