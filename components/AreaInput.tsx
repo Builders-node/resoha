@@ -3,13 +3,14 @@ import { useState } from 'react';
 import { fmtNumber, m2ToSqft, sqftToM2 } from '@/lib/format';
 
 /**
- * Площа з перемикачем ft² / m². Вводити можна в будь-якій одиниці — під полем
+ * Площа з перемикачем m² / ft². Вводити можна в будь-якій одиниці — під полем
  * одразу видно перерахунок, а на сервер завжди йде ft² (колонка sqft).
  */
 export default function AreaInput({ name, label, defaultSqft }: { name: string; label: string; defaultSqft?: number }) {
-  const [unit, setUnit] = useState<'ft2' | 'm2'>('ft2');
+  // за замовчуванням m² — так звикли рахувати власник і забудовники
+  const [unit, setUnit] = useState<'ft2' | 'm2'>('m2');
   const [sqft, setSqft] = useState(defaultSqft ? Math.round(defaultSqft) : 0);
-  const [text, setText] = useState(defaultSqft ? String(Math.round(defaultSqft)) : '');
+  const [text, setText] = useState(defaultSqft ? String(sqftToM2(defaultSqft)) : '');
 
   const change = (v: string) => {
     setText(v);
@@ -28,7 +29,7 @@ export default function AreaInput({ name, label, defaultSqft }: { name: string; 
       <label className="area-in__label">
         {label}
         <span className="area-in__units" role="group" aria-label="Unit">
-          {(['ft2', 'm2'] as const).map((u) => (
+          {(['m2', 'ft2'] as const).map((u) => (
             <button key={u} type="button" className={unit === u ? 'is-on' : ''} aria-pressed={unit === u}
               onClick={() => switchTo(u)}>{u === 'ft2' ? 'ft²' : 'm²'}</button>
           ))}

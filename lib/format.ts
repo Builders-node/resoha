@@ -45,11 +45,11 @@ export const sqftToM2 = (sqft: number) => {
   return m2 >= 100 ? Math.round(m2) : Math.round(m2 * 10) / 10;
 };
 export const m2ToSqft = (m2: number) => Math.round(m2 * SQFT_PER_M2);
-/** «4,039 ft² · 375 m²» */
-export const fmtArea = (sqft: number, sep = ' · ') => `${num.format(sqft)} ft²${sep}${num.format(sqftToM2(sqft))} m²`;
-/** «$148/ft² · $1,594/m²» — ціна за одиницю площі в обох одиницях */
+/** «375 m² · 4,039 ft²» — m² першими, як просив власник */
+export const fmtArea = (sqft: number, sep = ' · ') => `${num.format(sqftToM2(sqft))} m²${sep}${num.format(sqft)} ft²`;
+/** «$1,596/m² · $148/ft²» — ціна за одиницю площі в обох одиницях */
 export const fmtPerArea = (price: number, sqft: number, sep = ' · ') =>
-  `${usd.format(Math.round(price / sqft))}/ft²${sep}${usd.format(Math.round((price / sqft) * SQFT_PER_M2))}/m²`;
+  `${usd.format(Math.round((price / sqft) * SQFT_PER_M2))}/m²${sep}${usd.format(Math.round(price / sqft))}/ft²`;
 
 export const fmtPrice = (v: number, deal: Deal, lang: Lang = 'en') =>
   deal === 'rent' ? `${usd.format(v)}${translate(lang, '/mo')}` : usd.format(v);
@@ -75,7 +75,7 @@ export const fmtDate = (iso: string, lang: Lang = 'en') =>
 export const nListings = (n: number, lang: Lang = 'en') =>
   translate(lang, n === 1 ? '{n} listing' : '{n} listings', { n: num.format(n) });
 
-/** "2 bd · 2 ba · 1,240 ft² / 115 m²" — для землі показуємо акри */
+/** "2 bd · 2 ba · 115 m² / 1,240 ft²" — для землі показуємо акри */
 export function specLine(
   l: { type: PropertyType; beds: number; baths: number; sqft: number; lotAcres: number },
   lang: Lang = 'en',

@@ -196,8 +196,8 @@ export default async function PropertyPage({ params, searchParams }: {
                   <b>{listing.beds > 0 ? listing.beds : t('Studio')}</b></div>
                 <div className="spec"><span className="muted small">{t('Bathrooms')}</span><b>{listing.baths || '—'}</b></div>
                 <div className="spec"><span className="muted small">{t('Interior')}</span>
-                  <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b>
-                  {listing.sqft > 0 && <span className="muted small">{fmtNumber(sqftToM2(listing.sqft))} m²</span>}</div>
+                  <b>{listing.sqft > 0 ? `${fmtNumber(sqftToM2(listing.sqft))} m²` : '—'}</b>
+                  {listing.sqft > 0 && <span className="muted small">{fmtNumber(listing.sqft)} ft²</span>}</div>
                 {inDevelopment ? (
                   <div className="spec"><span className="muted small">{t('Unit · floor')}</span>
                     <b>{listing.unitNo || '—'}{listing.floor !== null && ` · ${listing.floor}`}</b></div>

@@ -206,7 +206,7 @@ export default function FiltersModal({
                     sqftMax: b >= sqft.max ? '' : String(b),
                   })}
                 />
-                <p className="tiny muted">≈ {fmtNumber(sqftToM2(sqLo))} – {fmtNumber(sqftToM2(sqHi))} m²</p>
+                <p className="small"><b>{fmtNumber(sqftToM2(sqLo))} – {fmtNumber(sqftToM2(sqHi))} m²</b></p>
               </div>
             )}
 
