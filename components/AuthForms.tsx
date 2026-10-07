@@ -1,6 +1,7 @@
 'use client';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import AccountSwitcher from './AccountSwitcher';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import type { AuthMode as Mode, AuthView } from '@/lib/auth-modal';
@@ -69,6 +70,9 @@ export function LoginForm({ next, onSwitch, onDone }: InModal & { next: string; 
     <>
         <h2 className="auth__title">{t('Sign in')}</h2>
         <p className="muted" style={{ margin: '8px 0 20px' }}>{t('Welcome back to Resoha Roatán.')}</p>
+
+        {/* акаунти, відкладені в цьому браузері, — вхід одним дотиком */}
+        <AccountSwitcher showAdd={false} onDone={onDone} />
 
         <GoogleButton next={next} />
 

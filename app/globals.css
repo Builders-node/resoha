@@ -740,6 +740,20 @@ textarea.input{resize:vertical;min-height:96px}
 .sheet__item:hover{color:var(--orange)}
 
 
+/* ===== Меню «Me»: акаунти браузера ===== */
+.me-menu-wrap{position:fixed;inset:0;z-index:1100}
+.me-menu{position:fixed;left:calc(var(--side-w, 96px) + 10px);bottom:14px;width:300px;max-width:calc(100vw - 32px);
+  background:#fff;border-radius:16px;padding:10px 14px;box-shadow:var(--shadow-lg);display:grid;gap:2px}
+.acc-list{display:grid;gap:2px;padding-bottom:6px;border-bottom:1px solid var(--line);margin-bottom:4px}
+.acc-item{display:flex;align-items:center;gap:12px;width:100%;padding:8px 4px;border:0;background:none;border-radius:10px;
+  font:inherit;color:var(--ink);cursor:pointer;text-align:left}
+.acc-item:hover{background:var(--bg-soft)}
+.acc-item:disabled{opacity:.6;cursor:default}
+.acc-item__ava{width:34px;height:34px;border-radius:50%;object-fit:cover;flex:none;font-size:12px}
+.acc-item__plus{display:grid;place-items:center;background:var(--chip)}
+.acc-item__text{display:grid;min-width:0}
+.acc-item__text b,.acc-item__text span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
 /* ===== Замість стокових картинок — чесні заглушки ===== */
 /* Фото показуємо тільки справжні, тож усюди потрібен вигляд «фото ще немає». */
 .nophoto{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;

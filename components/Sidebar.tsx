@@ -7,6 +7,7 @@ import Logo from './Logo';
 import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
 import AuthLink from './AuthLink';
+import AccountSwitcher from './AccountSwitcher';
 import LangSwitch from './LangSwitch';
 import { useT } from './LangProvider';
 
@@ -28,15 +29,18 @@ export default function Sidebar({ session }: { session: Session | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [more, setMore] = useState(false);   // лист «Other» на телефоні
+  const [menu, setMenu] = useState(false);   // меню «Me» на десктопі: акаунти й вихід
   const t = useT();
   const params = useSearchParams();
   const deal = params.get('deal') ?? '';
   const type = params.get('type') ?? '';
 
   // після переходу лист має закриватись сам
-  useEffect(() => { setMore(false); }, [pathname]);
+  useEffect(() => { setMore(false); setMenu(false); }, [pathname]);
 
   async function logout() {
+    setMenu(false); setMore(false);
+    // якщо в браузері відкладено інші акаунти, сервер одразу перемкне на наступний
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/');
     router.refresh();
@@ -67,11 +71,11 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
         <div className="sidebar__foot">
           {session ? (
-            // вихід живе на сторінці профілю (Me) і в листі «Other» на телефоні
-            <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
+            // «Me» відкриває меню: кабінет, інші акаунти браузера, вихід
+            <button className="sidelink desk-only" onClick={() => setMenu(!menu)} aria-expanded={menu}>
               <Avatar className="sidebar__avatar" src={session.avatar} name={session.name} />
               <span className="sidebar__cap">{t('Me')}</span>
-            </Link>
+            </button>
           ) : (
             <AuthLink className="desk-only">
               <span className="sidebar__ico"><Icon name="user" size={22} /></span>
@@ -84,6 +88,26 @@ export default function Sidebar({ session }: { session: Session | null }) {
           </button>
         </div>
       </aside>
+
+      {menu && session && (
+        <div className="me-menu-wrap" onClick={(e) => e.target === e.currentTarget && setMenu(false)}>
+          <div className="me-menu">
+            <Link className="sheet__me" href={session.role === 'agent' ? '/agent' : '/account'} onClick={() => setMenu(false)}>
+              <Avatar src={session.avatar} name={session.name} />
+              <span>
+                <b>{session.name}</b>
+                <span className="muted small">
+                  {t(session.role === 'agent' ? (session.isOwner ? 'Agency owner' : 'Realtor') : 'Buyer account')}
+                </span>
+              </span>
+            </Link>
+            <AccountSwitcher onDone={() => setMenu(false)} />
+            <button className="sheet__item" onClick={logout}>
+              <Icon name="logout" size={19} /> {t('Sign out')}
+            </button>
+          </div>
+        </div>
+      )}
 
       {more && (
         <div className="sheet-wrap" onClick={(e) => e.target === e.currentTarget && setMore(false)}>
@@ -100,6 +124,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
                 </span>
               </Link>
             )}
+            {session && <AccountSwitcher onDone={() => setMore(false)} />}
 
             <Link className="sheet__item" href="/account">
               <Icon name="heart" size={19} /> {t('Saved listings')}
