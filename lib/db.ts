@@ -1189,3 +1189,50 @@ export async function facets(q: { deal?: Deal; type?: string } = {}) {
     noHoa: rows.filter((r) => Number(r.hoa) === 0).length,
   };
 }
+
+/* ---------- analytics ---------- */
+/** PostgREST віддає не більше 1000 рядків за раз — дочитуємо сторінками. */
+async function readAll(build: (from: number, to: number) => PromiseLike<{ data: Row[] | null; error: unknown }>, cap = 50000) {
+  const out: Row[] = [];
+  for (let from = 0; from < cap; from += 1000) {
+    const { data, error } = await build(from, from + 999);
+    if (error || !data) break;
+    out.push(...data);
+    if (data.length < 1000) break;
+  }
+  return out;
+}
+
+/**
+ * Сирі дані для вкладки «Аналітика»: події й заявки за два періоди (поточний і попередній —
+ * для порівняння), оголошення, ЖК, команда й ринок. Рахує lib/analytics.ts.
+ * RLS і тут вирішує, що видно: свої події — ріелтору, усієї агенції — власнику.
+ */
+export async function analyticsRaw(agentId: string, agencyId: string | null, scope: 'own' | 'agency', days: number) {
+  const client = await db();
+  const since = new Date(Date.now() - 2 * days * 86400000).toISOString();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- конструктор запиту PostgREST
+  const byScope = (sel: any) =>
+    scope === 'agency' && agencyId ? sel.eq('agency_id', agencyId) : sel.eq('agent_id', agentId);
+
+  const [listings, events, leads, devs, members, market] = await Promise.all([
+    scope === 'agency' && agencyId
+      ? queryListings({ agencyId, includeInactive: true })
+      : queryListings({ agentId, includeInactive: true }),
+    readAll((a, b) => byScope(client.from('listing_events')
+      .select('listing_id, development_id, agent_id, kind, source, device, visitor, created_at'))
+      .gte('created_at', since).order('created_at').range(a, b)),
+    readAll((a, b) => byScope(client.from('leads')
+      .select('id, listing_id, agent_id, status, channel, created_at, handled_at'))
+      .gte('created_at', since).order('created_at').range(a, b), 10000)
+      // до міграції 0043 колонки handled_at немає — без неї, ніж без заявок
+      .then((rows) => rows.length ? rows : readAll((a, b) => byScope(client.from('leads')
+        .select('id, listing_id, agent_id, status, channel, created_at'))
+        .gte('created_at', since).order('created_at').range(a, b), 10000)),
+    byScope(client.from('developments').select('id, name, slug, agent_id')).then((r: { data: Row[] | null }) => (r.data ?? []) as Row[]),
+    scope === 'agency' && agencyId ? agencyMembers(agencyId) : Promise.resolve([] as Agent[]),
+    readAll((a, b) => client.from('listings').select('price, sqft, type, deal, neighborhood')
+      .eq('active', true).gt('sqft', 0).gt('price', 0).range(a, b), 5000),
+  ]);
+  return { listings, events, leads, devs, members, market };
+}

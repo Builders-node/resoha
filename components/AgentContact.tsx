@@ -84,6 +84,15 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     tgHref && { key: 'tg', href: tgHref, label: 'Telegram', mark: <TelegramMark /> },
   ].filter(Boolean) as { key: string; href: string; label: string; mark: React.ReactNode }[];
 
+  /** Відмітка для аналітики ріелтора: який канал зв'язку обрали. */
+  function track(kind: 'phone' | 'whatsapp' | 'viber' | 'telegram' | 'share' | 'form_open') {
+    fetch('/api/track', {
+      method: 'POST', keepalive: true,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ listingId: listing.id, kind }),
+    }).catch(() => {});
+  }
+
   /** Розмова піде в месенджері; тут лишаємо відмітку, щоб ріелтор і платформа бачили звернення. */
   function noteWhatsApp() {
     fetch('/api/leads', {
@@ -95,6 +104,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   }
 
   async function copyLink() {
+    track('share');
     try {
       await navigator.clipboard.writeText(listingUrl);
       toast(t('Link copied'));
@@ -188,7 +198,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               <Icon name="phone" size={22} /> {agent.phone}
             </a>
           ) : (
-            <button className="cc__btn cc__btn--phone" onClick={() => setShown(true)}>
+            <button className="cc__btn cc__btn--phone" onClick={() => { setShown(true); track('phone'); }}>
               <Icon name="phone" size={22} /> {t('Show phone')}
             </button>
           ))}
@@ -197,7 +207,10 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             <div className={`cc__msgs ${messengers.length % 2 ? 'cc__msgs--odd' : ''}`}>
               {messengers.map((m, i) => (
                 <a key={m.key} className={`cc__btn cc__btn--${m.key}`} href={m.href} target="_blank" rel="noreferrer"
-                  onClick={m.key === 'wa' ? noteWhatsApp : undefined}>
+                  onClick={() => {
+                    track(m.key === 'wa' ? 'whatsapp' : m.key === 'viber' ? 'viber' : 'telegram');
+                    if (m.key === 'wa') noteWhatsApp();
+                  }}>
                   {/* на пів ширини картки влазить лише назва месенджера */}
                   {m.mark} {messengers.length % 2 && i === 0 ? t('Message on {app}', { app: m.label }) : m.label}
                 </a>
@@ -221,7 +234,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
       </div>
 
       <div className="cc__links">
-        <button className="cc__link" onClick={() => setFormOpen((v) => !v)} aria-expanded={formOpen}>
+        <button className="cc__link" onClick={() => { if (!formOpen) track('form_open'); setFormOpen((v) => !v); }} aria-expanded={formOpen}>
           <Icon name="calendar" size={20} /> <span>{t('Request a viewing')}</span>
         </button>
         {reportHref && (

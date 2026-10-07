@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
+import AnalyticsPanel from './AnalyticsPanel';
 import DashboardListings from './DashboardListings';
 import DeveloperPanel from './DeveloperPanel';
 import DevelopmentsPanel from './DevelopmentsPanel';
@@ -15,7 +16,7 @@ import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-export type Tab = 'listings' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
+export type Tab = 'listings' | 'analytics' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
@@ -98,6 +99,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         <a className={tab === 'listings' ? 'is-active' : ''} onClick={() => setTab('listings')}>
           <Icon name="home" size={18} /> Listings
         </a>
+        <a className={tab === 'analytics' ? 'is-active' : ''} onClick={() => setTab('analytics')}>
+          <Icon name="chart" size={18} /> Analytics
+        </a>
         <a className={tab === 'leads' ? 'is-active' : ''} onClick={() => setTab('leads')}>
           <Icon name="inbox" size={18} /> Leads {stats.newLeads > 0 && <span className="pill pill--on">{stats.newLeads}</span>}
         </a>
@@ -148,12 +152,14 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           </div>
         )}
 
-        <div className="stats">
+        {tab !== 'analytics' && <div className="stats">
           <div className="stat"><span className="muted small">Listings</span><b>{stats.total}</b></div>
           <div className="stat"><span className="muted small">Published</span><b>{stats.active}</b></div>
           <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(stats.views)}</b></div>
           <div className="stat"><span className="muted small">Leads</span><b>{stats.leads}</b></div>
-        </div>
+        </div>}
+
+        {tab === 'analytics' && <AnalyticsPanel isOwner={isOwner} agencyName={agency?.name} />}
 
         {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin} />}
 

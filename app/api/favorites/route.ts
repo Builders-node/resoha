@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getFavorites, queryListings, toggleFavorite } from '@/lib/db';
 import { currentUser } from '@/lib/session';
+import { trackAfterResponse } from '@/lib/track';
 
 export async function GET() {
   const user = await currentUser();
@@ -16,5 +17,6 @@ export async function POST(req: Request) {
   const { listingId } = await req.json().catch(() => ({}));
   if (!listingId) return NextResponse.json({ error: 'listingId is required' }, { status: 400 });
   const on = await toggleFavorite(user.id, listingId);
+  if (on) await trackAfterResponse({ listingId }, 'favorite', { h: req.headers });
   return NextResponse.json({ on, ids: await getFavorites(user.id) });
 }
