@@ -4,13 +4,14 @@ import { currentUser, toSession } from '@/lib/session';
 
 export default async function AccountPage() {
   const user = await currentUser();
-  if (user?.role !== 'user') {
+  // Один акаунт на людину: збережене бачить кожен залогінений — і покупець, і ріелтор
+  if (!user) {
     return (
       <LoginGate
         role="user"
         title="Buyer account"
         text="Keep your shortlist, saved searches and contact details in one place while you plan the trip."
-        signedInAs={user ? user.name : null}
+        signedInAs={null}
       />
     );
   }

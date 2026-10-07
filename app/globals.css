@@ -608,7 +608,12 @@ textarea.input{resize:vertical;min-height:96px}
 .invite__code{font-size:24px;font-weight:900;letter-spacing:.12em;margin:4px 0 6px}
 .team-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .team-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
+.team-row{width:100%;font:inherit;color:inherit;text-align:left;background:#fff;cursor:pointer}
+.team-row:hover{background:var(--bg-soft)}
 .team-row.is-active{border-color:var(--ink);background:var(--bg-soft)}
+.team-row__chev{flex:none;transition:transform .15s}
+.team-row:not(.is-active) .team-row__chev{transform:rotate(-90deg)}
+.team-row.is-open .team-row__chev{transform:rotate(180deg)}
 .team-row__dot{width:14px;height:14px;border-radius:50%;flex:none}
 .team-row__name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .team-row__act{margin-left:auto}

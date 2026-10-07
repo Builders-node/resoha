@@ -223,4 +223,5 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Email is managed by your login — change it from Supabase Auth.':
     'El correo depende de su inicio de sesión: cámbielo desde Supabase Auth.',
   'Save': 'Guardar',
+  'Saved homes and searches': 'Propiedades y búsquedas guardadas',
 };

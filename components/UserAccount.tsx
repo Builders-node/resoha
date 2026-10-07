@@ -37,9 +37,10 @@ export default function UserAccount({ session, user }: {
       fetch('/api/leads').then((r) => r.json()),
     ]);
     setFavs(f.items ?? []); setFavIds(f.ids ?? []); setSearches(s.items ?? []);
-    setLeads(l.items ?? []);
+    // ріелтору /api/leads віддає ще й вхідні заявки — тут лише ті, що людина надіслала сама
+    setLeads((l.items ?? []).filter((x: Lead) => x.userId === session.id));
     setLoading(false);
-  }, []);
+  }, [session.id]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -59,7 +60,10 @@ export default function UserAccount({ session, user }: {
         <a className={tab === 'enquiries' ? 'is-active' : ''} onClick={() => setTab('enquiries')}>
           <Icon name="chat" size={18} /> {t('My enquiries')} {leads.length > 0 && <span className="pill pill--off">{leads.length}</span>}
         </a>
-        <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}><Icon name="user" size={18} /> {t('Profile')}</a>
+        {/* у ріелтора профіль із контактами живе в кабінеті ріелтора */}
+        {session.role !== 'agent' && (
+          <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}><Icon name="user" size={18} /> {t('Profile')}</a>
+        )}
       </TabStrip>
 
       <div>
@@ -68,7 +72,11 @@ export default function UserAccount({ session, user }: {
           <div>
             <h2>{session.name}</h2>
             <div className="muted">{[user.email, user.phone].filter(Boolean).join(' · ')}</div>
-            <div className="small muted" style={{ marginTop: 4 }}>{t('Buyer account')}</div>
+            <div className="small muted" style={{ marginTop: 4 }}>
+              {session.role === 'agent'
+                ? <>{t('Saved homes and searches')} · <Link href="/agent" className="link-accent">{t('Agent dashboard')}</Link></>
+                : t('Buyer account')}
+            </div>
           </div>
           <Link className="btn btn--primary" href="/listings" style={{ marginLeft: 'auto' }}>{t('Browse listings')}</Link>
         </div>
