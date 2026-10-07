@@ -109,7 +109,7 @@ const AGENT_PUBLIC_COLS = 'id, role, name, avatar, phone, whatsapp, agency_id, i
 const AGENT_FULL_COLS = '*, agency:agencies!profiles_agency_id_fkey(name)';
 
 /** Картка агенції без invite_code: код читає лише власник через RPC. */
-const AGENCY_PUBLIC_COLS = 'id, name, brand, phone, email, about, verified, owner_id, created_at';
+export const AGENCY_PUBLIC_COLS = 'id, name, brand, phone, email, about, verified, owner_id, created_at';
 
 /* ---------- profiles / agents ---------- */
 export async function getAgent(id: string): Promise<Agent | null> {
@@ -890,7 +890,7 @@ export async function adminListOwners(): Promise<{ id: string; name: string; age
 
 export async function adminSetAgencyFlags(id: string, patch: { verified?: boolean }) {
   const { data, error } = await (await db()).from('agencies')
-    .update({ verified: patch.verified }).eq('id', id).select('*').maybeSingle();
+    .update({ verified: patch.verified }).eq('id', id).select(AGENCY_PUBLIC_COLS).maybeSingle();
   if (error) throw error;
   return data ? mapAgency(data) : null;
 }
