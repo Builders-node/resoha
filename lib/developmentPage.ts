@@ -43,7 +43,9 @@ export const developmentContext = cache(async (slug: string) => {
     dev, agent, me, units, buildings, docs, progress, news, tabs, base,
     from: fromPrice(units.filter((u) => u.deal === 'sale')),
     // заявку з форми привʼязуємо до найдешевшої вільної квартири — лід завжди про конкретний обʼєкт
-    leadUnit: units.find((u) => u.status === 'available') ?? units[0],
+    // Ціна «From» рахується з продажу, тож і квартира для картки — на продаж, інакше вийде «$107,207/mo»
+    leadUnit: units.find((u) => u.deal === 'sale' && u.status === 'available')
+      ?? units.find((u) => u.status === 'available') ?? units[0],
   };
 });
 
