@@ -1,6 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
+import LocationPicker from './LocationPicker';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
@@ -153,10 +154,8 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
           <input className="input" name="office" maxLength={160} defaultValue={dev?.office} placeholder="Leave empty if on site" /></div>
         <div className="field"><label>Office hours</label>
           <input className="input" name="hours" maxLength={200} defaultValue={dev?.hours} placeholder="Mon–Sat 9:00–17:00" /></div>
-        <div className="field"><label>Latitude</label>
-          <input className="input" type="number" step="0.0001" value={pin[0]} onChange={(e) => setPin([Number(e.target.value), pin[1]])} /></div>
-        <div className="field"><label>Longitude</label>
-          <input className="input" type="number" step="0.0001" value={pin[1]} onChange={(e) => setPin([pin[0], Number(e.target.value)])} /></div>
+        <div className="field full"><label>Location on the map</label>
+          <LocationPicker value={pin} onChange={setPin} /></div>
         <div className="field"><label>Floors</label>
           <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev?.floors ?? ''} /></div>
         <div className="field"><label>Construction</label>
