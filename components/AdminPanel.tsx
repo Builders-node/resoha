@@ -11,9 +11,10 @@ import { QUALITY_CHECKS, type QualityKey } from '@/lib/quality';
 import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
+import PromoAdmin from './PromoAdmin';
 import TabStrip from './TabStrip';
 
-type Tab = 'overview' | 'featured' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
+type Tab = 'overview' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
@@ -26,6 +27,7 @@ type AgencyRowData = { agency: Agency; agents: number; listings: number };
 const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'overview', label: 'Overview', ico: 'sliders' },
   { v: 'featured', label: 'Featured', ico: 'star' },
+  { v: 'promotions', label: 'Promotions', ico: 'sparkle' },
   { v: 'developments', label: 'Developments', ico: 'building' },
   { v: 'listings', label: 'Listings', ico: 'home' },
   { v: 'leads', label: 'Enquiries', ico: 'inbox' },
@@ -65,7 +67,7 @@ export default function AdminPanel({ session }: { session: Session }) {
   const [editingUser, setEditingUser] = useState<Agent | null>(null);
 
   const load = useCallback(async (which: Tab) => {
-    if (which === 'featured' || which === 'developments') return; // ці вкладки вантажать себе самі
+    if (which === 'featured' || which === 'developments' || which === 'promotions') return; // ці вкладки вантажать себе самі
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -248,6 +250,8 @@ export default function AdminPanel({ session }: { session: Session }) {
         )}
 
         {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}
+
+        {tab === 'promotions' && <PromoAdmin />}
 
         {tab === 'listings' && (
           <div className="panel">

@@ -1548,5 +1548,41 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .feat-row__no{font-weight:700;color:var(--ink-3);min-width:22px;text-align:center}
 .feat-dev{border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:10px}
 @media (max-width:600px){.feat-row--sub{padding-left:16px}.feat-row{flex-wrap:wrap}.feat-row__act{margin-left:auto}}
+
+/* ---------- просування (вкладка Promote і адмінка Promotions) ---------- */
+.promo__head{margin-bottom:18px}
+.promo__steps{display:grid;gap:22px}
+.promo__step{display:flex;gap:14px;align-items:flex-start}
+.promo__num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.promo__body{flex:1;min-width:0}
+.promo__body select{width:100%;max-width:560px}
+.promo__pkgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px;max-width:640px}
+.promo__pkg{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-align:left;background:var(--bg-soft);border:2px solid transparent;border-radius:var(--radius);padding:14px 16px;cursor:pointer;font:inherit;color:inherit}
+.promo__pkg:hover{border-color:var(--line)}
+.promo__pkg.is-on{border-color:var(--ink);background:#fff}
+.promo__days{font-weight:600}
+.promo__price{font-size:24px;font-weight:700;letter-spacing:-.03em}
+.promo__pay{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.promo__pay .tiny{max-width:360px}
+.promo__table{overflow-x:auto}
+@media (min-width:861px){ .promo__table .table{min-width:720px} }
+.promo__prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.promo__group{display:grid;gap:8px;align-content:start}
+.promo__row{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center}
+.promo__row .input{padding:8px 10px;min-width:0}
+.promo__row.is-off{opacity:.5}
+.promo__rowdays{font-size:14px}
+form.promo__row{grid-template-columns:70px 1fr auto}
+@media (max-width:560px){
+  .promo__step{gap:10px}
+  .promo__pkgs{grid-template-columns:1fr 1fr}
+  .promo__price{font-size:20px}
+}
+.agc__badge{position:absolute;top:12px;right:12px}
+@media (max-width:860px){
+  .promo__table .table tr{display:grid;grid-template-columns:1fr 1fr;column-gap:12px}
+  .promo__table .table td:first-child,.promo__table .table td:last-child{grid-column:1 / -1}
+  .promo__table .table td:last-child:empty{display:none}
+}
 .badge--featured{background:#f59e0b;color:#fff;display:inline-flex;align-items:center;gap:4px}
 .badge--featured svg{fill:currentColor}

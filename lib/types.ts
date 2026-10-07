@@ -19,6 +19,8 @@ export interface Agency {
   ownerId: string;
   inviteCode: string;     // код, за яким ріелтор приєднується до агенції
   createdAt: string;
+  featured?: boolean;     // платне просування (міграція 0046)
+  featuredRank?: number;
 }
 
 /**
@@ -338,7 +340,7 @@ export interface AdminLogEntry {
   id: string;
   actorName: string;
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review';
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign';
   targetId: string | null;
   targetName: string;
   reason: string;
