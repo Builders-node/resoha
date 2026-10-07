@@ -14,13 +14,38 @@ import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
+import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-export type Tab = 'listings' | 'analytics' | 'promote' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
+
+type NavItem = { tab: Tab; icon: string; label: string; count?: number; alert?: boolean };
+
+/**
+ * Меню кабінету за розділами: що продаю, хто звернувся, як просуваю, хто я.
+ * «Add listing» сюди не входить — це окрема кнопка над меню.
+ */
+function navGroups({ agency, total, newLeads }: { agency: boolean; total: number; newLeads: number }): { title: string; items: NavItem[] }[] {
+  return [
+    { title: 'Sales', items: [
+      { tab: 'listings', icon: 'home', label: 'Listings', count: total },
+      { tab: 'developments', icon: 'building', label: 'Developments' },
+      { tab: 'leads', icon: 'inbox', label: 'Leads', count: newLeads || undefined, alert: true },
+    ] },
+    { title: 'Growth', items: [
+      { tab: 'analytics', icon: 'chart', label: 'Analytics' },
+      { tab: 'promote', icon: 'sparkle', label: 'Promote' },
+    ] },
+    { title: 'Account', items: [
+      { tab: 'profile', icon: 'user', label: 'Profile' },
+      { tab: 'team', icon: 'users', label: agency ? 'Team' : 'Agency' },
+      { tab: 'developer', icon: 'briefcase', label: 'Developer company' },
+    ] },
+  ];
+}
 
 export default function AgentDashboard({ session, initialTab }: { session: Session; initialTab?: Tab }) {
   const router = useRouter();
@@ -49,6 +74,13 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   }, [session.id, scope]);
 
   useEffect(() => { load(); }, [load]);
+
+  // вкладка живе в адресі: після оновлення сторінки чи «Назад» лишаєшся там, де був
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (tab === 'listings') url.searchParams.delete('tab'); else url.searchParams.set('tab', tab);
+    window.history.replaceState(window.history.state, '', url);
+  }, [tab]);
 
   async function toggleActive(l: Listing) {
     const res = await fetch(`/api/listings/${l.id}`, {
@@ -97,33 +129,22 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   return (
     <div className="wrap dash">
       <TabStrip>
-        <a className={tab === 'listings' ? 'is-active' : ''} onClick={() => setTab('listings')}>
-          <Icon name="home" size={18} /> Listings
+        {/* головна дія кабінету — окрема кнопка зверху, а не пункт серед вкладок */}
+        <a className={`sidenav__add ${tab === 'new' ? 'is-active' : ''}`} title="Add listing" onClick={() => { setEditing(null); setTab('new'); }}>
+          <Icon name={editing && tab === 'new' ? 'pencil' : 'plus'} size={18} />
+          <span className="sidenav__add-label">{editing && tab === 'new' ? 'Edit listing' : 'Add listing'}</span>
         </a>
-        <a className={tab === 'analytics' ? 'is-active' : ''} onClick={() => setTab('analytics')}>
-          <Icon name="chart" size={18} /> Analytics
-        </a>
-        <a className={tab === 'promote' ? 'is-active' : ''} onClick={() => setTab('promote')}>
-          <Icon name="sparkle" size={18} /> Promote
-        </a>
-        <a className={tab === 'leads' ? 'is-active' : ''} onClick={() => setTab('leads')}>
-          <Icon name="inbox" size={18} /> Leads {stats.newLeads > 0 && <span className="pill pill--on">{stats.newLeads}</span>}
-        </a>
-        <a className={tab === 'new' ? 'is-active' : ''} onClick={() => { setEditing(null); setTab('new'); }}>
-          <Icon name="plus" size={18} /> {editing ? 'Edit listing' : 'Add listing'}
-        </a>
-        <a className={tab === 'developments' ? 'is-active' : ''} onClick={() => setTab('developments')}>
-          <Icon name="building" size={18} /> Developments
-        </a>
-        <a className={tab === 'developer' ? 'is-active' : ''} onClick={() => setTab('developer')}>
-          <Icon name="briefcase" size={18} /> Developer
-        </a>
-        <a className={tab === 'team' ? 'is-active' : ''} onClick={() => setTab('team')}>
-          <Icon name="building" size={18} /> {agency ? 'Team' : 'Agency'}
-        </a>
-        <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}>
-          <Icon name="user" size={18} /> Profile
-        </a>
+        {navGroups({ agency: !!agency, total: stats.total, newLeads: stats.newLeads }).map((g) => (
+          <div key={g.title} className="sidenav__group" role="group" aria-label={g.title}>
+            <span className="sidenav__title">{g.title}</span>
+            {g.items.map((it) => (
+              <a key={it.tab} className={tab === it.tab ? 'is-active' : ''} onClick={() => setTab(it.tab)}>
+                <Icon name={it.icon} size={18} /> {it.label}
+                {it.count != null && <span className={`sidenav__count ${it.alert ? 'is-alert' : ''}`}>{it.count}</span>}
+              </a>
+            ))}
+          </div>
+        ))}
       </TabStrip>
 
       <div>
@@ -156,7 +177,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           </div>
         )}
 
-        {tab !== 'analytics' && tab !== 'promote' && <div className="stats">
+        {/* цифри потрібні поруч з оголошеннями й заявками; у профілі чи команді вони лише відсувають форму */}
+        {(tab === 'listings' || tab === 'leads') && <div className="stats">
           <div className="stat"><span className="muted small">Listings</span><b>{stats.total}</b></div>
           <div className="stat"><span className="muted small">Published</span><b>{stats.active}</b></div>
           <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(stats.views)}</b></div>

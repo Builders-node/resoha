@@ -411,6 +411,14 @@ textarea.input{resize:vertical;min-height:96px}
 .sidenav a{display:flex;gap:10px;align-items:center;padding:11px 13px;border-radius:11px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
 .sidenav a:hover{background:#e9e9ef}
 .sidenav a.is-active{background:var(--ink);color:#fff}
+.sidenav__add{justify-content:center;background:var(--orange);color:#fff !important;margin-bottom:6px}
+.sidenav__add:hover{background:#e64100 !important}
+.sidenav__add.is-active{background:var(--ink) !important}
+.sidenav__group + .sidenav__group{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.sidenav__title{display:block;padding:8px 13px 4px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.sidenav__count{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+.sidenav a.is-active .sidenav__count{color:rgba(255,255,255,.7)}
+.sidenav__count.is-alert,.sidenav a.is-active .sidenav__count.is-alert{min-width:20px;padding:2px 7px;border-radius:999px;background:var(--orange);color:#fff;text-align:center}
 .profile-head{display:flex;gap:16px;align-items:center;padding:20px;background:var(--bg-soft);border-radius:var(--radius-lg);margin-bottom:22px}
 .profile-head .ava{width:72px;height:72px;border-radius:50%;object-fit:cover}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
@@ -485,6 +493,13 @@ textarea.input{resize:vertical;min-height:96px}
     overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;scroll-snap-type:x proximity}
   .sidenav::-webkit-scrollbar{display:none}
   .sidenav a{flex:0 0 auto;scroll-snap-align:start;white-space:nowrap}
+  /* у стрічці розділи — це просто тонкі роздільники, без підписів */
+  /* кнопка додавання прилипає до лівого краю стрічки — завжди під рукою */
+  .sidenav__add{margin-bottom:0;position:sticky;left:0;z-index:1;box-shadow:6px 0 8px -4px var(--bg-soft)}
+  .sidenav__group{display:flex;gap:6px;flex:0 0 auto}
+  .sidenav__group + .sidenav__group{border-top:0;margin-top:0;padding-top:0;border-left:1px solid var(--line);padding-left:6px}
+  .sidenav__title{display:none}
+  .sidenav__count{margin-left:2px}
   .cta{grid-template-columns:1fr}
 }
 @media (max-width:860px){
@@ -832,6 +847,9 @@ textarea.input{resize:vertical;min-height:96px}
 @media (max-width:860px){
   .sidenav{gap:6px;padding:8px;border-radius:var(--radius)}
   .sidenav a{padding:9px 12px;font-size:13.5px}
+  /* на телефоні — квадратна іконка «+», підпис лишається в title */
+  .sidenav__add{padding:9px 11px}
+  .sidenav__add-label{display:none}
 
   .table,.table tbody,.table tr,.table td{display:block;width:auto}
   .table thead{display:none}
