@@ -15,11 +15,13 @@ const money = (v: number, deal: Deal) => (deal === 'rent' ? `${fmtUsd(v)}/mo` : 
  * рядок на тип квартир із діапазонами, а по кліку — список квартир із посиланнями.
  * Окремо для продажу й оренди. Без клієнтського JS: розкриття тримає <details>.
  */
-export default function DevelopmentUnits({ units, buildings, developer, completion, sales, contactHref }: {
+export default function DevelopmentUnits({ units, buildings, developer, developerHref, completion, sales, contactHref }: {
   units: Listing[];
   /** id → назва дому; лише коли домів кілька — тоді в таблиці зʼявляється колонка «Building» */
   buildings?: Record<string, string>;
   developer: string;
+  /** сторінка забудовника, якщо в ЖК обрано його профіль */
+  developerHref?: string;
   completion: string;
   sales: SalesStatus;
   contactHref: string;
@@ -30,7 +32,9 @@ export default function DevelopmentUnits({ units, buildings, developer, completi
     <div className="dev__box">
       <div className="dev__head">
         <span className="muted">
-          {developer ? <>Project by <b className="dev__by">{developer}</b></> : 'New development'}
+          {developer ? <>Project by {developerHref
+            ? <Link href={developerHref}><b className="dev__by">{developer}</b></Link>
+            : <b className="dev__by">{developer}</b>}</> : 'New development'}
         </span>
         <a className="btn dev__ask" href={contactHref}>Ask about prices &amp; availability</a>
       </div>

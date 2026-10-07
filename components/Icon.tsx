@@ -55,6 +55,7 @@ const PATHS: Record<string, React.ReactNode> = {
   /* документи й медіа ЖК */
   play: <><circle cx="12" cy="12" r="8.6" /><path d="M10.2 8.8v6.4l5.2-3.2z" /></>,
   orbit: <><ellipse cx="12" cy="12" rx="8.6" ry="3.6" /><path d="M12 3.4a3.6 8.6 0 0 1 0 17.2" /><path d="M17.6 7.2l1.6 1.2-1.9.6" /></>,
+  chevron: <><path d="m9.5 6 6 6-6 6" /></>,
   download: <><path d="M12 4v11M7.4 10.6 12 15.2l4.6-4.6" /><path d="M4.6 19.4h14.8" /></>,
 };
 
