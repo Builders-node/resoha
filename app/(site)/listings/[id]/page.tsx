@@ -13,6 +13,7 @@ import Gallery from '@/components/Gallery';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
 import { trackAfterResponse } from '@/lib/track';
+import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
@@ -58,6 +59,7 @@ export default async function PropertyPage({ params, searchParams }: {
 
   // перегляд для аналітики (і лічильника views) — запис, і він не має тримати рендер: виконуємо після відповіді
   await trackAfterResponse({ listingId: id }, 'view', { utm: (await searchParams).utm_source });
+  await trackPromo('listing', [listing], 'click');
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
   const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs] = await Promise.all([

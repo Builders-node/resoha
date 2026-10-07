@@ -10,13 +10,14 @@ import DevelopmentsPanel from './DevelopmentsPanel';
 import Icon from './Icon';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
+import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-export type Tab = 'listings' | 'analytics' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
+export type Tab = 'listings' | 'analytics' | 'promote' | 'leads' | 'new' | 'developments' | 'developer' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
@@ -102,6 +103,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         <a className={tab === 'analytics' ? 'is-active' : ''} onClick={() => setTab('analytics')}>
           <Icon name="chart" size={18} /> Analytics
         </a>
+        <a className={tab === 'promote' ? 'is-active' : ''} onClick={() => setTab('promote')}>
+          <Icon name="sparkle" size={18} /> Promote
+        </a>
         <a className={tab === 'leads' ? 'is-active' : ''} onClick={() => setTab('leads')}>
           <Icon name="inbox" size={18} /> Leads {stats.newLeads > 0 && <span className="pill pill--on">{stats.newLeads}</span>}
         </a>
@@ -152,12 +156,14 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           </div>
         )}
 
-        {tab !== 'analytics' && <div className="stats">
+        {tab !== 'analytics' && tab !== 'promote' && <div className="stats">
           <div className="stat"><span className="muted small">Listings</span><b>{stats.total}</b></div>
           <div className="stat"><span className="muted small">Published</span><b>{stats.active}</b></div>
           <div className="stat"><span className="muted small">Views</span><b>{fmtNumber(stats.views)}</b></div>
           <div className="stat"><span className="muted small">Leads</span><b>{stats.leads}</b></div>
         </div>}
+
+        {tab === 'promote' && <PromotePanel />}
 
         {tab === 'analytics' && <AnalyticsPanel isOwner={isOwner} agencyName={agency?.name} />}
 

@@ -7,6 +7,7 @@ import Photo from '@/components/Photo';
 import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import { trackPromo } from '@/lib/promo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
 import { getLang } from '@/lib/i18n/server';
@@ -73,6 +74,14 @@ export default async function HomePage() {
   });
 
   const agencies = board.slice(0, 5);
+
+  // покази платних кампаній: база рахує лише ті обʼєкти, що просуваються зараз
+  await Promise.all([
+    trackPromo('listing', featured, 'impression'),
+    trackPromo('development', developments.map(({ d }) => d), 'impression'),
+    trackPromo('building', featuredBuildings.slice(0, 8), 'impression'),
+    trackPromo('agency', agencies.map((r) => ({ id: r.agency.id, featured: !!r.agency.featured })), 'impression'),
+  ]);
   const agencyNameById = new Map(board.map((b) => [b.agency.id, b.agency.name]));
 
   return (
@@ -183,7 +192,7 @@ export default async function HomePage() {
               <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--tall">
                 <Photo src={d.photos[0]} alt={d.name} />
                 <div className="card__badges">
-                  {d.featured && <span className="badge badge--accent"><Icon name="star" size={13} /> {t('Featured')}</span>}
+                  {d.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
                   <span className="badge badge--brand">{t(salesLabel(d.sales))}</span>
                 </div>
                 <div className="ov__b">

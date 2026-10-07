@@ -4,6 +4,7 @@ import { canManageDevelopment } from '@/lib/units';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 import { trackSearchAfterResponse } from '@/lib/track';
+import { trackPromo } from '@/lib/promo';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -24,6 +25,7 @@ export async function GET(req: Request) {
   if (page === 0 && !query.agentId && !query.agencyId && !query.developmentId && !query.ids) {
     await trackSearchAfterResponse(query, total, req.headers);
   }
+  await trackPromo('listing', items, 'impression');
   return NextResponse.json({ items, total, page, hasMore });
 }
 

@@ -4,6 +4,7 @@ import Avatar from '@/components/Avatar';
 import Icon from '@/components/Icon';
 import { agencyBoard, listAgents, queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
+import { trackPromo } from '@/lib/promo';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 
@@ -13,6 +14,7 @@ export const metadata = { title: 'Agents & agencies — Resoha Roatán' };
 export default async function AgentsIndexPage() {
   const [agents, board, listings, lang] = await Promise.all([listAgents(), agencyBoard(), queryListings(), getLang()]);
   const t = makeT(lang);
+  await trackPromo('agency', board.map((r) => ({ id: r.agency.id, featured: !!r.agency.featured })), 'impression');
 
   const byAgent = new Map<string, number>();
   listings.forEach((l) => byAgent.set(l.agentId, (byAgent.get(l.agentId) ?? 0) + 1));

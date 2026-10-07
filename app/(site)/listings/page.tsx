@@ -4,6 +4,7 @@ import { fromParams, toListingQuery, toQuery } from '@/lib/filters';
 import { getSession } from '@/lib/session';
 import { headers } from 'next/headers';
 import { trackSearchAfterResponse } from '@/lib/track';
+import { trackPromo } from '@/lib/promo';
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -23,6 +24,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   const favIds = session ? await getFavorites(session.id) : [];
   // відкриття сторінки з фільтрами — теж пошук (далі зміни фільтрів пише /api/listings)
   if (!query.agentId && !query.agencyId) await trackSearchAfterResponse(query, total, await headers());
+  await trackPromo('listing', items, 'impression');
 
   return (
     <ListingsExplorer
