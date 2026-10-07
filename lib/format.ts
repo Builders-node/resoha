@@ -37,6 +37,20 @@ const num = new Intl.NumberFormat('en-US');
 export const fmtNumber = (v: number) => num.format(v);
 export const fmtUsd = (v: number) => usd.format(v);
 
+/* ---------- площа: зберігаємо ft², показуємо одразу ft² і m² ---------- */
+export const SQFT_PER_M2 = 10.7639;
+/** ft² → m²: до десятих у малих приміщень, цілі — від 100 m² */
+export const sqftToM2 = (sqft: number) => {
+  const m2 = sqft / SQFT_PER_M2;
+  return m2 >= 100 ? Math.round(m2) : Math.round(m2 * 10) / 10;
+};
+export const m2ToSqft = (m2: number) => Math.round(m2 * SQFT_PER_M2);
+/** «375 m² · 4,039 ft²» — m² першими, як просив власник */
+export const fmtArea = (sqft: number, sep = ' · ') => `${num.format(sqftToM2(sqft))} m²${sep}${num.format(sqft)} ft²`;
+/** «$1,596/m² · $148/ft²» — ціна за одиницю площі в обох одиницях */
+export const fmtPerArea = (price: number, sqft: number, sep = ' · ') =>
+  `${usd.format(Math.round((price / sqft) * SQFT_PER_M2))}/m²${sep}${usd.format(Math.round(price / sqft))}/ft²`;
+
 export const fmtPrice = (v: number, deal: Deal, lang: Lang = 'en') =>
   deal === 'rent' ? `${usd.format(v)}${translate(lang, '/mo')}` : usd.format(v);
 
@@ -61,7 +75,7 @@ export const fmtDate = (iso: string, lang: Lang = 'en') =>
 export const nListings = (n: number, lang: Lang = 'en') =>
   translate(lang, n === 1 ? '{n} listing' : '{n} listings', { n: num.format(n) });
 
-/** "2 bd · 2 ba · 1,240 ft²" — для землі показуємо акри */
+/** "2 bd · 2 ba · 115 m² / 1,240 ft²" — для землі показуємо акри */
 export function specLine(
   l: { type: PropertyType; beds: number; baths: number; sqft: number; lotAcres: number },
   lang: Lang = 'en',
@@ -70,7 +84,7 @@ export function specLine(
   if (l.type === 'land') return t('{n} ac lot', { n: l.lotAcres });
   // 0 спалень — це студія, а не помилка даних
   const parts = [l.beds > 0 ? t('{n} bd', { n: l.beds }) : t('Studio'), t('{n} ba', { n: l.baths })];
-  if (l.sqft) parts.push(`${num.format(l.sqft)} ft²`);
+  if (l.sqft) parts.push(fmtArea(l.sqft, ' / '));
   if (l.lotAcres) parts.push(t('{n} ac', { n: l.lotAcres }));
   return parts.join(' · ');
 }

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Icon from './Icon';
 import RangeSlider from './RangeSlider';
 import { AMENITIES, EMPTY_FILTERS, type Filters, toQuery } from '@/lib/filters';
-import { fmtNumber, nListings } from '@/lib/format';
+import { fmtNumber, nListings, sqftToM2 } from '@/lib/format';
 import { useLang, useT } from './LangProvider';
 
 type Facets = {
@@ -206,6 +206,7 @@ export default function FiltersModal({
                     sqftMax: b >= sqft.max ? '' : String(b),
                   })}
                 />
+                <p className="small"><b>{fmtNumber(sqftToM2(sqLo))} – {fmtNumber(sqftToM2(sqHi))} m²</b></p>
               </div>
             )}
 

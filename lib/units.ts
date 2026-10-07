@@ -2,6 +2,9 @@
  * ЖК і квартири в ньому. ЖК — таблиця developments (міграція 0032), квартира —
  * звичайне оголошення з development_id, номером, поверхом і станом.
  */
+import { SQFT_PER_M2 } from './format';
+
+export { SQFT_PER_M2 };
 
 export const UNIT_STATUSES = [
   ['available', 'Available'],
@@ -85,7 +88,6 @@ export const slugify = (s: string) =>
 export const groupLabel = (beds: number) => (beds === 0 ? 'Studios' : beds === 1 ? '1 bedroom' : `${beds} bedrooms`);
 export const unitTypeLabel = (beds: number) => (beds > 0 ? `${beds} Bedroom` : 'Studio');
 
-export const SQFT_PER_M2 = 10.7639;
 export const toM2 = (sqft: number) => Math.round((sqft / SQFT_PER_M2) * 10) / 10;
 
 /** Рядок прайсу, вставленого з таблиці забудовника — ще не оголошення */

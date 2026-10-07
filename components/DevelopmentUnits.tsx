@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { fmtNumber, fmtUsd } from '@/lib/format';
-import { groupUnits, salesLabel, statusLabel, toM2, type SalesStatus } from '@/lib/units';
+import { SQFT_PER_M2, groupUnits, salesLabel, statusLabel, toM2, type SalesStatus } from '@/lib/units';
 import type { Deal, Listing } from '@/lib/types';
 
 const span = (r: [number, number] | null, fmt: (n: number) => string, unit = '') =>
@@ -59,7 +59,7 @@ export default function DevelopmentUnits({ units, buildings, developer, develope
             <div key={deal} className="dev__deal">
               <div className="dev__dealhead">
                 <h3>{deal === 'sale' ? 'For sale' : 'For rent'}</h3>
-                {perM2.length > 0 && <b className="dev__ppm">from {fmtUsd(Math.min(...perM2))}/m²</b>}
+                {perM2.length > 0 && <b className="dev__ppm">from {fmtUsd(Math.min(...perM2))}/m² <span className="muted">· {fmtUsd(Math.round(Math.min(...perM2) / SQFT_PER_M2))}/ft²</span></b>}
                 <span className="tiny muted">{list.filter((u) => u.status === 'available').length} of {list.length} available</span>
               </div>
               {groups.map((g) => (

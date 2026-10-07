@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Photo from './Photo';
-import { fmtUsd } from '@/lib/format';
+import { fmtNumber, fmtUsd } from '@/lib/format';
 import { OPEN_STATUSES, toM2 } from '@/lib/units';
 import type { Building, Listing } from '@/lib/types';
 
@@ -45,7 +45,7 @@ export default function DevelopmentLayouts({ units, buildings }: { units: Listin
                       <Photo src={plan || lead.photos[0] || ''} alt={`${kind(lead.beds)} layout, ${lead.sqft ? toM2(lead.sqft) : ''} m²`} label="Plan coming soon" />
                     </Link>
                     <div className="lay__body">
-                      <b className="lay__title">{kind(lead.beds)}{lead.sqft > 0 && <> · {toM2(lead.sqft)} m²</>}</b>
+                      <b className="lay__title">{kind(lead.beds)}{lead.sqft > 0 && <> · {toM2(lead.sqft)} m² <span className="muted small">/ {fmtNumber(lead.sqft)} ft²</span></>}</b>
                       <div className="lay__price">
                         {free.length
                           ? lead.deal === 'rent' ? `${fmtUsd(lead.price)}/mo` : `from ${fmtUsd(lead.price)}`

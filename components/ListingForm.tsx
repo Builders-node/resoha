@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import AreaInput from './AreaInput';
 import LocationPicker from './LocationPicker';
 import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
@@ -180,8 +181,7 @@ export default function ListingForm({
         <div className="field"><label>Bathrooms</label>
           <input className="input" name="baths" type="number" step="0.5" defaultValue={v?.baths ?? 2} /></div>
 
-        <div className="field"><label>Interior, ft²</label>
-          <input className="input" name="sqft" type="number" defaultValue={v?.sqft} placeholder="1240" /></div>
+        <AreaInput name="sqft" label="Interior" defaultSqft={v?.sqft} />
         <div className="field"><label>Lot, acres</label>
           <input className="input" name="lotAcres" type="number" step="0.01" defaultValue={v?.lotAcres ?? 0} /></div>
 
