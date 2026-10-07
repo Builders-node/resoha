@@ -17,9 +17,16 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (b.experience !== undefined) patch.experience = Number(b.experience) || 0;
   if (b.verified !== undefined) patch.verified = Boolean(b.verified);
   if (b.active !== undefined) patch.active = Boolean(b.active);
-  if (b.isOwner !== undefined) patch.is_owner = Boolean(b.isOwner);
 
   const supabase = await supabaseServer();
+
+  // власника міняють у членстві активної команди, а не в профілі
+  if (b.isOwner !== undefined) {
+    const { error } = await supabase.rpc('set_member_owner', { p_member: id, p_owner: Boolean(b.isOwner) });
+    if (error) return NextResponse.json({ error: error.message }, { status: 403 });
+    if (!Object.keys(patch).length) return NextResponse.json({ ok: true });
+  }
+
   const { data, error } = await supabase.from('profiles').update(patch)
     .eq('id', id).select('*, agency:agencies!profiles_agency_id_fkey(name)').maybeSingle();
 

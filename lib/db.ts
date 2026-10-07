@@ -129,9 +129,36 @@ export async function listAgents(): Promise<Agent[]> {
 
 /** withContacts=true — для команди в кабінеті, де показуємо пошту колег. */
 export async function agencyMembers(agencyId: string, withContacts = false): Promise<Agent[]> {
-  const { data } = await (await db()).from('profiles').select(withContacts ? AGENT_FULL_COLS : AGENT_PUBLIC_COLS)
+  const client = await db();
+  const cols = withContacts ? AGENT_FULL_COLS : AGENT_PUBLIC_COLS;
+  // склад команди — з agency_members: людина може бути в кількох командах, а profiles.agency_id — лише активна
+  const { data, error } = await client.from('agency_members')
+    .select(`is_owner, profile:profiles!agency_members_profile_id_fkey(${cols})`).eq('agency_id', agencyId)
+    .order('joined_at');
+  if (!error) {
+    return (data ?? [])
+      .filter((m: Row) => m.profile && m.profile.role === 'agent')
+      .map((m: Row) => ({ ...mapAgent(m.profile), isOwner: m.is_owner }));
+  }
+  // до міграції 0040 таблиці немає — беремо по активній агенції
+  const { data: legacy } = await client.from('profiles').select(cols)
     .eq('agency_id', agencyId).eq('role', 'agent');
-  return (data ?? []).map(mapAgent);
+  return (legacy ?? []).map(mapAgent);
+}
+
+export type TeamMembership = { agency: Agency; isOwner: boolean; active: boolean };
+
+/** Усі команди людини; активна — та, що в profiles.agency_id. */
+export async function myTeams(user: Agent): Promise<TeamMembership[]> {
+  const { data, error } = await (await db()).from('agency_members')
+    .select(`is_owner, agency:agencies(${AGENCY_PUBLIC_COLS})`).eq('profile_id', user.id).order('joined_at');
+  if (error) {
+    const agency = await getAgency(user.agencyId);
+    return agency ? [{ agency, isOwner: user.isOwner, active: true }] : [];
+  }
+  return (data ?? []).filter((m: Row) => m.agency).map((m: Row) => ({
+    agency: mapAgency(m.agency), isOwner: m.is_owner, active: m.agency.id === user.agencyId,
+  }));
 }
 
 /* ---------- agencies ---------- */
@@ -813,7 +840,7 @@ export async function adminListAgencies() {
   const client = await db();
   const [{ data: agencies }, { data: members }, { data: listings }] = await Promise.all([
     client.from('agencies').select(AGENCY_PUBLIC_COLS).order('created_at', { ascending: false }),
-    client.from('profiles').select('agency_id'),
+    client.from('agency_members').select('agency_id'),
     client.from('listings').select('agency_id'),
   ]);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

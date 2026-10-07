@@ -17,6 +17,7 @@ import TabStrip from './TabStrip';
 type Tab = 'listings' | 'leads' | 'new' | 'developments' | 'team' | 'profile';
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
+type Team = { agency: Agency; isOwner: boolean; active: boolean };
 
 export default function AgentDashboard({ session, initialTab }: { session: Session; initialTab?: Tab }) {
   const router = useRouter();
@@ -28,14 +29,17 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   const [stats, setStats] = useState<Stats | null>(null);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [editing, setEditing] = useState<Listing | null>(null);
 
   const load = useCallback(async () => {
-    const [a, l, t] = await Promise.all([
+    const [a, l, t, tm] = await Promise.all([
       fetch(`/api/agents/${session.id}?scope=${scope}`).then((r) => r.json()),
       fetch('/api/leads').then((r) => r.json()),
       fetch('/api/agency/members').then((r) => r.json()),
+      fetch('/api/agency/teams').then((r) => r.json()),
     ]);
+    setTeams(tm.teams ?? []);
     setAgent(a.agent); setAgency(a.agency); setListings(a.listings); setStats(a.stats);
     setLeads(l.items ?? []);
     setMembers(t.members ?? []);
@@ -71,6 +75,17 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
 
 
+
+  async function switchTeam(agencyId: string) {
+    const res = await fetch('/api/agency/teams', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ agencyId }),
+    });
+    const d = await res.json();
+    if (!res.ok) return toast(d.error ?? 'Could not switch');
+    toast(`Now working in ${teams.find((t) => t.agency.id === agencyId)?.agency.name ?? 'the team'}`);
+    setScope('own'); load(); router.refresh();
+  }
 
   if (!agent || !stats) return <div className="wrap" style={{ padding: 60 }}>Loading dashboard…</div>;
 
@@ -108,7 +123,13 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
               {agent.verified && <Icon name="verified" size={17} className="ico ico--ok" />}
             </h2>
             <div className="muted">
-              {agency ? agency.name : 'Independent agent'}
+              {/* кілька команд — назва стає перемикачем активної */}
+              {agency && teams.length > 1 ? (
+                <select className="team-switch" value={agency.id} aria-label="Switch team"
+                  onChange={(e) => switchTeam(e.target.value)}>
+                  {teams.map((t) => <option key={t.agency.id} value={t.agency.id}>{t.agency.name}</option>)}
+                </select>
+              ) : agency ? agency.name : 'Independent agent'}
               {isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>Owner</span>}
               {agent.phone && ` · ${agent.phone}`}
             </div>
