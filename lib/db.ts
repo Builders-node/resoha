@@ -66,7 +66,7 @@ const mapListing = (r: Row): Listing => ({
   beds: r.beds, baths: Number(r.baths), sqft: r.sqft, lotAcres: Number(r.lot_acres), year: r.year,
   oceanfront: r.oceanfront, titled: r.titled, ownerFinancing: r.owner_financing,
   lat: r.lat, lng: r.lng, agentId: r.agent_id, agencyId: r.agency_id,
-  featured: r.featured, active: r.active, views: r.views,
+  featured: r.featured, featuredRank: r.featured_rank ?? 0, active: r.active, views: r.views,
   createdAt: r.created_at, tags: r.tags ?? [], photos: r.photos ?? [], text: r.body ?? '',
   sourceName: r.source_name ?? '', sourceRef: r.source_ref ?? '', sourceUrl: r.source_url ?? '',
   land: mapLand(r.land_facts),
@@ -431,6 +431,8 @@ const mapDevelopment = (r: Row): Development => ({
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
+  // до міграції 0044 колонок немає
+  featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,
 });
 
 export async function getDevelopment(slugOrId: string): Promise<Development | null> {
@@ -592,6 +594,7 @@ export async function deleteDeveloper(id: string) {
 const mapBuilding = (r: Row): Building => ({
   id: r.id, developmentId: r.development_id, name: r.name, photo: r.photo ?? '', floors: r.floors ?? null,
   stage: cleanStage(r.stage), completion: r.completion ?? '', address: r.address ?? '', sort: r.sort ?? 0,
+  featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,
 });
 
 /** До міграції 0035 таблиці немає — тоді ЖК просто без домів */
@@ -987,15 +990,79 @@ export async function adminSetListingFlags(id: string, patch: { featured?: boole
   const row: Row = {};
   if (patch.featured !== undefined) row.featured = patch.featured;
   if (patch.active !== undefined) row.active = patch.active;
-  const { data, error } = await (await db()).from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
+  const client = await db();
+  const { data, error } = Object.keys(row).length
+    ? await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle()
+    : await client.from('listings').select(listingCols({})).eq('id', id).maybeSingle();
   if (error) throw error;
   return data ? mapListing(data) : null;
+}
+
+/* ---------- Featured: ЖК, доми й оголошення на головній ---------- */
+type FeaturedKind = 'listing' | 'development' | 'building';
+const FEATURED_TABLE: Record<FeaturedKind, string> = { listing: 'listings', development: 'developments', building: 'buildings' };
+
+/** Нове відмічене стає в кінець черги: адмін потім підніме стрілками, якщо треба. */
+export async function adminSetFeatured(kind: FeaturedKind, id: string, featured: boolean) {
+  const client = await db();
+  const table = FEATURED_TABLE[kind];
+  const row: Row = { featured };
+  if (featured) {
+    const { data: last, error } = await client.from(table).select('featured_rank')
+      .eq('featured', true).order('featured_rank', { ascending: false }).limit(1).maybeSingle();
+    // до міграції 0044 колонки немає — тоді лише сама пометка
+    if (!error) row.featured_rank = (last?.featured_rank ?? 0) + 1;
+  }
+  const { error, count } = await client.from(table).update(row, { count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/** Новий порядок однієї групи: позиція в масиві = featured_rank. */
+export async function adminReorderFeatured(kind: FeaturedKind, ids: string[]) {
+  const client = await db();
+  const table = FEATURED_TABLE[kind];
+  const results = await Promise.all(ids.slice(0, 100).map((id, i) =>
+    client.from(table).update({ featured_rank: i + 1 }).eq('id', id)));
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw failed.error;
+}
+
+/** Усі ЖК з домами для адмінки — разом із прихованими (RLS пускає адміна). */
+export async function adminListDevelopments(): Promise<(Development & { buildings: Building[]; units: number })[]> {
+  const client = await db();
+  const [devs, buildings, units] = await Promise.all([
+    client.from('developments').select('*').order('created_at', { ascending: false }).limit(500),
+    client.from('buildings').select('*').order('sort').order('created_at'),
+    client.from('listings').select('development_id').not('development_id', 'is', null).limit(10000),
+  ]);
+  if (devs.error) throw devs.error;
+  const byDev = new Map<string, Building[]>();
+  (buildings.data ?? []).map(mapBuilding).forEach((b) => byDev.set(b.developmentId, [...(byDev.get(b.developmentId) ?? []), b]));
+  const counts = new Map<string, number>();
+  (units.data ?? []).forEach((u: Row) => counts.set(u.development_id, (counts.get(u.development_id) ?? 0) + 1));
+  return (devs.data ?? []).map((r: Row) => {
+    const d = mapDevelopment(r);
+    return { ...d, buildings: byDev.get(d.id) ?? [], units: counts.get(d.id) ?? 0 };
+  });
+}
+
+/** Відмічені доми для головної — з назвою й адресою їхнього ЖК. До міграції 0044 — порожньо. */
+export async function listFeaturedBuildings(): Promise<(Building & { development: { slug: string; name: string; neighborhood: string; photo: string } })[]> {
+  const { data, error } = await (await db()).from('buildings')
+    .select('*, development:developments!inner(slug, name, neighborhood, photos, active)')
+    .eq('featured', true).eq('development.active', true).order('featured_rank').limit(12);
+  if (error) return [];
+  return (data ?? []).map((r: Row) => ({
+    ...mapBuilding(r),
+    development: { slug: r.development.slug, name: r.development.name, neighborhood: r.development.neighborhood ?? '', photo: r.development.photos?.[0] ?? '' },
+  }));
 }
 
 /* ---------- журнал дій адміністратора ---------- */
 type AdminLogInput = {
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review';
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building';
   targetId: string;
   targetName?: string;
   reason?: string;

@@ -13,7 +13,9 @@ export const metadata: Metadata = {
 };
 
 export default async function DevelopmentsPage() {
-  const devs = await listDevelopments();
+  // відмічені адміном — першими, у порядку з вкладки Featured
+  const devs = (await listDevelopments()).sort((a, b) => Number(b.featured) - Number(a.featured)
+    || (a.featured ? a.featuredRank - b.featuredRank : 0));
   // ціна «від» і кількість квартир — по одній вибірці на ЖК; їх небагато
   const units = await Promise.all(devs.map((d) => queryListings({ developmentId: d.id })));
 

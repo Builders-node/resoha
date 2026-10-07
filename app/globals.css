@@ -1553,3 +1553,18 @@ a.dev-list__row:hover{background:var(--bg-soft)}
   .an-heat__grid{grid-template-columns:28px repeat(24,minmax(0,1fr));gap:1px}
   .an-heat__hour{font-size:9px}
 }
+
+/* Featured в адмінці: зірка + впорядковані списки */
+.star-btn.is-on{color:#f59e0b;border-color:#fcd34d;background:#fffbeb}
+.star-btn.is-on svg{fill:currentColor}
+.feat-list{display:flex;flex-direction:column}
+.feat-row{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.feat-row:last-child{border-bottom:0}
+.feat-row--sub{padding-left:40px}
+.feat-row--sub .thumb{width:48px;height:36px}
+.feat-row__b{flex:1;min-width:0}
+.feat-row__name{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.feat-row__act{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.feat-row__no{font-weight:700;color:var(--ink-3);min-width:22px;text-align:center}
+.feat-dev{border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:10px}
+@media (max-width:600px){.feat-row--sub{padding-left:16px}.feat-row{flex-wrap:wrap}.feat-row__act{margin-left:auto}}
