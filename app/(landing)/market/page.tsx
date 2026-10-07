@@ -49,7 +49,6 @@ export default async function MarketPage() {
         variableMeasured: MARKET_FACTS.map((f) => ({ '@type': 'PropertyValue', name: f.label, value: f.value, description: f.note })),
         citation: [...new Set(MARKET_FACTS.map((f) => f.source.url))],
       })} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <h1>{t('Roatán real-estate market report')}</h1>
       <p className="prose__meta tiny muted">{t('Figures checked')} <time dateTime={MARKET_UPDATED}>{fmtDate(MARKET_UPDATED, lang)}</time> · {t('Resoha catalogue counts update live')}</p>
@@ -120,6 +119,7 @@ export default async function MarketPage() {
           {t('Journalists and researchers are welcome to cite this page. Please link to {url}.', { url: `${SITE_URL}/market` })}
         </p>
       </section>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

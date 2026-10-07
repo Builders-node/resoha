@@ -27,7 +27,6 @@ export default async function GuidesPage() {
         url: `${SITE_URL}/guides`,
         hasPart: GUIDES.map((g) => ({ '@type': 'Article', headline: g.title, url: `${SITE_URL}/guides/${g.slug}` })),
       })} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
       <h1>{t('Buying property on Roatán: guides')}</h1>
       <p className="page__lead">
         {t('Straight answers to the questions buyers ask before they fly: who can own land, what it costs, how to check a title and where to live. Every figure links to its source.')}
@@ -41,6 +40,7 @@ export default async function GuidesPage() {
           </Link>
         ))}
       </div>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>
   );
 }

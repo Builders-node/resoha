@@ -21,9 +21,7 @@ export default async function AgentsIndexPage() {
 
   return (
     <div className="wrap">
-      <div className="crumbs small muted"><Link href="/">{t('Home')}</Link> · {t('Agents & agencies')}</div>
-
-      <header style={{ padding: '6px 0 4px' }}>
+      <header className="page-top" style={{ paddingBottom: 4 }}>
         <h1 style={{ fontSize: 30 }}>{t('Agents & agencies on Roatán')}</h1>
         <p className="muted" style={{ marginTop: 8 }}>
           {t('Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.')}
@@ -69,6 +67,8 @@ export default async function AgentsIndexPage() {
           </div>
         )}
       </section>
+
+      <div className="crumbs crumbs--foot small muted"><Link href="/">{t('Home')}</Link> · {t('Agents & agencies')}</div>
     </div>
   );
 }

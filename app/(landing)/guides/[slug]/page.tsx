@@ -42,9 +42,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const related = g.related.map(guideBySlug).filter((x) => x !== undefined);
 
   return (
-    <article className="wrap prose">
+    <article className="wrap prose page-top">
       <JsonLd data={graph(articleLd(g), faqLd(g.faq), breadcrumbLd(crumbs))} />
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <h1>{g.title}</h1>
       <p className="prose__meta tiny muted">
@@ -111,6 +110,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           </div>
         </section>
       )}
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </article>
   );
 }

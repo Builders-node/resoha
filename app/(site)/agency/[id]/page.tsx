@@ -45,10 +45,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="wrap">
-      <div className="crumbs small muted">
-        <BackButton variant="inline" fallback="/" />
-        <Link href="/">{t('Home')}</Link> · <Link href="/listings?deal=sale">{t('Agencies')}</Link> · {agency.name}
-      </div>
+      <div className="crumbs small muted"><BackButton variant="inline" fallback="/" /></div>
 
       <header className="org" style={{ background: agency.brand }}>
         <div className="org__mono">{agency.name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase()}</div>
@@ -116,6 +113,10 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
           </div>
         )}
       </section>
+
+      <div className="crumbs crumbs--foot small muted">
+        <Link href="/">{t('Home')}</Link> · <Link href="/listings?deal=sale">{t('Agencies')}</Link> · {agency.name}
+      </div>
     </div>
   );
 }

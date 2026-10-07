@@ -48,11 +48,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="wrap">
-      <div className="crumbs small muted">
-        <BackButton variant="inline" fallback="/" />
-        <Link href="/">{t('Home')}</Link> ·{' '}
-        {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')} · {agent.name}
-      </div>
+      <div className="crumbs small muted"><BackButton variant="inline" fallback="/" /></div>
 
       <header className="org org--person">
         <Avatar className="org__avatar" src={agent.avatar} name={agent.name} />
@@ -114,6 +110,11 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
 
       <AgentReviews agentId={agent.id} canReview={canReview} signedIn={!!session}
         isSelf={session?.id === agent.id} />
+
+      <div className="crumbs crumbs--foot small muted">
+        <Link href="/">{t('Home')}</Link> ·{' '}
+        {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')} · {agent.name}
+      </div>
     </div>
   );
 }
