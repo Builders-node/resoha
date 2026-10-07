@@ -18,7 +18,7 @@ export default function DevelopmentShell({ ctx, active, title, top, children }: 
   active: string;
   /** Підзаголовок вкладки: «Layouts», «Construction progress»… На огляді не потрібен */
   title?: string;
-  /** Те, що йде на всю ширину над колонками, — галерея на огляді */
+  /** Те, що йде на всю ширину над назвою, — галерея на огляді (як на сторінці оголошення: спершу фото) */
   top?: React.ReactNode;
   children: React.ReactNode;
 }) {
@@ -52,6 +52,8 @@ export default function DevelopmentShell({ ctx, active, title, top, children }: 
     <div className="wrap">
       <JsonLd data={graph(breadcrumbLd(crumbs))} />
 
+      {top}
+
       <div className="dhead">
         <div>
           <span className="dev__kicker">New development</span>
@@ -71,8 +73,6 @@ export default function DevelopmentShell({ ctx, active, title, top, children }: 
           ))}
         </div>
       </nav>
-
-      {top}
 
       <div className="prop">
         <div>{children}</div>

@@ -47,7 +47,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
   return (
     <DevelopmentShell ctx={ctx} active="overview" top={(
-      <div className="gallery-wrap">
+      <div className="gallery-wrap page-top">
         <BackButton fallback="/developments" />
         <Gallery photos={dev.photos} title={dev.name} />
       </div>
