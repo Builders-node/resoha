@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { mapAgency } from '@/lib/db';
+import { AGENCY_PUBLIC_COLS, mapAgency } from '@/lib/db';
 import { currentUserWithAgency } from '@/lib/session';
 import { supabaseServer } from '@/lib/supabase/server';
 
@@ -34,9 +34,11 @@ export async function PATCH(req: Request) {
   if (typeof b.about === 'string') patch.about = b.about;
   if (typeof b.brand === 'string' && /^#[0-9a-f]{6}$/i.test(b.brand)) patch.brand = b.brand;
 
+  // select('*') зачепив би invite_code, а його колонку закрито для всіх (0016) —
+  // PostgREST тоді відповідає «permission denied for table agencies»
   const supabase = await supabaseServer();
   const { data, error } = await supabase.from('agencies').update(patch)
-    .eq('id', user.agencyId).select('*').maybeSingle();
+    .eq('id', user.agencyId).select(AGENCY_PUBLIC_COLS).maybeSingle();
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
   if (!data) return NextResponse.json({ error: 'Only the agency owner can edit this' }, { status: 403 });
   return NextResponse.json({ agency: mapAgency(data) });
