@@ -4,6 +4,8 @@ import Crumbs from '@/components/Crumbs';
 import JsonLd from '@/components/JsonLd';
 import { GUIDES } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
+import { makeT } from '@/lib/i18n';
+import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -13,7 +15,9 @@ export const metadata: Metadata = {
   alternates: { canonical: '/guides' },
 };
 
-export default function GuidesPage() {
+export default async function GuidesPage() {
+  const lang = await getLang();
+  const t = makeT(lang);
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Guides', path: '/guides' }];
   return (
     <div className="wrap page">
@@ -23,18 +27,17 @@ export default function GuidesPage() {
         url: `${SITE_URL}/guides`,
         hasPart: GUIDES.map((g) => ({ '@type': 'Article', headline: g.title, url: `${SITE_URL}/guides/${g.slug}` })),
       })} />
-      <Crumbs items={crumbs} />
-      <h1>Buying property on Roatán: guides</h1>
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
+      <h1>{t('Buying property on Roatán: guides')}</h1>
       <p className="page__lead">
-        Straight answers to the questions buyers ask before they fly: who can own land, what it costs, how to check a title
-        and where to live. Every figure links to its source.
+        {t('Straight answers to the questions buyers ask before they fly: who can own land, what it costs, how to check a title and where to live. Every figure links to its source.')}
       </p>
       <div className="guide-list guide-list--wide">
         {GUIDES.map((g) => (
           <Link key={g.slug} className="guide-card" href={`/guides/${g.slug}`}>
             <b>{g.title}</b>
             <span className="small muted">{g.description}</span>
-            <span className="tiny muted">Updated {fmtDate(g.updated)}</span>
+            <span className="tiny muted">{t('Updated')} {fmtDate(g.updated, lang)}</span>
           </Link>
         ))}
       </div>

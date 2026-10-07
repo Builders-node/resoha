@@ -3,12 +3,14 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import Photo from './Photo';
 import { photoUrl } from '@/lib/format';
+import { useT } from './LangProvider';
 
 /**
  * Фото обʼєкта: сітка з п'яти на сторінці і повноекранний перегляд усіх фото,
  * як у LUN — стрілки, свайп, клавіатура, лічильник «3 / 24» і стрічка мініатюр.
  */
 export default function Gallery({ photos, title }: { photos: string[]; title: string }) {
+  const t = useT();
   const [open, setOpen] = useState<number | null>(null);
   const shown = photos.slice(0, 5);
   const more = photos.length - shown.length;
@@ -26,13 +28,13 @@ export default function Gallery({ photos, title }: { photos: string[]; title: st
       <div className={`gallery gallery--n${shown.length}`}>
         {shown.map((p, i) => (
           <button key={`${i}-${p}`} type="button" className="gallery__tile" onClick={() => setOpen(i)}
-            aria-label={`Open photo ${i + 1} of ${photos.length}`}>
-            <Photo src={p} alt={`${title} — photo ${i + 1}`} eager={i === 0} />
+            aria-label={t('Open photo {n} of {total}', { n: i + 1, total: photos.length })}>
+            <Photo src={p} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} eager={i === 0} />
             {i === shown.length - 1 && more > 0 && <span className="gallery__more">+{more}</span>}
           </button>
         ))}
         <button type="button" className="gallery__all" onClick={() => setOpen(0)}>
-          <Icon name="camera" size={16} /> {photos.length === 1 ? '1 photo' : `All ${photos.length} photos`}
+          <Icon name="camera" size={16} /> {photos.length === 1 ? t('1 photo') : t('All {n} photos', { n: photos.length })}
         </button>
       </div>
       {open !== null && <Lightbox photos={photos} title={title} start={open} onClose={() => setOpen(null)} />}
@@ -41,6 +43,7 @@ export default function Gallery({ photos, title }: { photos: string[]; title: st
 }
 
 function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: string; start: number; onClose: () => void }) {
+  const t = useT();
   const [i, setI] = useState(start);
   const n = photos.length;
   const go = useCallback((d: number) => setI((x) => (x + d + n) % n), [n]);
@@ -66,7 +69,7 @@ function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: 
   }, [i]);
 
   return (
-    <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${title} — photos`}
+    <div className="lightbox" role="dialog" aria-modal="true" aria-label={`${title} — ${t('photos')}`}
       onTouchStart={(e) => { touch.current = e.touches[0].clientX; }}
       onTouchEnd={(e) => {
         if (touch.current === null) return;
@@ -76,23 +79,23 @@ function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: 
       }}>
       <div className="lightbox__bar">
         <span className="lightbox__count">{i + 1} / {n}</span>
-        <button type="button" className="lightbox__close" onClick={onClose} aria-label="Close">
+        <button type="button" className="lightbox__close" onClick={onClose} aria-label={t('Close')}>
           <Icon name="close" size={22} />
         </button>
       </div>
       <div className="lightbox__stage" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
         {n > 1 && (
-          <button type="button" className="lightbox__nav lightbox__nav--prev" onClick={() => go(-1)} aria-label="Previous photo">‹</button>
+          <button type="button" className="lightbox__nav lightbox__nav--prev" onClick={() => go(-1)} aria-label={t('Previous photo')}>‹</button>
         )}
-        <img src={photoUrl(photos[i])} alt={`${title} — photo ${i + 1}`} />
+        <img src={photoUrl(photos[i])} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} />
         {n > 1 && (
-          <button type="button" className="lightbox__nav lightbox__nav--next" onClick={() => go(1)} aria-label="Next photo">›</button>
+          <button type="button" className="lightbox__nav lightbox__nav--next" onClick={() => go(1)} aria-label={t('Next photo')}>›</button>
         )}
       </div>
       {n > 1 && (
         <div className="lightbox__thumbs" ref={thumbs}>
           {photos.map((p, k) => (
-            <button key={`${k}-${p}`} type="button" className={k === i ? 'is-on' : ''} onClick={() => setI(k)} aria-label={`Photo ${k + 1}`}>
+            <button key={`${k}-${p}`} type="button" className={k === i ? 'is-on' : ''} onClick={() => setI(k)} aria-label={t('Photo {n}', { n: k + 1 })}>
               <img src={photoUrl(p)} alt="" loading="lazy" />
             </button>
           ))}

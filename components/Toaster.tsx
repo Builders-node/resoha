@@ -1,11 +1,13 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { useT } from './LangProvider';
 
 export function toast(message: string) {
   window.dispatchEvent(new CustomEvent('resoha:toast', { detail: message }));
 }
 
 export default function Toaster() {
+  const t = useT();
   const [msg, setMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -19,5 +21,5 @@ export default function Toaster() {
     return () => { window.removeEventListener('resoha:toast', onToast); clearTimeout(t); };
   }, []);
 
-  return <div className={`toast ${msg ? 'is-on' : ''}`}>{msg}</div>;
+  return <div className={`toast ${msg ? 'is-on' : ''}`}>{msg && t(msg)}</div>;
 }

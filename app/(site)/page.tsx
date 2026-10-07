@@ -9,6 +9,8 @@ import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { fromPrice, salesLabel } from '@/lib/units';
+import { getLang } from '@/lib/i18n/server';
+import { makeT } from '@/lib/i18n';
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
@@ -31,13 +33,15 @@ const RENT_TILES = [
 
 export default async function HomePage() {
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
-  const [session, all, newest, board, devs] = await Promise.all([
+  const [session, all, newest, board, devs, lang] = await Promise.all([
     getSession(),
     queryListings(),
     queryListings({ sort: 'new' }),
     agencyBoard(),
     listDevelopments(),
+    getLang(),
   ]);
+  const t = makeT(lang);
   const favIds = session ? await getFavorites(session.id) : [];
 
   const featured = [...all].sort((a, b) => Number(b.featured) - Number(a.featured)).slice(0, 4);
@@ -70,22 +74,22 @@ export default async function HomePage() {
     <>
       <section className="wrap home-top">
         <div className="tiles-block">
-          <h3>For sale</h3>
+          <h3>{t('For sale')}</h3>
           <div className="tiles">
-            {SALE_TILES.map((t) => (
-              <Link key={t.label} className="tile" href={t.href}>
-                <span className="tile__ico"><Icon name={t.icon} size={26} /></span>
-                <span>{t.label}</span>
+            {SALE_TILES.map((tile) => (
+              <Link key={tile.label} className="tile" href={tile.href}>
+                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
+                <span>{t(tile.label)}</span>
               </Link>
             ))}
           </div>
 
-          <h3>For rent</h3>
+          <h3>{t('For rent')}</h3>
           <div className="tiles">
-            {RENT_TILES.map((t) => (
-              <Link key={t.label} className="tile tile--wide" href={t.href}>
-                <span className="tile__ico"><Icon name={t.icon} size={26} /></span>
-                <span>{t.label}</span>
+            {RENT_TILES.map((tile) => (
+              <Link key={tile.label} className="tile tile--wide" href={tile.href}>
+                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
+                <span>{t(tile.label)}</span>
               </Link>
             ))}
           </div>
@@ -93,14 +97,13 @@ export default async function HomePage() {
 
         <aside className="promo">
           {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}
-          <h1>Every property on Roatán, checked before you fly</h1>
+          <h1>{t('Every property on Roatán, checked before you fly')}</h1>
           <p>
-            Homes, condos, rentals and land from island agencies in one place. Every listing links back to the
-            agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.
+            {t('Homes, condos, rentals and land from island agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
           </p>
           <div className="promo__btns">
-            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">Browse the listings <Icon name="arrowRight" size={18} /></Link>
-            <Link className="btn btn--lg promo__ghost" href="/land-passport">How the land passport works</Link>
+            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--lg promo__ghost" href="/land-passport">{t('How the land passport works')}</Link>
           </div>
         </aside>
       </section>
@@ -108,9 +111,9 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>Featured on Roatán</h2>
-            <Link className="btn btn--primary" href="/listings?deal=sale">See all {nListings(all.filter((l) => l.deal === 'sale').length)} <Icon name="arrowRight" size={18} /></Link>
-            <p>Picked from what island agencies currently have on the market</p>
+            <h2>{t('Featured on Roatán')}</h2>
+            <Link className="btn btn--primary" href="/listings?deal=sale">{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
+            <p>{t('Picked from what island agencies currently have on the market')}</p>
           </div>
           <div className="grid grid--4">
             {featured.map((l) => (
@@ -124,9 +127,9 @@ export default async function HomePage() {
       <section className="section section--soft">
         <div className="wrap">
           <div className="section__head">
-            <h2>Browse by area</h2>
-            <Link className="btn btn--primary" href="/areas">All areas compared <Icon name="arrowRight" size={18} /></Link>
-            <p>From West Bay&apos;s beach condos to the quiet East End</p>
+            <h2>{t('Browse by area')}</h2>
+            <Link className="btn btn--primary" href="/areas">{t('All areas compared')} <Icon name="arrowRight" size={18} /></Link>
+            <p>{t("From West Bay's beach condos to the quiet East End")}</p>
           </div>
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
@@ -136,7 +139,7 @@ export default async function HomePage() {
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 19 }}>{name}</div>
                   <div className="ov__meta">
-                    {nListings(a.count)}{Number.isFinite(a.from) && ` · from ${fmtUsd(a.from)}`}
+                    {nListings(a.count, lang)}{Number.isFinite(a.from) && ` · ${t('from {price}', { price: fmtUsd(a.from) })}`}
                   </div>
                 </div>
               </Link>
@@ -149,8 +152,8 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>Just listed</h2>
-            <Link className="btn btn--primary" href="/listings?deal=sale&sort=new">All new listings <Icon name="arrowRight" size={18} /></Link>
+            <h2>{t('Just listed')}</h2>
+            <Link className="btn btn--primary" href="/listings?deal=sale&sort=new">{t('All new listings')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {fresh.map((l) => (
@@ -166,20 +169,20 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>New developments</h2>
-            <Link className="btn btn--primary" href="/developments">All developments <Icon name="arrowRight" size={18} /></Link>
-            <p>Condo towers and new builds with every unit and price from the developer</p>
+            <h2>{t('New developments')}</h2>
+            <Link className="btn btn--primary" href="/developments">{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
+            <p>{t('Condo towers and new builds with every unit and price from the developer')}</p>
           </div>
           <div className="grid grid--4">
             {developments.map(({ d, count, from }) => (
               <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--tall">
                 <Photo src={d.photos[0]} alt={d.name} />
-                <div className="card__badges"><span className="badge badge--brand">{salesLabel(d.sales)}</span></div>
+                <div className="card__badges"><span className="badge badge--brand">{t(salesLabel(d.sales))}</span></div>
                 <div className="ov__b">
                   {d.developer && <div className="ov__agency">{d.developer}</div>}
                   <div className="ov__title">{d.name}</div>
-                  <div className="ov__meta">{d.neighborhood} · {count} units{d.completion && ` · ${d.completion}`}</div>
-                  {from !== null && <div className="ov__price">From {fmtUsd(from)}</div>}
+                  <div className="ov__meta">{d.neighborhood} · {t('{n} units', { n: count })}{d.completion && ` · ${d.completion}`}</div>
+                  {from !== null && <div className="ov__price">{t('From {price}', { price: fmtUsd(from) })}</div>}
                 </div>
               </Link>
             ))}
@@ -191,9 +194,9 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>Real-estate agencies</h2>
-            <Link className="btn btn--primary" href="/agents">All agents &amp; agencies <Icon name="arrowRight" size={18} /></Link>
-            <p>Licensed agencies working the island — open one to see everything they have listed</p>
+            <h2>{t('Real-estate agencies')}</h2>
+            <Link className="btn btn--primary" href="/agents">{t('All agents & agencies')} <Icon name="arrowRight" size={18} /></Link>
+            <p>{t('Licensed agencies working the island — open one to see everything they have listed')}</p>
           </div>
           <AgencyRow rows={agencies} />
         </div>
@@ -202,23 +205,23 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap cta">
           <div>
-            <h2 style={{ fontSize: 30 }}>Selling on the island?</h2>
+            <h2 style={{ fontSize: 30 }}>{t('Selling on the island?')}</h2>
             <p className="muted" style={{ fontSize: 17, margin: '12px 0 22px' }}>
-              Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.
+              {t('Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.')}
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link className="btn btn--primary btn--lg" href="/for-agents">List for free</Link>
-              <Link className="btn btn--ghost btn--lg" href="/agent">Agent dashboard</Link>
+              <Link className="btn btn--primary btn--lg" href="/for-agents">{t('List for free')}</Link>
+              <Link className="btn btn--ghost btn--lg" href="/agent">{t('Agent dashboard')}</Link>
             </div>
           </div>
           {/* лише те, що щось означає: «Agencies 0» на головній працює проти запрошення,
               а просмотри накручуються публічним RPC */}
           <div className="stats" style={{ gridTemplateColumns: '1fr 1fr', margin: 0 }}>
-            <div className="stat"><span className="muted small">Listings</span><b>{fmtNumber(all.length)}</b></div>
-            <div className="stat"><span className="muted small">Areas covered</span><b>{byArea.size}</b></div>
-            <div className="stat"><span className="muted small">For sale</span>
+            <div className="stat"><span className="muted small">{t('Listings')}</span><b>{fmtNumber(all.length)}</b></div>
+            <div className="stat"><span className="muted small">{t('Areas covered')}</span><b>{byArea.size}</b></div>
+            <div className="stat"><span className="muted small">{t('For sale')}</span>
               <b>{fmtNumber(all.filter((l) => l.deal === 'sale').length)}</b></div>
-            <div className="stat"><span className="muted small">For rent</span>
+            <div className="stat"><span className="muted small">{t('For rent')}</span>
               <b>{fmtNumber(all.filter((l) => l.deal === 'rent').length)}</b></div>
           </div>
         </div>

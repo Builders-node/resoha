@@ -1035,6 +1035,7 @@ textarea.input{resize:vertical;min-height:96px}
 .lp-foot__in{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;flex-wrap:wrap}
 .lp-foot__nav{display:flex;gap:20px;flex-wrap:wrap;color:var(--ink-2)}
 .lp-foot__nav a:hover{color:var(--ink)}
+.lp-foot__lang{margin-top:12px}
 
 @media (max-width:1080px){
   .lp-topics{grid-template-columns:repeat(3,1fr)}

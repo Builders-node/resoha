@@ -10,6 +10,8 @@ import Rich from '@/components/Rich';
 import SourceList from '@/components/SourceList';
 import { GUIDES, guideBySlug } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
+import { makeT } from '@/lib/i18n';
+import { getLang } from '@/lib/i18n/server';
 import { articleLd, breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME } from '@/lib/site';
 
@@ -33,6 +35,8 @@ const anchor = (h: string) => h.toLowerCase().replace(/[^a-z0-9]+/g, '-').replac
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
   const g = guideBySlug((await params).slug);
   if (!g) notFound();
+  const lang = await getLang();
+  const t = makeT(lang);
 
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Guides', path: '/guides' }, { name: g.short, path: `/guides/${g.slug}` }];
   const related = g.related.map(guideBySlug).filter((x) => x !== undefined);
@@ -40,29 +44,29 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   return (
     <article className="wrap prose">
       <JsonLd data={graph(articleLd(g), faqLd(g.faq), breadcrumbLd(crumbs))} />
-      <Crumbs items={crumbs} />
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <h1>{g.title}</h1>
       <p className="prose__meta tiny muted">
-        Updated <time dateTime={g.updated}>{fmtDate(g.updated)}</time> · By the {SITE_NAME} team · {g.sources.length} sources
+        {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time> · {t('By the {site} team', { site: SITE_NAME })} · {t('{n} sources', { n: g.sources.length })}
       </p>
 
-      <section className="answer" aria-label="Short answer">
-        <span className="answer__k">Short answer</span>
+      <section className="answer" aria-label={t('Short answer')}>
+        <span className="answer__k">{t('Short answer')}</span>
         <p><Rich text={g.answer} /></p>
       </section>
 
       <section className="prose__facts">
-        <h2>Key facts</h2>
+        <h2>{t('Key facts')}</h2>
         <ul>{g.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
       </section>
 
-      <nav className="toc small" aria-label="Contents">
-        <b>On this page</b>
+      <nav className="toc small" aria-label={t('Contents')}>
+        <b>{t('On this page')}</b>
         <ol>
           {g.sections.map((s) => <li key={s.h}><a href={`#${anchor(s.h)}`}>{s.h}</a></li>)}
-          <li><a href="#faq">Frequently asked questions</a></li>
-          <li><a href="#sources">Sources</a></li>
+          <li><a href="#faq">{t('Frequently asked questions')}</a></li>
+          <li><a href="#sources">{t('Sources')}</a></li>
         </ol>
       </nav>
 
@@ -74,29 +78,29 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       ))}
 
       <section id="faq">
-        <h2>Frequently asked questions</h2>
+        <h2>{t('Frequently asked questions')}</h2>
         <Faq items={g.faq} open={g.faq.length} />
       </section>
 
       <section id="sources">
-        <h2>Sources</h2>
+        <h2>{t('Sources')}</h2>
         <SourceList sources={g.sources} />
       </section>
 
       <section className="prose__cta">
         <div>
-          <h2>See what is for sale on Roatán</h2>
-          <p className="muted">Homes, condos and land from island agencies, each linked to the agency that holds it.</p>
+          <h2>{t('See what is for sale on Roatán')}</h2>
+          <p className="muted">{t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
         </div>
         <div className="prose__cta-btns">
-          <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">Browse listings <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--ghost btn--lg" href="/listings?type=land">Land with a passport</Link>
+          <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--ghost btn--lg" href="/listings?type=land">{t('Land with a passport')}</Link>
         </div>
       </section>
 
       {related.length > 0 && (
         <section>
-          <h2>Related guides</h2>
+          <h2>{t('Related guides')}</h2>
           <div className="guide-list">
             {related.map((r) => (
               <Link key={r.slug} className="guide-card" href={`/guides/${r.slug}`}>

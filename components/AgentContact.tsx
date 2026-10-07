@@ -8,6 +8,7 @@ import { fmtPrice, fmtUsd } from '@/lib/format';
 import { CONTACT_EMAIL } from '@/lib/site';
 import type { Agency, Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
+import { useLang, useT } from './LangProvider';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -50,6 +51,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   /** Додатковий блок під «Request a viewing» — напр. статус продажів ЖК */
   extra?: React.ReactNode;
 }) {
+  const t = useT();
+  const lang = useLang();
   const [shown, setShown] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -65,11 +68,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const price = forBuilding ? fromPrice ?? 0 : listing.price;
   const dropped = !hasUnits && listing.oldPrice > listing.price;
   const perSqft = !hasUnits && listing.deal === 'sale' && listing.sqft > 0
-    ? `${fmtUsd(Math.round(listing.price / listing.sqft))}/ft²` : '';
+    ? `${fmtUsd(Math.round(listing.price / listing.sqft))}${t('/ft²')}` : '';
   const place = [listing.address, listing.neighborhood].filter(Boolean).join(', ');
 
-  const msg = `Hi ${agent.name.split(' ')[0]}, I'm interested in "${topic ?? listing.title}" `
-    + `${topic ? '' : `(${fmtPrice(listing.price, listing.deal)}) `}— ${listingUrl}`;
+  const msg = t('Hi {name}, I\'m interested in "{what}" ', { name: agent.name.split(' ')[0], what: topic ?? listing.title })
+    + `${topic ? '' : `(${fmtPrice(listing.price, listing.deal, lang)}) `}— ${listingUrl}`;
   // WhatsApp — основний канал на цьому ринку; без окремого номера пробуємо звичайний телефон
   const wa = digits(agent.whatsapp || agent.phone);
   const waHref = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(msg)}` : '';
@@ -94,7 +97,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   async function copyLink() {
     try {
       await navigator.clipboard.writeText(listingUrl);
-      toast('Link copied');
+      toast(t('Link copied'));
     } catch {
       toast(listingUrl);
     }
@@ -115,8 +118,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
       }),
     });
     setSending(false);
-    if (res.ok) { setSent(true); toast('Enquiry sent to the agent'); }
-    else toast((await res.json().catch(() => ({}))).error ?? 'Something went wrong');
+    if (res.ok) { setSent(true); toast(t('Enquiry sent to the agent')); }
+    else toast((await res.json().catch(() => ({}))).error ?? t('Something went wrong'));
   }
 
   const reportHref = CONTACT_EMAIL
@@ -138,14 +141,14 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             <div className="cc__price">
               {price > 0 ? (
                 <>
-                  {hasUnits && <span className="cc__from">From</span>}
-                  {fmtPrice(price, listing.deal)}
+                  {hasUnits && <span className="cc__from">{t('From')}</span>}
+                  {fmtPrice(price, listing.deal, lang)}
                 </>
-              ) : 'Price on request'}
-              {dropped && <Icon name="arrowDown" size={26} className="ico cc__drop" aria-label="Price reduced" />}
+              ) : t('Price on request')}
+              {dropped && <Icon name="arrowDown" size={26} className="ico cc__drop" aria-label={t('Price reduced')} />}
             </div>
             <div className="cc__acts">
-              <button className="cc__act" onClick={copyLink} aria-label="Copy link" title="Copy link">
+              <button className="cc__act" onClick={copyLink} aria-label={t('Copy link')} title={t('Copy link')}>
                 <Icon name="link" size={26} />
               </button>
               {!forBuilding && <FavButton listingId={listing.id} initial={isFav} className="cc__act cc__fav" size={26} />}
@@ -154,7 +157,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
 
           {(dropped || perSqft) && (
             <div className="cc__sub">
-              {dropped && <s className="cc__old">{fmtPrice(listing.oldPrice, listing.deal)}</s>}
+              {dropped && <s className="cc__old">{fmtPrice(listing.oldPrice, listing.deal, lang)}</s>}
               {perSqft && <span className="cc__per">{perSqft}</span>}
             </div>
           )}
@@ -167,14 +170,14 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               <Link className="cc__name" href={`/agents/${agent.id}`}>{agent.name}</Link>
               {agent.agencyId
                 ? <Link className="cc__org" href={`/agency/${agent.agencyId}`}>{agency?.name || agent.agency}</Link>
-                : <span className="cc__org cc__org--plain">{agent.agency || 'Independent agent'}</span>}
+                : <span className="cc__org cc__org--plain">{agent.agency || t('Independent agent')}</span>}
             </div>
           </div>
 
           {agent.verified && (
             <div className="cc__verified">
-              Verified agent
-              <span className="cc__badge" title="Licence and ID checked by Resoha">
+              {t('Verified agent')}
+              <span className="cc__badge" title={t('Licence and ID checked by Resoha')}>
                 <Icon name="check" size={14} strokeWidth={2.6} /> ID
               </span>
             </div>
@@ -186,7 +189,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             </a>
           ) : (
             <button className="cc__btn cc__btn--phone" onClick={() => setShown(true)}>
-              <Icon name="phone" size={22} /> Show phone
+              <Icon name="phone" size={22} /> {t('Show phone')}
             </button>
           ))}
 
@@ -196,7 +199,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
                 <a key={m.key} className={`cc__btn cc__btn--${m.key}`} href={m.href} target="_blank" rel="noreferrer"
                   onClick={m.key === 'wa' ? noteWhatsApp : undefined}>
                   {/* на пів ширини картки влазить лише назва месенджера */}
-                  {m.mark} {messengers.length % 2 && i === 0 ? `Message on ${m.label}` : m.label}
+                  {m.mark} {messengers.length % 2 && i === 0 ? t('Message on {app}', { app: m.label }) : m.label}
                 </a>
               ))}
             </div>
@@ -207,9 +210,9 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             <p className="src" style={{ marginTop: 14 }}>
               <Icon name="link" size={16} />
               <span>
-                Held by <b>{listing.sourceName}</b>{listing.sourceRef && <> · {listing.sourceRef}</>}.
+                {t('Held by')} <b>{listing.sourceName}</b>{listing.sourceRef && <> · {listing.sourceRef}</>}.
                 {listing.sourceUrl && (
-                  <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">Original listing</a></>
+                  <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">{t('Original listing')}</a></>
                 )}
               </span>
             </p>
@@ -219,11 +222,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
 
       <div className="cc__links">
         <button className="cc__link" onClick={() => setFormOpen((v) => !v)} aria-expanded={formOpen}>
-          <Icon name="calendar" size={20} /> <span>Request a viewing</span>
+          <Icon name="calendar" size={20} /> <span>{t('Request a viewing')}</span>
         </button>
         {reportHref && (
           <a className="cc__link" href={reportHref}>
-            <Icon name="flag" size={20} /> <span>Report listing</span>
+            <Icon name="flag" size={20} /> <span>{t('Report listing')}</span>
           </a>
         )}
       </div>
@@ -232,24 +235,24 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
         <div className="cc cc__form" id="enquiry">
           {sent ? (
             <div className="small note-ok">
-              <Icon name="check" size={16} className="ico ico--ok" /> Sent. The agent sees your enquiry in their dashboard and will reply — most respond same day.
+              <Icon name="check" size={16} className="ico ico--ok" /> {t('Sent. The agent sees your enquiry in their dashboard and will reply — most respond same day.')}
             </div>
           ) : (
             <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}>
-              <div style={{ fontWeight: 700 }}>Request a viewing</div>
-              <input className="input" name="name" placeholder="Your name" defaultValue={me?.name ?? ''} required maxLength={120} />
-              <input className="input" name="phone" placeholder="Phone / WhatsApp" defaultValue={me?.phone ?? ''} required maxLength={40} />
-              <input className="input" name="email" type="email" placeholder="Email (optional)" defaultValue={me?.email ?? ''} maxLength={200} />
-              <textarea className="input" name="message" rows={3} placeholder="When are you on the island?" maxLength={2000}
-                defaultValue={topic ? `Interested in ${topic}. ` : undefined} />
+              <div style={{ fontWeight: 700 }}>{t('Request a viewing')}</div>
+              <input className="input" name="name" placeholder={t('Your name')} defaultValue={me?.name ?? ''} required maxLength={120} />
+              <input className="input" name="phone" placeholder={t('Phone / WhatsApp')} defaultValue={me?.phone ?? ''} required maxLength={40} />
+              <input className="input" name="email" type="email" placeholder={t('Email (optional)')} defaultValue={me?.email ?? ''} maxLength={200} />
+              <textarea className="input" name="message" rows={3} placeholder={t('When are you on the island?')} maxLength={2000}
+                defaultValue={topic ? `${t('Interested in {what}.', { what: topic })} ` : undefined} />
               {/* приманка для ботів: людина цього поля не бачить і не заповнює */}
               <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <button className="btn btn--primary btn--block" disabled={sending}>
-                {sending ? 'Sending…' : 'Send enquiry'}
+                {sending ? t('Sending…') : t('Send enquiry')}
               </button>
               <span className="tiny muted">
-                By sending you agree to be contacted about this property.
-                {me ? ' It will appear in your account under “My enquiries”.' : ''}
+                {t('By sending you agree to be contacted about this property.')}
+                {me ? ` ${t('It will appear in your account under “My enquiries”.')}` : ''}
               </span>
             </form>
           )}

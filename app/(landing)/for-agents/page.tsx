@@ -4,6 +4,7 @@ import Crumbs from '@/components/Crumbs';
 import Faq from '@/components/Faq';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
+import { getT } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { CONTACT_EMAIL, SITE_NAME } from '@/lib/site';
 
@@ -27,34 +28,34 @@ const FAQ = [
   { q: 'Will my listings be duplicated or out of date?', a: 'Each listing keeps a link to its source and the agent who holds it. You can edit, pause or remove listings at any time from your dashboard.' },
 ];
 
-export default function ForAgentsPage() {
+export default async function ForAgentsPage() {
+  const t = await getT();
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'For agents', path: '/for-agents' }];
   return (
     <div className="wrap page">
       <JsonLd data={graph(breadcrumbLd(crumbs), faqLd(FAQ))} />
-      <Crumbs items={crumbs} />
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
       <section className="hero hero--dark">
-        <span className="hero__eyebrow">For agencies and agents on Roatán</span>
-        <h1>Put your listings where Roatán buyers search</h1>
+        <span className="hero__eyebrow">{t('For agencies and agents on Roatán')}</span>
+        <h1>{t('Put your listings where Roatán buyers search')}</h1>
         <p className="hero__sub">
-          Buyers start in Google and AI assistants, and they want the whole island in one place. Resoha gives them that, and
-          sends every enquiry straight to the agent who holds the property.
+          {t('Buyers start in Google and AI assistants, and they want the whole island in one place. Resoha gives them that, and sends every enquiry straight to the agent who holds the property.')}
         </p>
         <div className="hero__cta">
-          <Link className="btn btn--orange btn--lg" href="/signup?as=agent">Create a free agent account <Icon name="arrowRight" size={18} /></Link>
-          {CONTACT_EMAIL && <a className="btn btn--lg hero__ghost" href={`mailto:${CONTACT_EMAIL}?subject=Founding%20partner`}>Talk to us</a>}
+          <Link className="btn btn--orange btn--lg" href="/signup?as=agent">{t('Create a free agent account')} <Icon name="arrowRight" size={18} /></Link>
+          {CONTACT_EMAIL && <a className="btn btn--lg hero__ghost" href={`mailto:${CONTACT_EMAIL}?subject=Founding%20partner`}>{t('Talk to us')}</a>}
         </div>
       </section>
 
       <section className="section">
-        <div className="section__head"><h2>What you get</h2></div>
+        <div className="section__head"><h2>{t('What you get')}</h2></div>
         <div className="grid grid--4 facts">
           {OFFER.map((o) => (
             <div key={o.title} className="fact">
               <span className="fact__ico"><Icon name={o.icon} size={22} /></span>
-              <h3>{o.title}</h3>
-              <p className="small muted">{o.text}</p>
+              <h3>{t(o.title)}</h3>
+              <p className="small muted">{t(o.text)}</p>
             </div>
           ))}
         </div>
@@ -63,27 +64,25 @@ export default function ForAgentsPage() {
       <section className="section section--soft rounded">
         <div className="cta">
           <div>
-            <h2>Sell land faster with a land passport</h2>
+            <h2>{t('Sell land faster with a land passport')}</h2>
             <p className="muted" style={{ fontSize: 16, margin: '12px 0 18px' }}>
-              Answer the eight questions every land buyer asks (title, road, power, water, survey, permit, zone, slope) once,
-              on the listing. Complete lots get a readiness badge, their own filter and a PDF report buyers forward to their
-              lawyers.
+              {t('Answer the eight questions every land buyer asks (title, road, power, water, survey, permit, zone, slope) once, on the listing. Complete lots get a readiness badge, their own filter and a PDF report buyers forward to their lawyers.')}
             </p>
-            <Link className="btn btn--primary" href="/land-passport">How the land passport works</Link>
+            <Link className="btn btn--primary" href="/land-passport">{t('How the land passport works')}</Link>
           </div>
           <div className="panel">
-            <h3>Getting started</h3>
+            <h3>{t('Getting started')}</h3>
             <ol className="steps-list">
-              <li>Create an agent account, or join your agency with its invite code.</li>
-              <li>Publish listings from your dashboard, or send us your stock to load.</li>
-              <li>Answer enquiries on WhatsApp and track views and leads in one place.</li>
+              <li>{t('Create an agent account, or join your agency with its invite code.')}</li>
+              <li>{t('Publish listings from your dashboard, or send us your stock to load.')}</li>
+              <li>{t('Answer enquiries on WhatsApp and track views and leads in one place.')}</li>
             </ol>
           </div>
         </div>
       </section>
 
       <section className="prose prose--flush">
-        <h2>Questions from agents</h2>
+        <h2>{t('Questions from agents')}</h2>
         <Faq items={FAQ} open={FAQ.length} />
       </section>
     </div>

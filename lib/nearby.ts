@@ -1,3 +1,5 @@
+import { translate, type Lang } from './i18n';
+
 /**
  * Місця поблизости, які ріелтор додає руками: кафе, пляж, дайв-центр, супермаркет.
  * Зберігаються jsonb-масивом у listings.nearby (міграція 0028).
@@ -88,16 +90,16 @@ const km = ([lat1, lng1]: [number, number], [lat2, lng2]: [number, number]) => {
  * Що показати поруч із назвою. Відстань від ріелтора головніша; якщо її немає,
  * а точка на карті є — рахуємо по прямій від обʼєкта.
  */
-export function nearbyDistance(p: NearbyPlace, from: { lat: number; lng: number }): string {
+export function nearbyDistance(p: NearbyPlace, from: { lat: number; lng: number }, lang: Lang = 'en'): string {
   if (p.distance !== null) {
-    if (p.unit === 'walk') return `${p.distance} min walk`;
-    if (p.unit === 'drive') return `${p.distance} min drive`;
+    if (p.unit === 'walk') return translate(lang, '{n} min walk', { n: p.distance });
+    if (p.unit === 'drive') return translate(lang, '{n} min drive', { n: p.distance });
     return `${p.distance} ${p.unit}`;
   }
   if (p.lat !== null && p.lng !== null) {
     const d = km([from.lat, from.lng], [p.lat, p.lng]);
     const len = d < 1 ? `${Math.max(10, Math.round(d * 100) * 10)} m` : `${d.toFixed(d < 10 ? 1 : 0)} km`;
-    return `${len} straight line`;
+    return translate(lang, '{len} straight line', { len });
   }
   return '';
 }

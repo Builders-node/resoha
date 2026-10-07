@@ -2,6 +2,7 @@
 import { useRef, useState } from 'react';
 import Icon from './Icon';
 import Avatar from './Avatar';
+import { useT } from './LangProvider';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 
@@ -9,29 +10,30 @@ import { uploadPhotos } from '@/lib/uploadPhotos';
 export default function AvatarPicker({
   src, name, onChanged,
 }: { src: string; name: string; onChanged: (url: string) => void }) {
+  const t = useT();
   const [busy, setBusy] = useState(false);
   const input = useRef<HTMLInputElement>(null);
 
   async function pick(file: File) {
     setBusy(true);
     const data = await uploadPhotos([file]);
-    if ('error' in data) { setBusy(false); return toast(data.error); }
+    if ('error' in data) { setBusy(false); return toast(t(data.error)); }
 
     const res = await fetch('/api/profile', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ avatar: data.urls[0] }),
     });
     setBusy(false);
-    if (!res.ok) return toast('Could not save the photo');
+    if (!res.ok) return toast(t('Could not save the photo'));
     onChanged(data.urls[0]);
-    toast('Profile photo updated');
+    toast(t('Profile photo updated'));
   }
 
   return (
     <div className="avatar-pick">
       <Avatar src={src} name={name} />
       <button type="button" className="btn btn--sm btn--ghost" disabled={busy} onClick={() => input.current?.click()}>
-        <Icon name="plus" size={15} /> {busy ? 'Uploading…' : src ? 'Change photo' : 'Add a photo'}
+        <Icon name="plus" size={15} /> {busy ? t('Uploading…') : src ? t('Change photo') : t('Add a photo')}
       </button>
       <input ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif" hidden
         onChange={(e) => { const f = e.target.files?.[0]; if (f) pick(f); e.target.value = ''; }} />
