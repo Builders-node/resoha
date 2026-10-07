@@ -7,6 +7,8 @@ import Icon, { HeartIcon } from './Icon';
 import ListingCard from './ListingCard';
 import { toast } from './Toaster';
 import { fmtDate } from '@/lib/format';
+import { intlLocale } from '@/lib/i18n';
+import { fmtVisit } from '@/lib/visits';
 import type { Lead, Listing, SavedSearch, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
@@ -141,13 +143,19 @@ export default function UserAccount({ session, user }: {
             ) : leads.map((l) => (
               <div key={l.id} className="lead">
                 <div>
-                  <Link href={`/listings/${l.listingId}`} style={{ fontWeight: 700 }}>
-                    {l.listingTitle || t('Listing')}
+                  <Link href={l.channel === 'visit' && l.developmentSlug ? `/developments/${l.developmentSlug}` : `/listings/${l.listingId}`}
+                    style={{ fontWeight: 700 }}>
+                    {(l.channel === 'visit' && l.developmentName) || l.listingTitle || t('Listing')}
                   </Link>
                   <span className={`pill ${l.status === 'new' ? 'pill--off' : 'pill--on'}`} style={{ marginLeft: 8 }}>
                     {l.channel === 'whatsapp' ? t('Sent on WhatsApp') : l.status === 'new' ? t('Awaiting reply') : t('Handled')}
                   </span>
-                  {l.message && <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>}
+                  {l.visitAt && (
+                    <p className="small" style={{ margin: '6px 0 0' }}>
+                      <Icon name="calendar" size={15} /> {t('Office visit')} · <b>{fmtVisit(l.visitAt, intlLocale(lang))}</b>
+                    </p>
+                  )}
+                  {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
                   <div className="tiny muted" style={{ marginTop: 6 }}>
                     {t('Sent {date}', { date: fmtDate(l.createdAt, lang) })}{l.agentName && ` · ${t('agent: {name}', { name: l.agentName })}`}
                   </div>

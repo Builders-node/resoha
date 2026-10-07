@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import Avatar from '@/components/Avatar';
+import DevelopmentSalesOffice from '@/components/DevelopmentSalesOffice';
 import DevelopmentShell from '@/components/DevelopmentShell';
 import Icon from '@/components/Icon';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
@@ -12,24 +13,23 @@ type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return developmentMetadata((await params).slug, {
-    path: 'contacts', label: 'Contacts', about: 'Sales office address, opening hours, the agent and the developer.',
+    path: 'contacts', label: 'Contacts', about: 'Sales office address, opening hours, booking a visit, the agent and the developer.',
   });
 }
 
 /** Контакти відділу продажів, як у LUN: адреса, години, хто продає, забудовник, сайт, карта. */
 export default async function ContactsPage({ params }: Props) {
   const ctx = await developmentContext((await params).slug);
-  const { dev, agent, from } = ctx;
-  const office = dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ');
+  const { dev, agent, from, base } = ctx;
+  // адреса й графік відділу продажів — у блоці зверху, тут решта контактів
   const rows = [
-    ['pin', 'Sales office', office],
-    dev.hours && ['calendar', 'Opening hours', dev.hours],
     dev.developer && ['building', 'Developer', dev.developer],
   ].filter(Boolean) as [string, string, string][];
 
   return (
     <DevelopmentShell ctx={ctx} active="contacts" title="Contacts">
-      <ul className="contacts">
+      <DevelopmentSalesOffice ctx={ctx} />
+      <ul className="contacts" style={{ marginTop: 22 }}>
         {rows.map(([icon, label, value]) => (
           <li key={label}>
             <Icon name={icon} size={22} />
@@ -55,7 +55,9 @@ export default async function ContactsPage({ params }: Props) {
         </li>
       </ul>
       <p className="small muted" style={{ marginTop: 12 }}>
-        Call or message the agent on the right, or use <a href="#contact">Request a viewing</a> to book a visit to the sales office or the site.
+        {dev.schedule.length > 0
+          ? <>Pick a time with <Link href={`${base}/visit`}>Book a visit</Link>, or call and message the agent on the right.</>
+          : <>Call or message the agent on the right, or use <a href="#contact">Request a viewing</a> to book a visit to the sales office or the site.</>}
       </p>
 
       <h3 style={{ marginTop: 26, marginBottom: 12 }}>On the map</h3>

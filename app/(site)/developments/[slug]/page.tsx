@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic';
 import BackButton from '@/components/BackButton';
 import DevelopmentBuildings from '@/components/DevelopmentBuildings';
 import DevelopmentChess from '@/components/DevelopmentChess';
+import DevelopmentSalesOffice from '@/components/DevelopmentSalesOffice';
 import DevelopmentShell from '@/components/DevelopmentShell';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
 import Gallery from '@/components/Gallery';
@@ -177,6 +178,8 @@ export default async function DevelopmentPage({ params, searchParams }: {
           </ul>
         </section>
       )}
+
+      <DevelopmentSalesOffice ctx={ctx} />
 
       {dev.text && (
         <>

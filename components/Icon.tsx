@@ -31,6 +31,8 @@ const PATHS: Record<string, React.ReactNode> = {
   arrowUp: <><path d="M12 19.5v-14" /><path d="m7 10.5 5-5 5 5" /></>,
   arrowDown: <><path d="M12 4.5v14" /><path d="m7 13.5 5 5 5-5" /></>,
   flag: <><path d="M5.5 21V4.5" /><path d="M5.5 4.5h11.2l-2.2 4 2.2 4H5.5" /></>,
+  headset: <><path d="M4.6 14.2v-2.4a7.4 7.4 0 0 1 14.8 0v2.4" /><rect x="3.6" y="12.6" width="3.6" height="5.4" rx="1.4" /><rect x="16.8" y="12.6" width="3.6" height="5.4" rx="1.4" /><path d="M18.6 18v.6a2.4 2.4 0 0 1-2.4 2.4H13" /></>,
+  clock: <><circle cx="12" cy="12" r="8.6" /><path d="M12 7.4V12l3.2 2" /></>,
   calendar: <><rect x="3.8" y="5.2" width="16.4" height="15" rx="2.2" /><path d="M3.8 9.8h16.4M8.2 3.4v3.6M15.8 3.4v3.6" /></>,
   arrowRight: <><path d="M4.5 12h14" /><path d="m13.5 7 5 5-5 5" /></>,
   star: <><path d="m12 4 2.5 5.1 5.6.8-4 4 .9 5.6-5-2.7-5 2.7.9-5.6-4-4 5.6-.8z" /></>,
