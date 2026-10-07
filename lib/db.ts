@@ -227,15 +227,20 @@ function applyFilters(sel: any, q: ListingQuery) {
   return sel;
 }
 
+/**
+ * Featured — це реклама: на публічних сторінках відмічене адміном завжди йде першим
+ * (у порядку з вкладки Featured), а вже потім обране сортування. Кабінет і адмінка
+ * (includeInactive) бачать чистий порядок — там людина керує своїм, а не дивиться вітрину.
+ */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applySort(sel: any, sort: ListingQuery['sort']) {
+function applySort(sel: any, sort: ListingQuery['sort'], promote = true) {
+  if (promote) sel = sel.order('featured', { ascending: false }).order('featured_rank', { ascending: true });
   switch (sort) {
     case 'price_asc': return sel.order('price', { ascending: true });
     case 'price_desc': return sel.order('price', { ascending: false });
     case 'sqft_desc': return sel.order('sqft', { ascending: false });
     case 'popular': return sel.order('views', { ascending: false });
-    case 'new': return sel.order('created_at', { ascending: false });
-    default: return sel.order('featured', { ascending: false }).order('created_at', { ascending: false });
+    default: return sel.order('created_at', { ascending: false });
   }
 }
 
@@ -245,7 +250,7 @@ export const PAGE_SIZE = 24;
 export async function searchListings(q: ListingQuery = {}, page = 0, pageSize = PAGE_SIZE) {
   const from = page * pageSize;
   let sel = applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q);
-  sel = applySort(sel, q.sort).range(from, from + pageSize - 1);
+  sel = applySort(sel, q.sort, !q.includeInactive).range(from, from + pageSize - 1);
 
   const { data, error, count } = await sel;
   if (error) throw error;
@@ -265,7 +270,7 @@ export async function queryPins(q: ListingQuery = {}) {
 
 export async function queryListings(q: ListingQuery = {}): Promise<Listing[]> {
   let sel = applyFilters((await db()).from('listings').select(listingCols(q)), q);
-  sel = applySort(sel, q.sort);
+  sel = applySort(sel, q.sort, !q.includeInactive);
 
   const { data, error } = await sel.limit(500);
   if (error) throw error;
@@ -447,7 +452,11 @@ export async function getDevelopment(slugOrId: string): Promise<Development | nu
 
 /** agentId — свої ЖК у кабінеті (разом із прихованими); без нього — публічний список */
 export async function listDevelopments(opts: { agentId?: string; agencyId?: string; developerId?: string } = {}): Promise<Development[]> {
-  let sel = (await db()).from('developments').select('*').order('created_at', { ascending: false });
+  let sel = (await db()).from('developments').select('*');
+  const own = !opts.developerId && Boolean(opts.agencyId || opts.agentId);
+  // публічно відмічені адміном ЖК ідуть першими, як і оголошення (див. applySort)
+  if (!own) sel = sel.order('featured', { ascending: false }).order('featured_rank', { ascending: true });
+  sel = sel.order('created_at', { ascending: false });
   if (opts.developerId) sel = sel.eq('developer_id', opts.developerId).eq('active', true);
   else if (opts.agencyId) sel = sel.eq('agency_id', opts.agencyId);
   else if (opts.agentId) sel = sel.eq('agent_id', opts.agentId);
