@@ -5,7 +5,7 @@ import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanDetails } from './details';
 import { cleanNearby } from './nearby';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, DevelopmentDocument, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -81,6 +81,7 @@ const mapListing = (r: Row): Listing => ({
   // до міграції 0036 колонок немає — характеристик нема, «оновлено» = дата публікації
   details: cleanDetails(r.details),
   updatedAt: r.updated_at ?? r.created_at,
+  floorplan: r.floorplan ?? '',
 });
 
 /** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
@@ -282,6 +283,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     ...(Object.keys(cleanDetails(input.details)).length ? { details: cleanDetails(input.details) } : {}),
     development_id: input.developmentId || null,
     ...(input.buildingId ? { building_id: input.buildingId } : {}),
+    ...(input.floorplan ? { floorplan: safeUrl(input.floorplan) } : {}),
     unit_no: String(input.unitNo ?? '').trim().slice(0, 20),
     floor: intOrNull(input.floor),
     status: cleanStatus(input.status),
@@ -323,6 +325,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
   nearby: 'nearby', details: 'details',
   developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
+  floorplan: 'floorplan',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);
@@ -332,7 +335,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
   for (const [key, column] of Object.entries(LISTING_COLUMNS)) {
     const value = (patch as Row)[key];
     if (value === undefined) continue;
-    row[column] = key === 'sourceUrl' ? safeUrl(value)
+    row[column] = key === 'sourceUrl' || key === 'floorplan' ? safeUrl(value)
       : key === 'nearby' ? cleanNearby(value)
       : key === 'details' ? cleanDetails(value)
       : key === 'developmentId' || key === 'buildingId' ? value || null
@@ -398,7 +401,7 @@ const mapDevelopment = (r: Row): Development => ({
   hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
   projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
-  water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '',
+  water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
 });
 
@@ -436,6 +439,8 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  if (typeof input.office === 'string') row.office = input.office.trim().slice(0, 160);
+  if (typeof input.hours === 'string') row.hours = input.hours.trim().slice(0, 200);
   for (const k of ['video', 'tour'] as const) if (input[k] !== undefined) row[k] = safeUrl(String(input[k] ?? '').trim()).slice(0, 500);
   for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
@@ -573,6 +578,100 @@ export async function updateDocument(id: string, input: Record<string, unknown>)
 
 export async function deleteDocument(id: string) {
   const { error, count } = await (await db()).from('development_documents').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/* ---------- хід будівництва ---------- */
+const mapProgress = (r: Row): ProgressEntry => ({
+  id: r.id, developmentId: r.development_id, buildingId: r.building_id ?? null,
+  month: r.month, photos: r.photos ?? [], note: r.note ?? '',
+});
+
+/** До міграції 0039 таблиці немає — тоді просто без фото будівництва */
+export async function listProgress(developmentId: string): Promise<ProgressEntry[]> {
+  const { data, error } = await (await db()).from('development_progress').select('*')
+    .eq('development_id', developmentId).order('month', { ascending: false }).order('created_at', { ascending: false });
+  if (error) return [];
+  return (data ?? []).map(mapProgress);
+}
+
+/** «2026-06» або «2026-06-15» → перше число місяця */
+const monthStart = (v: unknown) => {
+  const m = String(v ?? '').match(/^(\d{4})-(\d{2})/);
+  return m && Number(m[2]) >= 1 && Number(m[2]) <= 12 ? `${m[1]}-${m[2]}-01` : null;
+};
+
+function progressRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  if (input.month !== undefined) {
+    const m = monthStart(input.month);
+    if (!m) throw new Error('Pick the month');
+    row.month = m;
+  }
+  if (input.buildingId !== undefined) row.building_id = input.buildingId || null;
+  if (Array.isArray(input.photos)) row.photos = input.photos.map((p) => safeUrl(p)).filter(Boolean).slice(0, 40);
+  if (typeof input.note === 'string') row.note = input.note.trim().slice(0, 500);
+  return row;
+}
+
+export async function createProgress(developmentId: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_progress')
+    .insert({ ...progressRow(input), development_id: developmentId }).select('*').single();
+  if (error) throw error;
+  return mapProgress(data);
+}
+
+export async function updateProgress(id: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_progress').update(progressRow(input)).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapProgress(data) : null;
+}
+
+export async function deleteProgress(id: string) {
+  const { error, count } = await (await db()).from('development_progress').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/* ---------- новини ЖК ---------- */
+const mapNews = (r: Row): DevelopmentNews => ({
+  id: r.id, developmentId: r.development_id, title: r.title, body: r.body ?? '',
+  photo: r.photo ?? '', publishedOn: r.published_on,
+});
+
+/** До міграції 0039 таблиці немає — тоді без новин */
+export async function listNews(developmentId: string): Promise<DevelopmentNews[]> {
+  const { data, error } = await (await db()).from('development_news').select('*')
+    .eq('development_id', developmentId).order('published_on', { ascending: false }).order('created_at', { ascending: false });
+  if (error) return [];
+  return (data ?? []).map(mapNews);
+}
+
+function newsRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  if (typeof input.title === 'string') row.title = input.title.trim().slice(0, 160);
+  if (typeof input.body === 'string') row.body = input.body.trim().slice(0, 4000);
+  if (input.photo !== undefined) row.photo = safeUrl(String(input.photo ?? ''));
+  if (typeof input.publishedOn === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(input.publishedOn)) row.published_on = input.publishedOn;
+  return row;
+}
+
+export async function createNews(developmentId: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_news')
+    .insert({ ...newsRow(input), development_id: developmentId }).select('*').single();
+  if (error) throw error;
+  return mapNews(data);
+}
+
+export async function updateNews(id: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_news').update(newsRow(input)).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapNews(data) : null;
+}
+
+export async function deleteNews(id: string) {
+  const { error, count } = await (await db()).from('development_news').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
   return (count ?? 0) > 0;
 }

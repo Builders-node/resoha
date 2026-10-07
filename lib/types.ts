@@ -123,6 +123,7 @@ export interface Listing {
   details: ListingDetails;
   /** Коли оголошення востаннє міняли; до міграції 0036 — дата публікації */
   updatedAt: string;
+  floorplan: string;         // план квартири; спільний для однакових квартир ЖК
 }
 
 /** Одна точка в історії ціни */
@@ -168,6 +169,8 @@ export interface Development {
   water: string;
   video: string;               // посилання на YouTube / Vimeo
   tour: string;                // тур 360 або облёт дроном: Matterport, Kuula, YouTube 360
+  office: string;              // адреса відділу продажів
+  hours: string;               // години роботи відділу продажів
   agentId: string;
   agencyId: string | null;
   active: boolean;
@@ -186,6 +189,26 @@ export interface DevelopmentDocument {
   note: string;
   verified: boolean;       // перевірено командою Resoha
   sort: number;
+}
+
+/** Хід будівництва: фото за місяць (для ЖК або дому) */
+export interface ProgressEntry {
+  id: string;
+  developmentId: string;
+  buildingId: string | null;
+  month: string;           // YYYY-MM-01
+  photos: string[];
+  note: string;
+}
+
+/** Новина ЖК */
+export interface DevelopmentNews {
+  id: string;
+  developmentId: string;
+  title: string;
+  body: string;
+  photo: string;
+  publishedOn: string;     // YYYY-MM-DD
 }
 
 /** Дім (корпус, секція) у ЖК */

@@ -183,3 +183,13 @@ export const canManageDevelopment = (
   dev: { agentId: string; agencyId: string | null },
   user: { id: string; agencyId: string | null; isOwner: boolean; isAdmin: boolean },
 ) => user.isAdmin || dev.agentId === user.id || (user.isOwner && !!dev.agencyId && dev.agencyId === user.agencyId);
+
+/** «2026-06-01» → «June 2026»; «2026-06-15» з датою → «15 June 2026» */
+export function fmtMonth(iso: string) {
+  const [y, m] = iso.split('-').map(Number);
+  return m ? `${new Date(Date.UTC(y, m - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })} ${y}` : iso;
+}
+export function fmtDay(iso: string) {
+  const [, , d] = iso.split('-').map(Number);
+  return d ? `${d} ${fmtMonth(iso)}` : fmtMonth(iso);
+}

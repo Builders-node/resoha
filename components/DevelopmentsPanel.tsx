@@ -5,8 +5,8 @@ import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
-import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
-import type { Building, Development, DevelopmentDocument } from '@/lib/types';
+import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, fmtDay, fmtMonth, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
+import type { Building, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry } from '@/lib/types';
 
 /**
  * Вкладка «Developments» у кабінеті: ЖК ріелтора, форма ЖК і заливка прайсу.
@@ -149,6 +149,10 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
           </select></div>
         <div className="field"><label>Address</label>
           <input className="input" name="address" maxLength={120} defaultValue={dev?.address} /></div>
+        <div className="field"><label>Sales office</label>
+          <input className="input" name="office" maxLength={160} defaultValue={dev?.office} placeholder="Leave empty if on site" /></div>
+        <div className="field"><label>Office hours</label>
+          <input className="input" name="hours" maxLength={200} defaultValue={dev?.hours} placeholder="Mon–Sat 9:00–17:00" /></div>
         <div className="field"><label>Latitude</label>
           <input className="input" type="number" step="0.0001" value={pin[0]} onChange={(e) => setPin([Number(e.target.value), pin[1]])} /></div>
         <div className="field"><label>Longitude</label>
@@ -213,6 +217,10 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
       {dev && <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />}
 
       {dev && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
+
+      {dev && <ProgressEditor devId={dev.id} buildings={buildings} />}
+
+      {dev && <NewsEditor devId={dev.id} />}
 
       {dev && (
         <div className="units-form" style={{ marginTop: 22 }}>
@@ -449,6 +457,189 @@ function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }
           )}
           <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
             <button className="btn" disabled={busy}>{d ? 'Save document' : 'Add document'}</button>
+            <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Хід будівництва: фото за місяць, для всього ЖК або окремого дому */
+function ProgressEditor({ devId, buildings }: { devId: string; buildings: Building[] }) {
+  const [items, setItems] = useState<ProgressEntry[]>([]);
+  const [editing, setEditing] = useState<ProgressEntry | 'new' | null>(null);
+  const [photos, setPhotos] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const d = await fetch(`/api/developments/${devId}/progress`).then((r) => r.json()).catch(() => ({}));
+    setItems(d.items ?? []);
+  }, [devId]);
+  useEffect(() => { load(); }, [load]);
+
+  function open(e: ProgressEntry | 'new') {
+    setEditing(e);
+    setPhotos(e !== 'new' ? e.photos : []);
+  }
+
+  async function save(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    if (!editing) return;
+    if (!photos.length) return toast('Add at least one photo');
+    const fd = new FormData(ev.currentTarget);
+    setBusy(true);
+    const res = await fetch(editing === 'new' ? `/api/developments/${devId}/progress` : `/api/progress/${editing.id}`, {
+      method: editing === 'new' ? 'POST' : 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...Object.fromEntries(fd.entries()), photos }),
+    });
+    setBusy(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(data.error ?? 'Something went wrong');
+    toast(editing === 'new' ? 'Update added' : 'Update saved');
+    setEditing(null);
+    load();
+  }
+
+  async function remove(e: ProgressEntry) {
+    if (!confirm(`Delete the ${fmtMonth(e.month)} update?`)) return;
+    const res = await fetch(`/api/progress/${e.id}`, { method: 'DELETE' });
+    if (!res.ok) return toast('Could not delete');
+    load();
+  }
+
+  const e = editing === 'new' ? null : editing;
+  const bname = (id: string | null) => buildings.find((b) => b.id === id)?.name;
+  return (
+    <div className="units-form" style={{ marginTop: 22 }}>
+      <div className="fgroup__head">
+        <label><b>Construction progress</b></label>
+        {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add month</button>}
+      </div>
+      <span className="tiny muted">Site photos for a month — they appear on the Construction tab, newest first.</span>
+      {!editing && (
+        <div className="dev-list">
+          {!items.length && <p className="muted small">No updates yet.</p>}
+          {items.map((x) => (
+            <div key={x.id} className="dev-list__row">
+              <div>
+                <b>{fmtMonth(x.month)}</b>
+                <div className="small muted">{[bname(x.buildingId), `${x.photos.length} photos`].filter(Boolean).join(' · ')}</div>
+              </div>
+              <div className="chip-row">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <form className="form-grid" onSubmit={save} key={e?.id ?? 'new'}>
+          <div className="field"><label>Month</label>
+            <input className="input" name="month" type="month" required defaultValue={e?.month.slice(0, 7) ?? new Date().toISOString().slice(0, 7)} /></div>
+          {buildings.length > 0 && (
+            <div className="field"><label>Building</label>
+              <select className="input" name="buildingId" defaultValue={e?.buildingId ?? ''}>
+                <option value="">Whole development</option>
+                {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select></div>
+          )}
+          <div className="field full"><label>Note</label>
+            <input className="input" name="note" maxLength={500} defaultValue={e?.note} placeholder="Frame up to floor 6, windows going in" /></div>
+          <div className="field full"><label>Photos</label>
+            <PhotoUploader value={photos} onChange={setPhotos} max={40} /></div>
+          <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+            <button className="btn" disabled={busy}>{e ? 'Save update' : 'Add update'}</button>
+            <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Новини ЖК: старт продажів, зміна цін, етапи будівництва */
+function NewsEditor({ devId }: { devId: string }) {
+  const [items, setItems] = useState<DevelopmentNews[]>([]);
+  const [editing, setEditing] = useState<DevelopmentNews | 'new' | null>(null);
+  const [photo, setPhoto] = useState<string[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const d = await fetch(`/api/developments/${devId}/news`).then((r) => r.json()).catch(() => ({}));
+    setItems(d.items ?? []);
+  }, [devId]);
+  useEffect(() => { load(); }, [load]);
+
+  function open(n: DevelopmentNews | 'new') {
+    setEditing(n);
+    setPhoto(n !== 'new' && n.photo ? [n.photo] : []);
+  }
+
+  async function save(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    if (!editing) return;
+    const fd = new FormData(ev.currentTarget);
+    setBusy(true);
+    const res = await fetch(editing === 'new' ? `/api/developments/${devId}/news` : `/api/news/${editing.id}`, {
+      method: editing === 'new' ? 'POST' : 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...Object.fromEntries(fd.entries()), photo: photo[0] ?? '' }),
+    });
+    setBusy(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(data.error ?? 'Something went wrong');
+    toast(editing === 'new' ? 'News published' : 'News updated');
+    setEditing(null);
+    load();
+  }
+
+  async function remove(n: DevelopmentNews) {
+    if (!confirm(`Delete “${n.title}”?`)) return;
+    const res = await fetch(`/api/news/${n.id}`, { method: 'DELETE' });
+    if (!res.ok) return toast('Could not delete');
+    load();
+  }
+
+  const n = editing === 'new' ? null : editing;
+  return (
+    <div className="units-form" style={{ marginTop: 22 }}>
+      <div className="fgroup__head">
+        <label><b>News</b></label>
+        {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add news</button>}
+      </div>
+      <span className="tiny muted">Sales launches, price changes, construction milestones — shown on the News tab.</span>
+      {!editing && (
+        <div className="dev-list">
+          {!items.length && <p className="muted small">No news yet.</p>}
+          {items.map((x) => (
+            <div key={x.id} className="dev-list__row">
+              <div>
+                <b>{x.title}</b>
+                <div className="small muted">{fmtDay(x.publishedOn)}</div>
+              </div>
+              <div className="chip-row">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <form className="form-grid" onSubmit={save} key={n?.id ?? 'new'}>
+          <div className="field full"><label>Title</label>
+            <input className="input" name="title" required maxLength={160} defaultValue={n?.title} placeholder="Second release: 12 new units on floors 7–9" /></div>
+          <div className="field"><label>Date</label>
+            <input className="input" name="publishedOn" type="date" required defaultValue={n?.publishedOn ?? new Date().toISOString().slice(0, 10)} /></div>
+          <div className="field full"><label>Text</label>
+            <textarea className="input" name="body" rows={5} maxLength={4000} defaultValue={n?.body} /></div>
+          <div className="field full"><label>Photo</label>
+            <PhotoUploader value={photo} onChange={setPhoto} max={1} /></div>
+          <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+            <button className="btn" disabled={busy}>{n ? 'Save news' : 'Publish'}</button>
             <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
           </div>
         </form>
