@@ -5,6 +5,7 @@ import { readiness } from '@/lib/land';
 import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
+import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
 
@@ -33,6 +34,7 @@ export default function ListingCard({
     >
       <Photo src={l.photos[0]} alt={l.title} />
       <div className="card__badges">
+        {l.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
         <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{t(DEAL_LABELS[l.deal])}</span>
         {l.status !== 'available' && <span className="badge">{t(statusLabel(l.status))}</span>}
         {l.oceanfront && <span className="badge">{t('Oceanfront')}</span>}

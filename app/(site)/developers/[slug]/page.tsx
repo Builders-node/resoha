@@ -69,7 +69,7 @@ export default async function DeveloperPage({ params }: Props) {
           return (
             <Link key={p.id} href={`/developments/${p.slug}`} className="ov ov--wide">
               <Photo src={p.photos[0]} alt={p.name} />
-              <div className="card__badges"><span className="badge badge--brand">{salesLabel(p.sales)}</span></div>
+              <div className="card__badges">{p.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> Featured</span>}<span className="badge badge--brand">{salesLabel(p.sales)}</span></div>
               <div className="ov__b">
                 <div className="ov__title">{p.name}</div>
                 <div className="ov__meta">{p.neighborhood} · {units[i].length} units{p.completion && ` · ${p.completion}`}</div>

@@ -183,7 +183,7 @@ export default async function HomePage() {
               <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--tall">
                 <Photo src={d.photos[0]} alt={d.name} />
                 <div className="card__badges">
-                  {d.featured && <span className="badge badge--accent"><Icon name="star" size={13} /> {t('Featured')}</span>}
+                  {d.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
                   <span className="badge badge--brand">{t(salesLabel(d.sales))}</span>
                 </div>
                 <div className="ov__b">
