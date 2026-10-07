@@ -130,7 +130,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div className="stat"><span className="muted small">Leads</span><b>{stats.leads}</b></div>
         </div>
 
-        {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} />}
+        {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin} />}
 
         {tab === 'listings' && (
           <div className="panel">

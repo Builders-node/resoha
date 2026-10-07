@@ -3,15 +3,16 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
+import { uploadPhotos } from '@/lib/uploadPhotos';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
-import { BUILDING_STAGES, RENTAL_RULES, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
-import type { Building, Development } from '@/lib/types';
+import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
+import type { Building, Development, DevelopmentDocument } from '@/lib/types';
 
 /**
  * Вкладка «Developments» у кабінеті: ЖК ріелтора, форма ЖК і заливка прайсу.
  * Кожен рядок прайсу стає окремим оголошенням-квартирою в цьому ЖК.
  */
-export default function DevelopmentsPanel({ onUnitsAdded }: { onUnitsAdded: () => void }) {
+export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { onUnitsAdded: () => void; isAdmin?: boolean }) {
   const [items, setItems] = useState<Development[]>([]);
   const [editing, setEditing] = useState<Development | 'new' | null>(null);
 
@@ -28,6 +29,7 @@ export default function DevelopmentsPanel({ onUnitsAdded }: { onUnitsAdded: () =
         onCancel={() => setEditing(null)}
         onSaved={(d) => { load(); setEditing(d); }}
         onUnitsAdded={onUnitsAdded}
+        isAdmin={isAdmin}
       />
     );
   }
@@ -62,7 +64,8 @@ export default function DevelopmentsPanel({ onUnitsAdded }: { onUnitsAdded: () =
   );
 }
 
-function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
+function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded, isAdmin }: {
+  isAdmin: boolean;
   dev: Development | null;
   onCancel: () => void;
   onSaved: (d: Development) => void;
@@ -190,6 +193,12 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
           <span className="tiny muted">One step per line.</span></div>
         <div className="field full"><label>Photos</label>
           <PhotoUploader value={photos} onChange={setPhotos} /></div>
+        <div className="field"><label>Video link</label>
+          <input className="input" name="video" maxLength={500} defaultValue={dev?.video} placeholder="https://youtube.com/watch?v=…" />
+          <span className="tiny muted">YouTube or Vimeo — plays right on the page.</span></div>
+        <div className="field"><label>360° tour or drone flyover</label>
+          <input className="input" name="tour" maxLength={500} defaultValue={dev?.tour} placeholder="https://my.matterport.com/show/?m=…" />
+          <span className="tiny muted">Matterport, Kuula or a YouTube 360 video.</span></div>
         <div className="field full"><label>Description</label>
           <textarea className="input" name="text" rows={5} maxLength={8000} defaultValue={dev?.text} /></div>
         <div className="field full switch-inline">
@@ -202,6 +211,8 @@ function DevelopmentForm({ dev, onCancel, onSaved, onUnitsAdded }: {
       </form>
 
       {dev && <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />}
+
+      {dev && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
 
       {dev && (
         <div className="units-form" style={{ marginTop: 22 }}>
@@ -315,6 +326,129 @@ function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Bui
             <PhotoUploader value={photo} onChange={setPhoto} max={1} /></div>
           <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
             <button className="btn" disabled={saving}>{b ? 'Save building' : 'Add building'}</button>
+            <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}
+
+/** Документи ЖК: право на землю, дозволи, акт введення. Файл — PDF або фото скану. */
+function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }) {
+  const [items, setItems] = useState<DevelopmentDocument[]>([]);
+  const [editing, setEditing] = useState<DevelopmentDocument | 'new' | null>(null);
+  const [file, setFile] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    const d = await fetch(`/api/developments/${devId}/documents`).then((r) => r.json()).catch(() => ({}));
+    setItems(d.items ?? []);
+  }, [devId]);
+  useEffect(() => { load(); }, [load]);
+
+  function open(d: DevelopmentDocument | 'new') {
+    setEditing(d);
+    setFile(d !== 'new' ? d.file : '');
+  }
+
+  async function pick(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    setBusy(true);
+    const res = await uploadPhotos([f]);
+    setBusy(false);
+    if ('error' in res) return toast(res.error);
+    setFile(res.urls[0]);
+  }
+
+  async function save(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editing) return;
+    const fd = new FormData(e.currentTarget);
+    setBusy(true);
+    const res = await fetch(editing === 'new' ? `/api/developments/${devId}/documents` : `/api/documents/${editing.id}`, {
+      method: editing === 'new' ? 'POST' : 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...Object.fromEntries(fd.entries()), file, ...(isAdmin ? { verified: fd.get('verified') === 'on' } : {}) }),
+    });
+    setBusy(false);
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(data.error ?? 'Something went wrong');
+    toast(editing === 'new' ? 'Document added' : 'Document updated');
+    setEditing(null);
+    load();
+  }
+
+  async function remove(d: DevelopmentDocument) {
+    if (!confirm(`Delete “${d.title}”?`)) return;
+    const res = await fetch(`/api/documents/${d.id}`, { method: 'DELETE' });
+    if (!res.ok) return toast('Could not delete');
+    load();
+  }
+
+  const d = editing === 'new' ? null : editing;
+  return (
+    <div className="units-form" style={{ marginTop: 22 }}>
+      <div className="fgroup__head">
+        <label><b>Documents</b></label>
+        {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add document</button>}
+      </div>
+      <span className="tiny muted">Land title, construction permit, environmental licence, completion certificate — buyers check these first.</span>
+      {!editing && (
+        <div className="dev-list">
+          {!items.length && <p className="muted small">No documents yet.</p>}
+          {items.map((x) => (
+            <div key={x.id} className="dev-list__row">
+              <div>
+                <b>{x.title}</b>
+                <div className="small muted">
+                  {DOC_KINDS.find(([k]) => k === x.kind)?.[1]}{x.number && ` · No. ${x.number}`}{x.issued && ` · ${x.issued}`}
+                  {x.file ? ' · file attached' : ''}{x.verified ? ' · checked' : ''}
+                </div>
+              </div>
+              <div className="chip-row">
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => open(x)}>Edit</button>
+                <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(x)}>Delete</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {editing && (
+        <form className="form-grid" onSubmit={save} key={d?.id ?? 'new'}>
+          <div className="field"><label>Type</label>
+            <select className="input" name="kind" defaultValue={d?.kind ?? 'permit'}>
+              {DOC_KINDS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            </select></div>
+          <div className="field"><label>Title</label>
+            <input className="input" name="title" required maxLength={120} defaultValue={d?.title} placeholder="Municipal construction permit" /></div>
+          <div className="field"><label>Number</label>
+            <input className="input" name="number" maxLength={60} defaultValue={d?.number} /></div>
+          <div className="field"><label>Issued</label>
+            <input className="input" name="issued" maxLength={40} defaultValue={d?.issued} placeholder="March 2025" /></div>
+          <div className="field full"><label>Note</label>
+            <input className="input" name="note" maxLength={300} defaultValue={d?.note} placeholder="Issued by the Municipality of Roatán" /></div>
+          <div className="field"><label>Order on the page</label>
+            <input className="input" name="sort" type="number" defaultValue={d?.sort ?? items.length} /></div>
+          <div className="field full"><label>File</label>
+            <div className="chip-row" style={{ alignItems: 'center' }}>
+              <label className="btn btn--ghost btn--sm" style={{ cursor: 'pointer' }}>
+                {busy ? 'Uploading…' : file ? 'Replace file' : 'Upload PDF or scan'}
+                <input type="file" accept="application/pdf,image/jpeg,image/png,image/webp" hidden onChange={pick} disabled={busy} />
+              </label>
+              {file && <a className="small" href={file} target="_blank" rel="noreferrer">Open current file</a>}
+              {file && <button type="button" className="btn btn--ghost btn--sm" onClick={() => setFile('')}>Remove</button>}
+            </div>
+            <span className="tiny muted">PDF up to 20 MB, or a photo up to 8 MB.</span></div>
+          {isAdmin && (
+            <div className="field full switch-inline">
+              <label><input type="checkbox" name="verified" defaultChecked={d?.verified} /> Checked by Resoha (admins only)</label>
+            </div>
+          )}
+          <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
+            <button className="btn" disabled={busy}>{d ? 'Save document' : 'Add document'}</button>
             <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>
           </div>
         </form>

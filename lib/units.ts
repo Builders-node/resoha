@@ -44,6 +44,20 @@ export const cleanStage = (s: unknown): BuildingStage => (STAGE_KEYS.has(String(
 export const stageLabel = (s: string) => BUILDING_STAGES.find(([k]) => k === s)?.[1] ?? 'Under construction';
 export const stageIndex = (s: string) => Math.max(0, BUILDING_STAGES.findIndex(([k]) => k === s));
 
+/** Документи ЖК — групи, як на LUN: земля, дозволи, введення в експлуатацію, учасники */
+export const DOC_KINDS = [
+  ['land', 'Land title'],
+  ['permit', 'Construction permit'],
+  ['environment', 'Environmental licence'],
+  ['completion', 'Completion certificate'],
+  ['company', 'Developer & contractor'],
+  ['other', 'Other'],
+] as const;
+export type DocKind = (typeof DOC_KINDS)[number][0];
+const DOC_KEYS = new Set<string>(DOC_KINDS.map(([k]) => k));
+export const cleanDocKind = (s: unknown): DocKind => (DOC_KEYS.has(String(s)) ? s : 'other') as DocKind;
+export const docKindLabel = (s: string) => DOC_KINDS.find(([k]) => k === s)?.[1] ?? 'Other';
+
 /** Чи можна здавати квартиру: на Роатані інвестора це цікавить першим */
 export const RENTAL_RULES = [
   ['', 'Not specified'],
