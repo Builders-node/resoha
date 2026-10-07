@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import LocationPicker from './LocationPicker';
 import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
@@ -193,17 +194,11 @@ export default function ListingForm({
 
         <div className="field"><label>Year built</label>
           <input className="input" name="year" type="number" defaultValue={v?.year || ''} placeholder="2019" /></div>
-        <div className="field"><label>Latitude</label>
-          <input className="input" name="lat" type="number" step="0.0001" value={pin[0]}
-            onChange={(e) => setPin([Number(e.target.value), pin[1]])} /></div>
-        <div className="field"><label>Longitude</label>
-          <input className="input" name="lng" type="number" step="0.0001" value={pin[1]}
-            onChange={(e) => setPin([pin[0], Number(e.target.value)])} /></div>
-        <div className="field full">
-          <span className="tiny muted">
-            The pin starts in the middle of {area}. Fine-tune it if you know the exact spot —
-            buyers use the map to judge the walk to the beach.
-          </span>
+        <div className="field full"><label>Location on the map</label>
+          <LocationPicker value={pin} onChange={setPin}
+            hint={`The pin starts in the middle of ${area}. Click the map or drag the pin to the exact spot.`} />
+          <input type="hidden" name="lat" value={pin[0]} />
+          <input type="hidden" name="lng" value={pin[1]} />
         </div>
 
         <div className="field full switch-inline">
