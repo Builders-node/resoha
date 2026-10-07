@@ -1629,3 +1629,95 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 }
 .badge--featured{background:#f59e0b;color:#fff;display:inline-flex;align-items:center;gap:4px}
 .badge--featured svg{fill:currentColor}
+
+/* ===== Відділ продажів ЖК і запис на візит (як у LUN) ===== */
+.sales{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:12px;margin-top:34px}
+.sales--nologo{grid-template-columns:1fr}
+.sales__logo{display:flex;align-items:center;justify-content:center;background:var(--bg-soft);border-radius:var(--radius-lg);padding:20px}
+.sales__logo img{max-height:110px;width:auto;object-fit:contain}
+.sales__body{display:flex;flex-wrap:wrap;gap:22px 28px;align-items:center;justify-content:space-between;
+  background:var(--bg-soft);border-radius:var(--radius-lg);padding:26px 28px}
+.sales__info{flex:1 1 300px;min-width:0}
+.sales__title{font-size:24px}
+.sales__addr{margin:6px 0 0;font-size:15.5px}
+.sales__hours{display:flex;align-items:flex-start;gap:14px;margin-top:18px}
+.sales__ico{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#fff;color:var(--ink-2)}
+.sales__lbl{width:70px;flex:none;font-size:14px;line-height:1.6;padding-top:6px}
+.sales__week{margin:0;display:grid;gap:6px;padding-top:6px;font-size:14.5px}
+.sales__week > div{display:grid;grid-template-columns:96px auto;gap:10px}
+.sales__week dt{color:var(--ink-3)}
+.sales__week dd{margin:0;font-variant-numeric:tabular-nums;white-space:nowrap}
+.sales__note{margin:8px 0 0}
+.sales__acts{flex:1 1 260px;max-width:440px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sales__acts .cc__btn{height:52px;padding:0 12px;font-size:15px;font-weight:600;white-space:nowrap}
+.sales__visit{grid-column:1/-1;background:#000}
+.sales__btn{background:#000}
+.sales__btn.cc__btn--wa{background:#25d366}
+.sales__acts > :only-child,.sales__acts > .sales__visit + :last-child{grid-column:1/-1}
+@media (max-width:640px){
+  .sales{grid-template-columns:1fr}
+  .sales__logo{padding:14px}
+  .sales__body{padding:20px 18px}
+  .sales__title{font-size:20px}
+  .sales__lbl{display:none}
+  .sales__ico{width:46px;height:46px}
+  .sales__week > div{grid-template-columns:84px auto}
+  .sales__acts{grid-template-columns:1fr;max-width:none}
+}
+
+.visit{max-width:640px;margin:8px auto 60px}
+.visit__title{text-align:center;font-size:28px}
+.visit__dots{list-style:none;display:flex;justify-content:center;align-items:center;margin:14px 0 26px;padding:0}
+.visit__dots li{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink-3);background:#fff}
+.visit__dots li + li{margin-left:34px;position:relative}
+.visit__dots li + li::before{content:'';position:absolute;right:calc(100% + 4px);top:50%;width:26px;border-top:1.5px dashed var(--line)}
+.visit__dots li.is-on{border-color:var(--green)}
+.visit__dots li.is-done{border-color:var(--green);background:var(--green)}
+.visit__dots li.is-done + li::before{border-top-style:solid;border-color:var(--green)}
+.visit__office{background:var(--bg-soft);border-radius:var(--radius-lg);padding:22px 24px;display:grid;gap:12px}
+.visit__office p{margin:0;display:flex;align-items:center;gap:10px}
+.visit__office-head{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:18px}
+.visit__office-hours{display:flex;gap:10px;align-items:flex-start}
+.visit__office-hours .sales__week{padding-top:0}
+.visit__h{font-size:20px;margin:28px 0 16px}
+.visit__chips{display:flex;flex-wrap:wrap;gap:10px}
+.visit__chips .chip-btn{font-weight:500}
+.visit__next{margin-top:32px}
+.visit__part h3{font-size:17px;margin:28px 0 12px}
+.visit__nav{display:grid;grid-template-columns:auto 1fr;gap:10px;margin-top:32px}
+.visit__form{display:grid;gap:14px}
+.visit__form .visit__nav{margin-top:6px}
+.visit__form .visit__h{margin-top:0}
+.visit__field{display:grid;gap:4px}
+.visit__picked{display:flex;align-items:center;gap:8px;margin:-4px 0 4px}
+.visit__change{border:0;background:none;padding:0;font:inherit;color:var(--orange);cursor:pointer;margin-left:6px}
+.visit__done{text-align:center;display:grid;justify-items:center;gap:6px;padding:20px 0}
+.visit__done p{margin:0}
+.visit__done .btn{margin-top:18px}
+.visit__done-ico{display:grid;place-items:center;width:68px;height:68px;border-radius:50%;background:#ecfdf5;color:#047857}
+.visit__done .visit__h{margin:12px 0 4px}
+.vcal{background:var(--bg-soft);border-radius:var(--radius-lg);padding:22px 20px 26px}
+.vcal__head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:16px}
+.vcal__nav{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:0;background:#fff;cursor:pointer}
+.vcal__nav:disabled{opacity:.35;cursor:default}
+.vcal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;justify-items:center}
+.vcal__wd{font-weight:700;font-size:13.5px;padding-bottom:6px}
+.vcal__day{width:40px;height:40px;border:0;border-radius:8px;background:none;font:inherit;font-size:15px;cursor:pointer;
+  font-variant-numeric:tabular-nums}
+.vcal__day:hover:not(:disabled){background:#fff}
+.vcal__day:disabled{color:var(--ink-3);cursor:default}
+.vcal__day.is-today{box-shadow:inset 0 0 0 1px var(--ink-3)}
+.vcal__day.is-on{background:var(--orange);color:#fff;font-weight:700}
+
+.lead__visit{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px}
+.lead__visit .pill{display:inline-flex;align-items:center;gap:5px}
+.lead__tags{display:flex;flex-wrap:wrap;gap:6px;width:100%}
+.lead__tags .tag{background:var(--chip);border-radius:8px;padding:3px 8px;font-size:12px}
+
+.sched{display:grid;gap:6px;max-width:420px}
+.sched__row{display:flex;align-items:center;gap:14px;min-height:40px}
+.sched__day{display:flex;align-items:center;gap:8px;width:72px;font-weight:600;cursor:pointer}
+.sched__row.is-off .sched__day{color:var(--ink-3)}
+.sched__time{display:flex;align-items:center;gap:8px}
+.sched__time .input{width:150px;padding-top:8px;padding-bottom:8px}
+.sched ~ .tiny .linkbtn{color:var(--orange);text-decoration:underline}

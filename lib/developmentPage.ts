@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { getAgent, getDevelopment, listBuildings, listDocuments, listNews, listProgress, queryListings } from './db';
 import { currentUser } from './session';
 import { fromPrice } from './units';
+import type { Listing } from './types';
 import { SITE_NAME } from './site';
 
 /**
@@ -44,10 +45,14 @@ export const developmentContext = cache(async (slug: string) => {
     from: fromPrice(units.filter((u) => u.deal === 'sale')),
     // заявку з форми привʼязуємо до найдешевшої вільної квартири — лід завжди про конкретний обʼєкт
     // Ціна «From» рахується з продажу, тож і квартира для картки — на продаж, інакше вийде «$107,207/mo»
-    leadUnit: units.find((u) => u.deal === 'sale' && u.status === 'available')
-      ?? units.find((u) => u.status === 'available') ?? units[0],
+    leadUnit: pickLeadUnit(units),
   };
 });
+
+export function pickLeadUnit(units: Listing[]) {
+  return units.find((u) => u.deal === 'sale' && u.status === 'available')
+    ?? units.find((u) => u.status === 'available') ?? units[0];
+}
 
 export type DevTab = { href: string; key: string; label: string };
 export type DevContext = Awaited<ReturnType<typeof developmentContext>>;

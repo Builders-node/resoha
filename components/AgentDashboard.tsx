@@ -13,6 +13,7 @@ import ListingForm from './ListingForm';
 import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
+import { contactPrefShort, fmtVisit } from '@/lib/visits';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
@@ -235,9 +236,13 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                     {l.status === 'new' ? 'New' : 'Handled'}
                   </span>
                   {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
-                  <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>
+                  {l.visitAt && <VisitLine lead={l} />}
+                  {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
                   <div className="tiny muted" style={{ marginTop: 6 }}>
-                    {fmtDate(l.createdAt)} · <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>
+                    {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
+                      ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
+                      : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>}
+                    {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
                     {l.agentId !== agent.id && ` · agent: ${members.find((m) => m.id === l.agentId)?.name ?? l.agentId}`}
                   </div>
                 </div>
@@ -313,6 +318,22 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+/** Запис на візит: коли прийде, що цікавить і як зручніше звʼязатись */
+function VisitLine({ lead }: { lead: Lead }) {
+  const past = new Date(lead.visitAt!) < new Date();
+  return (
+    <div className="lead__visit">
+      <span className={`pill ${past ? 'pill--off' : 'pill--on'}`}>
+        <Icon name="calendar" size={14} /> Office visit · {fmtVisit(lead.visitAt!)}
+      </span>
+      {lead.contactVia && <span className="tiny muted">Prefers {contactPrefShort(lead.contactVia)}</span>}
+      {lead.interests.length > 0 && (
+        <div className="lead__tags">{lead.interests.map((x) => <span key={x} className="tag">{x}</span>)}</div>
+      )}
     </div>
   );
 }

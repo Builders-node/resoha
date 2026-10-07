@@ -7,6 +7,7 @@ import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
+import { WEEKDAYS } from '@/lib/visits';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, fmtDay, fmtMonth, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
 import type { Building, Developer, Development, DevelopmentDocument, DevelopmentNews, Listing, ProgressEntry } from '@/lib/types';
@@ -421,12 +422,29 @@ function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
   );
 }
 
+/** Рядок графіка в редакторі: вихідний день теж тримає години, щоб галочка повертала їх назад */
+type DayRow = { on: boolean; open: string; close: string };
+const TYPICAL_WEEK: DayRow[] = WEEKDAYS.map((_, i) => ({ on: i < 6, open: '09:00', close: i < 5 ? '17:00' : '13:00' }));
+
 function LocationSection({ dev, patch }: { dev: Development; patch: Patch }) {
   const [area, setArea] = useState(dev.neighborhood);
   const [pin, setPin] = useState<[number, number]>([dev.lat, dev.lng]);
+  const [week, setWeek] = useState<DayRow[]>(() => WEEKDAYS.map((_, i) => {
+    const d = dev.schedule[i];
+    return d ? { on: true, ...d } : { on: false, open: '09:00', close: '17:00' };
+  }));
+  const setDay = (i: number, v: Partial<DayRow>) => setWeek((w) => w.map((d, j) => (j === i ? { ...d, ...v } : d)));
   return (
     <SectionForm title="Location & contacts" hint="Where the project is and where buyers visit the sales office."
-      onSave={(fd) => patch({ ...entries(fd), neighborhood: area, lat: pin[0], lng: pin[1] })}>
+      onSave={async (fd) => {
+        // інакше база мовчки зробила б такий день вихідним
+        const bad = week.findIndex((d) => d.on && d.close <= d.open);
+        if (bad >= 0) return toast(`${WEEKDAYS[bad]}: closing time must be after opening time`);
+        return patch({
+          ...entries(fd), neighborhood: area, lat: pin[0], lng: pin[1],
+          schedule: week.map((d) => (d.on ? { open: d.open, close: d.close } : null)),
+        });
+      }}>
       <div className="field"><label>Area</label>
         <select className="input" value={area} onChange={(e) => {
           setArea(e.target.value);
@@ -440,8 +458,32 @@ function LocationSection({ dev, patch }: { dev: Development; patch: Patch }) {
         <LocationPicker value={pin} onChange={setPin} /></div>
       <div className="field"><label>Sales office</label>
         <input className="input" name="office" maxLength={160} defaultValue={dev.office} placeholder="Leave empty if on site" /></div>
-      <div className="field"><label>Office hours</label>
-        <input className="input" name="hours" maxLength={200} defaultValue={dev.hours} placeholder="Mon–Sat 9:00–17:00" /></div>
+      <div className="field full"><label>Sales office hours</label>
+        <div className="sched">
+          {week.map((d, i) => (
+            <div key={WEEKDAYS[i]} className={`sched__row${d.on ? '' : ' is-off'}`}>
+              <label className="sched__day">
+                <input type="checkbox" checked={d.on} onChange={(e) => setDay(i, { on: e.target.checked })} /> {WEEKDAYS[i]}
+              </label>
+              {d.on ? (
+                <span className="sched__time">
+                  <input className="input" type="time" step={1800} value={d.open} required
+                    onChange={(e) => setDay(i, { open: e.target.value })} aria-label={`${WEEKDAYS[i]} opens`} />
+                  –
+                  <input className="input" type="time" step={1800} value={d.close} required
+                    onChange={(e) => setDay(i, { close: e.target.value })} aria-label={`${WEEKDAYS[i]} closes`} />
+                </span>
+              ) : <span className="small muted">Closed</span>}
+            </div>
+          ))}
+        </div>
+        <span className="tiny muted">
+          Buyers book a visit in 30-minute slots inside these hours (Roatán time).
+          Leave every day unticked to turn booking off.{' '}
+          <button type="button" className="linkbtn" onClick={() => setWeek(TYPICAL_WEEK)}>Fill Mon–Fri 9–17, Sat 9–13</button>
+        </span></div>
+      <div className="field"><label>Hours note</label>
+        <input className="input" name="hours" maxLength={200} defaultValue={dev.hours} placeholder="Closed on public holidays" /></div>
       <div className="field"><label>Project website</label>
         <input className="input" name="website" maxLength={200} defaultValue={dev.website} placeholder="example.com" /></div>
     </SectionForm>

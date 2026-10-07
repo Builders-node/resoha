@@ -1,3 +1,4 @@
+import type { WeekSchedule } from './visits';
 import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
 import type { BuildingStage, DocKind, RentalRule, SalesStatus, UnitStatus } from './units';
@@ -174,7 +175,8 @@ export interface Development {
   video: string;               // посилання на YouTube / Vimeo
   tour: string;                // тур 360 або облёт дроном: Matterport, Kuula, YouTube 360
   office: string;              // адреса відділу продажів
-  hours: string;               // години роботи відділу продажів
+  hours: string;               // години роботи відділу продажів вільним текстом: примітка до графіка
+  schedule: WeekSchedule;      // графік по днях — з нього слоти запису на візит; [] — не задано
   agentId: string;
   agencyId: string | null;
   active: boolean;
@@ -261,7 +263,12 @@ export interface Lead {
   message: string;
   createdAt: string;
   status: 'new' | 'done';
-  channel: 'form' | 'whatsapp';   // форма на сторінці чи перехід у WhatsApp
+  channel: 'form' | 'whatsapp' | 'visit';   // форма на сторінці, перехід у WhatsApp чи запис на візит
+  visitAt: string | null;     // запис на візит: коли покупець прийде у відділ продажів
+  interests: string[];        // теми візиту
+  contactVia: string;         // зручний спосіб звʼязку: phone / whatsapp / email
+  developmentName: string;    // ЖК квартири, якщо вона в ЖК, — для списку заявок
+  developmentSlug: string;
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
 }

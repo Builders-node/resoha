@@ -5,6 +5,7 @@ import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanDetails } from './details';
 import { cleanNearby } from './nearby';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
+import { cleanSchedule } from './visits';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
 
 /**
@@ -94,8 +95,11 @@ const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
   userId: r.user_id ?? null, name: r.name, phone: r.phone, email: r.email ?? '',
   message: r.message, createdAt: r.created_at, status: r.status,
-  channel: r.channel === 'whatsapp' ? 'whatsapp' : 'form',
+  channel: r.channel === 'whatsapp' || r.channel === 'visit' ? r.channel : 'form',
+  // до міграції 0047 колонок немає
+  visitAt: r.visit_at ?? null, interests: r.interests ?? [], contactVia: r.contact_via ?? '',
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
+  developmentName: r.listing?.development?.name ?? '', developmentSlug: r.listing?.development?.slug ?? '',
 });
 
 /**
@@ -439,6 +443,7 @@ const mapDevelopment = (r: Row): Development => ({
   projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
+  schedule: cleanSchedule(r.schedule),
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
   // до міграції 0044 колонок немає
   featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,
@@ -490,6 +495,7 @@ function developmentRow(input: Record<string, unknown>): Row {
   }
   if (typeof input.office === 'string') row.office = input.office.trim().slice(0, 160);
   if (typeof input.hours === 'string') row.hours = input.hours.trim().slice(0, 200);
+  if (input.schedule !== undefined) row.schedule = cleanSchedule(input.schedule);
   for (const k of ['video', 'tour'] as const) if (input[k] !== undefined) row[k] = safeUrl(String(input[k] ?? '').trim()).slice(0, 500);
   for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
@@ -522,7 +528,13 @@ export async function createDevelopment(input: Record<string, unknown> & { agent
 export async function updateDevelopment(id: string, input: Record<string, unknown>) {
   const row = developmentRow(input);
   if (!Object.keys(row).length) return getDevelopment(id);
-  const { data, error } = await (await db()).from('developments').update(row).eq('id', id).select('*').maybeSingle();
+  const client = await db();
+  let { data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle();
+  // до міграції 0047 колонки графіка немає — зберігаємо решту
+  if (error && 'schedule' in row && /schedule/.test(error.message ?? '')) {
+    delete row.schedule;
+    ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
+  }
   if (error) throw error;
   return data ? mapDevelopment(data) : null;
 }
@@ -830,14 +842,17 @@ export async function listLeads(): Promise<Lead[]> {
   // RLS сама віддає потрібний зріз: ріелтору — його заявки, власнику — по всій агенції,
   // покупцеві — ті, що він надіслав. Тягнемо назву обʼєкта й імʼя ріелтора одним запитом.
   const { data } = await (await db()).from('leads')
-    .select('*, listing:listings(title), agent:profiles!leads_agent_id_fkey(name)')
+    .select('*, listing:listings(title, development:developments(name, slug)), agent:profiles!leads_agent_id_fkey(name)')
     .order('created_at', { ascending: false });
   return (data ?? []).map(mapLead);
 }
 
 export async function createLead(input: {
   listingId: string; name: string; phone: string; email?: string; message: string; userId?: string | null;
-  channel?: 'form' | 'whatsapp';
+  channel?: 'form' | 'whatsapp' | 'visit';
+  visitAt?: string; interests?: string[]; contactVia?: string;
+  /** Візит текстом — для бази без міграції 0047, де дату й теми нікуди більше покласти */
+  visitSummary?: string;
 }): Promise<boolean> {
   const client = await db();
   const { data: listing } = await client.from('listings')
@@ -845,12 +860,21 @@ export async function createLead(input: {
   if (!listing) return false;
 
   // Без .select(): гість має право створити заявку, але не читати її — RLS поверне помилку на читанні
-  const { error } = await client.from('leads').insert({
+  const row = {
     listing_id: listing.id, agent_id: listing.agent_id, agency_id: listing.agency_id,
     user_id: input.userId ?? null,
     name: input.name, phone: input.phone, email: input.email ?? '', message: input.message,
     channel: input.channel ?? 'form',
-  });
+  };
+  const visit = input.channel === 'visit'
+    ? { visit_at: input.visitAt, interests: input.interests ?? [], contact_via: input.contactVia ?? '' } : {};
+  let { error } = await client.from('leads').insert({ ...row, ...visit });
+  // до міграції 0047 немає ні каналу «visit», ні його колонок — тоді звичайна заявка
+  // з датою візиту й темами в тексті повідомлення
+  if (error && input.channel === 'visit' && /visit_at|interests|contact_via|channel_check/.test(error.message ?? '')) {
+    const message = [input.visitSummary, input.message].filter(Boolean).join('\n').slice(0, 2000);
+    ({ error } = await client.from('leads').insert({ ...row, message, channel: 'form' }));
+  }
   if (error) throw error;
   return true;
 }

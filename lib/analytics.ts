@@ -77,7 +77,7 @@ const SOURCE_LABELS: Record<string, string> = {
   social: 'Social media', messenger: 'WhatsApp & messengers', other: 'Other sites',
 };
 const CHANNEL_LABELS: Record<string, string> = {
-  whatsapp: 'WhatsApp', phone: 'Phone shown', form: 'Viewing request', viber: 'Viber',
+  whatsapp: 'WhatsApp', phone: 'Phone shown', form: 'Viewing request', visit: 'Office visit booked', viber: 'Viber',
   telegram: 'Telegram', share: 'Link copied', favorite: 'Saved',
 };
 
@@ -151,8 +151,8 @@ export function buildAnalytics(input: {
   events.forEach((e) => {
     if (['phone', 'viber', 'telegram', 'share', 'favorite'].includes(e.kind)) chCount[e.kind] = (chCount[e.kind] ?? 0) + 1;
   });
-  // WhatsApp і форма — це заявки: беремо з leads, щоб цифри збігались із вкладкою Leads
-  leads.forEach((l) => { const k = l.channel === 'whatsapp' ? 'whatsapp' : 'form'; chCount[k] = (chCount[k] ?? 0) + 1; });
+  // WhatsApp, форма й запис на візит — це заявки: беремо з leads, щоб цифри збігались із вкладкою Leads
+  leads.forEach((l) => { const k = l.channel === 'whatsapp' || l.channel === 'visit' ? l.channel : 'form'; chCount[k] = (chCount[k] ?? 0) + 1; });
   const channels = Object.entries(chCount).sort((a, b) => b[1] - a[1])
     .map(([key, value]) => ({ key, label: CHANNEL_LABELS[key] ?? key, value }));
 
