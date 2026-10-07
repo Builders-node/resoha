@@ -1,3 +1,5 @@
+import { translate, type Lang } from './i18n';
+
 /**
  * Характеристики обʼєкта — таблиця на сторінці, як у LUN. Ріелтор обирає зі списку,
  * тож на сторінці однакові формулювання, а порожнє поле просто не показуємо.
@@ -75,9 +77,9 @@ export const detailLabel = (f: DetailField, v: string | undefined) =>
   (v && f.options.find(([k]) => k === v)?.[1]) || '';
 
 /** «3 of 8», «3», «8-storey building» — або нічого */
-export function floorLine(floor: number | null, floorsTotal?: number) {
-  if (floor !== null && floorsTotal) return `${floor} of ${floorsTotal}`;
+export function floorLine(floor: number | null, floorsTotal?: number, lang: Lang = 'en') {
+  if (floor !== null && floorsTotal) return translate(lang, '{floor} of {total}', { floor, total: floorsTotal });
   if (floor !== null) return String(floor);
-  if (floorsTotal) return `${floorsTotal}-storey building`;
+  if (floorsTotal) return translate(lang, '{n}-storey building', { n: floorsTotal });
   return '';
 }

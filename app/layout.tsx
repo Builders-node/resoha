@@ -7,6 +7,8 @@ import AuthModal from '@/components/AuthModal';
 import JsonLd from '@/components/JsonLd';
 import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import LangProvider from '@/components/LangProvider';
+import { getLang } from '@/lib/i18n/server';
 
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
 const inter = Inter({
@@ -24,16 +26,19 @@ export const metadata: Metadata = {
   twitter: { card: 'summary_large_image' },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const lang = await getLang();
   return (
-    <html lang="en" className={inter.variable}>
+    <html lang={lang} className={inter.variable}>
       <body>
+        <LangProvider lang={lang}>
         {/* хто ми — на кожній сторінці, щоб пошуковики й AI-асистенти звʼязували всі сторінки з одним брендом */}
         <JsonLd data={graph(organizationLd(), websiteLd())} />
         {children}
         <Toaster />
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>
+        </LangProvider>
       </body>
     </html>
   );

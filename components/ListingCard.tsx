@@ -1,3 +1,4 @@
+'use client';
 import Link from 'next/link';
 import { DEAL_LABELS, fmtPrice, specLine } from '@/lib/format';
 import { readiness } from '@/lib/land';
@@ -5,6 +6,7 @@ import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
 import Photo from './Photo';
+import { useLang, useT } from './LangProvider';
 
 type Props = {
   listing: Listing;
@@ -20,6 +22,8 @@ type Props = {
 export default function ListingCard({
   listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave,
 }: Props) {
+  const t = useT();
+  const lang = useLang();
   return (
     <Link
       href={`/listings/${l.id}`}
@@ -29,23 +33,23 @@ export default function ListingCard({
     >
       <Photo src={l.photos[0]} alt={l.title} />
       <div className="card__badges">
-        <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{DEAL_LABELS[l.deal]}</span>
-        {l.status !== 'available' && <span className="badge">{statusLabel(l.status)}</span>}
-        {l.oceanfront && <span className="badge">Oceanfront</span>}
+        <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{t(DEAL_LABELS[l.deal])}</span>
+        {l.status !== 'available' && <span className="badge">{t(statusLabel(l.status))}</span>}
+        {l.oceanfront && <span className="badge">{t('Oceanfront')}</span>}
         {/* земля: один бейдж готовності замість «Titled»; без перевірки — нічого */}
         {l.type === 'land' && l.land?.checkedAt && (
-          <span className={`badge badge--${readiness(l.land).tone}`}>{readiness(l.land).label}</span>
+          <span className={`badge badge--${readiness(l.land).tone}`}>{t(readiness(l.land).label)}</span>
         )}
-        {l.type === 'land' && !l.land?.checkedAt && l.titled && <span className="badge">Titled</span>}
+        {l.type === 'land' && !l.land?.checkedAt && l.titled && <span className="badge">{t('Titled')}</span>}
       </div>
       <FavButton listingId={l.id} initial={isFav} />
       <div className="ov__b">
         {l.development
-          ? <div className="ov__agency">{l.development.name}{l.unitNo && ` · Unit ${l.unitNo}`}</div>
+          ? <div className="ov__agency">{l.development.name}{l.unitNo && ` · ${t('Unit {n}', { n: l.unitNo })}`}</div>
           : agentName && <div className="ov__agency">{agentName}</div>}
         <div className="ov__title">{l.title}</div>
-        <div className="ov__meta">{l.neighborhood} · {specLine(l)}</div>
-        <div className="ov__price">{fmtPrice(l.price, l.deal)}</div>
+        <div className="ov__meta">{l.neighborhood} · {specLine(l, lang)}</div>
+        <div className="ov__price">{fmtPrice(l.price, l.deal, lang)}</div>
       </div>
     </Link>
   );

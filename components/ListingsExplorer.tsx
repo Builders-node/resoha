@@ -12,10 +12,16 @@ import {
 } from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { Listing } from '@/lib/types';
+import { useLang, useT } from './LangProvider';
+
+function MapLoading() {
+  const t = useT();
+  return <div className="map-skeleton">{t('Loading map…')}</div>;
+}
 
 const MapView = dynamic(() => import('./MapView'), {
   ssr: false,
-  loading: () => <div className="map-skeleton">Loading map…</div>,
+  loading: () => <MapLoading />,
 });
 
 export default function ListingsExplorer({
@@ -24,6 +30,8 @@ export default function ListingsExplorer({
   initialItems: Listing[]; initialPins: Pin[]; initialTotal: number; initialHasMore: boolean;
   initialFilters: Filters; favIds: string[]; authed: boolean;
 }) {
+  const t = useT();
+  const lang = useLang();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [items, setItems] = useState<Listing[]>(initialItems);
   const [pins, setPins] = useState<Pin[]>(initialPins);
@@ -141,19 +149,19 @@ export default function ListingsExplorer({
   }, []);
 
   async function saveSearch() {
-    if (!authed) return toast('Sign in to save searches');
+    if (!authed) return toast(t('Sign in to save searches'));
     const title = [
-      filters.deal === 'rent' ? 'Rentals' : 'For sale',
-      filters.oceanfront && 'oceanfront',
-      filters.beds.length && `${filters.beds.join('/')} bd`,
+      filters.deal === 'rent' ? t('Rentals') : t('For sale'),
+      filters.oceanfront && t('oceanfront'),
+      filters.beds.length && t('{n} bd', { n: filters.beds.join('/') }),
       filters.neighborhoods[0],
-      filters.priceMax && `under ${fmtUsd(Number(filters.priceMax))}`,
+      filters.priceMax && t('under {price}', { price: fmtUsd(Number(filters.priceMax)) }),
     ].filter(Boolean).join(', ');
     const res = await fetch('/api/saved-searches', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title: title || 'All listings', query: qs }),
+      body: JSON.stringify({ title: title || t('All listings'), query: qs }),
     });
-    toast(res.ok ? 'Search saved to your account' : 'Could not save the search');
+    toast(res.ok ? t('Search saved to your account') : t('Could not save the search'));
   }
 
   const searchArea = () => {
@@ -168,49 +176,49 @@ export default function ListingsExplorer({
     <>
       <div className="filters" ref={filtersRef}>
         <div className="wrap filters__in">
-          <input className="input filters__q" type="search" placeholder="Search: area, resort, street…"
+          <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
             value={filters.q} onChange={(e) => set({ q: e.target.value })} />
 
           <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
-            <option value="">Any type</option>
-            <option value="condo">Condos</option>
-            <option value="house">Houses &amp; villas</option>
-            <option value="land">Land</option>
-            <option value="commercial">Commercial</option>
+            <option value="">{t('Any type')}</option>
+            <option value="condo">{t('Condos')}</option>
+            <option value="house">{t('Houses & villas')}</option>
+            <option value="land">{t('Land')}</option>
+            <option value="commercial">{t('Commercial')}</option>
           </select>
 
           {/* Oceanfront і Reset живуть ще й у модалці фільтрів, тож на телефоні
               ховаємо їх, щоб панель влазила у ширину без бокової прокрутки. */}
           <button className={`btn btn--sm filters__ocean ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
-            onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> Oceanfront</button>
+            onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> {t('Oceanfront')}</button>
 
           {/* лише в режимі Land: титул + дорога + світло + вода на місці */}
           {filters.type === 'land' && (
             <button className={`btn btn--sm filters__ocean ${filters.ready ? 'btn--primary' : 'btn--ghost'}`}
-              onClick={() => set({ ready: !filters.ready })}><Icon name="check" size={17} /> Ready to build</button>
+              onClick={() => set({ ready: !filters.ready })}><Icon name="check" size={17} /> {t('Ready to build')}</button>
           )}
 
           <button className="btn btn--sm btn--orange filters__more" onClick={() => setModal(true)}>
-            <Icon name="sliders" size={17} /> Filters {active > 0 && <span className="f-badge">{active}</span>}
+            <Icon name="sliders" size={17} /> {t('Filters')} {active > 0 && <span className="f-badge">{active}</span>}
           </button>
 
-          <button className="btn btn--sm filters__save" onClick={saveSearch} aria-label="Save search">
-            <Icon name="bookmark" size={17} /> <span className="btn__t">Save search</span>
+          <button className="btn btn--sm filters__save" onClick={saveSearch} aria-label={t('Save search')}>
+            <Icon name="bookmark" size={17} /> <span className="btn__t">{t('Save search')}</span>
           </button>
 
           {filters.bbox && (
             <button className="btn btn--sm btn--primary filters__area" onClick={() => set({ bbox: '' })}
-              aria-label="Clear map area">
-              <Icon name="map" size={17} /> <span className="btn__t">Map area</span> <Icon name="close" size={15} />
+              aria-label={t('Clear map area')}>
+              <Icon name="map" size={17} /> <span className="btn__t">{t('Map area')}</span> <Icon name="close" size={15} />
             </button>
           )}
 
           {active > 0 && (
             <button className="btn btn--sm btn--ghost filters__reset"
-              onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>Reset all</button>
+              onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>{t('Reset all')}</button>
           )}
 
-          <span className="filters__count">{loading ? 'Searching…' : nListings(total)}</span>
+          <span className="filters__count">{loading ? t('Searching…') : nListings(total, lang)}</span>
         </div>
       </div>
 
@@ -219,24 +227,26 @@ export default function ListingsExplorer({
           <div className="list-head">
             <h1>
               {loading
-                ? 'Searching…'
+                ? t('Searching…')
                 : filters.deal === 'rent'
-                  ? `${fmtNumber(total)} for rent on Roatán`
+                  ? t('{n} for rent on Roatán', { n: fmtNumber(total) })
                   : filters.deal === 'sale'
-                    ? `${fmtNumber(total)} for sale on Roatán`
-                    : `${nListings(total)} on Roatán`}
+                    ? t('{n} for sale on Roatán', { n: fmtNumber(total) })
+                    : t('{listings} on Roatán', { listings: nListings(total, lang) })}
             </h1>
-            <span className="muted small">Bay Islands, Honduras</span>
+            <span className="muted small">{t('Bay Islands, Honduras')}</span>
           </div>
 
           {total === 0 && !loading ? (
             <div className="empty">
               <div className="empty__ico"><Icon name="island" size={40} /></div>
               {filters.bbox
-                ? 'Nothing in this part of the map. Zoom out or move the map, then search again.'
+                ? t('Nothing in this part of the map. Zoom out or move the map, then search again.')
                 : active > 0
-                ? 'Nothing matches these filters. Drop one of them and try again.'
-                : `Nothing on Roatán ${filters.deal === 'rent' ? 'for rent' : 'for sale'} in this section yet.`}
+                ? t('Nothing matches these filters. Drop one of them and try again.')
+                : filters.deal === 'rent'
+                  ? t('Nothing on Roatán for rent in this section yet.')
+                  : t('Nothing on Roatán for sale in this section yet.')}
             </div>
           ) : (
             <div className="grid grid--list">
@@ -257,7 +267,7 @@ export default function ListingsExplorer({
           {hasMore && (
             <div style={{ display: 'grid', placeItems: 'center', padding: '22px 0 6px' }}>
               <button className="btn btn--ghost btn--lg" onClick={loadMore} disabled={loadingMore}>
-                {loadingMore ? 'Loading…' : `Show more — ${total - items.length} left`}
+                {loadingMore ? t('Loading…') : t('Show more — {n} left', { n: total - items.length })}
               </button>
             </div>
           )}
@@ -268,7 +278,7 @@ export default function ListingsExplorer({
             area={area} onMoved={setMovedTo} />
           {movedTo && (
             <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>
-              <Icon name="search" size={16} /> Search this area
+              <Icon name="search" size={16} /> {t('Search this area')}
             </button>
           )}
         </div>
@@ -277,9 +287,9 @@ export default function ListingsExplorer({
       <button
         className="view-toggle"
         onClick={() => setMobileView((v) => (v === 'list' ? 'map' : 'list'))}
-        aria-label={mobileView === 'list' ? 'Show map' : 'Show list'}
+        aria-label={mobileView === 'list' ? t('Show map') : t('Show list')}
       >
-        {mobileView === 'list' ? 'Map' : 'List'}
+        {mobileView === 'list' ? t('Map') : t('List')}
         <Icon name={mobileView === 'list' ? 'map' : 'list'} size={18} />
       </button>
 

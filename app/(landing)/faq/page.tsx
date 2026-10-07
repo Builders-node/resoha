@@ -6,6 +6,8 @@ import Rich, { plain } from '@/components/Rich';
 import SourceList from '@/components/SourceList';
 import { HELP_ITEMS, HELP_SECTIONS, HELP_UPDATED } from '@/lib/content/help';
 import { fmtDate } from '@/lib/format';
+import { makeT } from '@/lib/i18n';
+import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -19,7 +21,9 @@ export const metadata: Metadata = {
   openGraph: { title: TITLE, description: DESCRIPTION, url: '/faq', type: 'website' },
 };
 
-export default function FaqLanding() {
+export default async function FaqLanding() {
+  const lang = await getLang();
+  const t = makeT(lang);
   const url = `${SITE_URL}/faq`;
   return (
     <>
@@ -45,14 +49,13 @@ export default function FaqLanding() {
 
       <section className="lp-hero" id="top">
         <div className="lp-wrap">
-          <span className="lp-hero__eyebrow">Resoha help centre</span>
-          <h1>{TITLE}</h1>
+          <span className="lp-hero__eyebrow">{t('Resoha help centre')}</span>
+          <h1>{t(TITLE)}</h1>
           <p className="lp-hero__lead">
-            Everything buyers from abroad ask before they fly to Roatán, answered in plain language. Every figure
-            links to its source, and each answer starts with the short version.
+            {t('Everything buyers from abroad ask before they fly to Roatán, answered in plain language. Every figure links to its source, and each answer starts with the short version.')}
           </p>
           <p className="lp-hero__meta">
-            {HELP_ITEMS.length} answers · {HELP_SECTIONS.length} topics · Updated <time dateTime={HELP_UPDATED}>{fmtDate(HELP_UPDATED)}</time>
+            {t('{n} answers', { n: HELP_ITEMS.length })} · {t('{n} topics', { n: HELP_SECTIONS.length })} · {t('Updated')} <time dateTime={HELP_UPDATED}>{fmtDate(HELP_UPDATED, lang)}</time>
           </p>
 
           <div className="lp-topics">
@@ -60,7 +63,7 @@ export default function FaqLanding() {
               <a key={s.id} className="lp-topic" href={`#${s.id}`}>
                 <span className="lp-topic__ico"><Icon name={s.icon} size={22} /></span>
                 <b>{s.title}</b>
-                <span className="tiny">{s.items.length} questions</span>
+                <span className="tiny">{t('{n} questions', { n: s.items.length })}</span>
               </a>
             ))}
           </div>
@@ -68,12 +71,12 @@ export default function FaqLanding() {
       </section>
 
       <div className="lp-wrap lp-body">
-        <aside className="lp-side" aria-label="Topics">
-          <b className="tiny">Topics</b>
+        <aside className="lp-side" aria-label={t('Topics')}>
+          <b className="tiny">{t('Topics')}</b>
           <ol>
             {HELP_SECTIONS.map((s) => <li key={s.id}><a href={`#${s.id}`}>{s.title}</a></li>)}
           </ol>
-          <Link className="btn btn--primary btn--block btn--sm" href="/listings?deal=sale">Browse listings</Link>
+          <Link className="btn btn--primary btn--block btn--sm" href="/listings?deal=sale">{t('Browse listings')}</Link>
         </aside>
 
         <div className="lp-content">
@@ -87,7 +90,7 @@ export default function FaqLanding() {
                 </div>
               </div>
 
-              <nav className="lp-toc" aria-label={`Questions about ${s.title}`}>
+              <nav className="lp-toc" aria-label={t('Questions about {topic}', { topic: s.title })}>
                 <ol>
                   {s.items.map((it) => <li key={it.id}><a href={`#${it.id}`}>{it.q}</a></li>)}
                 </ol>
@@ -95,7 +98,7 @@ export default function FaqLanding() {
 
               {s.items.map((it) => (
                 <article key={it.id} id={it.id} className="lp-qa">
-                  <h3><a href={`#${it.id}`} className="lp-qa__anchor" aria-label="Link to this answer">#</a>{it.q}</h3>
+                  <h3><a href={`#${it.id}`} className="lp-qa__anchor" aria-label={t('Link to this answer')}>#</a>{it.q}</h3>
                   {it.a.map((p, i) => <p key={i}><Rich text={p} /></p>)}
                 </article>
               ))}
@@ -103,18 +106,17 @@ export default function FaqLanding() {
               <div className="lp-sec__foot">
                 {s.sources && s.sources.length > 0 && (
                   <details className="lp-src">
-                    <summary className="small muted">Sources for this section</summary>
+                    <summary className="small muted">{t('Sources for this section')}</summary>
                     <SourceList sources={s.sources} />
                   </details>
                 )}
-                <a className="small lp-top" href="#top">Back to top ↑</a>
+                <a className="small lp-top" href="#top">{t('Back to top')} ↑</a>
               </div>
             </section>
           ))}
 
           <p className="tiny muted lp-disclaimer">
-            This page is general information, not legal or tax advice. Rules and fees change; confirm every step with a
-            Honduran attorney before you pay a deposit.
+            {t('This page is general information, not legal or tax advice. Rules and fees change; confirm every step with a Honduran attorney before you pay a deposit.')}
           </p>
         </div>
       </div>
@@ -122,13 +124,13 @@ export default function FaqLanding() {
       <section className="lp-cta">
         <div className="lp-wrap lp-cta__in">
           <div>
-            <h2>Didn’t find your answer?</h2>
-            <p>Ask an island agent directly, or browse what is for sale right now.</p>
+            <h2>{t('Didn’t find your answer?')}</h2>
+            <p>{t('Ask an island agent directly, or browse what is for sale right now.')}</p>
           </div>
           <div className="lp-cta__btns">
-            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">Browse listings <Icon name="arrowRight" size={18} /></Link>
-            <Link className="btn btn--lg lp-cta__ghost" href="/agents">Find an agent</Link>
-            {CONTACT_EMAIL && <a className="btn btn--lg lp-cta__ghost" href={`mailto:${CONTACT_EMAIL}`}>Write to us</a>}
+            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--lg lp-cta__ghost" href="/agents">{t('Find an agent')}</Link>
+            {CONTACT_EMAIL && <a className="btn btn--lg lp-cta__ghost" href={`mailto:${CONTACT_EMAIL}`}>{t('Write to us')}</a>}
           </div>
         </div>
       </section>

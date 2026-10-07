@@ -1,4 +1,5 @@
 'use client';
+import { useT } from './LangProvider';
 
 type Props = {
   min: number;
@@ -11,6 +12,7 @@ type Props = {
 
 /** Двоповзунковий діапазон з гістограмою розподілу (як у фільтрах ЛУН). */
 export default function RangeSlider({ min, max, step = 1, value, onChange, histogram }: Props) {
+  const t = useT();
   const span = Math.max(1, max - min);
   const [lo, hi] = value;
   const pct = (v: number) => ((Math.min(Math.max(v, min), max) - min) / span) * 100;
@@ -45,12 +47,12 @@ export default function RangeSlider({ min, max, step = 1, value, onChange, histo
         <input
           type="range" min={min} max={max} step={step} value={lo}
           onChange={(e) => setLo(Number(e.target.value))}
-          aria-label="Minimum"
+          aria-label={t('Minimum')}
         />
         <input
           type="range" min={min} max={max} step={step} value={hi}
           onChange={(e) => setHi(Number(e.target.value))}
-          aria-label="Maximum"
+          aria-label={t('Maximum')}
         />
       </div>
     </div>

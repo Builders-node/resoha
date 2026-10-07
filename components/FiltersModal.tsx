@@ -3,7 +3,8 @@ import { useEffect, useMemo, useState } from 'react';
 import Icon from './Icon';
 import RangeSlider from './RangeSlider';
 import { AMENITIES, EMPTY_FILTERS, type Filters, toQuery } from '@/lib/filters';
-import { fmtNumber } from '@/lib/format';
+import { fmtNumber, nListings } from '@/lib/format';
+import { useLang, useT } from './LangProvider';
 
 type Facets = {
   total: number;
@@ -46,6 +47,8 @@ const HNL_RATE = 26.2;
 export default function FiltersModal({
   open, filters, onClose, onApply,
 }: { open: boolean; filters: Filters; onClose: () => void; onApply: (f: Filters) => void }) {
+  const t = useT();
+  const lang = useLang();
   const [draft, setDraft] = useState<Filters>(filters);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [count, setCount] = useState<number | null>(null);
@@ -67,12 +70,12 @@ export default function FiltersModal({
   useEffect(() => {
     if (!open) return;
     let dead = false;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       fetch(`/api/listings?${qs}&countOnly=1`)
         .then((r) => r.json())
         .then((d) => { if (!dead) setCount(d.total); });
     }, 180);
-    return () => { dead = true; clearTimeout(t); };
+    return () => { dead = true; clearTimeout(timer); };
   }, [qs, open]);
 
   const set = (patch: Partial<Filters>) => setDraft((d) => ({ ...d, ...patch }));
@@ -104,43 +107,43 @@ export default function FiltersModal({
     <div className={`modal ${open ? 'is-open' : ''}`} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal__box">
         <div className="modal__head">
-          <h3>Filters</h3>
-          <button className="modal__close" onClick={onClose} aria-label="Close"><Icon name="close" size={20} /></button>
+          <h3>{t('Filters')}</h3>
+          <button className="modal__close" onClick={onClose} aria-label={t('Close')}><Icon name="close" size={20} /></button>
         </div>
 
         <div className="modal__body">
           {/* ——— Sorting ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="sort" size={19} /></span><h4>Sorting</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="sort" size={19} /></span><h4>{t('Sorting')}</h4></div>
             <div className="chip-row">
               {SORTS.map((s) => (
                 <button key={s.v} className={`chip-btn ${draft.sort === s.v ? 'is-on' : ''}`}
-                  onClick={() => set({ sort: s.v })}>{s.label}</button>
+                  onClick={() => set({ sort: s.v })}>{t(s.label)}</button>
               ))}
             </div>
           </section>
 
           {/* ——— Main ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="sliders" size={19} /></span><h4>Main filters</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="sliders" size={19} /></span><h4>{t('Main filters')}</h4></div>
 
             <div className="fgroup">
-              <h5>Property type</h5>
+              <h5>{t('Property type')}</h5>
               <div className="chip-row">
-                {TYPES.map((t) => (
-                  <button key={t.v} className={`chip-btn ${draft.type === t.v ? 'is-on' : ''}`}
-                    onClick={() => set({ type: t.v })}>{t.label}</button>
+                {TYPES.map((ty) => (
+                  <button key={ty.v} className={`chip-btn ${draft.type === ty.v ? 'is-on' : ''}`}
+                    onClick={() => set({ type: ty.v })}>{t(ty.label)}</button>
                 ))}
               </div>
             </div>
 
             <div className="fgroup">
               <div className="fgroup__head">
-                <h5>Price</h5>
+                <h5>{t('Price')}</h5>
                 <div className="cur-toggle">
                   <span style={{ color: cur === 'USD' ? 'var(--ink)' : undefined }}>USD</span>
                   <button className={`switch ${cur === 'HNL' ? 'is-on' : ''}`}
-                    onClick={() => setCur(cur === 'USD' ? 'HNL' : 'USD')} aria-label="Currency" />
+                    onClick={() => setCur(cur === 'USD' ? 'HNL' : 'USD')} aria-label={t('Currency')} />
                   <span style={{ color: cur === 'HNL' ? 'var(--ink)' : undefined }}>HNL</span>
                 </div>
               </div>
@@ -162,7 +165,7 @@ export default function FiltersModal({
             </div>
 
             <div className="fgroup">
-              <h5>Bedrooms</h5>
+              <h5>{t('Bedrooms')}</h5>
               <div className="chip-row">
                 {['1', '2', '3', '4'].map((b) => (
                   <button key={b} className={`chip-btn ${draft.beds.includes(b) ? 'is-on' : ''}`}
@@ -172,11 +175,11 @@ export default function FiltersModal({
             </div>
 
             <div className="fgroup">
-              <h5>Bathrooms</h5>
+              <h5>{t('Bathrooms')}</h5>
               <div className="chip-row">
                 {['', '1', '2', '3'].map((b) => (
                   <button key={b || 'any'} className={`chip-btn ${draft.bathsMin === b ? 'is-on' : ''}`}
-                    onClick={() => set({ bathsMin: b })}>{b ? `${b}+` : 'Any'}</button>
+                    onClick={() => set({ bathsMin: b })}>{b ? `${b}+` : t('Any')}</button>
                 ))}
               </div>
             </div>
@@ -184,11 +187,11 @@ export default function FiltersModal({
 
           {/* ——— Property ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="home" size={19} /></span><h4>About the property</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="home" size={19} /></span><h4>{t('About the property')}</h4></div>
 
             {sqft.max > 0 && (
               <div className="fgroup">
-                <h5>Interior size, ft²</h5>
+                <h5>{t('Interior size, ft²')}</h5>
                 <div className="range-inputs">
                   <input className="input" value={`${fmtNumber(sqLo)} ft²`}
                     onChange={(e) => set({ sqftMin: e.target.value.replace(/\D/g, '') })} />
@@ -208,12 +211,12 @@ export default function FiltersModal({
 
             {lot.max > 0 && (
               <div className="fgroup">
-                <h5>Lot size, acres</h5>
+                <h5>{t('Lot size, acres')}</h5>
                 <div className="range-inputs">
-                  <input className="input" value={`${lotLo} ac`}
+                  <input className="input" value={t('{n} ac', { n: lotLo })}
                     onChange={(e) => set({ lotMin: e.target.value.replace(/[^\d.]/g, '') })} />
                   <span>—</span>
-                  <input className="input" value={`${lotHi} ac`}
+                  <input className="input" value={t('{n} ac', { n: lotHi })}
                     onChange={(e) => set({ lotMax: e.target.value.replace(/[^\d.]/g, '') })} />
                 </div>
                 <RangeSlider
@@ -227,22 +230,22 @@ export default function FiltersModal({
             )}
 
             <div className="fgroup">
-              <h5>Must have</h5>
+              <h5>{t('Must have')}</h5>
               <div className="switch-row">
-                <span className="switch-row__label">Oceanfront <span className="muted small">({facets?.oceanfront ?? 0})</span></span>
+                <span className="switch-row__label">{t('Oceanfront')} <span className="muted small">({facets?.oceanfront ?? 0})</span></span>
                 <button className={`switch ${draft.oceanfront ? 'is-on' : ''}`}
-                  onClick={() => set({ oceanfront: !draft.oceanfront })} aria-label="Oceanfront" />
+                  onClick={() => set({ oceanfront: !draft.oceanfront })} aria-label={t('Oceanfront')} />
               </div>
               {(facets?.tags.length
-                  ? facets.tags.filter((t) => t.count > 0).slice(0, 12).map((t) => t.name)
+                  ? facets.tags.filter((tag) => tag.count > 0).slice(0, 12).map((tag) => tag.name)
                   : AMENITIES
                 ).map((a) => {
-                const c = facets?.tags.find((t) => t.name === a)?.count ?? 0;
+                const c = facets?.tags.find((tag) => tag.name === a)?.count ?? 0;
                 return (
                   <div className="switch-row" key={a}>
-                    <span className="switch-row__label">{a} <span className="muted small">({c})</span></span>
+                    <span className="switch-row__label">{t(a)} <span className="muted small">({c})</span></span>
                     <button className={`switch ${draft.tags.includes(a) ? 'is-on' : ''}`}
-                      onClick={() => set({ tags: toggleIn(draft.tags, a) })} aria-label={a} />
+                      onClick={() => set({ tags: toggleIn(draft.tags, a) })} aria-label={t(a)} />
                   </div>
                 );
               })}
@@ -251,50 +254,50 @@ export default function FiltersModal({
 
           {/* ——— Title & fees ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="deed" size={19} /></span><h4>Title &amp; fees</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="deed" size={19} /></span><h4>{t('Title & fees')}</h4></div>
 
             <div className="fgroup">
               <div className="switch-row">
                 <span className="switch-row__label">
-                  Free &amp; clear title <span className="muted small">({facets?.titled ?? 0})</span>
+                  {t('Free & clear title')} <span className="muted small">({facets?.titled ?? 0})</span>
                 </span>
                 <button className={`switch ${draft.titled ? 'is-on' : ''}`}
-                  onClick={() => set({ titled: !draft.titled })} aria-label="Titled" />
+                  onClick={() => set({ titled: !draft.titled })} aria-label={t('Titled')} />
               </div>
               {draft.type === 'land' && (
                 <div className="switch-row">
                   <span className="switch-row__label">
-                    Ready to build <span className="muted small">title, road, power and water in place</span>
+                    {t('Ready to build')} <span className="muted small">{t('title, road, power and water in place')}</span>
                   </span>
                   <button className={`switch ${draft.ready ? 'is-on' : ''}`}
-                    onClick={() => set({ ready: !draft.ready })} aria-label="Ready to build" />
+                    onClick={() => set({ ready: !draft.ready })} aria-label={t('Ready to build')} />
                 </div>
               )}
               <div className="switch-row">
                 <span className="switch-row__label">
-                  Owner financing <span className="muted small">({facets?.ownerFinancing ?? 0})</span>
+                  {t('Owner financing')} <span className="muted small">({facets?.ownerFinancing ?? 0})</span>
                 </span>
                 <button className={`switch ${draft.ownerFinancing ? 'is-on' : ''}`}
-                  onClick={() => set({ ownerFinancing: !draft.ownerFinancing })} aria-label="Owner financing" />
+                  onClick={() => set({ ownerFinancing: !draft.ownerFinancing })} aria-label={t('Owner financing')} />
               </div>
             </div>
 
             <div className="fgroup">
-              <h5>HOA fee</h5>
+              <h5>{t('HOA fee')}</h5>
               <div className="chip-row">
                 {HOA.map((h) => (
                   <button key={h.v || 'any'} className={`chip-btn ${draft.hoaMax === h.v ? 'is-on' : ''}`}
-                    onClick={() => set({ hoaMax: h.v })}>{h.label}</button>
+                    onClick={() => set({ hoaMax: h.v })}>{t(h.label)}</button>
                 ))}
               </div>
             </div>
 
             <div className="fgroup">
-              <h5>Year built</h5>
+              <h5>{t('Year built')}</h5>
               <div className="chip-row">
                 {YEARS.map((y) => (
                   <button key={y.v || 'any'} className={`chip-btn ${draft.yearMin === y.v ? 'is-on' : ''}`}
-                    onClick={() => set({ yearMin: y.v })}>{y.label}</button>
+                    onClick={() => set({ yearMin: y.v })}>{t(y.label)}</button>
                 ))}
               </div>
             </div>
@@ -302,7 +305,7 @@ export default function FiltersModal({
 
           {/* ——— Areas ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="pin" size={19} /></span><h4>Areas of Roatán</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="pin" size={19} /></span><h4>{t('Areas of Roatán')}</h4></div>
             <div className="chip-row">
               {(facets?.areas ?? []).map((a) => (
                 <button key={a.name} className={`chip-btn ${draft.neighborhoods.includes(a.name) ? 'is-on' : ''}`}
@@ -316,10 +319,10 @@ export default function FiltersModal({
 
         <div className="modal__foot">
           <button className="btn btn--ghost btn--lg" onClick={() => setDraft({ ...EMPTY_FILTERS, deal: draft.deal })}>
-            Reset
+            {t('Reset')}
           </button>
           <button className="btn btn--primary btn--lg" onClick={() => { onApply(draft); onClose(); }}>
-            {count === null ? 'Show results' : `Show ${fmtNumber(count)} ${count === 1 ? 'listing' : 'listings'}`}
+            {count === null ? t('Show results') : t('Show {listings}', { listings: nListings(count, lang) })}
           </button>
         </div>
       </div>

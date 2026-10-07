@@ -7,6 +7,8 @@ import Logo from './Logo';
 import type { Session } from '@/lib/types';
 import Avatar from './Avatar';
 import AuthLink from './AuthLink';
+import LangSwitch from './LangSwitch';
+import { useT } from './LangProvider';
 
 type Match = (path: string, deal: string, type: string) => boolean;
 
@@ -26,6 +28,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
   const router = useRouter();
   const pathname = usePathname();
   const [more, setMore] = useState(false);   // лист «Other» на телефоні
+  const t = useT();
   const params = useSearchParams();
   const deal = params.get('deal') ?? '';
   const type = params.get('type') ?? '';
@@ -50,7 +53,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
         {session?.isAdmin && (
           <Link href="/admin" className={`desk-only ${pathname === '/admin' ? 'is-active' : ''}`}>
             <span className="sidebar__ico"><Icon name="deed" size={22} /></span>
-            <span className="sidebar__cap">Admin</span>
+            <span className="sidebar__cap">{t('Admin')}</span>
           </Link>
         )}
 
@@ -58,7 +61,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
           <Link key={n.cap} href={n.href}
             className={`${n.match(pathname, deal, type) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
-            <span className="sidebar__cap">{n.cap}</span>
+            <span className="sidebar__cap">{t(n.cap)}</span>
           </Link>
         ))}
 
@@ -67,17 +70,17 @@ export default function Sidebar({ session }: { session: Session | null }) {
             // вихід живе на сторінці профілю (Me) і в листі «Other» на телефоні
             <Link className="desk-only" href={session.role === 'agent' ? '/agent' : '/account'}>
               <Avatar className="sidebar__avatar" src={session.avatar} name={session.name} />
-              <span className="sidebar__cap">Me</span>
+              <span className="sidebar__cap">{t('Me')}</span>
             </Link>
           ) : (
             <AuthLink className="desk-only">
               <span className="sidebar__ico"><Icon name="user" size={22} /></span>
-              <span className="sidebar__cap">Sign in</span>
+              <span className="sidebar__cap">{t('Sign in')}</span>
             </AuthLink>
           )}
           <button className="sidelink mob-only" onClick={() => setMore(true)}>
             <span className="sidebar__ico"><Icon name="more" size={22} /></span>
-            <span className="sidebar__cap">Other</span>
+            <span className="sidebar__cap">{t('Other')}</span>
           </button>
         </div>
       </aside>
@@ -92,49 +95,50 @@ export default function Sidebar({ session }: { session: Session | null }) {
                 <span>
                   <b>{session.name}</b>
                   <span className="muted small">
-                    {session.role === 'agent' ? (session.isOwner ? 'Agency owner' : 'Realtor') : 'Buyer account'}
+                    {t(session.role === 'agent' ? (session.isOwner ? 'Agency owner' : 'Realtor') : 'Buyer account')}
                   </span>
                 </span>
               </Link>
             )}
 
             <Link className="sheet__item" href="/account">
-              <Icon name="heart" size={19} /> Saved listings
+              <Icon name="heart" size={19} /> {t('Saved listings')}
             </Link>
 
             <Link className="sheet__item" href="/agents">
-              <Icon name="building" size={19} /> Agents &amp; agencies
+              <Icon name="building" size={19} /> {t('Agents & agencies')}
             </Link>
 
             <Link className="sheet__item" href="/developments">
-              <Icon name="building" size={19} /> New developments
+              <Icon name="building" size={19} /> {t('New developments')}
             </Link>
             <Link className="sheet__item" href="/listings?type=land">
-              <Icon name="land" size={19} /> Land &amp; lots
+              <Icon name="land" size={19} /> {t('Land & lots')}
             </Link>
 
             {session?.isAdmin && (
               <Link className="sheet__item" href="/admin">
-                <Icon name="deed" size={19} /> Admin panel
+                <Icon name="deed" size={19} /> {t('Admin panel')}
               </Link>
             )}
 
             {session ? (
               <button className="sheet__item" onClick={logout}>
-                <Icon name="logout" size={19} /> Sign out
+                <Icon name="logout" size={19} /> {t('Sign out')}
               </button>
             ) : (
               <>
-                <AuthLink className="sheet__item" onOpen={() => setMore(false)}><Icon name="user" size={19} /> Sign in</AuthLink>
-                <AuthLink className="sheet__item" view="signup" onOpen={() => setMore(false)}><Icon name="plus" size={19} /> Create an account</AuthLink>
+                <AuthLink className="sheet__item" onOpen={() => setMore(false)}><Icon name="user" size={19} /> {t('Sign in')}</AuthLink>
+                <AuthLink className="sheet__item" view="signup" onOpen={() => setMore(false)}><Icon name="plus" size={19} /> {t('Create an account')}</AuthLink>
               </>
             )}
 
             {/* футер на телефоні схований — правові сторінки мають бути досяжні звідси */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}><LangSwitch /></div>
             <p className="tiny muted" style={{ textAlign: 'center', margin: '6px 0 10px' }}>
-              <Link href="/privacy">Privacy</Link> · <Link href="/terms">Terms</Link>
+              <Link href="/privacy">{t('Privacy')}</Link> · <Link href="/terms">{t('Terms')}</Link>
             </p>
-            <button className="btn btn--ghost btn--block" onClick={() => setMore(false)}>Close</button>
+            <button className="btn btn--ghost btn--block" onClick={() => setMore(false)}>{t('Close')}</button>
           </div>
         </div>
       )}

@@ -10,6 +10,8 @@ import { fmtDistance, listingFootprint, pathLength } from '@/lib/mapGeo';
 import { BUILDINGS_LAYER, FILL_LAYERS, SATELLITE_LAYER, mapStyle } from '@/lib/mapStyle';
 import { categoryLabel, type NearbyPlace } from '@/lib/nearby';
 import type { Deal, Listing, PropertyType } from '@/lib/types';
+import type { Lang, T } from '@/lib/i18n';
+import { useLang, useT } from './LangProvider';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
 export type Pin = { id: string; lat: number; lng: number; price: number; deal: Deal; type?: PropertyType };
@@ -41,29 +43,29 @@ const FALLBACK_HEIGHT: Record<PropertyType, number> = { condo: 12, commercial: 9
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
 /** Скелет картки: показуємо одразу, поки вантажиться сам обʼєкт. */
-function skeletonNode(pin: Pin) {
+function skeletonNode(pin: Pin, t: T, lang: Lang) {
   const node = document.createElement('div');
   node.className = 'map-pop map-pop--loading';
-  node.innerHTML = `<div class="map-pop__b"><div class="map-pop__price">${fmtPrice(pin.price, pin.deal)}</div>
-    <div class="map-pop__meta">Loading…</div></div>`;
+  node.innerHTML = `<div class="map-pop__b"><div class="map-pop__price">${fmtPrice(pin.price, pin.deal, lang)}</div>
+    <div class="map-pop__meta">${t('Loading…')}</div></div>`;
   return node;
 }
 
 /** Міні-картка, що зʼявляється прямо на карті при наведенні на цінник. */
-function buildPopupNode(l: Listing, onClick: () => void) {
+function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang) {
   const node = document.createElement('div');
   node.className = 'map-pop';
   const photo = photoUrl(l.photos[0]);
   node.innerHTML = `
     ${photo
       ? `<img src="${photo}" alt="" loading="lazy">`
-      : '<span class="nophoto"><em>No photo yet</em></span>'}
-    <span class="badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}">${DEAL_LABELS[l.deal]}</span>
-    ${l.oceanfront ? '<span class="badge map-pop__ocean">Oceanfront</span>' : ''}
+      : `<span class="nophoto"><em>${t('No photo yet')}</em></span>`}
+    <span class="badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}">${t(DEAL_LABELS[l.deal])}</span>
+    ${l.oceanfront ? `<span class="badge map-pop__ocean">${t('Oceanfront')}</span>` : ''}
     <div class="map-pop__b">
       <div class="map-pop__title">${l.title}</div>
-      <div class="map-pop__meta">${l.neighborhood} · ${specLine(l)}</div>
-      <div class="map-pop__price">${fmtPrice(l.price, l.deal)}</div>
+      <div class="map-pop__meta">${l.neighborhood} · ${specLine(l, lang)}</div>
+      <div class="map-pop__price">${fmtPrice(l.price, l.deal, lang)}</div>
     </div>`;
   node.addEventListener('click', onClick);
   return node;
@@ -118,6 +120,8 @@ export default function MapView({
   items, activeId, onSelect, onHover, area, onMoved, center = [16.36, -86.45], zoom = 11,
   interactive = true, detail = false, places,
 }: Props) {
+  const t = useT();
+  const lang = useLang();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const lib = useRef<typeof import('maplibre-gl') | null>(null);
@@ -296,7 +300,7 @@ export default function MapView({
     singles.forEach((l) => {
       const node = document.createElement('div');
       node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
-      node.textContent = fmtPriceShort(l.price, l.deal);
+      node.textContent = fmtPriceShort(l.price, l.deal, lang);
       // цінник висить над будинком, як прапорець, — сам будинок і сяйво під ним лишаються видні
       const mk = new ml.Marker({ element: node, anchor: 'bottom', offset: detail ? [0, -30] : [0, -12] })
         .setLngLat([l.lng, l.lat])
@@ -305,7 +309,7 @@ export default function MapView({
       if (interactive && !detail) {
         const popup = new ml.Popup({
           closeButton: false, closeOnClick: false, offset: 46, maxWidth: '240px', className: 'map-pop-wrap',
-        }).setDOMContent(skeletonNode(l));
+        }).setDOMContent(skeletonNode(l, t, lang));
         popups.current[l.id] = popup;
 
         const open = () => { cancelClose(); popup.setLngLat([l.lng, l.lat]).addTo(m); fill(); };
@@ -317,7 +321,7 @@ export default function MapView({
             ?? (await fetch(`/api/listings/${l.id}`).then((r) => r.json()).then((d) => d.listing).catch(() => null));
           if (!listing) return;
           cache.current[l.id] = listing;
-          popup.setDOMContent(buildPopupNode(listing, () => router.push(`/listings/${l.id}`)));
+          popup.setDOMContent(buildPopupNode(listing, () => router.push(`/listings/${l.id}`), t, lang));
         };
         // курсор із цінника переїхав на саму картку — не закриваємо її
         // (контейнер попапа створюється заново при кожному відкритті)
@@ -370,7 +374,7 @@ export default function MapView({
     fittedFor.current = items;
     fitToItems(first);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, ready, zoomTick]);
+  }, [items, ready, zoomTick, lang]);
 
   /*
    * --- будинки обʼєктів помаранчеві: шукаємо їх у векторних тайлах біля пінів ---
@@ -428,12 +432,12 @@ export default function MapView({
     placeMarkers.current = pinned.map((p) => {
       const node = document.createElement('div');
       node.className = 'place-pin';
-      node.title = categoryLabel(p.category);
+      node.title = t(categoryLabel(p.category));
       node.textContent = p.name;
       return new ml.Marker({ element: node, anchor: 'bottom' }).setLngLat([p.lng!, p.lat!]).addTo(m);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready, pinnedKey]);
+  }, [ready, pinnedKey, lang]);
 
   /* --- підсвітка активного --- */
   useEffect(() => {
@@ -496,7 +500,7 @@ export default function MapView({
       {interactive && ready && (
         <div className="map-ctrl">
           <button
-            type="button" className="map-ctrl__btn" title="Reset north and tilt" aria-label="Reset north and tilt"
+            type="button" className="map-ctrl__btn" title={t('Reset north and tilt')} aria-label={t('Reset north and tilt')}
             onClick={() => map.current?.easeTo({ bearing: 0, pitch: 0 })}
           >
             <svg width="16" height="22" viewBox="0 0 16 22" style={{ transform: `rotate(${-bearing}deg)` }}>
@@ -506,7 +510,7 @@ export default function MapView({
           </button>
           <button
             type="button" className={`map-ctrl__btn${satellite ? ' is-on' : ''}`}
-            title={satellite ? 'Map' : 'Satellite'} aria-label="Switch map layer" aria-pressed={satellite}
+            title={satellite ? t('Map') : t('Satellite')} aria-label={t('Switch map layer')} aria-pressed={satellite}
             onClick={() => setSatellite((s) => !s)}
           >
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
@@ -517,24 +521,24 @@ export default function MapView({
           <div className="map-ctrl__group">
             <button
               type="button" className={`map-ctrl__btn${ruler ? ' is-on' : ''}`}
-              title="Measure distance" aria-label="Measure distance" aria-pressed={ruler} onClick={toggleRuler}
+              title={t('Measure distance')} aria-label={t('Measure distance')} aria-pressed={ruler} onClick={toggleRuler}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="2" y="8" width="20" height="8" rx="1.5" />
                 <path d="M6 8v3M10 8v4M14 8v3M18 8v4" />
               </svg>
             </button>
-            <button type="button" className="map-ctrl__btn" title="My location" aria-label="My location" onClick={locate}>
+            <button type="button" className="map-ctrl__btn" title={t('My location')} aria-label={t('My location')} onClick={locate}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="7" />
                 <circle cx="12" cy="12" r="3" fill="currentColor" />
                 <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
               </svg>
             </button>
-            <button type="button" className="map-ctrl__btn" title="Zoom in" aria-label="Zoom in" onClick={() => map.current?.zoomIn()}>
+            <button type="button" className="map-ctrl__btn" title={t('Zoom in')} aria-label={t('Zoom in')} onClick={() => map.current?.zoomIn()}>
               <svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2"><path d="M12 5v14M5 12h14" /></svg>
             </button>
-            <button type="button" className="map-ctrl__btn" title="Zoom out" aria-label="Zoom out" onClick={() => map.current?.zoomOut()}>
+            <button type="button" className="map-ctrl__btn" title={t('Zoom out')} aria-label={t('Zoom out')} onClick={() => map.current?.zoomOut()}>
               <svg width="22" height="22" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2"><path d="M5 12h14" /></svg>
             </button>
           </div>
@@ -542,9 +546,9 @@ export default function MapView({
       )}
       {ruler && (
         <div className="map-ruler">
-          {rulerPts.length > 1 ? fmtDistance(pathLength(rulerPts)) : 'Click on the map to measure'}
+          {rulerPts.length > 1 ? fmtDistance(pathLength(rulerPts)) : t('Click on the map to measure')}
           {rulerPts.length > 0 && (
-            <button type="button" onClick={() => setRulerPts([])}>Clear</button>
+            <button type="button" onClick={() => setRulerPts([])}>{t('Clear')}</button>
           )}
         </div>
       )}

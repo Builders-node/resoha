@@ -10,6 +10,7 @@ import { fmtDate } from '@/lib/format';
 import type { Lead, Listing, SavedSearch, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
+import { useLang, useT } from './LangProvider';
 
 type Tab = 'fav' | 'searches' | 'enquiries' | 'profile';
 
@@ -17,6 +18,8 @@ export default function UserAccount({ session, user }: {
   session: Session;
   user: { email: string; phone: string };
 }) {
+  const t = useT();
+  const lang = useLang();
   const router = useRouter();
   const [tab, setTab] = useState<Tab>('fav');
   const [favs, setFavs] = useState<Listing[]>([]);
@@ -43,7 +46,7 @@ export default function UserAccount({ session, user }: {
 
   async function removeSearch(id: string) {
     await fetch(`/api/saved-searches/${id}`, { method: 'DELETE' });
-    toast('Search removed');
+    toast(t('Search removed'));
     load();
   }
 
@@ -51,15 +54,15 @@ export default function UserAccount({ session, user }: {
     <div className="wrap dash">
       <TabStrip>
         <a className={tab === 'fav' ? 'is-active' : ''} onClick={() => setTab('fav')}>
-          <HeartIcon filled size={18} /> Saved {favIds.length > 0 && <span className="pill pill--off">{favIds.length}</span>}
+          <HeartIcon filled size={18} /> {t('Saved')} {favIds.length > 0 && <span className="pill pill--off">{favIds.length}</span>}
         </a>
-        <a className={tab === 'searches' ? 'is-active' : ''} onClick={() => setTab('searches')}><Icon name="bell" size={18} /> Saved searches</a>
+        <a className={tab === 'searches' ? 'is-active' : ''} onClick={() => setTab('searches')}><Icon name="bell" size={18} /> {t('Saved searches')}</a>
         <a className={tab === 'enquiries' ? 'is-active' : ''} onClick={() => setTab('enquiries')}>
-          <Icon name="chat" size={18} /> My enquiries {leads.length > 0 && <span className="pill pill--off">{leads.length}</span>}
+          <Icon name="chat" size={18} /> {t('My enquiries')} {leads.length > 0 && <span className="pill pill--off">{leads.length}</span>}
         </a>
         {/* у ріелтора профіль із контактами живе в кабінеті ріелтора */}
         {session.role !== 'agent' && (
-          <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}><Icon name="user" size={18} /> Profile</a>
+          <a className={tab === 'profile' ? 'is-active' : ''} onClick={() => setTab('profile')}><Icon name="user" size={18} /> {t('Profile')}</a>
         )}
       </TabStrip>
 
@@ -71,19 +74,19 @@ export default function UserAccount({ session, user }: {
             <div className="muted">{[user.email, user.phone].filter(Boolean).join(' · ')}</div>
             <div className="small muted" style={{ marginTop: 4 }}>
               {session.role === 'agent'
-                ? <>Saved homes and searches · <Link href="/agent" className="link-accent">Agent dashboard</Link></>
-                : 'Buyer account'}
+                ? <>{t('Saved homes and searches')} · <Link href="/agent" className="link-accent">{t('Agent dashboard')}</Link></>
+                : t('Buyer account')}
             </div>
           </div>
-          <Link className="btn btn--primary" href="/listings" style={{ marginLeft: 'auto' }}>Browse listings</Link>
+          <Link className="btn btn--primary" href="/listings" style={{ marginLeft: 'auto' }}>{t('Browse listings')}</Link>
         </div>
 
         {tab === 'fav' && (
-          loading ? <div className="empty">Loading…</div> :
+          loading ? <div className="empty">{t('Loading…')}</div> :
           favs.length === 0 ? (
             <div className="panel"><div className="empty"><div className="empty__ico"><HeartIcon size={40} /></div>
-              No saved properties yet.<br />
-              <Link href="/listings" className="link-accent">Start browsing <Icon name="arrowRight" size={16} /></Link>
+              {t('No saved properties yet.')}<br />
+              <Link href="/listings" className="link-accent">{t('Start browsing')} <Icon name="arrowRight" size={16} /></Link>
             </div></div>
           ) : (
             <div className="grid grid--3">
@@ -94,30 +97,30 @@ export default function UserAccount({ session, user }: {
 
         {tab === 'searches' && (
           <div className="panel">
-            <h3 style={{ marginBottom: 4 }}>Saved searches</h3>
+            <h3 style={{ marginBottom: 4 }}>{t('Saved searches')}</h3>
             <p className="muted small" style={{ marginBottom: 16 }}>
-              Each one keeps its filters and shows how many properties match right now.
+              {t('Each one keeps its filters and shows how many properties match right now.')}
             </p>
             {searches.length === 0 ? (
-              <div className="empty"><div className="empty__ico"><Icon name="bell" size={40} /></div>No saved searches. Use “Save search” on the results page.</div>
+              <div className="empty"><div className="empty__ico"><Icon name="bell" size={40} /></div>{t('No saved searches. Use “Save search” on the results page.')}</div>
             ) : searches.map((s) => (
               <div key={s.id} className="lead">
                 <div>
                   <b>{s.title}</b>
                   {typeof s.total === 'number' && (
                     <>
-                      {' '}<span className="pill pill--off">{s.total} {s.total === 1 ? 'match' : 'matches'}</span>
-                      {!!s.fresh && <span className="pill pill--on" style={{ marginLeft: 6 }}>+{s.fresh} new</span>}
+                      {' '}<span className="pill pill--off">{t(s.total === 1 ? '{n} match' : '{n} matches', { n: s.total })}</span>
+                      {!!s.fresh && <span className="pill pill--on" style={{ marginLeft: 6 }}>{t('+{n} new', { n: s.fresh })}</span>}
                     </>
                   )}
                   <div className="tiny muted" style={{ marginTop: 4 }}>
-                    Saved {fmtDate(s.createdAt)}
-                    {!!s.fresh && ` · ${s.fresh} added since then`}
+                    {t('Saved {date}', { date: fmtDate(s.createdAt, lang) })}
+                    {!!s.fresh && ` · ${t('{n} added since then', { n: s.fresh })}`}
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <Link className="btn btn--sm btn--ghost" href={`/listings?${s.query}`}>Open</Link>
-                  <button className="btn btn--sm btn--danger" onClick={() => removeSearch(s.id)}>Delete</button>
+                  <Link className="btn btn--sm btn--ghost" href={`/listings?${s.query}`}>{t('Open')}</Link>
+                  <button className="btn btn--sm btn--danger" onClick={() => removeSearch(s.id)}>{t('Delete')}</button>
                 </div>
               </div>
             ))}
@@ -126,30 +129,30 @@ export default function UserAccount({ session, user }: {
 
         {tab === 'enquiries' && (
           <div className="panel">
-            <h3 style={{ marginBottom: 4 }}>My enquiries</h3>
+            <h3 style={{ marginBottom: 4 }}>{t('My enquiries')}</h3>
             <p className="muted small" style={{ marginBottom: 16 }}>
-              Everything you sent from a property page. “Handled” means the agent has worked it.
+              {t('Everything you sent from a property page. “Handled” means the agent has worked it.')}
             </p>
             {leads.length === 0 ? (
               <div className="empty">
                 <div className="empty__ico"><Icon name="chat" size={40} /></div>
-                No enquiries yet. Open a listing and ask the agent for a viewing.
+                {t('No enquiries yet. Open a listing and ask the agent for a viewing.')}
               </div>
             ) : leads.map((l) => (
               <div key={l.id} className="lead">
                 <div>
                   <Link href={`/listings/${l.listingId}`} style={{ fontWeight: 700 }}>
-                    {l.listingTitle || 'Listing'}
+                    {l.listingTitle || t('Listing')}
                   </Link>
                   <span className={`pill ${l.status === 'new' ? 'pill--off' : 'pill--on'}`} style={{ marginLeft: 8 }}>
-                    {l.channel === 'whatsapp' ? 'Sent on WhatsApp' : l.status === 'new' ? 'Awaiting reply' : 'Handled'}
+                    {l.channel === 'whatsapp' ? t('Sent on WhatsApp') : l.status === 'new' ? t('Awaiting reply') : t('Handled')}
                   </span>
                   {l.message && <p className="muted small" style={{ margin: '6px 0 0' }}>{l.message}</p>}
                   <div className="tiny muted" style={{ marginTop: 6 }}>
-                    Sent {fmtDate(l.createdAt)}{l.agentName && ` · agent: ${l.agentName}`}
+                    {t('Sent {date}', { date: fmtDate(l.createdAt, lang) })}{l.agentName && ` · ${t('agent: {name}', { name: l.agentName })}`}
                   </div>
                 </div>
-                <Link className="btn btn--sm btn--ghost" href={`/listings/${l.listingId}`}>Open listing</Link>
+                <Link className="btn btn--sm btn--ghost" href={`/listings/${l.listingId}`}>{t('Open listing')}</Link>
               </div>
             ))}
           </div>
@@ -157,7 +160,7 @@ export default function UserAccount({ session, user }: {
 
         {tab === 'profile' && (
           <div className="panel">
-            <h3 style={{ marginBottom: 18 }}>My details</h3>
+            <h3 style={{ marginBottom: 18 }}>{t('My details')}</h3>
             <div style={{ marginBottom: 18 }}>
               <AvatarPicker src={avatar} name={session.name} onChanged={setAvatar} />
             </div>
@@ -172,22 +175,22 @@ export default function UserAccount({ session, user }: {
                 }),
               });
               setSaving(false);
-              toast(res.ok ? 'Details saved' : 'Could not save');
+              toast(res.ok ? t('Details saved') : t('Could not save'));
             }}>
-              <div className="field"><label>Name</label><input className="input" name="name" defaultValue={session.name} /></div>
-              <div className="field"><label>Phone / WhatsApp</label><input className="input" name="phone" defaultValue={user.phone} /></div>
-              <div className="field full"><label>Email</label>
+              <div className="field"><label>{t('Name')}</label><input className="input" name="name" defaultValue={session.name} /></div>
+              <div className="field"><label>{t('Phone / WhatsApp')}</label><input className="input" name="phone" defaultValue={user.phone} /></div>
+              <div className="field full"><label>{t('Email')}</label>
                 <input className="input" defaultValue={user.email} disabled />
-                <span className="tiny muted">Email is managed by your login — change it from Supabase Auth.</span>
+                <span className="tiny muted">{t('Email is managed by your login — change it from Supabase Auth.')}</span>
               </div>
               <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+                <button className="btn btn--primary" disabled={saving}>{saving ? t('Saving…') : t('Save')}</button>
                 <button type="button" className="btn btn--ghost" onClick={async () => {
                   await fetch('/api/auth/logout', { method: 'POST' });
                   router.push('/');
                   router.refresh();
                 }}>
-                  <Icon name="logout" size={17} /> Sign out
+                  <Icon name="logout" size={17} /> {t('Sign out')}
                 </button>
               </div>
             </form>

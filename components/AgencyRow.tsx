@@ -1,19 +1,21 @@
 import Link from 'next/link';
+import { getT } from '@/lib/i18n/server';
 import { fmtNumber } from '@/lib/format';
 import type { Agency } from '@/lib/types';
 
 type Row = { agency: Agency; listings: number; agents: number };
 
 /** Плитки агенцій у стилі блоку «Агенції нерухомості» на ЛУН. */
-export default function AgencyRow({ rows }: { rows: Row[] }) {
+export default async function AgencyRow({ rows }: { rows: Row[] }) {
+  const t = await getT();
   if (rows.length === 0) {
     return (
       <div className="panel empty">
-        <b>No agencies on Resoha yet.</b>
+        <b>{t('No agencies on Resoha yet.')}</b>
         <p className="muted small" style={{ marginTop: 6 }}>
-          Island agencies get their own page here — listings, team and contacts — as soon as they sign up.
+          {t('Island agencies get their own page here — listings, team and contacts — as soon as they sign up.')}
         </p>
-        <Link className="btn btn--primary" href="/agent" style={{ marginTop: 12 }}>Open an agency</Link>
+        <Link className="btn btn--primary" href="/agent" style={{ marginTop: 12 }}>{t('Open an agency')}</Link>
       </div>
     );
   }
@@ -41,11 +43,11 @@ export default function AgencyRow({ rows }: { rows: Row[] }) {
             <div className="agc__stats">
               <div>
                 <b>{fmtNumber(listings)}</b>
-                <span>{listings === 1 ? 'listing' : 'listings'}</span>
+                <span>{t(listings === 1 ? 'listing' : 'listings')}</span>
               </div>
               <div>
                 <b>{fmtNumber(agents)}</b>
-                <span>{agents === 1 ? 'agent' : 'agents'}</span>
+                <span>{t(agents === 1 ? 'agent' : 'agents')}</span>
               </div>
             </div>
           </Link>
