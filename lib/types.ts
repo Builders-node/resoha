@@ -98,6 +98,7 @@ export interface Listing {
   agentId: string;          // автор — user.id
   agencyId: string | null;  // від чийого імені опубліковано
   featured: boolean;
+  featuredRank: number;      // порядок на головній (менше = вище)
   active: boolean;
   views: number;
   createdAt: string;
@@ -176,6 +177,8 @@ export interface Development {
   agencyId: string | null;
   active: boolean;
   createdAt: string;
+  featured: boolean;           // відмічено адміном для головної
+  featuredRank: number;
 }
 
 /** Забудовник: окремий профіль зі своєю сторінкою, веде його власник акаунта */
@@ -240,6 +243,8 @@ export interface Building {
   completion: string;      // «Q4 2026», «Delivered 2021»
   address: string;
   sort: number;
+  featured: boolean;
+  featuredRank: number;
 }
 
 export interface Lead {

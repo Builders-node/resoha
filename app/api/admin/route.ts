@@ -3,6 +3,7 @@ import {
   adminDeleteListing, adminListAgencies, adminListLog, adminListOwners, adminListReviews, adminListUsers,
   adminLog, adminOverview, adminSetAgencyFlags, adminSetListingFlags, adminSetProfileFlags,
   adminDeleteReview, adminUpdateProfile, listLeads, queryListings,
+  adminListDevelopments, adminReorderFeatured, adminSetFeatured,
 } from '@/lib/db';
 import { currentUser } from '@/lib/session';
 
@@ -20,6 +21,15 @@ export async function GET(req: Request) {
         queryListings({ includeInactive: true, sort: 'new' }), adminListOwners(),
       ]);
       return NextResponse.json({ items, owners });
+    }
+    // ЖК з домами + усі оголошення: з них вкладки Featured і Developments
+    case 'featured':
+    case 'developments':
+    {
+      const [developments, listings] = await Promise.all([
+        adminListDevelopments(), queryListings({ includeInactive: true, sort: 'new' }),
+      ]);
+      return NextResponse.json({ developments, listings });
     }
     case 'agencies':
       return NextResponse.json({ items: await adminListAgencies() });
@@ -44,11 +54,16 @@ type Action =
   | { kind: 'agency'; id: string; verified?: boolean }
   | { kind: 'listing'; id: string; featured?: boolean; active?: boolean }
   | { kind: 'listing'; id: string; remove: true }
-  | { kind: 'review'; id: string; remove: true };
+  | { kind: 'review'; id: string; remove: true }
+  | { kind: 'development' | 'building'; id: string; featured: boolean };
+
+const FEATURED_KINDS = ['listing', 'development', 'building'] as const;
+type FeaturedKind = (typeof FEATURED_KINDS)[number];
 
 /** Людською мовою для журналу: «listing.hide», а не голий JSON патча. */
 function describe(body: Action): string {
   if (body.kind === 'review') return 'review.delete';
+  if (body.kind === 'development' || body.kind === 'building') return `${body.kind}.${body.featured ? 'feature' : 'unfeature'}`;
   if (body.kind === 'listing') {
     if ('remove' in body) return 'listing.delete';
     if (body.featured !== undefined) return body.featured ? 'listing.feature' : 'listing.unfeature';
@@ -68,7 +83,19 @@ export async function POST(req: Request) {
   const user = await currentUser();
   if (!user?.isAdmin) return NextResponse.json({ error: 'Admins only' }, { status: 403 });
 
-  const body = (await req.json().catch(() => ({}))) as Action & { reason?: string; targetName?: string };
+  const raw = await req.json().catch(() => ({}));
+
+  // новий порядок однієї групи на головній: { reorder: 'development', ids: [...] }
+  if (raw?.reorder) {
+    const kind = raw.reorder as FeaturedKind;
+    if (!FEATURED_KINDS.includes(kind) || !Array.isArray(raw.ids)) {
+      return NextResponse.json({ error: 'Bad reorder request' }, { status: 400 });
+    }
+    await adminReorderFeatured(kind, raw.ids.map(String));
+    return NextResponse.json({ ok: true });
+  }
+
+  const body = raw as Action & { reason?: string; targetName?: string };
   if (!body?.id) return NextResponse.json({ error: 'id is required' }, { status: 400 });
 
   const record = (kind: Action['kind']) => adminLog(
@@ -118,9 +145,18 @@ export async function POST(req: Request) {
         await record('listing');
         return NextResponse.json({ ok });
       }
-      const item = await adminSetListingFlags(body.id, body);
+      // пометку ставимо окремо: так нове відмічене стає в кінець черги на головній
+      if (body.featured !== undefined) await adminSetFeatured('listing', body.id, body.featured);
+      const item = await adminSetListingFlags(body.id, { active: body.active });
       await record('listing');
       return NextResponse.json({ item });
+    }
+    case 'development':
+    case 'building': {
+      const ok = await adminSetFeatured(body.kind, body.id, Boolean(body.featured));
+      if (!ok) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      await record(body.kind);
+      return NextResponse.json({ ok });
     }
     case 'review': {
       const ok = await adminDeleteReview(body.id);
