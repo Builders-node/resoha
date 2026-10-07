@@ -443,6 +443,11 @@ textarea.input{resize:vertical;min-height:96px}
 .footer h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-bottom:10px}
 .footer li{list-style:none;margin:0 0 7px}
 .footer ul{padding:0;margin:0}
+.footer__bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px}
+.langswitch{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg);flex:none}
+.langswitch button{border:0;background:none;font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;color:var(--ink-2);cursor:pointer}
+.langswitch button.is-active{background:var(--ink);color:#fff;font-weight:600}
+.langswitch[aria-busy=true]{opacity:.6}
 .logo{display:flex;align-items:center;gap:9px;font-weight:900;font-size:19px;letter-spacing:-.03em}
 .logo__mark{width:30px;height:30px;display:grid;place-items:center;color:var(--orange)}
 .logo-mark{display:block}
