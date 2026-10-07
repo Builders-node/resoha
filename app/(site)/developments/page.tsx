@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import Icon from '@/components/Icon';
 import Photo from '@/components/Photo';
 import { listDevelopments, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
@@ -13,9 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default async function DevelopmentsPage() {
-  // відмічені адміном — першими, у порядку з вкладки Featured
-  const devs = (await listDevelopments()).sort((a, b) => Number(b.featured) - Number(a.featured)
-    || (a.featured ? a.featuredRank - b.featuredRank : 0));
+  const devs = await listDevelopments(); // відмічені адміном — першими (див. listDevelopments)
   // ціна «від» і кількість квартир — по одній вибірці на ЖК; їх небагато
   const units = await Promise.all(devs.map((d) => queryListings({ developmentId: d.id })));
 
@@ -33,7 +32,7 @@ export default async function DevelopmentsPage() {
           return (
             <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--wide">
               <Photo src={d.photos[0]} alt={d.name} />
-              <div className="card__badges"><span className="badge badge--brand">{salesLabel(d.sales)}</span></div>
+              <div className="card__badges">{d.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> Featured</span>}<span className="badge badge--brand">{salesLabel(d.sales)}</span></div>
               <div className="ov__b">
                 {d.developer && <div className="ov__agency">{d.developer}</div>}
                 <div className="ov__title">{d.name}</div>

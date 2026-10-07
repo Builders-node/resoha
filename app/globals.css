@@ -1548,3 +1548,5 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .feat-row__no{font-weight:700;color:var(--ink-3);min-width:22px;text-align:center}
 .feat-dev{border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:10px}
 @media (max-width:600px){.feat-row--sub{padding-left:16px}.feat-row{flex-wrap:wrap}.feat-row__act{margin-left:auto}}
+.badge--featured{background:#f59e0b;color:#fff;display:inline-flex;align-items:center;gap:4px}
+.badge--featured svg{fill:currentColor}
