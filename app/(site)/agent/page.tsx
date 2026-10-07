@@ -1,4 +1,5 @@
 import AgentDashboard from '@/components/AgentDashboard';
+import { isTab } from '@/lib/agentTabs';
 import BecomeRealtor from '@/components/BecomeRealtor';
 import LoginGate from '@/components/LoginGate';
 import { getSession } from '@/lib/session';
@@ -18,5 +19,5 @@ export default async function AgentPage({ searchParams }: { searchParams: Promis
   if (session.role !== 'agent') return <BecomeRealtor name={session.name} />;
 
   const { tab } = await searchParams;
-  return <AgentDashboard session={session} initialTab={tab === 'team' || tab === 'developments' || tab === 'developer' || tab === 'analytics' || tab === 'promote' ? tab : undefined} />;
+  return <AgentDashboard session={session} initialTab={isTab(tab) ? tab : undefined} />;
 }
