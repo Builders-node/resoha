@@ -41,6 +41,6 @@ export const SITE_FAQ: { q: string; a: string }[] = [
   },
   {
     q: 'Which areas of Roatán does Resoha cover?',
-    a: 'The whole island: West Bay, West End, Sandy Bay, Coxen Hole, Flowers Bay, French Harbour, Parrot Tree, Palmetto Bay, Pristine Bay, Oak Ridge, Punta Gorda and Camp Bay.',
+    a: 'The whole island: West Bay, West End, Sandy Bay, Coxen Hole, Flowers Bay, French Harbour, Parrot Tree, Palmetto Bay, Pristine Bay, Crawfish Rock, Oak Ridge, Punta Gorda and Camp Bay.',
   },
 ];
