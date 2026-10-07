@@ -564,14 +564,25 @@ export async function deleteBuilding(id: string) {
 
 /* ---------- документи ЖК ---------- */
 const mapDocument = (r: Row): DevelopmentDocument => ({
-  id: r.id, developmentId: r.development_id, kind: cleanDocKind(r.kind), title: r.title, number: r.number ?? '',
+  id: r.id, developmentId: r.development_id, listingId: r.listing_id ?? null, kind: cleanDocKind(r.kind), title: r.title, number: r.number ?? '',
   issued: r.issued ?? '', file: r.file ?? '', note: r.note ?? '', verified: !!r.verified, sort: r.sort ?? 0,
 });
 
-/** До міграції 0038 таблиці немає — тоді ЖК просто без документів */
-export async function listDocuments(developmentId: string): Promise<DevelopmentDocument[]> {
+/**
+ * Документи ЖК. За замовчуванням — лише спільні для всього ЖК; `withUnits` додає документи
+ * окремих квартир (для редактора). До міграції 0038 таблиці немає — тоді ЖК просто без документів.
+ */
+export async function listDocuments(developmentId: string, withUnits = false): Promise<DevelopmentDocument[]> {
   const { data, error } = await (await db()).from('development_documents').select('*')
     .eq('development_id', developmentId).order('sort').order('created_at');
+  if (error) return [];
+  return (data ?? []).map(mapDocument).filter((d) => withUnits || !d.listingId);
+}
+
+/** Документи однієї квартири (план юніта тощо); до міграції 0041 колонки немає — порожньо */
+export async function listUnitDocuments(listingId: string): Promise<DevelopmentDocument[]> {
+  const { data, error } = await (await db()).from('development_documents').select('*')
+    .eq('listing_id', listingId).order('sort').order('created_at');
   if (error) return [];
   return (data ?? []).map(mapDocument);
 }
