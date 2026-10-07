@@ -1,4 +1,5 @@
 'use client';
+import Icon from './Icon';
 import { useEffect, useRef, useState } from 'react';
 import type { Map as MLMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
@@ -62,8 +63,8 @@ export default function NearbyEditor({
                 Clear pin
               </button>
             )}
-            <button type="button" className="btn btn--ghost btn--sm" onClick={() => remove(i)} aria-label="Remove place">
-              Remove
+            <button type="button" className="btn btn--danger btn--sm btn--icon" onClick={() => remove(i)} aria-label="Remove place" title="Remove place">
+              <Icon name="trash" size={16} />
             </button>
           </div>
         </div>

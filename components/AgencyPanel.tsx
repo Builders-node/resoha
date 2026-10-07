@@ -337,14 +337,15 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                   <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
                     {isOwner && (
                       <>
-                        <button className="btn btn--sm btn--ghost"
+                        <button className="btn btn--sm btn--ghost btn--icon" title={editing === m.id ? 'Close' : 'Edit'}
+                          aria-label={editing === m.id ? 'Close' : 'Edit'}
                           onClick={() => setEditing(editing === m.id ? null : m.id)}>
-                          {editing === m.id ? 'Close' : 'Edit'}
+                          <Icon name={editing === m.id ? 'close' : 'pencil'} size={16} />
                         </button>{' '}
                         <button className="btn btn--sm" onClick={() => toggleOwner(m)}>
                           {m.isOwner ? 'Make agent' : 'Make owner'}
                         </button>{' '}
-                        {!m.isOwner && <button className="btn btn--sm btn--danger" onClick={() => remove(m)}>Remove</button>}
+                        {!m.isOwner && <button className="btn btn--sm btn--danger btn--icon" title="Remove from the team" aria-label="Remove from the team" onClick={() => remove(m)}><Icon name="trash" size={16} /></button>}
                       </>
                     )}
                   </td>

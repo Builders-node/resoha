@@ -310,7 +310,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                           {l.featured && <span className="pill pill--on" style={{ marginLeft: 6 }}>Featured</span>}
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
-                          <button className="btn btn--sm btn--ghost" onClick={() => { setAdding(false); setEditing(l); }}>Edit</button>{' '}
+                          <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => { setAdding(false); setEditing(l); }}><Icon name="pencil" size={16} /></button>{' '}
                           <button className="btn btn--sm btn--ghost"
                             onClick={() => act({ kind: 'listing', id: l.id, featured: !l.featured, targetName: l.title },
                               l.featured ? 'Removed from the home page' : 'Featured on the home page')}>
@@ -330,7 +330,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                             )}>
                             {l.active ? 'Take down' : 'Restore'}
                           </button>{' '}
-                          <button className="btn btn--sm btn--danger"
+                          <button className="btn btn--sm btn--danger btn--icon" title="Delete" aria-label="Delete"
                             onClick={() => confirmAct(
                               {
                                 title: 'Delete permanently?',
@@ -342,7 +342,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                               { kind: 'listing', id: l.id, remove: true, targetName: l.title },
                               'Listing deleted',
                             )}>
-                            Delete
+                            <Icon name="trash" size={16} />
                           </button>
                         </td>
                       </tr>
@@ -515,7 +515,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                           {u.verified && <span className="pill pill--on" style={{ marginLeft: 6 }}>Verified</span>}
                         </td>
                         <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                          <button className="btn btn--sm btn--ghost" onClick={() => setEditingUser(u)}>Edit</button>{' '}
+                          <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => setEditingUser(u)}><Icon name="pencil" size={16} /></button>{' '}
                           {u.role === 'agent' && (
                             <>
                               <button className="btn btn--sm btn--ghost"
@@ -596,7 +596,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                   {r.body && <p className="muted small" style={{ margin: '6px 0 0' }}>{r.body}</p>}
                   <div className="tiny muted" style={{ marginTop: 4 }}>{fmtDate(r.createdAt)}</div>
                 </div>
-                <button className="btn btn--sm btn--danger"
+                <button className="btn btn--sm btn--danger btn--icon" title="Delete" aria-label="Delete"
                   onClick={() => confirmAct(
                     {
                       title: 'Delete this review?',
@@ -608,7 +608,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                     { kind: 'review', id: r.id, remove: true, targetName: `${r.authorName} → ${r.agentName}` },
                     'Review deleted',
                   )}>
-                  Delete
+                  <Icon name="trash" size={16} />
                 </button>
               </div>
             ))}

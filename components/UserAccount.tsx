@@ -120,7 +120,7 @@ export default function UserAccount({ session, user }: {
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Link className="btn btn--sm btn--ghost" href={`/listings?${s.query}`}>{t('Open')}</Link>
-                  <button className="btn btn--sm btn--danger" onClick={() => removeSearch(s.id)}>{t('Delete')}</button>
+                  <button className="btn btn--sm btn--danger btn--icon" title={t('Delete')} aria-label={t('Delete')} onClick={() => removeSearch(s.id)}><Icon name="trash" size={16} /></button>
                 </div>
               </div>
             ))}
