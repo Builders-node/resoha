@@ -21,6 +21,7 @@ export const AREA_CENTRES: Record<string, [number, number]> = {
   'Parrot Tree': [16.3641, -86.4131],
   'Palmetto Bay': [16.3732, -86.4245],
   'Pristine Bay': [16.366945, -86.471605],
+  'Crawfish Rock': [16.3800, -86.4590],
   'Oak Ridge': [16.3958, -86.3400],
   'Punta Gorda': [16.4106, -86.3349],
   'Camp Bay': [16.4435, -86.2902],

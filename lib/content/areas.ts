@@ -132,7 +132,7 @@ export const AREAS: Area[] = [
   {
     slug: 'french-harbour',
     name: 'French Harbour & the central coast',
-    neighborhoods: ['French Harbour', 'Parrot Tree', 'Palmetto Bay', 'Pristine Bay'],
+    neighborhoods: ['French Harbour', 'Parrot Tree', 'Palmetto Bay', 'Pristine Bay', 'Crawfish Rock'],
     summary: 'French Harbour is the commercial hub of central Roatán, with supermarkets, marinas and gated communities such as Parrot Tree and Pristine Bay; it offers good value and full-time infrastructure.',
     priceRange: '$150K – $500K',
     priceSource: SOURCES.latMarket,
