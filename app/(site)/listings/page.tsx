@@ -2,6 +2,8 @@ import ListingsExplorer from '@/components/ListingsExplorer';
 import { getFavorites, queryPins, searchListings } from '@/lib/db';
 import { fromParams, toListingQuery, toQuery } from '@/lib/filters';
 import { getSession } from '@/lib/session';
+import { headers } from 'next/headers';
+import { trackSearchAfterResponse } from '@/lib/track';
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -19,6 +21,8 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
     searchListings(query), queryPins(query), getSession(),
   ]);
   const favIds = session ? await getFavorites(session.id) : [];
+  // відкриття сторінки з фільтрами — теж пошук (далі зміни фільтрів пише /api/listings)
+  if (!query.agentId && !query.agencyId) await trackSearchAfterResponse(query, total, await headers());
 
   return (
     <ListingsExplorer

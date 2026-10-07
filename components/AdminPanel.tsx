@@ -1,4 +1,5 @@
 'use client';
+import AdminAnalytics from './AdminAnalytics';
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ConfirmAction, { type Ask } from './ConfirmAction';
@@ -12,7 +13,7 @@ import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } fro
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 
-type Tab = 'overview' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
+type Tab = 'overview' | 'analytics' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
@@ -24,6 +25,7 @@ type AgencyRowData = { agency: Agency; agents: number; listings: number };
 
 const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'overview', label: 'Overview', ico: 'sliders' },
+  { v: 'analytics', label: 'Analytics', ico: 'chart' },
   { v: 'listings', label: 'Listings', ico: 'home' },
   { v: 'leads', label: 'Enquiries', ico: 'inbox' },
   { v: 'agencies', label: 'Agencies', ico: 'building' },
@@ -62,6 +64,7 @@ export default function AdminPanel({ session }: { session: Session }) {
   const [editingUser, setEditingUser] = useState<Agent | null>(null);
 
   const load = useCallback(async (which: Tab) => {
+    if (which === 'analytics') return;   // свої дані вантажить AdminAnalytics
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -160,6 +163,8 @@ export default function AdminPanel({ session }: { session: Session }) {
             <div className="muted">Signed in as {session.name} · moderation and platform-wide settings</div>
           </div>
         </div>
+
+        {tab === 'analytics' && <AdminAnalytics />}
 
         {tab === 'overview' && (
           overview ? (

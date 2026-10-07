@@ -1236,3 +1236,31 @@ export async function analyticsRaw(agentId: string, agencyId: string | null, sco
   ]);
   return { listings, events, leads, devs, members, market };
 }
+
+/**
+ * Адмінська аналітика: те саме, що analyticsRaw, але по всій платформі,
+ * плюс реєстрації, агенції та пошуки (search_events, міграція 0045).
+ */
+export async function adminAnalyticsRaw(days: number) {
+  const client = await db();
+  const since = new Date(Date.now() - 2 * days * 86400000).toISOString();
+  const [listings, events, leads, devs, people, agencies, searches, market] = await Promise.all([
+    queryListings({ includeInactive: true }),
+    readAll((a, b) => client.from('listing_events')
+      .select('listing_id, development_id, agent_id, agency_id, kind, source, device, visitor, created_at')
+      .gte('created_at', since).order('created_at').range(a, b)),
+    readAll((a, b) => client.from('leads')
+      .select('id, listing_id, agent_id, agency_id, status, channel, created_at, handled_at')
+      .gte('created_at', since).order('created_at').range(a, b), 20000),
+    client.from('developments').select('id, name, slug, agent_id, agency_id').then((r: { data: Row[] | null }) => r.data ?? []),
+    readAll((a, b) => client.from('profiles')
+      .select('id, role, name, avatar, agency_id, verified, active, created_at').order('created_at').range(a, b), 20000),
+    client.from('agencies').select('id, name, verified, created_at').then((r: { data: Row[] | null }) => r.data ?? []),
+    readAll((a, b) => client.from('search_events')
+      .select('deal, type, areas, price_min, price_max, beds, q, results, device, visitor, created_at')
+      .gte('created_at', since).order('created_at').range(a, b)),
+    readAll((a, b) => client.from('listings').select('price, sqft, type, deal, neighborhood')
+      .eq('active', true).gt('sqft', 0).gt('price', 0).range(a, b), 5000),
+  ]);
+  return { listings, events, leads, devs, people, agencies, searches, market };
+}

@@ -12,11 +12,11 @@ import { WEEKDAYS, fmtHours, hourLabel, type Analytics, type ListingStat } from 
 
 type Data = Analytics & { scope: 'own' | 'agency' };
 
-const C = { views: '#2a78d6', visitors: '#4a3aa7', leads: '#eb6834', good: '#0ca30c', bad: '#d03b3b' };
+export const C = { views: '#2a78d6', visitors: '#4a3aa7', leads: '#eb6834', good: '#0ca30c', bad: '#d03b3b' };
 // послідовна шкала одного тону (світліше = менше) — для теплової карти й воронки
-const BLUE = ['#eef4fd', '#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'];
+export const BLUE = ['#eef4fd', '#cde2fb', '#9ec5f4', '#6da7ec', '#3987e5', '#256abf', '#184f95', '#0d366b'];
 
-const shortDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+export const shortDay = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 
 function useWidth<T extends HTMLElement>() {
   const ref = useRef<T>(null);
@@ -55,7 +55,7 @@ function Delta({ cur, prev, suffix = '%', invert = false }: { cur: number; prev:
   );
 }
 
-function Spark({ data, color, w = 96, h = 28 }: { data: number[]; color: string; w?: number; h?: number }) {
+export function Spark({ data, color, w = 96, h = 28 }: { data: number[]; color: string; w?: number; h?: number }) {
   if (data.length < 2) return null;
   const max = Math.max(1, ...data);
   const pts = data.map((v, i) => `${(i / (data.length - 1)) * w},${h - 2 - (v / max) * (h - 4)}`).join(' ');
@@ -66,7 +66,7 @@ function Spark({ data, color, w = 96, h = 28 }: { data: number[]; color: string;
   );
 }
 
-function Kpi({ label, value, cur, prev, spark, color, suffix, hint }: {
+export function Kpi({ label, value, cur, prev, spark, color, suffix, hint }: {
   label: string; value: string; cur: number; prev: number; spark?: number[]; color?: string; suffix?: string; hint?: string;
 }) {
   return (
@@ -83,7 +83,7 @@ function Kpi({ label, value, cur, prev, spark, color, suffix, hint }: {
 
 /* ---------- графік у часі: лінії переглядів і відвідувачів ---------- */
 
-function TrendChart({ series }: { series: Data['series'] }) {
+export function TrendChart({ series }: { series: Data['series'] }) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const H = 240, padL = 36, padR = 12, padT = 14, padB = 26;
@@ -156,33 +156,37 @@ function barPath(x0: number, base: number, w: number, h: number) {
 
 /* ---------- заявки по днях: окремий графік, бо інший масштаб ---------- */
 
-function LeadBars({ series }: { series: Data['series'] }) {
+/** Стовпчики по днях для однієї величини; tip — додаткові рядки підказки. */
+export function DayBars({ points, color, label, tip }: {
+  points: { date: string; value: number }[]; color: string; label: string;
+  tip?: (i: number) => React.ReactNode;
+}) {
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const H = 120, padL = 36, padR = 12, padT = 10, padB = 8;
   const W = Math.max(280, width);
-  const max = niceMax(Math.max(1, ...series.map((d) => d.leads)));
-  const slot = (W - padL - padR) / series.length;
+  const max = niceMax(Math.max(1, ...points.map((d) => d.value)));
+  const slot = (W - padL - padR) / Math.max(1, points.length);
   const bw = Math.max(2, Math.min(18, slot - 2));
   const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
-  const d = hover !== null ? series[hover] : null;
+  const d = hover !== null ? points[hover] : null;
   return (
     <div className="an-chart" ref={ref}>
-      <svg width={W} height={H} role="img" aria-label="Leads per day">
+      <svg width={W} height={H} role="img" aria-label={`${label} per day`}>
         {[0, max].map((t) => (
           <g key={t}>
             <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="an-grid" />
-            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="an-axis">{t}</text>
+            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="an-axis">{fmtNumber(t)}</text>
           </g>
         ))}
-        {series.map((s, i) => {
-          const h = y(0) - y(s.leads);
+        {points.map((s, i) => {
+          const h = y(0) - y(s.value);
           const cx = padL + slot * i + slot / 2;
           return (
             <g key={s.date}>
-              {s.leads > 0 && (
+              {s.value > 0 && (
                 <path d={barPath(cx - bw / 2, y(0), bw, h)}
-                  fill={C.leads} opacity={hover === null || hover === i ? 1 : 0.45} />
+                  fill={color} opacity={hover === null || hover === i ? 1 : 0.45} />
               )}
               <rect x={padL + slot * i} y={0} width={slot} height={H} fill="transparent"
                 onPointerEnter={() => setHover(i)} onPointerDown={() => setHover(i)} onPointerLeave={() => setHover(null)} />
@@ -193,17 +197,24 @@ function LeadBars({ series }: { series: Data['series'] }) {
       {d && hover !== null && (
         <div className="an-tip" style={{ left: Math.min(Math.max(padL + slot * hover + slot / 2, 60), W - 60), top: 0 }}>
           <b>{shortDay(d.date)}</b>
-          <span><i style={{ background: C.leads }} />Leads <b>{d.leads}</b></span>
-          <span>Contacts opened <b>{d.contacts}</b></span>
+          <span><i style={{ background: color }} />{label} <b>{d.value}</b></span>
+          {tip?.(hover)}
         </div>
       )}
     </div>
   );
 }
 
+function LeadBars({ series }: { series: Data['series'] }) {
+  return (
+    <DayBars points={series.map((s) => ({ date: s.date, value: s.leads }))} color={C.leads} label="Leads"
+      tip={(i) => <span>Contacts opened <b>{series[i].contacts}</b></span>} />
+  );
+}
+
 /* ---------- воронка ---------- */
 
-function Funnel({ steps }: { steps: Data['funnel'] }) {
+export function Funnel({ steps }: { steps: Data['funnel'] }) {
   const top = Math.max(1, steps[0]?.value ?? 1);
   const shades = [BLUE[6], BLUE[5], BLUE[4], C.leads];
   return (
@@ -230,7 +241,7 @@ function Funnel({ steps }: { steps: Data['funnel'] }) {
 
 /* ---------- горизонтальні смуги ---------- */
 
-function BarList({ items, color, empty }: { items: { key: string; label: string; value: number }[]; color: string; empty: string }) {
+export function BarList({ items, color, empty }: { items: { key: string; label: string; value: number }[]; color: string; empty: string }) {
   const total = items.reduce((s, i) => s + i.value, 0);
   const max = Math.max(1, ...items.map((i) => i.value));
   if (!items.length) return <p className="muted small">{empty}</p>;
@@ -251,7 +262,7 @@ function BarList({ items, color, empty }: { items: { key: string; label: string;
 
 /* ---------- теплова карта: день тижня × година ---------- */
 
-function Heatmap({ grid }: { grid: number[][] }) {
+export function Heatmap({ grid }: { grid: number[][] }) {
   const max = Math.max(1, ...grid.flat());
   const [hover, setHover] = useState<{ d: number; h: number } | null>(null);
   return (
@@ -301,7 +312,7 @@ const SORTS: [SortKey, string][] = [
   ['conversion', 'Conversion'], ['favorites', 'Saved'], ['priceDelta', 'Price vs area'], ['daysOnMarket', 'Days on market'],
 ];
 
-function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentName?: (id: string) => string }) {
+export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentName?: (id: string) => string }) {
   const [sort, setSort] = useState<SortKey>('views');
   const [onlyIssues, setOnlyIssues] = useState(false);
   const [limit, setLimit] = useState(10);
@@ -398,7 +409,7 @@ function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentName?: (i
 
 /* ---------- райони: мої $/ft² проти ринку ---------- */
 
-function AreaCompare({ areas }: { areas: Data['areas'] }) {
+export function AreaCompare({ areas }: { areas: Data['areas'] }) {
   const max = Math.max(1, ...areas.flatMap((a) => [a.mine, a.market])) * 1.08;
   return (
     <div className="an-areas">
