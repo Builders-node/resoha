@@ -7,10 +7,13 @@ import AgentContact from '@/components/AgentContact';
 import BackButton from '@/components/BackButton';
 import DevelopmentBuildings from '@/components/DevelopmentBuildings';
 import DevelopmentChess from '@/components/DevelopmentChess';
+import DevelopmentDocs from '@/components/DevelopmentDocs';
+import DevelopmentMedia from '@/components/DevelopmentMedia';
+import DevelopmentNav from '@/components/DevelopmentNav';
 import DevelopmentUnits from '@/components/DevelopmentUnits';
 import JsonLd from '@/components/JsonLd';
 import Gallery from '@/components/Gallery';
-import { getAgent, getDevelopment, listBuildings, queryListings } from '@/lib/db';
+import { getAgent, getDevelopment, listBuildings, listDocuments, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { currentUser } from '@/lib/session';
@@ -44,11 +47,12 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
   const dev = await loadDevelopment(slug);
   if (!dev) notFound();
 
-  const [agent, me, units, buildings] = await Promise.all([
+  const [agent, me, units, buildings, docs] = await Promise.all([
     getAgent(dev.agentId),
     currentUser(),
     queryListings({ developmentId: dev.id, sort: 'price_asc' }),
     listBuildings(dev.id),
+    listDocuments(dev.id),
   ]);
   // Автор може бути прихованим (заблокований акаунт) — тоді й ЖК не показуємо
   if (!agent) notFound();
@@ -89,8 +93,21 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
     </ul>
   ) : null;
 
+  const hasFeatures = facts.length > 0 || dev.amenities.length > 0 || (!leadUnit && !!statusBox);
+  // вкладки зверху — лише ті розділи, які на сторінці справді є
+  const nav = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'units', label: 'Units & prices' },
+    buildings.length > 0 && { id: 'buildings', label: buildings.length > 1 ? 'Buildings' : 'Construction' },
+    hasFeatures && { id: 'features', label: 'Features' },
+    (dev.video || dev.tour) && { id: 'media', label: dev.tour ? 'Video & 360°' : 'Video' },
+    docs.length > 0 && { id: 'documents', label: 'Documents' },
+    { id: 'location', label: 'Location' },
+    leadUnit && { id: 'contact', label: 'Contact' },
+  ].filter(Boolean) as { id: string; label: string }[];
+
   return (
-    <div className="wrap">
+    <div className="wrap has-dnav">
       <JsonLd data={graph(breadcrumbLd([
         { name: 'Home', path: '/' },
         { name: 'Developments', path: '/developments' },
@@ -105,9 +122,11 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
         <Gallery photos={dev.photos} title={dev.name} />
       </div>
 
+      <DevelopmentNav items={nav} />
+
       <div className="prop">
         <div>
-          <div className="prop__head">
+          <div className="prop__head" id="overview">
             <div>
               <span className="dev__kicker">New development</span>
               <h1 style={{ fontSize: 30 }}>{dev.name}</h1>
@@ -168,7 +187,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             </section>
           )}
 
-          {(facts.length > 0 || dev.amenities.length > 0 || (!leadUnit && statusBox)) && (
+          {hasFeatures && (
             <section className="dev" id="features">
               <h2 className="dev__title">Project features</h2>
               <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
@@ -177,6 +196,13 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
               {dev.amenities.length > 0 && (
                 <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
               )}
+            </section>
+          )}
+
+          {(dev.video || dev.tour) && (
+            <section className="dev" id="media">
+              <h2 className="dev__title">{dev.tour ? 'Video & 360° tour' : 'Video'}</h2>
+              <DevelopmentMedia video={dev.video} tour={dev.tour} name={dev.name} />
             </section>
           )}
 
@@ -190,6 +216,13 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             </section>
           )}
 
+          {docs.length > 0 && (
+            <section className="dev" id="documents">
+              <h2 className="dev__title">Documents</h2>
+              <DevelopmentDocs docs={docs} />
+            </section>
+          )}
+
           {dev.text && (
             <>
               <h3 style={{ marginTop: 26 }}>About {dev.name}</h3>
@@ -197,7 +230,7 @@ export default async function DevelopmentPage({ params }: { params: Promise<{ sl
             </>
           )}
 
-          <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
+          <h3 id="location" style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
           <div id="miniMap">
             <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
               center={[dev.lat, dev.lng]} detail />

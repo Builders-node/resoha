@@ -4,8 +4,8 @@ import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanDetails } from './details';
 import { cleanNearby } from './nearby';
-import { OPEN_STATUSES, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
+import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Development, DevelopmentDocument, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -398,7 +398,7 @@ const mapDevelopment = (r: Row): Development => ({
   hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
   projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
-  water: r.water ?? '',
+  water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '',
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
 });
 
@@ -436,6 +436,7 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  for (const k of ['video', 'tour'] as const) if (input[k] !== undefined) row[k] = safeUrl(String(input[k] ?? '').trim()).slice(0, 500);
   for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
   if (input.payment !== undefined) row.payment = String(input.payment).trim().slice(0, 2000);
@@ -525,6 +526,53 @@ export async function updateBuilding(id: string, input: Record<string, unknown>)
 /** Квартири дому лишаються в ЖК — посилання на дім просто обнуляється */
 export async function deleteBuilding(id: string) {
   const { error, count } = await (await db()).from('buildings').delete({ count: 'exact' }).eq('id', id);
+  if (error) throw error;
+  return (count ?? 0) > 0;
+}
+
+/* ---------- документи ЖК ---------- */
+const mapDocument = (r: Row): DevelopmentDocument => ({
+  id: r.id, developmentId: r.development_id, kind: cleanDocKind(r.kind), title: r.title, number: r.number ?? '',
+  issued: r.issued ?? '', file: r.file ?? '', note: r.note ?? '', verified: !!r.verified, sort: r.sort ?? 0,
+});
+
+/** До міграції 0038 таблиці немає — тоді ЖК просто без документів */
+export async function listDocuments(developmentId: string): Promise<DevelopmentDocument[]> {
+  const { data, error } = await (await db()).from('development_documents').select('*')
+    .eq('development_id', developmentId).order('sort').order('created_at');
+  if (error) return [];
+  return (data ?? []).map(mapDocument);
+}
+
+function documentRow(input: Record<string, unknown>): Row {
+  const row: Row = {};
+  if (typeof input.title === 'string') row.title = input.title.trim().slice(0, 120);
+  if (typeof input.number === 'string') row.number = input.number.trim().slice(0, 60);
+  if (typeof input.issued === 'string') row.issued = input.issued.trim().slice(0, 40);
+  if (typeof input.note === 'string') row.note = input.note.trim().slice(0, 300);
+  if (input.file !== undefined) row.file = safeUrl(String(input.file ?? '')).slice(0, 500);
+  if (input.kind !== undefined) row.kind = cleanDocKind(input.kind);
+  if (input.sort !== undefined) row.sort = intOrNull(input.sort) ?? 0;
+  // для не-адміна тригер у базі все одно залишить старе значення
+  if (input.verified !== undefined) row.verified = input.verified === true || input.verified === 'on';
+  return row;
+}
+
+export async function createDocument(developmentId: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_documents')
+    .insert({ ...documentRow(input), development_id: developmentId }).select('*').single();
+  if (error) throw error;
+  return mapDocument(data);
+}
+
+export async function updateDocument(id: string, input: Record<string, unknown>) {
+  const { data, error } = await (await db()).from('development_documents').update(documentRow(input)).eq('id', id).select('*').maybeSingle();
+  if (error) throw error;
+  return data ? mapDocument(data) : null;
+}
+
+export async function deleteDocument(id: string) {
+  const { error, count } = await (await db()).from('development_documents').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
   return (count ?? 0) > 0;
 }

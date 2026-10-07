@@ -1,6 +1,6 @@
 import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
-import type { BuildingStage, RentalRule, SalesStatus, UnitStatus } from './units';
+import type { BuildingStage, DocKind, RentalRule, SalesStatus, UnitStatus } from './units';
 
 export type Deal = 'sale' | 'rent';
 export type PropertyType = 'condo' | 'house' | 'land' | 'commercial';
@@ -166,10 +166,26 @@ export interface Development {
   territory: string;
   backupPower: string;
   water: string;
+  video: string;               // посилання на YouTube / Vimeo
+  tour: string;                // тур 360 або облёт дроном: Matterport, Kuula, YouTube 360
   agentId: string;
   agencyId: string | null;
   active: boolean;
   createdAt: string;
+}
+
+/** Документ ЖК: право на землю, дозвіл, акт введення тощо */
+export interface DevelopmentDocument {
+  id: string;
+  developmentId: string;
+  kind: DocKind;
+  title: string;
+  number: string;          // номер реєстрації / дозволу
+  issued: string;          // дата видачі вільним текстом
+  file: string;            // PDF або фото скану
+  note: string;
+  verified: boolean;       // перевірено командою Resoha
+  sort: number;
 }
 
 /** Дім (корпус, секція) у ЖК */

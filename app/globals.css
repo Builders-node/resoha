@@ -1233,3 +1233,36 @@ textarea.input{resize:vertical;min-height:96px}
 .pstrip__item img{width:100%;height:100%;object-fit:cover;display:block}
 .about-dev .feat__grid{gap:16px 18px}
 .about-dev h3 + .pstrip{margin-top:12px}
+
+/* Вкладки сторінки ЖК (як у LUN): липнуть до верху, підсвічують поточний розділ */
+.dnav{position:sticky;top:0;z-index:700;background:#fff;border-bottom:1px solid var(--line);margin:14px 0 4px}
+.dnav__row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
+.dnav__row::-webkit-scrollbar{display:none}
+.dnav__tab{flex:none;padding:13px 14px 11px;font-size:15px;font-weight:500;color:var(--ink-2);white-space:nowrap;
+  border-bottom:2.5px solid transparent;text-decoration:none}
+.dnav__tab:hover{color:var(--ink)}
+.dnav__tab.is-on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
+.has-dnav .dev,.has-dnav #overview,.has-dnav #location{scroll-margin-top:64px}
+.has-dnav .cc-wrap{top:66px;scroll-margin-top:66px}
+
+/* Документи ЖК */
+.docs{display:grid;gap:18px}
+.docs__kind{font-size:15px;color:var(--ink-2);font-weight:600;margin-bottom:8px}
+.docs__list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--radius)}
+.docs__item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
+.docs__item + .docs__item{border-top:1px solid var(--line)}
+.docs__item > .ico{flex:none;margin-top:1px;color:var(--ink-2)}
+.docs__body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.docs__ok{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:600;margin-top:2px}
+.docs__open{flex:none;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);
+  border-radius:999px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none}
+.docs__open:hover{background:var(--bg-soft)}
+
+/* Відео й тур 360 */
+.media{display:grid;gap:18px}
+.media__item{margin:0}
+.media__frame{position:relative;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;background:#111}
+.media__frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+.media__link{display:flex;align-items:center;justify-content:center;gap:10px;height:120px;width:100%;
+  border:1px dashed var(--line);border-radius:var(--radius);color:var(--ink);font-weight:600;text-decoration:none}
+.media__item figcaption{display:flex;align-items:center;gap:6px;margin-top:8px}

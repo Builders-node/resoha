@@ -11,8 +11,10 @@ import { supabaseServer } from '@/lib/supabase/server';
 const BUCKET = 'listing-photos';
 const MAX_FILES = 12;
 const MAX_BYTES = 8 * 1024 * 1024;
+// PDF — документи ЖК (дозволи, право на землю); скани важчі за фото
+const MAX_PDF_BYTES = 20 * 1024 * 1024;
 const EXT: Record<string, string> = {
-  'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif',
+  'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/avif': 'avif', 'application/pdf': 'pdf',
 };
 
 type FileMeta = { name?: unknown; type?: unknown; size?: unknown };
@@ -36,8 +38,9 @@ export async function POST(req: Request) {
   for (const file of files) {
     const name = String(file.name ?? 'file');
     const ext = EXT[String(file.type)];
-    if (!ext) return NextResponse.json({ error: `${name}: only JPEG, PNG, WebP or AVIF` }, { status: 415 });
-    if (Number(file.size) > MAX_BYTES) return NextResponse.json({ error: `${name} is over 8 MB` }, { status: 413 });
+    if (!ext) return NextResponse.json({ error: `${name}: only JPEG, PNG, WebP, AVIF or PDF` }, { status: 415 });
+    const limit = ext === 'pdf' ? MAX_PDF_BYTES : MAX_BYTES;
+    if (Number(file.size) > limit) return NextResponse.json({ error: `${name} is over ${limit / 1024 / 1024} MB` }, { status: 413 });
 
     const path = `${user.id}/${randomUUID()}.${ext}`;
     const { data, error } = await supabase.storage.from(BUCKET).createSignedUploadUrl(path);
