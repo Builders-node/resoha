@@ -1,4 +1,6 @@
+'use client';
 import { fmtDate, fmtPrice, fmtPriceShort } from '@/lib/format';
+import { useLang, useT } from './LangProvider';
 import type { Deal, PricePoint } from '@/lib/types';
 
 /**
@@ -8,6 +10,8 @@ import type { Deal, PricePoint } from '@/lib/types';
 export default function PriceHistory({ points, deal, price, since }: {
   points: PricePoint[]; deal: Deal; price: number; since: string;
 }) {
+  const t = useT();
+  const lang = useLang();
   // сусідні однакові ціни — не зміна
   const steps: PricePoint[] = [];
   for (const p of points.filter((x) => x.deal === deal)) {
@@ -18,7 +22,7 @@ export default function PriceHistory({ points, deal, price, since }: {
   if (steps.length < 2) {
     return (
       <p className="muted" style={{ marginTop: 8 }}>
-        The price hasn’t changed since {fmtDate(steps[0].at)}.
+        {t('The price hasn’t changed since {date}.', { date: fmtDate(steps[0].at, lang) })}
       </p>
     );
   }
@@ -41,7 +45,7 @@ export default function PriceHistory({ points, deal, price, since }: {
   return (
     <div className="ph">
       <svg className="ph__chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
-        aria-label={`Price went from ${fmtPriceShort(steps[0].price, deal)} to ${fmtPriceShort(steps.at(-1)!.price, deal)}`}>
+        aria-label={t('Price went from {from} to {to}', { from: fmtPriceShort(steps[0].price, deal, lang), to: fmtPriceShort(steps.at(-1)!.price, deal, lang) })}>
         <path d={d} fill="none" stroke="var(--orange)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
       </svg>
       <ul className="ph__list">
@@ -50,10 +54,10 @@ export default function PriceHistory({ points, deal, price, since }: {
           const pct = r.prev ? Math.round((diff / r.prev) * 1000) / 10 : 0;
           return (
             <li key={r.at}>
-              <span className="muted">{fmtDate(r.at)}</span>
+              <span className="muted">{fmtDate(r.at, lang)}</span>
               <span>
-                <b>{fmtPrice(r.price, deal)}</b>
-                {r.prev === null ? <span className="muted small"> · listed</span>
+                <b>{fmtPrice(r.price, deal, lang)}</b>
+                {r.prev === null ? <span className="muted small"> · {t('listed')}</span>
                   : <span className={diff < 0 ? 'ph__down' : 'ph__up'}> {diff < 0 ? '↓' : '↑'} {Math.abs(pct)}%</span>}
               </span>
             </li>

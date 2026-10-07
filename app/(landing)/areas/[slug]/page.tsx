@@ -12,6 +12,8 @@ import { AREAS, areaBySlug } from '@/lib/content/areas';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
 import { AREA_CENTRES, fmtDate, fmtUsd, nListings } from '@/lib/format';
+import { makeT } from '@/lib/i18n';
+import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -34,6 +36,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
   const a = areaBySlug((await params).slug);
   if (!a) notFound();
+  const lang = await getLang();
+  const t = makeT(lang);
+  const name = t(a.name);
 
   const listings = await queryListings({ neighborhoods: a.neighborhoods });
   const sale = listings.filter((l) => l.deal === 'sale');
@@ -61,63 +66,63 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   return (
     <div className="wrap page">
       <JsonLd data={graph(place, list, faqLd(a.faq), breadcrumbLd(crumbs))} />
-      <Crumbs items={crumbs} />
+      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
 
-      <h1>{a.name}, Roatán: property and area guide</h1>
-      <section className="answer" aria-label="Summary">
-        <span className="answer__k">In short</span>
+      <h1>{t('{area}, Roatán: property and area guide', { area: name })}</h1>
+      <section className="answer" aria-label={t('Summary')}>
+        <span className="answer__k">{t('In short')}</span>
         <p>{a.summary}</p>
       </section>
 
       <div className="stats area-stats">
         <div className="stat">
-          <span className="muted small">Typical prices</span>
-          <b>{a.priceRange ?? 'Too few sales'}</b>
-          {a.priceSource && <span className="tiny muted">Source: {a.priceSource.name}</span>}
+          <span className="muted small">{t('Typical prices')}</span>
+          <b>{a.priceRange ?? t('Too few sales')}</b>
+          {a.priceSource && <span className="tiny muted">{t('Source:')} {a.priceSource.name}</span>}
         </div>
         <div className="stat">
-          <span className="muted small">On Resoha now</span>
-          <b>{nListings(listings.length)}</b>
-          <span className="tiny muted">{from !== null ? `For sale from ${fmtUsd(from)}` : 'Live count from our catalogue'}</span>
+          <span className="muted small">{t('On Resoha now')}</span>
+          <b>{nListings(listings.length, lang)}</b>
+          <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: fmtUsd(from) }) : t('Live count from our catalogue')}</span>
         </div>
         <div className="stat stat--wide">
-          <span className="muted small">Best for</span>
-          <b className="stat__text">{a.bestFor}</b>
+          <span className="muted small">{t('Best for')}</span>
+          <b className="stat__text">{t(a.bestFor)}</b>
         </div>
       </div>
 
       <div className="page__cols">
         <div className="prose prose--flush">
-          <h2>About {a.name}</h2>
+          <h2>{t('About {area}', { area: name })}</h2>
           {a.intro.map((p) => <p key={p}><Rich text={p} /></p>)}
 
-          <h2>Why buyers choose {a.name}</h2>
+          <h2>{t('Why buyers choose {area}', { area: name })}</h2>
           <ul>{a.highlights.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
 
-          <h2>What to check before buying</h2>
+          <h2>{t('What to check before buying')}</h2>
           <ul>{a.considerations.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
         </div>
 
         <aside className="panel page__aside">
-          <h3>Search {a.name}</h3>
+          <h3>{t('Search {area}', { area: name })}</h3>
           <p className="small muted" style={{ margin: '6px 0 14px' }}>
-            Every listing on Resoha links back to the island agency that holds it.
+            {t('Every listing on Resoha links back to the island agency that holds it.')}
           </p>
           <div className="page__aside-btns">
-            <Link className="btn btn--orange btn--block" href={`${filterHref}&deal=sale`}>Homes for sale</Link>
-            <Link className="btn btn--ghost btn--block" href={`${filterHref}&deal=rent`}>Rentals</Link>
-            <Link className="btn btn--ghost btn--block" href={`${filterHref}&type=land`}>Land &amp; lots</Link>
+            <Link className="btn btn--orange btn--block" href={`${filterHref}&deal=sale`}>{t('Homes for sale')}</Link>
+            <Link className="btn btn--ghost btn--block" href={`${filterHref}&deal=rent`}>{t('Rentals')}</Link>
+            <Link className="btn btn--ghost btn--block" href={`${filterHref}&type=land`}>{t('Land & lots')}</Link>
           </div>
           <p className="tiny muted" style={{ marginTop: 14 }}>
-            Read next: <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">all areas compared</Link>
+            {t('Read next:')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('all areas compared')}</Link>
           </p>
         </aside>
       </div>
 
       <section className="section">
         <div className="section__head">
-          <h2>Listed in {a.name}</h2>
-          {listings.length > 0 && <Link className="btn btn--primary" href={filterHref}>See all on the map <Icon name="arrowRight" size={18} /></Link>}
+          <h2>{t('Listed in {area}', { area: name })}</h2>
+          {listings.length > 0 && <Link className="btn btn--primary" href={filterHref}>{t('See all on the map')} <Icon name="arrowRight" size={18} /></Link>}
         </div>
         {listings.length > 0 ? (
           <div className="grid grid--4">
@@ -125,28 +130,28 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           </div>
         ) : (
           <div className="panel empty">
-            <p>No listings in {a.name} yet. We are adding island agencies every week.</p>
-            <Link className="btn btn--primary" href="/listings?deal=sale">Browse the whole island</Link>
+            <p>{t('No listings in {area} yet. We are adding island agencies every week.', { area: name })}</p>
+            <Link className="btn btn--primary" href="/listings?deal=sale">{t('Browse the whole island')}</Link>
           </div>
         )}
       </section>
 
       <section className="prose prose--flush">
-        <h2>{a.name}: frequently asked questions</h2>
+        <h2>{t('{area}: frequently asked questions', { area: name })}</h2>
         <Faq items={a.faq} open={a.faq.length} />
         {a.priceSource && (
           <>
-            <h2>Sources</h2>
+            <h2>{t('Sources')}</h2>
             <SourceList sources={[a.priceSource]} />
           </>
         )}
-        <p className="tiny muted">Area information checked {fmtDate(MARKET_UPDATED)}. Listing counts update live.</p>
+        <p className="tiny muted">{t('Area information checked {date}. Listing counts update live.', { date: fmtDate(MARKET_UPDATED, lang) })}</p>
       </section>
 
       <section className="section">
-        <h2 style={{ fontSize: 22, marginBottom: 14 }}>Other areas of Roatán</h2>
+        <h2 style={{ fontSize: 22, marginBottom: 14 }}>{t('Other areas of Roatán')}</h2>
         <div className="chip-row">
-          {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{o.name}</Link>)}
+          {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{t(o.name)}</Link>)}
         </div>
       </section>
     </div>

@@ -23,6 +23,8 @@ import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 import { OPEN_STATUSES, stageLabel, statusLabel, toM2 } from '@/lib/units';
 import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
+import { getLang } from '@/lib/i18n/server';
+import { makeT, type T } from '@/lib/i18n';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -54,7 +56,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   await bumpViewsAfterResponse(id);
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
@@ -67,12 +69,14 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
     // ЖК і його доми — для блоків «About the building» і «About the development»
     listing.developmentId ? getDevelopment(listing.developmentId) : Promise.resolve(null),
     listing.developmentId ? listBuildings(listing.developmentId) : Promise.resolve([]),
+    getLang(),
   ]);
+  const t = makeT(lang);
   const building = devBuildings.find((b) => b.id === listing.buildingId) ?? null;
   const buildingFacts: Feature[] = dev ? ([
     ['layers', String(building?.floors ?? dev.floors ?? ''), 'floors'],
-    ['sparkle', 'New build', 'type'],
-    ['crane', building ? `${stageLabel(building.stage)}${building.completion ? ` · ${building.completion}` : ''}` : dev.completion, 'status'],
+    ['sparkle', t('New build'), 'type'],
+    ['crane', building ? `${t(stageLabel(building.stage))}${building.completion ? ` · ${building.completion}` : ''}` : dev.completion, 'status'],
     ['bricks', dev.construction, 'construction'],
     ['snow', dev.climate, 'cooling & heating'],
     ['height', dev.ceiling, 'ceiling height'],
@@ -96,23 +100,23 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
   const similar = similarAll.filter((l) => l.id !== listing.id && !siblingIds.has(l.id)).slice(0, 4);
 
   // таблиця характеристик: лише заповнені рядки
-  const floorText = floorLine(listing.floor, listing.details.floorsTotal);
+  const floorText = floorLine(listing.floor, listing.details.floorsTotal, lang);
   const detailRows: [string, string][] = isLandType(listing.type) ? [] : ([
-    ['Property type', TYPE_LABELS[listing.type]],
-    ['Deal', DEAL_LABELS[listing.deal]],
-    ['Bedrooms', listing.beds > 0 ? String(listing.beds) : 'Studio'],
-    ['Bathrooms', listing.baths ? String(listing.baths) : ''],
-    ['Interior', listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft² · ${toM2(listing.sqft)} m²` : ''],
-    ['Lot', listing.lotAcres > 0 ? `${listing.lotAcres} ac` : ''],
-    ['Unit', listing.unitNo],
-    ['Floor', floorText],
-    ['Year built', listing.year ? String(listing.year) : ''],
+    [t('Property type'), t(TYPE_LABELS[listing.type])],
+    [t('Deal'), t(DEAL_LABELS[listing.deal])],
+    [t('Bedrooms'), listing.beds > 0 ? String(listing.beds) : t('Studio')],
+    [t('Bathrooms'), listing.baths ? String(listing.baths) : ''],
+    [t('Interior'), listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft² · ${toM2(listing.sqft)} m²` : ''],
+    [t('Lot'), listing.lotAcres > 0 ? t('{n} ac', { n: listing.lotAcres }) : ''],
+    [t('Unit'), listing.unitNo],
+    [t('Floor'), floorText],
+    [t('Year built'), listing.year ? String(listing.year) : ''],
     ...DETAIL_FIELDS.filter((f) => !f.rentOnly || listing.deal === 'rent')
-      .map((f): [string, string] => [f.label, detailLabel(f, listing.details[f.key])]),
-    ['HOA', listing.hoa > 0 ? `${fmtUsd(listing.hoa)}/mo` : ''],
-    ['Owner financing', listing.ownerFinancing ? 'Available' : ''],
+      .map((f): [string, string] => [t(f.label), t(detailLabel(f, listing.details[f.key]))]),
+    [t('HOA'), listing.hoa > 0 ? `${fmtUsd(listing.hoa)}${t('/mo')}` : ''],
+    [t('Owner financing'), listing.ownerFinancing ? t('Available') : ''],
   ] as [string, string][]).filter(([, v]) => v);
-  const updatedAgo = ago(listing.updatedAt);
+  const updatedAgo = ago(listing.updatedAt, t);
 
   const area = areaForNeighborhood(listing.neighborhood);
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
@@ -131,8 +135,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
         { name: listing.title, path: `/listings/${listing.id}` },
       ]))} />
       <div className="crumbs small muted">
-        <Link href="/">Home</Link> ·{' '}
-        <Link href={`/listings?deal=${listing.deal}`}>{DEAL_LABELS[listing.deal]}</Link> ·{' '}
+        <Link href="/">{t('Home')}</Link> ·{' '}
+        <Link href={`/listings?deal=${listing.deal}`}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
         <Link href={areaPath}>{listing.neighborhood}</Link>
         {listing.development && <> · <Link href={`/developments/${listing.development.slug}`}>{listing.development.name}</Link></>}
       </div>
@@ -148,11 +152,11 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
             <div>
               <h1 style={{ fontSize: 28 }}>{listing.title}</h1>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, Bay Islands
+                {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, {t('Bay Islands')}
               </p>
               {listing.development && (
                 <Link href={`/developments/${listing.development.slug}`} className="in-dev">
-                  <Icon name="building" size={16} /> Unit in <b>{listing.development.name}</b> · see all units
+                  <Icon name="building" size={16} /> {t('Unit in')} <b>{listing.development.name}</b> · {t('see all units')}
                 </Link>
               )}
             </div>
@@ -160,54 +164,54 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           </div>
 
           <div className="prop__price">
-            {fmtPrice(listing.price, listing.deal)}
-            {listing.status !== 'available' && <span className={`unit-status unit-status--${listing.status}`}>{statusLabel(listing.status)}</span>}
+            {fmtPrice(listing.price, listing.deal, lang)}
+            {listing.status !== 'available' && <span className={`unit-status unit-status--${listing.status}`}>{t(statusLabel(listing.status))}</span>}
             {listing.deal === 'sale' && listing.sqft > 0 && (
               <span className="muted small" style={{ fontWeight: 500 }}>
-                {' '}· {fmtUsd(Math.round(listing.price / listing.sqft))}/ft²
+                {' '}· {fmtUsd(Math.round(listing.price / listing.sqft))}{t('/ft²')}
               </span>
             )}
             {listing.hoa > 0 && (
-              <span className="muted small" style={{ fontWeight: 500 }}> · HOA {fmtUsd(listing.hoa)}/mo</span>
+              <span className="muted small" style={{ fontWeight: 500 }}> · {t('HOA')} {fmtUsd(listing.hoa)}{t('/mo')}</span>
             )}
           </div>
-          <p className="prop__updated" title={`Updated ${fmtDate(listing.updatedAt)}`}>
-            <Icon name="calendar" size={14} /> Updated {updatedAgo} · listed {fmtDate(listing.createdAt)}
+          <p className="prop__updated" title={t('Updated {date}', { date: fmtDate(listing.updatedAt, lang) })}>
+            <Icon name="calendar" size={14} /> {t('Updated {ago} · listed {date}', { ago: updatedAgo, date: fmtDate(listing.createdAt, lang) })}
           </p>
 
           <div className="specs">
             {isLand ? (
               <>
-                <div className="spec"><span className="muted small">Lot size</span><b>{listing.lotAcres} ac</b></div>
-                <div className="spec"><span className="muted small">Frontage</span><b>{listing.oceanfront ? 'Oceanfront' : 'Inland'}</b></div>
-                <div className="spec"><span className="muted small">Title</span><b>{titleOk ? 'Free & clear' : 'Not confirmed'}</b></div>
-                <div className="spec"><span className="muted small">Type</span><b>{TYPE_LABELS[listing.type]}</b></div>
+                <div className="spec"><span className="muted small">{t('Lot size')}</span><b>{t('{n} ac', { n: listing.lotAcres })}</b></div>
+                <div className="spec"><span className="muted small">{t('Frontage')}</span><b>{listing.oceanfront ? t('Oceanfront') : t('Inland')}</b></div>
+                <div className="spec"><span className="muted small">{t('Title')}</span><b>{titleOk ? t('Free & clear') : t('Not confirmed')}</b></div>
+                <div className="spec"><span className="muted small">{t('Type')}</span><b>{t(TYPE_LABELS[listing.type])}</b></div>
               </>
             ) : (
               <>
-                <div className="spec"><span className="muted small">Bedrooms</span>
-                  <b>{listing.beds > 0 ? listing.beds : 'Studio'}</b></div>
-                <div className="spec"><span className="muted small">Bathrooms</span><b>{listing.baths || '—'}</b></div>
-                <div className="spec"><span className="muted small">Interior</span>
+                <div className="spec"><span className="muted small">{t('Bedrooms')}</span>
+                  <b>{listing.beds > 0 ? listing.beds : t('Studio')}</b></div>
+                <div className="spec"><span className="muted small">{t('Bathrooms')}</span><b>{listing.baths || '—'}</b></div>
+                <div className="spec"><span className="muted small">{t('Interior')}</span>
                   <b>{listing.sqft > 0 ? `${fmtNumber(listing.sqft)} ft²` : '—'}</b>
                   {inDevelopment && listing.sqft > 0 && <span className="muted small">{toM2(listing.sqft)} m²</span>}</div>
                 {inDevelopment ? (
-                  <div className="spec"><span className="muted small">Unit · floor</span>
+                  <div className="spec"><span className="muted small">{t('Unit · floor')}</span>
                     <b>{listing.unitNo || '—'}{listing.floor !== null && ` · ${listing.floor}`}</b></div>
                 ) : (
-                  <div className="spec"><span className="muted small">Built</span><b>{listing.year || '—'}</b></div>
+                  <div className="spec"><span className="muted small">{t('Built')}</span><b>{listing.year || '—'}</b></div>
                 )}
               </>
             )}
           </div>
 
           <div className="chips">
-            <span className="chip">{TYPE_LABELS[listing.type]}</span>
-            <span className="chip">{DEAL_LABELS[listing.deal]}</span>
-            {listing.oceanfront && <span className="chip"><Icon name="wave" size={16} /> Oceanfront</span>}
-            {titleOk && <span className="chip"><Icon name="deed" size={16} /> Free &amp; clear title</span>}
-            {listing.lotAcres > 0 && !isLand && <span className="chip">{listing.lotAcres} ac lot</span>}
-            {listing.tags.map((t) => <span key={t} className="chip">{t}</span>)}
+            <span className="chip">{t(TYPE_LABELS[listing.type])}</span>
+            <span className="chip">{t(DEAL_LABELS[listing.deal])}</span>
+            {listing.oceanfront && <span className="chip"><Icon name="wave" size={16} /> {t('Oceanfront')}</span>}
+            {titleOk && <span className="chip"><Icon name="deed" size={16} /> {t('Free & clear title')}</span>}
+            {listing.lotAcres > 0 && !isLand && <span className="chip">{t('{n} ac lot', { n: listing.lotAcres })}</span>}
+            {listing.tags.map((tag) => <span key={tag} className="chip">{t(tag)}</span>)}
           </div>
 
           {/* Паспорт ділянки: відповіді на те, що покупець землі питає першим */}
@@ -220,93 +224,93 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
               <section className="land" id="land-check">
                 <div className="land__head">
                   <div>
-                    <h3>Land passport</h3>
+                    <h3>{t('Land passport')}</h3>
                     <span className="muted small">
                       {checked
-                        ? <>Checked {fmtDay(land.checkedAt!)}{land.checkedBy && <> by {land.checkedBy}</>}</>
-                        : 'Nobody has confirmed these details yet — ask the agent before you commit.'}
+                        ? <>{t('Checked {date}', { date: fmtDay(land.checkedAt!, lang) })}{land.checkedBy && <> {t('by {name}', { name: land.checkedBy })}</>}</>
+                        : t('Nobody has confirmed these details yet — ask the agent before you commit.')}
                     </span>
                   </div>
                   <span className={`land__score land__score--${r.tone}`}>
-                    {r.label}{checked && <small> · {r.score}/{r.of}</small>}
+                    {t(r.label)}{checked && <small> · {r.score}/{r.of}</small>}
                   </span>
                 </div>
 
-                <h4 className="land__sub">The lot in numbers</h4>
+                <h4 className="land__sub">{t('The lot in numbers')}</h4>
                 <div className="land__stats">
                   {n.acres > 0 && (
                     <div className="land__stat">
-                      <span className="land__k">Size</span>
+                      <span className="land__k">{t('Size')}</span>
                       <b>{fmtNumber(n.sqm)} m²</b>
-                      <span className="small muted">{n.acres} ac · {fmtNumber(n.sqft)} ft²</span>
+                      <span className="small muted">{t('{n} ac', { n: n.acres })} · {fmtNumber(n.sqft)} ft²</span>
                     </div>
                   )}
                   {n.perAcre > 0 && (
                     <div className="land__stat">
-                      <span className="land__k">Price per acre</span>
+                      <span className="land__k">{t('Price per acre')}</span>
                       <b>{fmtUsd(Math.round(n.perAcre))}</b>
                       <span className="small muted">
                         {fmtUsd(Math.round(n.perSqm))}/m²
                         {n.benchmark && n.vsBenchmark !== null && (
                           <> · <span className={n.vsBenchmark > 10 ? 'land__up' : n.vsBenchmark < -10 ? 'land__down' : ''}>
-                            {n.vsBenchmark === 0 ? 'at' : `${Math.abs(n.vsBenchmark)}% ${n.vsBenchmark > 0 ? 'above' : 'below'}`}
-                          </span>{' '}the {n.benchmark.where} median of {fmtUsd(Math.round(n.benchmark.perAcre))}/ac
-                          {' '}({n.benchmark.count} lots)</>
+                            {n.vsBenchmark === 0 ? t('at') : t(n.vsBenchmark > 0 ? '{n}% above' : '{n}% below', { n: Math.abs(n.vsBenchmark) })}
+                          </span>{' '}{t('the {where} median of {price}/ac', { where: n.benchmark.where, price: fmtUsd(Math.round(n.benchmark.perAcre)) })}
+                          {' '}({t('{n} lots', { n: n.benchmark.count })})</>
                         )}
                       </span>
                     </div>
                   )}
                   {n.closing && (
                     <div className="land__stat">
-                      <span className="land__k">Cost to buy</span>
+                      <span className="land__k">{t('Cost to buy')}</span>
                       <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
                       <span className="small muted">
-                        Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.{' '}
-                        <Link href="/guides/roatan-closing-costs">How it adds up</Link>
+                        {t('Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.')}{' '}
+                        <Link href="/guides/roatan-closing-costs">{t('How it adds up')}</Link>
                       </span>
                     </div>
                   )}
                   {n.taxMax > 0 && (
                     <div className="land__stat">
-                      <span className="land__k">Property tax</span>
-                      <b>up to {fmtUsd(Math.round(n.taxMax))}/yr</b>
-                      <span className="small muted">0.25% of the cadastral value, which is usually below the asking price.</span>
+                      <span className="land__k">{t('Property tax')}</span>
+                      <b>{t('up to {price}/yr', { price: fmtUsd(Math.round(n.taxMax)) })}</b>
+                      <span className="small muted">{t('0.25% of the cadastral value, which is usually below the asking price.')}</span>
                     </div>
                   )}
                   {n.foreign && (
                     <div className={`land__stat land__stat--${n.foreign === 'personal' ? 'ok' : 'warn'}`}>
-                      <span className="land__k">Foreign buyers</span>
-                      <b>{n.foreign === 'personal' ? 'Can own in your name' : 'Needs a Honduran company'}</b>
+                      <span className="land__k">{t('Foreign buyers')}</span>
+                      <b>{n.foreign === 'personal' ? t('Can own in your name') : t('Needs a Honduran company')}</b>
                       <span className="small muted">
                         {n.foreign === 'personal'
-                          ? `Under the ${fmtNumber(FOREIGN_LIMIT_SQM)} m² limit for a foreigner’s home (Decree 90-90).`
-                          : `Over the ${fmtNumber(FOREIGN_LIMIT_SQM)} m² a foreigner can hold personally; larger lots are usually bought through a company.`}
-                        {' '}<Link href="/guides/can-foreigners-buy-property-in-roatan">The 3,000 m² rule</Link>
+                          ? t('Under the {n} m² limit for a foreigner’s home (Decree 90-90).', { n: fmtNumber(FOREIGN_LIMIT_SQM) })
+                          : t('Over the {n} m² a foreigner can hold personally; larger lots are usually bought through a company.', { n: fmtNumber(FOREIGN_LIMIT_SQM) })}
+                        {' '}<Link href="/guides/can-foreigners-buy-property-in-roatan">{t('The 3,000 m² rule')}</Link>
                       </span>
                     </div>
                   )}
                   <div className="land__stat">
-                    <span className="land__k">Distances</span>
+                    <span className="land__k">{t('Distances')}</span>
                     <ul className="land__dist">
                       {n.distances.map((d) => (
-                        <li key={d.name}><span>{d.name}</span><b>{d.km < 1 ? '<1' : d.km.toFixed(d.km < 10 ? 1 : 0)} km</b></li>
+                        <li key={d.name}><span>{t(d.name)}</span><b>{d.km < 1 ? '<1' : d.km.toFixed(d.km < 10 ? 1 : 0)} km</b></li>
                       ))}
                     </ul>
-                    <span className="tiny muted">Straight line; roads are longer.</span>
+                    <span className="tiny muted">{t('Straight line; roads are longer.')}</span>
                   </div>
                 </div>
 
-                <h4 className="land__sub">Checked on the ground</h4>
+                <h4 className="land__sub">{t('Checked on the ground')}</h4>
                 <div className="land__rows">
                   {LAND_FIELDS.map((f) => {
                     const value = checked ? land[f.key] : 'unknown';
                     const state = landState(f, value);
                     return (
                       <div key={f.key} className={`land__row land__row--${state}`}>
-                        <span className="land__k">{f.label}</span>
+                        <span className="land__k">{t(f.label)}</span>
                         <span className="land__v">
                           {state === 'ok' && <Icon name="check" size={20} />}
-                          {landLabel(f, value)}
+                          {t(landLabel(f, value))}
                         </span>
                       </div>
                     );
@@ -314,31 +318,29 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 </div>
                 <div className="land__foot">
                   <a className="btn btn--ghost" href={`/listings/${listing.id}/report`} target="_blank" rel="noreferrer">
-                    <Icon name="link" size={16} /> Download land report (PDF)
+                    <Icon name="link" size={16} /> {t('Download land report (PDF)')}
                   </a>
                   <span className="tiny muted">
-                    “Ready to build” means title, road, electricity and water are all in place. Costs and limits are
-                    estimates from our guides, not legal advice: always verify the title at the Instituto de la Propiedad
-                    and check the numbers with your attorney before paying a deposit.
+                    {t('“Ready to build” means title, road, electricity and water are all in place. Costs and limits are estimates from our guides, not legal advice: always verify the title at the Instituto de la Propiedad and check the numbers with your attorney before paying a deposit.')}
                   </span>
                 </div>
               </section>
             );
           })()}
 
-          <h3 style={{ marginTop: 26 }}>About this property</h3>
+          <h3 style={{ marginTop: 26 }}>{t('About this property')}</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 15.5 }}>{listing.text}</p>
 
           {listing.sourceName && (
             <p className="src">
               <Icon name="link" size={16} />
               <span>
-                Facts on this page come from <b>{listing.sourceName}</b>
-                {listing.sourceRef && <> · {listing.sourceRef}</>}, who hold the listing.
+                {t('Facts on this page come from')} <b>{listing.sourceName}</b>
+                {listing.sourceRef && <> · {listing.sourceRef}</>}{t(', who hold the listing.')}
                 {listing.sourceUrl && (
                   <>
                     {' '}
-                    <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">Open the original listing</a>
+                    <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">{t('Open the original listing')}</a>
                   </>
                 )}
               </span>
@@ -347,7 +349,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {detailRows.length > 0 && (
             <section id="details">
-              <h3 style={{ marginTop: 26 }}>Details</h3>
+              <h3 style={{ marginTop: 26 }}>{t('Details')}</h3>
               <dl className="details">
                 {detailRows.map(([k, v]) => (
                   <div key={k} className="details__row"><dt>{k}</dt><dd>{v}</dd></div>
@@ -357,22 +359,22 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
           )}
 
           <section id="price-history">
-            <h3 style={{ marginTop: 26 }}>Price history</h3>
+            <h3 style={{ marginTop: 26 }}>{t('Price history')}</h3>
             <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
           </section>
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
           {listing.nearby.length > 0 && (
             <section className="nearby" id="nearby">
-              <h3 style={{ marginTop: 26, marginBottom: 12 }}>What&apos;s nearby</h3>
+              <h3 style={{ marginTop: 26, marginBottom: 12 }}>{t("What's nearby")}</h3>
               <ul className="nearby__list">
                 {listing.nearby.map((p, i) => {
-                  const dist = nearbyDistance(p, listing);
+                  const dist = nearbyDistance(p, listing, lang);
                   return (
                     <li key={i} className="nearby__item">
                       <span className="nearby__name">
                         <b>{p.name}</b>
-                        <span className="small muted">{categoryLabel(p.category)}</span>
+                        <span className="small muted">{t(categoryLabel(p.category))}</span>
                       </span>
                       {dist && <span className="nearby__dist">{dist}</span>}
                     </li>
@@ -380,19 +382,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
                 })}
               </ul>
               <p className="tiny muted" style={{ marginTop: 8 }}>
-                Added by the listing agent — check opening hours before you go.
+                {t('Added by the listing agent — check opening hours before you go.')}
               </p>
             </section>
           )}
 
-          <h3 style={{ marginTop: 26, marginBottom: 12 }}>Location</h3>
+          <h3 style={{ marginTop: 26, marginBottom: 12 }}>{t('Location')}</h3>
           <div id="miniMap">
             <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} />
           </div>
 
           {dev && (
             <section className="about-dev" id="building">
-              <h3 style={{ marginTop: 30 }}>About the building</h3>
+              <h3 style={{ marginTop: 30 }}>{t('About the building')}</h3>
               <p className="small" style={{ margin: '4px 0 12px', fontWeight: 600 }}>
                 {building?.name ?? dev.name}{(building?.address || dev.address) && ` · ${building?.address || dev.address}`}
               </p>
@@ -404,17 +406,19 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
           {dev && (
             <section className="about-dev" id="development">
-              <h3 style={{ marginTop: 30 }}>About {dev.name}</h3>
+              <h3 style={{ marginTop: 30 }}>{t('About {name}', { name: dev.name })}</h3>
               <PhotoStrip photos={dev.photos} title={dev.name} />
               <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll)} />
               <Link href={`/developments/${dev.slug}`} className="btn btn--ghost" style={{ marginTop: 16 }}>
-                Open {dev.name} <Icon name="arrowRight" size={18} />
+                {t('Open {name}', { name: dev.name })} <Icon name="arrowRight" size={18} />
               </Link>
             </section>
           )}
 
           <p className="tiny muted" style={{ marginTop: 14 }}>
-            Listing ID {listing.id} · listed {fmtDate(listing.createdAt)} · updated {fmtDate(listing.updatedAt)} · {fmtNumber(listing.views)} views
+            {t('Listing ID {id} · listed {created} · updated {updated} · {views} views', {
+              id: listing.id, created: fmtDate(listing.createdAt, lang), updated: fmtDate(listing.updatedAt, lang), views: fmtNumber(listing.views),
+            })}
           </p>
         </div>
 
@@ -426,8 +430,8 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
       {siblings.length > 0 && listing.development && (
         <section className="section" style={{ paddingTop: 0 }}>
           <div className="section__head">
-            <div><h2>Other units in {listing.development.name}</h2></div>
-            <Link className="btn btn--ghost" href={`/developments/${listing.development.slug}`}>See all units <Icon name="arrowRight" size={18} /></Link>
+            <div><h2>{t('Other units in {name}', { name: listing.development.name })}</h2></div>
+            <Link className="btn btn--ghost" href={`/developments/${listing.development.slug}`}>{t('See all units')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {siblings.map((l) => <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} />)}
@@ -437,7 +441,7 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 
       {similar.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
-          <div className="section__head"><div><h2>More in {listing.neighborhood}</h2></div></div>
+          <div className="section__head"><div><h2>{t('More in {place}', { place: listing.neighborhood })}</h2></div></div>
           <div className="grid grid--4">
             {similar.map((l) => <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} />)}
           </div>
@@ -450,13 +454,13 @@ export default async function PropertyPage({ params }: { params: Promise<{ id: s
 const isLandType = (t: string) => t === 'land';
 
 /** «today», «yesterday», «5 days ago», «3 months ago» — як «Оновлено» у LUN */
-function ago(iso: string) {
+function ago(iso: string, t: T) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  if (days <= 0) return 'today';
-  if (days === 1) return 'yesterday';
-  if (days < 30) return `${days} days ago`;
+  if (days <= 0) return t('today');
+  if (days === 1) return t('yesterday');
+  if (days < 30) return t('{n} days ago', { n: days });
   const months = Math.floor(days / 30);
-  if (months < 12) return months === 1 ? 'a month ago' : `${months} months ago`;
+  if (months < 12) return months === 1 ? t('a month ago') : t('{n} months ago', { n: months });
   const years = Math.floor(months / 12);
-  return years === 1 ? 'a year ago' : `${years} years ago`;
+  return years === 1 ? t('a year ago') : t('{n} years ago', { n: years });
 }

@@ -3,6 +3,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { ForgotForm, LoginForm, SignupForm } from './AuthForms';
 import Icon from './Icon';
+import { useT } from './LangProvider';
 import { AUTH_EVENT, isAuthMode, isAuthView, type AuthMode, type AuthRequest, type AuthView } from '@/lib/auth-modal';
 
 /** Пояснення до ?error=… — сюди повертають /auth/callback і /api/auth/google. */
@@ -14,6 +15,7 @@ const NOTICES: Record<string, string> = {
 };
 
 export default function AuthModal() {
+  const t = useT();
   const [view, setView] = useState<AuthView | null>(null);
   const [mode, setMode] = useState<AuthMode>('buyer');
   const [notice, setNotice] = useState<string | null>(null);
@@ -82,8 +84,8 @@ export default function AuthModal() {
   return (
     <div className="modal is-open" onMouseDown={(e) => e.target === e.currentTarget && close()}>
       <div className={`modal__box modal__box--auth ${view === 'signup' ? 'is-wide' : ''}`} role="dialog" aria-modal="true">
-        <button className="modal__x" aria-label="Close" onClick={close}><Icon name="close" size={20} /></button>
-        {notice && <div className="auth__error" style={{ marginBottom: 16 }}>{notice}</div>}
+        <button className="modal__x" aria-label={t('Close')} onClick={close}><Icon name="close" size={20} /></button>
+        {notice && <div className="auth__error" style={{ marginBottom: 16 }}>{t(notice)}</div>}
         {view === 'login' && <LoginForm next={here} onSwitch={switchTo} onDone={done} />}
         {view === 'signup' && <SignupForm key={mode} initialMode={mode} next={here} onSwitch={switchTo} onDone={done} />}
         {view === 'forgot' && <ForgotForm onSwitch={switchTo} />}

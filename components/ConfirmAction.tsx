@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
+import { useT } from './LangProvider';
 
 export type Ask = {
   title: string;
@@ -17,6 +18,7 @@ export type Ask = {
  * лишали сліду. Тепер дію треба підтвердити й пояснити — пояснення йде в журнал.
  */
 export default function ConfirmAction({ ask, onClose }: { ask: Ask | null; onClose: () => void }) {
+  const t = useT();
   const [reason, setReason] = useState('');
   const input = useRef<HTMLInputElement>(null);
 
@@ -39,20 +41,20 @@ export default function ConfirmAction({ ask, onClose }: { ask: Ask | null; onClo
         {ask.text && <p className="muted small" style={{ margin: '8px 0 0' }}>{ask.text}</p>}
 
         <div className="field" style={{ marginTop: 16 }}>
-          <label>Reason {ask.reasonRequired ? '' : <span className="muted">(optional)</span>}</label>
+          <label>{t('Reason')} {ask.reasonRequired ? '' : <span className="muted">{t('(optional)')}</span>}</label>
           <input
             ref={input}
             className="input"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
-            placeholder={ask.danger ? 'Spam, wrong price, duplicate…' : 'Checked the licence'}
+            placeholder={ask.danger ? t('Spam, wrong price, duplicate…') : t('Checked the licence')}
             onKeyDown={(e) => { if (e.key === 'Enter' && !blocked) { ask.onConfirm(reason.trim()); onClose(); } }}
           />
-          <span className="tiny muted">Goes into the admin log next to your name.</span>
+          <span className="tiny muted">{t('Goes into the admin log next to your name.')}</span>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 18 }}>
-          <button className="btn btn--ghost" onClick={onClose}>Cancel</button>
+          <button className="btn btn--ghost" onClick={onClose}>{t('Cancel')}</button>
           <button
             className={`btn ${ask.danger ? 'btn--danger' : 'btn--primary'}`}
             disabled={blocked}

@@ -8,6 +8,8 @@ import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import { getLang } from '@/lib/i18n/server';
+import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
 
@@ -28,11 +30,13 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
   const agency = await loadAgency(id);
   if (!agency) notFound();
 
-  const [team, listings, session] = await Promise.all([
+  const [team, listings, session, lang] = await Promise.all([
     agencyMembers(agency.id),
     queryListings({ agencyId: agency.id, sort: 'new' }),
     getSession(),
+    getLang(),
   ]);
+  const t = makeT(lang);
   const favIds = session ? await getFavorites(session.id) : [];
 
   const cheapest = listings.filter((l) => l.deal === 'sale').sort((a, b) => a.price - b.price)[0];
@@ -43,7 +47,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
     <div className="wrap">
       <div className="crumbs small muted">
         <BackButton variant="inline" fallback="/" />
-        <Link href="/">Home</Link> · <Link href="/listings?deal=sale">Agencies</Link> · {agency.name}
+        <Link href="/">{t('Home')}</Link> · <Link href="/listings?deal=sale">{t('Agencies')}</Link> · {agency.name}
       </div>
 
       <header className="org" style={{ background: agency.brand }}>
@@ -53,7 +57,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
             {agency.name}
             {agency.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
-          <p className="org__about">{agency.about || 'Roatán real-estate agency on Resoha.'}</p>
+          <p className="org__about">{agency.about || t('Roatán real-estate agency on Resoha.')}</p>
           <div className="org__contacts">
             {agency.phone && <a href={`tel:${agency.phone.replace(/[^+\d]/g, '')}`}><Icon name="phone" size={16} /> {agency.phone}</a>}
             {agency.email && <a href={`mailto:${agency.email}`}><Icon name="inbox" size={16} /> {agency.email}</a>}
@@ -67,17 +71,17 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
       </header>
 
       <div className="stats" style={{ marginTop: 22 }}>
-        <div className="stat"><span className="muted small">Listings</span><b>{listings.length}</b></div>
-        <div className="stat"><span className="muted small">Agents</span><b>{team.length}</b></div>
-        <div className="stat"><span className="muted small">Areas covered</span><b>{areas.length}</b></div>
+        <div className="stat"><span className="muted small">{t('Listings')}</span><b>{listings.length}</b></div>
+        <div className="stat"><span className="muted small">{t('Agents')}</span><b>{team.length}</b></div>
+        <div className="stat"><span className="muted small">{t('Areas covered')}</span><b>{areas.length}</b></div>
         <div className="stat">
-          <span className="muted small">{cheapest ? 'From' : 'Views'}</span>
+          <span className="muted small">{cheapest ? t('From') : t('Views')}</span>
           <b>{cheapest ? fmtUsd(cheapest.price) : fmtNumber(views)}</b>
         </div>
       </div>
 
       <section className="section" style={{ paddingTop: 30 }}>
-        <div className="section__head"><h2>The team</h2></div>
+        <div className="section__head"><h2>{t('The team')}</h2></div>
         <div className="grid grid--4">
           {team.map((m) => (
             <Link key={m.id} className="person" href={`/agents/${m.id}`}>
@@ -87,8 +91,8 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
                   {m.name}
                   {m.verified && <Icon name="verified" size={15} className="ico ico--ok" />}
                 </div>
-                <div className="muted small">{m.isOwner ? 'Owner' : 'Agent'}{m.experience ? ` · ${m.experience} yrs on island` : ''}</div>
-                {m.languages.length > 0 && <div className="tiny muted">Speaks {m.languages.join(', ')}</div>}
+                <div className="muted small">{m.isOwner ? t('Owner') : t('Agent')}{m.experience ? ` · ${t('{n} yrs on island', { n: m.experience })}` : ''}</div>
+                {m.languages.length > 0 && <div className="tiny muted">{t('Speaks {langs}', { langs: m.languages.join(', ') })}</div>}
               </div>
             </Link>
           ))}
@@ -97,13 +101,13 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
 
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="section__head">
-          <h2>{nListings(listings.length)}</h2>
+          <h2>{nListings(listings.length, lang)}</h2>
           <Link className="btn btn--primary" href={`/listings?agencyId=${agency.id}`}>
-            Open in search <Icon name="arrowRight" size={18} />
+            {t('Open in search')} <Icon name="arrowRight" size={18} />
           </Link>
         </div>
         {listings.length === 0 ? (
-          <div className="empty"><div className="empty__ico"><Icon name="home" size={40} /></div>Nothing listed right now</div>
+          <div className="empty"><div className="empty__ico"><Icon name="home" size={40} /></div>{t('Nothing listed right now')}</div>
         ) : (
           <div className="grid grid--4">
             {listings.slice(0, 8).map((l) => (

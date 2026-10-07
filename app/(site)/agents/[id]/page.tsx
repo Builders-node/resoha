@@ -9,6 +9,8 @@ import ListingCard from '@/components/ListingCard';
 import { canReviewAgent, getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
+import { getLang } from '@/lib/i18n/server';
+import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
 
@@ -30,11 +32,13 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = await loadAgent(id);
   if (!agent) notFound();
 
-  const [agency, listings, session] = await Promise.all([
+  const [agency, listings, session, lang] = await Promise.all([
     getAgency(agent.agencyId),
     queryListings({ agentId: agent.id, sort: 'new' }),
     getSession(),
+    getLang(),
   ]);
+  const t = makeT(lang);
   const [favIds, canReview] = await Promise.all([
     session ? getFavorites(session.id) : Promise.resolve([]),
     canReviewAgent(agent.id, session?.id ?? null),
@@ -46,8 +50,8 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
     <div className="wrap">
       <div className="crumbs small muted">
         <BackButton variant="inline" fallback="/" />
-        <Link href="/">Home</Link> ·{' '}
-        {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : 'Independent agent'} · {agent.name}
+        <Link href="/">{t('Home')}</Link> ·{' '}
+        {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')} · {agent.name}
       </div>
 
       <header className="org org--person">
@@ -58,8 +62,8 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             {agent.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
           <p className="muted" style={{ margin: '6px 0 0' }}>
-            {agency ? <Link className="link-accent" href={`/agency/${agency.id}`}>{agency.name}</Link> : 'Independent agent'}
-            {agent.isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>Owner</span>}
+            {agency ? <Link className="link-accent" href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')}
+            {agent.isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>{t('Owner')}</span>}
           </p>
           {agent.about && <p className="org__about" style={{ color: 'var(--ink-2)' }}>{agent.about}</p>}
           <div className="org__contacts org__contacts--light">
@@ -73,32 +77,32 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
               </a>
             )}
             {!agent.phone && !agent.whatsapp && (
-              <span className="muted small">No phone on file — use the enquiry form on a listing</span>
+              <span className="muted small">{t('No phone on file — use the enquiry form on a listing')}</span>
             )}
-            {agent.languages.length > 0 && <span className="muted small">Speaks {agent.languages.join(', ')}</span>}
+            {agent.languages.length > 0 && <span className="muted small">{t('Speaks {langs}', { langs: agent.languages.join(', ') })}</span>}
           </div>
         </div>
       </header>
 
       <div className="stats" style={{ marginTop: 22 }}>
-        <div className="stat"><span className="muted small">Listings</span><b>{listings.length}</b></div>
-        <div className="stat"><span className="muted small">Years on island</span><b>{agent.experience || '—'}</b></div>
+        <div className="stat"><span className="muted small">{t('Listings')}</span><b>{listings.length}</b></div>
+        <div className="stat"><span className="muted small">{t('Years on island')}</span><b>{agent.experience || '—'}</b></div>
         <div className="stat">
-          <span className="muted small">Rating</span>
+          <span className="muted small">{t('Rating')}</span>
           <b>{agent.reviews > 0 ? `${agent.rating} / 5` : '—'}</b>
         </div>
-        <div className="stat"><span className="muted small">Areas</span><b>{areas.length}</b></div>
+        <div className="stat"><span className="muted small">{t('Areas')}</span><b>{areas.length}</b></div>
       </div>
 
       <section className="section" style={{ paddingTop: 30 }}>
         <div className="section__head">
-          <h2>{nListings(listings.length)}</h2>
+          <h2>{nListings(listings.length, lang)}</h2>
           <Link className="btn btn--primary" href={`/listings?agentId=${agent.id}`}>
-            Open in search <Icon name="arrowRight" size={18} />
+            {t('Open in search')} <Icon name="arrowRight" size={18} />
           </Link>
         </div>
         {listings.length === 0 ? (
-          <div className="empty"><div className="empty__ico"><Icon name="home" size={40} /></div>Nothing listed right now</div>
+          <div className="empty"><div className="empty__ico"><Icon name="home" size={40} /></div>{t('Nothing listed right now')}</div>
         ) : (
           <div className="grid grid--4">
             {listings.slice(0, 8).map((l) => (

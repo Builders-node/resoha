@@ -1,4 +1,6 @@
+'use client';
 import Icon from './Icon';
+import { useT } from './LangProvider';
 import { photoUrl } from '@/lib/format';
 
 type Props = {
@@ -15,6 +17,7 @@ type Props = {
  * заглушка. Стокових картинок замість реальних фото тут не буває.
  */
 export default function Photo({ src, alt = '', className = '', eager, label = 'No photo yet' }: Props) {
+  const t = useT();
   const url = photoUrl(src);
   if (url) {
     return (
@@ -22,9 +25,9 @@ export default function Photo({ src, alt = '', className = '', eager, label = 'N
     );
   }
   return (
-    <span className={`nophoto ${className}`.trim()} role="img" aria-label={label || 'No photo yet'}>
+    <span className={`nophoto ${className}`.trim()} role="img" aria-label={t(label || 'No photo yet')}>
       <Icon name="camera" size={20} />
-      {label && <em>{label}</em>}
+      {label && <em>{t(label)}</em>}
     </span>
   );
 }
