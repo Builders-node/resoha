@@ -16,6 +16,8 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   const router = useRouter();
   const [teams, setTeams] = useState<Team[]>([]);
   const [adding, setAdding] = useState<'create' | 'join' | null>(null);
+  // картка команди відкривається лише кліком по самій команді у «Your teams»
+  const [open, setOpen] = useState(false);
   const [agency, setAgency] = useState<Agency | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   useEffect(() => { load(); }, [load]);
 
   // після зміни команди оновлюємо й серверні частини (бокове меню, сесію)
-  const changed = () => { setAdding(null); load(); onChanged(); router.refresh(); };
+  const changed = () => { setAdding(null); setOpen(false); load(); onChanged(); router.refresh(); };
 
   async function switchTeam(t: Team) {
     const res = await fetch('/api/agency/teams', {
@@ -50,6 +52,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     if (!res.ok) return toast(d.error ?? 'Could not switch');
     toast(`Now working in ${t.agency.name}`);
     changed();
+    setOpen(true);
   }
 
   const me = members.find((m) => m.id === meId);
@@ -227,14 +230,18 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
         </div>
         <div className="team-list">
           {teams.map((t) => (
-            <div key={t.agency.id} className={`team-row ${t.active ? 'is-active' : ''}`}>
+            <button key={t.agency.id} type="button"
+              className={`team-row ${t.active ? 'is-active' : ''} ${t.active && open ? 'is-open' : ''}`}
+              aria-expanded={t.active ? open : undefined}
+              onClick={() => (t.active ? setOpen(!open) : switchTeam(t))}>
               <span className="team-row__dot" style={{ background: t.agency.brand }} />
               <span className="team-row__name">{t.agency.name}</span>
               <span className={`pill ${t.isOwner ? 'pill--on' : 'pill--off'}`}>{t.isOwner ? 'Owner' : 'Agent'}</span>
-              {t.active
-                ? <span className="tiny muted team-row__act">Working here</span>
-                : <button className="btn btn--sm btn--ghost team-row__act" onClick={() => switchTeam(t)}>Switch</button>}
-            </div>
+              <span className="tiny muted team-row__act">
+                {t.active ? (open ? 'Close' : t.isOwner ? 'Manage team' : 'Open team') : 'Switch & open'}
+              </span>
+              <Icon name="arrowDown" size={16} className="team-row__chev" />
+            </button>
           ))}
         </div>
         <p className="tiny muted" style={{ marginTop: 10 }}>
@@ -255,6 +262,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
         )}
       </div>
 
+      {open && (<>
       <div className="panel">
         <div className="fgroup__head">
           <h3>{isOwner ? 'Agency profile' : agency.name}</h3>
@@ -374,6 +382,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
           </span>
         </div>
       </div>
+      </>)}
     </>
   );
 }
