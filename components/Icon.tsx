@@ -7,6 +7,7 @@ const PATHS: Record<string, React.ReactNode> = {
   map: <><path d="M3.5 6.6 9 4.2v13.2l-5.5 2.4z" /><path d="M9 4.2l6 2.6v13.2L9 17.4z" /><path d="M15 6.8l5.5-2.6v13.2L15 20z" /></>,
   building: <><rect x="4.2" y="3.6" width="15.6" height="16.8" rx="2.2" /><path d="M8.4 8h2M8.4 12h2M8.4 16h2M13.6 8h2M13.6 12h2M13.6 16h2" /></>,
   verified: <><circle cx="12" cy="12" r="8.6" /><path d="m8.4 12.2 2.6 2.6 4.6-5.2" /></>,
+  chart: <><path d="M4 4.5v15.5h16" /><path d="m7.5 15 3.6-4.4 3.2 2.6 5-6.4" /></>,
   check: <><path d="m5 12.5 4.5 4.5L19 7" /></>,
   heart: <><path d="M12 20.3c-1.2-.8-8.2-5.2-8.2-9.9a4.7 4.7 0 0 1 8.2-3.1 4.7 4.7 0 0 1 8.2 3.1c0 4.7-7 9.1-8.2 9.9z" /></>,
   user: <><circle cx="12" cy="8.3" r="3.6" /><path d="M4.8 20.4a7.2 7.2 0 0 1 14.4 0" /></>,

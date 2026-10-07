@@ -12,7 +12,8 @@ import ListingCard from '@/components/ListingCard';
 import Gallery from '@/components/Gallery';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
-import { bumpViewsAfterResponse, getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
+import { trackAfterResponse } from '@/lib/track';
+import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, fmtUsd, specLine } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -48,13 +49,15 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   };
 }
 
-export default async function PropertyPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function PropertyPage({ params, searchParams }: {
+  params: Promise<{ id: string }>; searchParams: Promise<{ utm_source?: string }>;
+}) {
   const { id } = await params;
   const listing = await loadListing(id);
   if (!listing) notFound();
 
-  // лічильник переглядів — запис, і він не має тримати рендер: виконуємо після відповіді
-  await bumpViewsAfterResponse(id);
+  // перегляд для аналітики (і лічильника views) — запис, і він не має тримати рендер: виконуємо після відповіді
+  await trackAfterResponse({ listingId: id }, 'view', { utm: (await searchParams).utm_source });
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
   const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs] = await Promise.all([

@@ -19,7 +19,8 @@ export default function FavButton({ listingId, initial = false, className = 'fav
       body: JSON.stringify({ listingId }),
     });
     if (res.status === 401) { toast(t('Sign in to save listings')); return; }
-    const { added } = await res.json();
+    // роут відповідає { on }, а не { added } — через це серце не зафарбовувалось
+    const { on: added } = await res.json();
     setOn(added);
     toast(added ? t('Saved to your account') : t('Removed from saved'));
   }

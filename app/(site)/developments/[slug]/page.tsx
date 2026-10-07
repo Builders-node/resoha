@@ -10,6 +10,7 @@ import Gallery from '@/components/Gallery';
 import Icon from '@/components/Icon';
 import { FeatureGrid, developmentFeatures } from '@/components/DevelopmentFeatures';
 import { ProgressPhotos } from '@/components/DevelopmentProgress';
+import { trackAfterResponse } from '@/lib/track';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 
@@ -19,10 +20,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return developmentMetadata((await params).slug);
 }
 
-export default async function DevelopmentPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function DevelopmentPage({ params, searchParams }: {
+  params: Promise<{ slug: string }>; searchParams: Promise<{ utm_source?: string }>;
+}) {
   const { slug } = await params;
   const ctx = await developmentContext(slug);
   const { dev, units, buildings, docs, progress, news, base, from } = ctx;
+  await trackAfterResponse({ developmentId: dev.id }, 'dev_view', { utm: (await searchParams).utm_source });
 
   const beds = units.map((u) => u.beds);
   const types = units.length
