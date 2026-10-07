@@ -10,9 +10,10 @@ import { DEAL_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import { QUALITY_CHECKS, type QualityKey } from '@/lib/quality';
 import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } from '@/lib/types';
 import Avatar from './Avatar';
+import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
 import TabStrip from './TabStrip';
 
-type Tab = 'overview' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
+type Tab = 'overview' | 'featured' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
@@ -24,6 +25,8 @@ type AgencyRowData = { agency: Agency; agents: number; listings: number };
 
 const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'overview', label: 'Overview', ico: 'sliders' },
+  { v: 'featured', label: 'Featured', ico: 'star' },
+  { v: 'developments', label: 'Developments', ico: 'building' },
   { v: 'listings', label: 'Listings', ico: 'home' },
   { v: 'leads', label: 'Enquiries', ico: 'inbox' },
   { v: 'agencies', label: 'Agencies', ico: 'building' },
@@ -62,6 +65,7 @@ export default function AdminPanel({ session }: { session: Session }) {
   const [editingUser, setEditingUser] = useState<Agent | null>(null);
 
   const load = useCallback(async (which: Tab) => {
+    if (which === 'featured' || which === 'developments') return; // ці вкладки вантажать себе самі
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -243,6 +247,8 @@ export default function AdminPanel({ session }: { session: Session }) {
           ) : <div className="panel">Loading…</div>
         )}
 
+        {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}
+
         {tab === 'listings' && (
           <div className="panel">
             <div className="fgroup__head">
@@ -311,11 +317,9 @@ export default function AdminPanel({ session }: { session: Session }) {
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap', textAlign: 'right' }}>
                           <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => { setAdding(false); setEditing(l); }}><Icon name="pencil" size={16} /></button>{' '}
-                          <button className="btn btn--sm btn--ghost"
+                          <StarButton on={l.featured} label={l.title}
                             onClick={() => act({ kind: 'listing', id: l.id, featured: !l.featured, targetName: l.title },
-                              l.featured ? 'Removed from the home page' : 'Featured on the home page')}>
-                            {l.featured ? 'Unfeature' : 'Feature'}
-                          </button>{' '}
+                              l.featured ? 'Removed from the home page' : 'Featured on the home page')} />{' '}
                           <button className="btn btn--sm btn--danger"
                             onClick={() => confirmAct(
                               {

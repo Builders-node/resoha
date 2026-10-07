@@ -27,6 +27,7 @@ const PATHS: Record<string, React.ReactNode> = {
   search: <><circle cx="10.8" cy="10.8" r="6.3" /><path d="m15.6 15.6 4.4 4.4" /></>,
   close: <><path d="m6.5 6.5 11 11M17.5 6.5l-11 11" /></>,
   arrowLeft: <><path d="M19.5 12h-14" /><path d="m10.5 7-5 5 5 5" /></>,
+  arrowUp: <><path d="M12 19.5v-14" /><path d="m7 10.5 5-5 5 5" /></>,
   arrowDown: <><path d="M12 4.5v14" /><path d="m7 13.5 5 5 5-5" /></>,
   flag: <><path d="M5.5 21V4.5" /><path d="M5.5 4.5h11.2l-2.2 4 2.2 4H5.5" /></>,
   calendar: <><rect x="3.8" y="5.2" width="16.4" height="15" rx="2.2" /><path d="M3.8 9.8h16.4M8.2 3.4v3.6M15.8 3.4v3.6" /></>,
