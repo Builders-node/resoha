@@ -11,6 +11,7 @@ import Icon from '@/components/Icon';
 import { FeatureGrid, developmentFeatures } from '@/components/DevelopmentFeatures';
 import { ProgressPhotos } from '@/components/DevelopmentProgress';
 import { trackAfterResponse } from '@/lib/track';
+import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 
@@ -27,6 +28,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
   const ctx = await developmentContext(slug);
   const { dev, units, buildings, docs, progress, news, base, from } = ctx;
   await trackAfterResponse({ developmentId: dev.id }, 'dev_view', { utm: (await searchParams).utm_source });
+  await trackPromo('development', [dev], 'click');
 
   const beds = units.map((u) => u.beds);
   const types = units.length

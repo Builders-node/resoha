@@ -6,6 +6,7 @@ import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
+import { trackPromo } from '@/lib/promo';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { getLang } from '@/lib/i18n/server';
@@ -37,6 +38,8 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
     getLang(),
   ]);
   const t = makeT(lang);
+  // перехід на сторінку просунутої агенції; getAgency позначку не читає, тож фільтрує сама база
+  await trackPromo('agency', [{ id: agency.id, featured: true }], 'click');
   const favIds = session ? await getFavorites(session.id) : [];
 
   const cheapest = listings.filter((l) => l.deal === 'sale').sort((a, b) => a.price - b.price)[0];

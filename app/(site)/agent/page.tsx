@@ -18,5 +18,5 @@ export default async function AgentPage({ searchParams }: { searchParams: Promis
   if (session.role !== 'agent') return <BecomeRealtor name={session.name} />;
 
   const { tab } = await searchParams;
-  return <AgentDashboard session={session} initialTab={tab === 'team' || tab === 'developments' || tab === 'developer' || tab === 'analytics' ? tab : undefined} />;
+  return <AgentDashboard session={session} initialTab={tab === 'team' || tab === 'developments' || tab === 'developer' || tab === 'analytics' || tab === 'promote' ? tab : undefined} />;
 }

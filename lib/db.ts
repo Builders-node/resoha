@@ -38,6 +38,7 @@ const safeUrl = (v: unknown) => {
 export const mapAgency = (r: Row): Agency => ({
   id: r.id, name: r.name, brand: r.brand, phone: r.phone, email: r.email ?? '', about: r.about,
   verified: r.verified, ownerId: r.owner_id, inviteCode: r.invite_code ?? '', createdAt: r.created_at,
+  featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,
 });
 
 export const mapAgent = (r: Row): Agent => ({
@@ -171,11 +172,14 @@ export async function getAgency(id: string | null): Promise<Agency | null> {
 export async function agencyBoard() {
   const { data } = await (await db())
     .from('agency_board').select('*').order('listings_count', { ascending: false });
-  return (data ?? []).map((r: Row) => ({
+  const rows = (data ?? []).map((r: Row) => ({
     agency: mapAgency(r),
     listings: Number(r.listings_count),
     agents: Number(r.agents_count),
   }));
+  // просунуті агенції (міграція 0046) — першими, у порядку черги Featured
+  return rows.sort((a, b) => Number(b.agency.featured) - Number(a.agency.featured)
+    || (a.agency.featured ? (a.agency.featuredRank ?? 0) - (b.agency.featuredRank ?? 0) : 0));
 }
 
 /* ---------- listings ---------- */
@@ -1062,7 +1066,7 @@ export async function listFeaturedBuildings(): Promise<(Building & { development
 /* ---------- журнал дій адміністратора ---------- */
 type AdminLogInput = {
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building';
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign';
   targetId: string;
   targetName?: string;
   reason?: string;

@@ -31,6 +31,7 @@ export default async function AgencyRow({ rows }: { rows: Row[] }) {
         return (
           <Link key={agency.id} className="agc" href={`/agency/${agency.id}`} style={{ background: agency.brand }}>
             <div className="agc__name">{agency.name}</div>
+            {agency.featured && <span className="badge badge--accent agc__badge">{t('Featured')}</span>}
 
             <div className="agc__logo">
               <div>

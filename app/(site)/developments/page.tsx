@@ -4,6 +4,7 @@ import Photo from '@/components/Photo';
 import { listDevelopments, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
 import { SITE_NAME } from '@/lib/site';
+import { trackPromo } from '@/lib/promo';
 import { fromPrice, salesLabel } from '@/lib/units';
 
 export const metadata: Metadata = {
@@ -18,6 +19,7 @@ export default async function DevelopmentsPage() {
     || (a.featured ? a.featuredRank - b.featuredRank : 0));
   // ціна «від» і кількість квартир — по одній вибірці на ЖК; їх небагато
   const units = await Promise.all(devs.map((d) => queryListings({ developmentId: d.id })));
+  await trackPromo('development', devs, 'impression');
 
   return (
     <div className="wrap" style={{ padding: '30px 32px 60px' }}>

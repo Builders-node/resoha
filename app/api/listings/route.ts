@@ -3,6 +3,7 @@ import { PAGE_SIZE, adminLog, createListing, getBuilding, getDevelopment, getLis
 import { canManageDevelopment } from '@/lib/units';
 import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
+import { trackPromo } from '@/lib/promo';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -19,6 +20,7 @@ export async function GET(req: Request) {
   const page = Math.max(0, Number(searchParams.get('page') ?? 0) || 0);
   const pageSize = Math.min(60, Number(searchParams.get('pageSize') ?? PAGE_SIZE) || PAGE_SIZE);
   const { items, total, hasMore } = await searchListings(query, page, pageSize);
+  await trackPromo('listing', items, 'impression');
   return NextResponse.json({ items, total, page, hasMore });
 }
 
