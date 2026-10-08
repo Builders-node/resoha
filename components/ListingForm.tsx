@@ -7,7 +7,7 @@ import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
-import { DETAIL_FIELDS } from '@/lib/details';
+import { DETAIL_FIELDS, IN_UNIT } from '@/lib/details';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
 import type { PhotoRooms } from '@/lib/rooms';
@@ -150,13 +150,16 @@ export default function ListingForm({
       if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
     }
     // характеристики: поля detail_* і floorsTotal → обʼєкт details
-    const details: Record<string, string> = {};
+    const details: Record<string, string | string[]> = {};
     for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal']) {
       const name = key === 'floorsTotal' ? key : `detail_${key}`;
       const v = fd.get(name);
       if (typeof v === 'string' && v) details[key] = v;
       delete body[name];
     }
+    // «В квартирі є» — галочки inUnit
+    details.inUnit = fd.getAll('inUnit').map(String);
+    delete body.inUnit;
     setSaving(true);
 
     const res = await fetch(editing ? `/api/listings/${listing!.id}` : '/api/listings', {
@@ -403,6 +406,14 @@ export default function ListingForm({
                   </select></div>
               ))}
             </div>
+            <div className="field full" style={{ marginTop: 12 }}><label>In the apartment</label>
+              <div className="lf__checks">
+                {IN_UNIT.map(([key, label]) => (
+                  <label key={key} className="lf__check">
+                    <input type="checkbox" name="inUnit" value={key} defaultChecked={v?.details.inUnit?.includes(key)} /> {label}
+                  </label>
+                ))}
+              </div></div>
           </div>
 
           {/* Паспорт ділянки — лише для землі; у кондо й будинків цієї секції немає */}

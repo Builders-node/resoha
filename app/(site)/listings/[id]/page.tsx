@@ -17,7 +17,7 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
-import { DEAL_LABELS, TYPE_LABELS, fmtArea, fmtDate, fmtNumber, fmtPerArea, fmtPrice, fmtUsd, specLine, sqftToM2 } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPerArea, fmtPrice, fmtUsd, specLine, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
@@ -26,12 +26,15 @@ import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
-import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
+import { DETAIL_FIELDS, IN_UNIT, detailLabel, floorLine } from '@/lib/details';
 import { photoTour } from '@/lib/rooms';
 import { getLang } from '@/lib/i18n/server';
 import { makeT, type T } from '@/lib/i18n';
 
 const MapView = dynamic(() => import('@/components/MapView'));
+
+/** Рядок у «Details»: іконка, значення і, якщо без нього незрозуміло, підпис */
+type Fact = [icon: string, value: string, hint?: string];
 
 // метадані й сама сторінка питають те саме оголошення — один запит на двох
 const loadListing = cache(getListing);
@@ -111,23 +114,23 @@ export default async function PropertyPage({ params, searchParams }: {
   const siblingIds = new Set(siblings.map((l) => l.id));
   const similar = similarAll.filter((l) => l.id !== listing.id && !siblingIds.has(l.id)).slice(0, 4);
 
-  // таблиця характеристик: лише заповнені рядки
+  // «Details», як у LUN: іконка й коротке значення, три колонки; порожнє не показуємо
   const floorText = floorLine(listing.floor, listing.details.floorsTotal, lang);
-  const detailRows: [string, string][] = isLandType(listing.type) ? [] : ([
-    [t('Property type'), t(TYPE_LABELS[listing.type])],
-    [t('Deal'), t(DEAL_LABELS[listing.deal])],
-    [t('Bedrooms'), listing.beds > 0 ? String(listing.beds) : t('Studio')],
-    [t('Bathrooms'), listing.baths ? String(listing.baths) : ''],
-    [t('Interior'), listing.sqft > 0 ? fmtArea(listing.sqft) : ''],
-    [t('Lot'), listing.lotAcres > 0 ? t('{n} ac', { n: listing.lotAcres }) : ''],
-    [t('Unit'), listing.unitNo],
-    [t('Floor'), floorText],
-    [t('Year built'), listing.year ? String(listing.year) : ''],
+  const m2 = listing.sqft > 0 ? sqftToM2(listing.sqft) : 0;
+  const facts: Fact[] = isLandType(listing.type) ? [] : ([
+    ['bed', listing.beds > 0 ? t(listing.beds === 1 ? '1 bedroom' : '{n} bedrooms', { n: listing.beds }) : t('Studio')],
+    ['bath', listing.baths ? t(listing.baths === 1 ? '1 bathroom' : '{n} bathrooms', { n: listing.baths }) : ''],
+    ['area', m2 ? `${fmtNumber(m2)} m² · ${fmtNumber(listing.sqft)} ft²` : ''],
+    ['stairs', listing.floor !== null ? t('floor {floor}', { floor: floorText }) : floorText],
+    ['door', listing.unitNo ? t('unit {n}', { n: listing.unitNo }) : ''],
+    ['fence', listing.lotAcres > 0 ? t('{n} ac lot', { n: listing.lotAcres }) : ''],
+    ['calendar', listing.year ? t('built {year}', { year: listing.year }) : ''],
     ...DETAIL_FIELDS.filter((f) => !f.rentOnly || listing.deal === 'rent')
-      .map((f): [string, string] => [t(f.label), t(detailLabel(f, listing.details[f.key]))]),
-    [t('HOA'), listing.hoa > 0 ? `${fmtUsd(listing.hoa)}${t('/mo')}` : ''],
-    [t('Owner financing'), listing.ownerFinancing ? t('Available') : ''],
-  ] as [string, string][]).filter(([, v]) => v);
+      .map((f): Fact => [f.icon, t(detailLabel(f, listing.details[f.key])), f.hint && t(f.hint)]),
+    ['wallet', listing.hoa > 0 ? `${fmtUsd(listing.hoa)}${t('/mo')}` : '', t('HOA')],
+    ['deed', listing.ownerFinancing ? t('Owner financing available') : ''],
+  ] as Fact[]).filter(([, v]) => v);
+  const inUnit = IN_UNIT.filter(([k]) => listing.details.inUnit?.includes(k));
   const updatedAgo = ago(listing.updatedAt, t);
 
   const area = areaForNeighborhood(listing.neighborhood);
@@ -333,8 +336,23 @@ export default async function PropertyPage({ params, searchParams }: {
             );
           })()}
 
-          <h3 className="prop__h">{t('About this property')}</h3>
-          <p className="muted" style={{ fontSize: 15 }}>{listing.text}</p>
+          {facts.length > 0 && (
+            <section id="details">
+              <h3 className="prop__h">{t('Details')}</h3>
+              <ul className="pfacts">
+                {facts.map(([icon, value, hint]) => (
+                  <li key={`${icon}-${value}`}><Icon name={icon} size={22} /><span>{value}{hint && <small> · {hint}</small>}</span></li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {listing.text && (
+            <>
+              <h3 className="prop__h">{t('About this property')}</h3>
+              <p className="muted" style={{ fontSize: 15 }}>{listing.text}</p>
+            </>
+          )}
 
           {listing.sourceName && (
             <p className="src">
@@ -352,19 +370,17 @@ export default async function PropertyPage({ params, searchParams }: {
             </p>
           )}
 
-          {/* Фототур — коли ріелтор позначив кімнати на фото; інакше лишається галерея вгорі */}
-          <PhotoTour groups={photoTour(listing.photos, listing.photoRooms)} title={listing.title} />
-
-          {detailRows.length > 0 && (
-            <section id="details">
-              <h3 className="prop__h">{t('Details')}</h3>
-              <dl className="details">
-                {detailRows.map(([k, v]) => (
-                  <div key={k} className="details__row"><dt>{k}</dt><dd>{v}</dd></div>
-                ))}
-              </dl>
+          {inUnit.length > 0 && (
+            <section id="in-unit">
+              <h3 className="prop__h">{t('In the apartment')}</h3>
+              <ul className="pfacts pfacts--4">
+                {inUnit.map(([k, label, icon]) => <li key={k}><Icon name={icon} size={22} /><span>{t(label)}</span></li>)}
+              </ul>
             </section>
           )}
+
+          {/* Фототур — коли ріелтор позначив кімнати на фото; інакше лишається галерея вгорі */}
+          <PhotoTour groups={photoTour(listing.photos, listing.photoRooms)} title={listing.title} />
 
           <section id="price-history">
             <h3 className="prop__h">{t('Price history')}</h3>
@@ -409,6 +425,11 @@ export default async function PropertyPage({ params, searchParams }: {
               <PhotoStrip photos={building?.photo ? [building.photo, ...dev.photos.filter((p) => p !== building.photo)] : dev.photos}
                 title={building?.name ?? dev.name} />
               <FeatureGrid items={buildingFacts} />
+              {dev.amenities.length > 0 && (
+                <ul className="pfacts pfacts--4 pfacts--building">
+                  {dev.amenities.map((a) => <li key={a}><Icon name="check" size={20} /><span>{t(a)}</span></li>)}
+                </ul>
+              )}
             </section>
           )}
 
