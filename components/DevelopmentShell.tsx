@@ -20,7 +20,7 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
   title?: string;
   /** Те, що йде на всю ширину над назвою, — галерея на огляді (як на сторінці оголошення: спершу фото) */
   top?: React.ReactNode;
-  /** На всю ширину, без картки агента праворуч — «Layouts», як на LUN: контакт там у вікні планування */
+  /** На всю ширину, без картки агента праворуч, як у LUN: «Contacts» (свої кнопки звʼязку) і «Layouts» (контакт у вікні планування) */
   wide?: boolean;
   children: React.ReactNode;
 }) {
@@ -76,13 +76,15 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
         </div>
       </nav>
 
-      <div className={`prop${wide ? ' prop--wide' : ''}`}>
+      {wide ? <div className="dwide">{children}</div> : (
+      <div className="prop">
         <div>{children}</div>
-        {leadUnit && !wide && (
+        {leadUnit && (
           <AgentContact agent={agent} listing={leadUnit} listingUrl={`${SITE_URL}${tab.href}`} topic={dev.name} fromPrice={from}
             extra={statusBox} visitHref={dev.schedule.length ? `/developments/${dev.slug}/visit` : undefined} me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
         )}
       </div>
+      )}
 
       {/* «хлібні крихти» — унизу сторінки, щоб зверху були лише назва й вкладки */}
       <div className="crumbs crumbs--foot small muted">
