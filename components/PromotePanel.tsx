@@ -215,7 +215,7 @@ export default function PromotePanel() {
         )}
       </div>
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="panel" style={{ marginTop: 20 }}>
         <h3 style={{ marginBottom: 12 }}>My campaigns</h3>
         {campaigns.length === 0 ? (
           <p className="muted small">No campaigns yet. Your promotions and their results will show up here.</p>

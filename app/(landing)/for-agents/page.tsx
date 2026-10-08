@@ -64,7 +64,7 @@ export default async function ForAgentsPage() {
         <div className="cta">
           <div>
             <h2>{t('Sell land faster with a land passport')}</h2>
-            <p className="muted" style={{ fontSize: 16, margin: '12px 0 18px' }}>
+            <p className="muted" style={{ fontSize: 16, margin: '12px 0 20px' }}>
               {t('Answer the eight questions every land buyer asks (title, road, power, water, survey, permit, zone, slope) once, on the listing. Complete lots get a readiness badge, their own filter and a PDF report buyers forward to their lawyers.')}
             </p>
             <Link className="btn btn--primary" href="/land-passport">{t('How the land passport works')}</Link>

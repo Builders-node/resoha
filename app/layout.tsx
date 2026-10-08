@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import Toaster from '@/components/Toaster';
+import Motion from '@/components/Motion';
 import AuthModal from '@/components/AuthModal';
 import JsonLd from '@/components/JsonLd';
 import { graph, organizationLd, websiteLd } from '@/lib/seo';
@@ -29,13 +30,14 @@ export const metadata: Metadata = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();
   return (
-    <html lang={lang} className={inter.variable}>
+    <html lang={lang} className={inter.variable} data-scroll-behavior="smooth">
       <body>
         <LangProvider lang={lang}>
         {/* хто ми — на кожній сторінці, щоб пошуковики й AI-асистенти звʼязували всі сторінки з одним брендом */}
         <JsonLd data={graph(organizationLd(), websiteLd())} />
         {children}
         <Toaster />
+        <Motion />
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>
         </LangProvider>

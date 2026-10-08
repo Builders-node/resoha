@@ -85,7 +85,7 @@ export function LoginForm({ next, onSwitch, onDone }: InModal & { next: string; 
           <button className="btn btn--primary btn--lg btn--block" disabled={busy}>{busy ? t('Signing in…') : t('Sign in')}</button>
         </form>
 
-        <p className="small muted" style={{ marginTop: 18, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
+        <p className="small muted" style={{ marginTop: 20, display: 'flex', gap: 14, flexWrap: 'wrap' }}>
           <span>{t('No account yet?')} <Switch to="signup" onSwitch={onSwitch}>{t('Create one')} <Icon name="arrowRight" size={15} /></Switch></span>
           <Switch to="forgot" onSwitch={onSwitch}>{t('Forgot password?')}</Switch>
         </p>
@@ -200,7 +200,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
           </span>
         </form>
 
-        <p className="small muted" style={{ marginTop: 18 }}>
+        <p className="small muted" style={{ marginTop: 20 }}>
           {t('Already registered?')} <Switch to="login" onSwitch={onSwitch}>{t('Sign in')} <Icon name="arrowRight" size={15} /></Switch>
         </p>
     </>
@@ -253,7 +253,7 @@ export function ForgotForm({ onSwitch }: InModal) {
                 {busy ? t('Sending…') : t('Send reset link')}
               </button>
             </form>
-            <p className="small muted" style={{ marginTop: 18 }}>
+            <p className="small muted" style={{ marginTop: 20 }}>
               <Switch to="login" onSwitch={onSwitch}>{t('Back to sign in')}</Switch>
             </p>
           </>

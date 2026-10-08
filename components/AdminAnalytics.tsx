@@ -117,7 +117,7 @@ export default function AdminAnalytics() {
           </div>
         </div>
         <TrendChart series={series} />
-        <div className="an-head" style={{ marginTop: 18 }}><h4 className="small">Leads per day</h4></div>
+        <div className="an-head" style={{ marginTop: 20 }}><h4 className="small">Leads per day</h4></div>
         <DayBars points={series.map((s) => ({ date: s.date, value: s.leads }))} color={C.leads} label="Leads"
           tip={(i) => <span>Contacts opened <b>{series[i].contacts}</b></span>} />
       </div>

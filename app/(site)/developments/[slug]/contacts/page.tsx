@@ -29,7 +29,7 @@ export default async function ContactsPage({ params }: Props) {
   return (
     <DevelopmentShell ctx={ctx} active="contacts" title="Contacts">
       <DevelopmentSalesOffice ctx={ctx} />
-      <ul className="contacts" style={{ marginTop: 22 }}>
+      <ul className="contacts" style={{ marginTop: 24 }}>
         {rows.map(([icon, label, value]) => (
           <li key={label}>
             <Icon name={icon} size={22} />
@@ -60,7 +60,7 @@ export default async function ContactsPage({ params }: Props) {
           : <>Call or message the agent on the right, or use <a href="#contact">Request a viewing</a> to book a visit to the sales office or the site.</>}
       </p>
 
-      <h3 style={{ marginTop: 26, marginBottom: 12 }}>On the map</h3>
+      <h3 style={{ marginTop: 28, marginBottom: 12 }}>On the map</h3>
       <div id="miniMap">
         <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
           center={[dev.lat, dev.lng]} detail />

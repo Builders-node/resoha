@@ -37,7 +37,7 @@ export default function ConfirmAction({ ask, onClose }: { ask: Ask | null; onClo
   return (
     <div className="modal is-open" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="modal__box modal__box--sm" role="dialog" aria-modal="true">
-        <h3 style={{ fontSize: 19 }}>{ask.title}</h3>
+        <h3 style={{ fontSize: 20 }}>{ask.title}</h3>
         {ask.text && <p className="muted small" style={{ margin: '8px 0 0' }}>{ask.text}</p>}
 
         <div className="field" style={{ marginTop: 16 }}>
@@ -53,7 +53,7 @@ export default function ConfirmAction({ ask, onClose }: { ask: Ask | null; onClo
           <span className="tiny muted">{t('Goes into the admin log next to your name.')}</span>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 18 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20 }}>
           <button className="btn btn--ghost" onClick={onClose}>{t('Cancel')}</button>
           <button
             className={`btn ${ask.danger ? 'btn--danger' : 'btn--primary'}`}

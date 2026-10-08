@@ -9,6 +9,13 @@
   --shadow:0 1px 2px rgba(15,15,16,.04), 0 8px 24px rgba(15,15,16,.06);
   --shadow-lg:0 18px 50px rgba(15,15,16,.18);
   --maxw:1440px;
+  /* Єдина шкала, щоб сторінки не розʼїжджались:
+     шрифти — 10 11 12 13 14 15 16 18 20 22 24 28 32 px (+ заголовки нижче);
+     відступи — парні до 16px, далі крок 4px (20 24 28 32 36 …). Нових «13.5px» і «18px» не додаємо. */
+  --fs-h1:clamp(28px,3.2vw,36px);   /* заголовок сторінки */
+  --fs-h2:clamp(24px,2.4vw,28px);   /* заголовок секції */
+  /* рух: одна тривалість і одна крива для всіх ховерів і перемикачів */
+  --dur:.18s; --ease:cubic-bezier(.2,.7,.2,1);
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -23,7 +30,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 h1,h2,h3,h4{margin:0;line-height:1.12;letter-spacing:-.025em;font-weight:800}
 .wrap{max-width:var(--maxw);margin:0 auto;padding:0 32px}
 .muted{color:var(--ink-2)} .small{font-size:13px} .tiny{font-size:12px}
-code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
+code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:13px}
 
 /* ===== Каркас: темний сайдбар + контент ===== */
 .app{display:flex;min-height:100vh}
@@ -36,12 +43,12 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
   /* на низькому вікні пунктів більше, ніж висоти: даємо прокрутку, щоб «Out» не тікав за екран */
   overflow-y:auto;scrollbar-width:none}
 .sidebar::-webkit-scrollbar{display:none}
-.sidebar__logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:18px}
+.sidebar__logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:20px}
 .sidebar__mark{width:44px;height:44px;display:grid;place-items:center;color:var(--orange)}
 .sidebar__word{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .sidebar a,.sidebar button.sidelink{
   width:100%;background:none;border:0;color:#fff;cursor:pointer;text-align:center;
-  padding:11px 4px;border-radius:12px;display:grid;justify-items:center;gap:5px;transition:.15s}
+  padding:10px 4px;border-radius:12px;display:grid;justify-items:center;gap:4px;transition:all var(--dur) var(--ease)}
 /* «Other» — пункт лише для нижньої панелі; вмикається у медіазапиті нижче.
    Вага збігається з `.sidebar button.sidelink`, тому порядок правил тут вирішальний. */
 .sidebar a.mob-only,.sidebar button.sidelink.mob-only{display:none}
@@ -49,13 +56,13 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 .sidebar a.is-active{background:#232329}
 .sidebar a.is-active .sidebar__ico{color:var(--orange)}
 .sidebar__ico{display:flex;align-items:center;justify-content:center;height:22px}
-.sidebar__cap{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase}
+.sidebar__cap{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
 .sidebar__foot{margin-top:auto;display:grid;gap:6px;width:100%}
 .sidebar__avatar{width:30px;height:30px;border-radius:50%;object-fit:cover}
 
 /* ===== Кнопки ===== */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;
-  border-radius:12px;padding:11px 18px;font-weight:700;cursor:pointer;background:var(--chip);transition:.15s;white-space:nowrap}
+  border-radius:12px;padding:10px 20px;font-weight:700;cursor:pointer;background:var(--chip);transition:all var(--dur) var(--ease);white-space:nowrap}
 .btn:hover{background:#e6e6ec}
 .btn--primary{background:var(--ink);color:#fff}
 .btn--primary:hover{background:#000}
@@ -63,8 +70,8 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 .btn--orange:hover{filter:brightness(1.06)}
 .btn--ghost{background:#fff;border-color:var(--line)}
 .btn--ghost:hover{background:var(--bg-soft)}
-.btn--sm{padding:8px 13px;font-size:13.5px;border-radius:10px}
-.btn--lg{padding:15px 26px;font-size:16px;border-radius:14px}
+.btn--sm{padding:8px 12px;font-size:14px;border-radius:10px}
+.btn--lg{padding:14px 28px;font-size:16px;border-radius:var(--radius)}
 .btn--block{width:100%}
 .btn--danger{background:#fff1f2;color:#be123c}
 .btn--icon{padding:10px;min-width:38px;line-height:0;vertical-align:middle}
@@ -76,18 +83,18 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 .btn[disabled]{opacity:.55;cursor:default}
 
 /* ===== Чипи (як у фільтрах ЛУН) ===== */
-.chip-btn{background:var(--chip);border:0;border-radius:12px;padding:11px 18px;font-weight:600;
-  cursor:pointer;transition:.14s;color:var(--ink)}
+.chip-btn{background:var(--chip);border:0;border-radius:12px;padding:10px 20px;font-weight:600;
+  cursor:pointer;transition:all var(--dur) var(--ease);color:var(--ink)}
 .chip-btn:hover{background:#e6e6ec}
 .chip-btn.is-on{background:var(--ink);color:#fff}
 .chip-row{display:flex;flex-wrap:wrap;gap:10px}
 
 /* ===== Перемикачі ===== */
-.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 0;border-bottom:1px solid var(--line)}
+.switch-row{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0;border-bottom:1px solid var(--line)}
 .switch-row:last-child{border-bottom:0}
 .switch-row__label{font-weight:600}
-.switch{position:relative;width:46px;height:27px;flex:none;border:0;border-radius:999px;background:#e2e2e9;cursor:pointer;transition:.16s}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:.16s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch{position:relative;width:46px;height:27px;flex:none;border:0;border-radius:999px;background:#e2e2e9;cursor:pointer;transition:all var(--dur) var(--ease)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:all var(--dur) var(--ease);box-shadow:0 1px 3px rgba(0,0,0,.2)}
 .switch.is-on{background:var(--ink)}
 .switch.is-on::after{transform:translateX(19px)}
 
@@ -96,34 +103,34 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:12.5px}
 .field > label{font-size:12px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.04em}
 .area-in__label{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .area-in__units{display:inline-flex;background:var(--chip);border-radius:8px;padding:2px}
-.area-in__units button{border:0;background:none;border-radius:6px;padding:2px 9px;font:inherit;font-size:12px;
+.area-in__units button{border:0;background:none;border-radius:6px;padding:2px 8px;font:inherit;font-size:12px;
   text-transform:none;letter-spacing:0;color:var(--ink-2);cursor:pointer}
 .area-in__units button.is-on{background:var(--bg);color:inherit;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-.input,select.input,textarea.input{border:1px solid var(--line);border-radius:12px;padding:11px 13px;background:#fff;width:100%;outline:none;transition:.15s}
+.input,select.input,textarea.input{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff;width:100%;outline:none;transition:all var(--dur) var(--ease)}
 .input:focus{border-color:var(--ink);box-shadow:0 0 0 3px rgba(15,15,16,.08)}
 textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Головна: плитки категорій ===== */
 /* padding-top/bottom окремо — інакше перебиває горизонтальні відступи .wrap */
-.home-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;padding-top:26px;padding-bottom:10px}
-.tiles-block h3{font-size:19px;margin:18px 0 10px}
+.home-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;padding-top:28px;padding-bottom:10px}
+.tiles-block h3{font-size:20px;margin:20px 0 10px}
 .tiles-block h3:first-child{margin-top:0}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .tile{position:relative;background:var(--bg-soft);border-radius:var(--radius);overflow:hidden;
-  min-height:132px;display:flex;align-items:flex-end;padding:12px;font-weight:700;transition:.15s}
+  min-height:132px;display:flex;align-items:flex-end;padding:12px;font-weight:700;transition:all var(--dur) var(--ease)}
 .tile:hover{background:#ececf2}
 .tile img{position:absolute;right:-6px;top:-6px;width:96px;height:96px;object-fit:cover;border-radius:12px;opacity:.95}
 .tile--wide{grid-column:span 2}
 .tile--wide img{width:150px;height:110px}
-.promo{background:#131316;color:#fff;border-radius:var(--radius-lg);padding:34px;display:flex;flex-direction:column;justify-content:center;min-height:100%}
+.promo{background:#131316;color:#fff;border-radius:var(--radius-lg);padding:36px;display:flex;flex-direction:column;justify-content:center;min-height:100%}
 .promo h2{font-size:clamp(26px,3vw,40px);text-transform:uppercase;color:var(--orange);line-height:1.02}
-.promo p{color:#c9c9d2;margin:14px 0 22px;max-width:420px}
+.promo p{color:#c9c9d2;margin:14px 0 24px;max-width:420px}
 
 /* ===== Секції ===== */
-.section{padding:34px 0}
+.section{padding:36px 0}
 .section--soft{background:var(--bg-soft)}
-.section__head{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
-.section__head h2{font-size:26px}
+.section__head{display:flex;align-items:center;gap:16px;margin-bottom:20px;flex-wrap:wrap}
+.section__head h2{font-size:var(--fs-h2)}
 /* кнопка — у правому краї рядка, а не впритул до заголовка */
 .section__head .btn{margin-left:auto}
 .section__head p{margin:4px 0 0;color:var(--ink-2);font-weight:500;font-size:14px;width:100%}
@@ -133,7 +140,7 @@ textarea.input{resize:vertical;min-height:96px}
 .grid--3{grid-template-columns:repeat(3,1fr)}
 .grid--4{grid-template-columns:repeat(4,1fr)}
 .card__badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap;max-width:78%}
-.badge{background:rgba(255,255,255,.94);color:var(--ink);border-radius:8px;padding:5px 9px;font-size:12px;font-weight:700}
+.badge{background:rgba(255,255,255,.94);color:var(--ink);border-radius:8px;padding:4px 8px;font-size:12px;font-weight:700}
 .badge--brand{background:var(--ink);color:#fff}
 .badge--accent{background:var(--orange);color:#fff}
 /* готовність ділянки: один бейдж на картці */
@@ -141,30 +148,30 @@ textarea.input{resize:vertical;min-height:96px}
 .badge--warn{background:#fef3c7;color:#92400e}
 .badge--bad{background:#fee2e2;color:#991b1b}
 /* блок «Land check» на сторінці ділянки */
-.land{margin-top:32px;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 30px;background:#fff;box-shadow:var(--shadow)}
-.land__head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:20px}
-.land__head h3{margin:0 0 6px;font-size:26px;letter-spacing:-.02em}
+.land{margin-top:32px;border:2px solid var(--line);border-radius:var(--radius-lg);padding:28px 32px;background:#fff;box-shadow:var(--shadow)}
+.land__head{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:20px}
+.land__head h3{margin:0 0 6px;font-size:28px;letter-spacing:-.02em}
 .land__head .small{font-size:15px}
-.land__score{border-radius:999px;padding:11px 20px;font-weight:800;font-size:17px;white-space:nowrap}
+.land__score{border-radius:999px;padding:10px 20px;font-weight:800;font-size:18px;white-space:nowrap}
 .land__score small{font-weight:600;opacity:.75;font-size:15px}
 .land__score--ok{background:#dcfce7;color:#166534}
 .land__score--warn{background:#fef3c7;color:#92400e}
 .land__score--bad{background:#fee2e2;color:#991b1b}
 .land__score--muted{background:var(--bg-soft);color:var(--ink-2)}
 .land__rows{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.land__row{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft)}
+.land__row{display:flex;flex-direction:column;gap:6px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft)}
 .land__k{color:var(--ink-2);font-weight:600;font-size:14px;text-transform:uppercase;letter-spacing:.04em}
-.land__v{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:19px}
+.land__v{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:20px}
 .land__row--ok{background:#f0fdf4;border-color:#bbf7d0}
 .land__row--ok .land__v{color:#166534}
 .land__row--bad{background:#fef2f2;border-color:#fecaca}
 .land__row--bad .land__v{color:#991b1b}
 .land__row--na .land__v{color:var(--ink-2);font-weight:600}
-.land__sub{margin:26px 0 12px;font-size:17px;letter-spacing:-.01em}
+.land__sub{margin:28px 0 12px;font-size:18px;letter-spacing:-.01em}
 .land__head + .land__sub{margin-top:4px}
 .land__stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.land__stat{display:flex;flex-direction:column;gap:6px;padding:16px 18px;border:1px solid var(--line);border-radius:var(--radius)}
-.land__stat b{font-size:21px;letter-spacing:-.01em}
+.land__stat{display:flex;flex-direction:column;gap:6px;padding:16px 20px;border:1px solid var(--line);border-radius:var(--radius)}
+.land__stat b{font-size:22px;letter-spacing:-.01em}
 .land__stat .small{line-height:1.45}
 .land__stat--ok{background:#f0fdf4;border-color:#bbf7d0}
 .land__stat--ok b{color:#166534}
@@ -172,15 +179,15 @@ textarea.input{resize:vertical;min-height:96px}
 .land__stat--warn b{color:#92400e}
 .land__up{color:#991b1b;font-weight:700}
 .land__down{color:#166534;font-weight:700}
-.land__dist{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:5px}
+.land__dist{list-style:none;margin:2px 0 0;padding:0;display:grid;gap:4px}
 .land__dist li{display:flex;justify-content:space-between;gap:10px;font-size:15px}
 .land__dist b{font-size:15px}
-.land__foot{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px}
-.land__foot .tiny{font-size:13.5px;flex:1;min-width:240px}
+.land__foot{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:24px}
+.land__foot .tiny{font-size:14px;flex:1;min-width:240px}
 .land-form{border-top:1px solid var(--line);padding-top:16px}
 .land-form > .form-grid{margin-top:4px}
 @media (max-width:900px){ .land__stats{grid-template-columns:1fr 1fr} }
-@media (max-width:560px){ .land{padding:20px 18px} .land__stats{grid-template-columns:1fr} .land__head h3{font-size:22px} .land__rows{grid-template-columns:1fr} }
+@media (max-width:560px){ .land{padding:20px 20px} .land__stats{grid-template-columns:1fr} .land__head h3{font-size:22px} .land__rows{grid-template-columns:1fr} }
 
 .fav{position:absolute;top:8px;right:8px;width:34px;height:34px;border:0;border-radius:50%;cursor:pointer;
   background:rgba(255,255,255,.92);display:grid;place-items:center;font-size:16px;line-height:1;box-shadow:var(--shadow)}
@@ -197,27 +204,27 @@ textarea.input{resize:vertical;min-height:96px}
   rgba(0,0,0,.38) 0%,rgba(0,0,0,0) 28%,rgba(0,0,0,.5) 56%,rgba(0,0,0,.88) 100%)}
 .ov__b{position:absolute;left:15px;right:15px;bottom:13px;z-index:2}
 .ov--tall .ov__title{font-size:20px}
-.ov__agency{font-size:12.5px;opacity:.86}
-.ov__title{font-size:17px;font-weight:800;letter-spacing:-.02em;margin:2px 0 4px;
+.ov__agency{font-size:13px;opacity:.86}
+.ov__title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin:2px 0 4px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ov__meta{font-size:13px;opacity:.88}
-.ov__price{font-size:17px;font-weight:800;margin-top:5px}
+.ov__price{font-size:18px;font-weight:800;margin-top:4px}
 .ov .card__badges{z-index:2}
 .ov .fav{z-index:2;background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
 .ov .fav.is-on{color:#ff4d6d;background:rgba(255,255,255,.92)}
 
 /* ===== Панель фільтрів над списком ===== */
-.filters{position:sticky;top:0;z-index:800;background:#fff;border-bottom:1px solid var(--line);padding:11px 0}
+.filters{position:sticky;top:0;z-index:800;background:#fff;border-bottom:1px solid var(--line);padding:10px 0}
 .filters__in{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.filters .input{width:auto;min-width:132px;padding:9px 13px;border-radius:12px;font-weight:600;font-size:14px}
+.filters .input{width:auto;min-width:132px;padding:8px 12px;border-radius:12px;font-weight:600;font-size:14px}
 .filters .filters__q{min-width:240px}
-.filters__count{margin-left:auto;color:var(--ink-2);font-size:13.5px}
-.f-badge{background:var(--orange);color:#fff;border-radius:999px;padding:1px 7px;font-size:11.5px;font-weight:800}
+.filters__count{margin-left:auto;color:var(--ink-2);font-size:14px}
+.f-badge{background:var(--orange);color:#fff;border-radius:999px;padding:1px 6px;font-size:12px;font-weight:800}
 
 /* ===== Список + карта ===== */
 .split{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);
   height:calc(100dvh - var(--filters-h))}
-.split__list{overflow-y:auto;padding:18px 24px 60px}
+.split__list{overflow-y:auto;padding:20px 24px 60px}
 .split__map{position:relative;z-index:0;background:var(--bg-soft)}
 #map{position:absolute;inset:0}
 /* «Search this area»: зʼявляється над картою, щойно її посунули після пошуку */
@@ -226,13 +233,13 @@ textarea.input{resize:vertical;min-height:96px}
 .map-area-btn:hover{background:var(--bg-soft)}
 .map-area-btn:disabled{opacity:.6;cursor:default}
 .list-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.list-head h1{font-size:21px}
-.grid--list{grid-template-columns:repeat(2,1fr);gap:18px}
+.list-head h1{font-size:22px}
+.grid--list{grid-template-columns:repeat(2,1fr);gap:20px}
 .ov.is-hl{outline:2px solid var(--ink);outline-offset:3px;border-radius:var(--radius)}
 
 /* Маркери */
-.price-pin{background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 10px;font-weight:800;font-size:12.5px;
-  box-shadow:var(--shadow);white-space:nowrap;transition:.15s;position:relative}
+.price-pin{background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-weight:800;font-size:13px;
+  box-shadow:var(--shadow);white-space:nowrap;transition:all var(--dur) var(--ease);position:relative}
 /* хвостик цінника вказує на будинок під ним */
 .price-pin::after{content:"";position:absolute;left:50%;bottom:-5px;width:8px;height:8px;margin-left:-4px;background:inherit;
   border-right:1px solid var(--line);border-bottom:1px solid var(--line);transform:rotate(45deg)}
@@ -259,12 +266,12 @@ textarea.input{resize:vertical;min-height:96px}
 .map-ctrl__group .map-ctrl__btn + .map-ctrl__btn{border-top:1px solid var(--line)}
 .map-ctrl__btn{width:44px;height:44px;display:grid;place-items:center;border:0;background:#fff;color:var(--ink);
   border-radius:12px;box-shadow:var(--shadow);cursor:pointer;padding:0}
-.map-ctrl__btn svg{transition:transform .15s}
+.map-ctrl__btn svg{transition:transform var(--dur) var(--ease)}
 .map-ctrl__btn:hover{background:var(--bg-soft)}
 .map-ctrl__btn.is-on{color:var(--orange)}
 .map-ruler{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:2;display:flex;gap:10px;align-items:center;
-  background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:13.5px;box-shadow:var(--shadow);white-space:nowrap}
-.map-ruler button{border:0;background:var(--chip);border-radius:999px;padding:3px 10px;font-weight:600;font-size:12.5px;cursor:pointer}
+  background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;font-size:14px;box-shadow:var(--shadow);white-space:nowrap}
+.map-ruler button{border:0;background:var(--chip);border-radius:999px;padding:2px 10px;font-weight:600;font-size:13px;cursor:pointer}
 .map-me{width:16px;height:16px;border-radius:50%;background:#2f80ff;border:3px solid #fff;box-shadow:0 0 0 6px rgba(47,128,255,.2)}
 .maplibregl-ctrl-attrib{font-size:11px}
 .map-pop{position:relative;width:240px;height:190px;cursor:pointer;color:#fff}
@@ -274,10 +281,10 @@ textarea.input{resize:vertical;min-height:96px}
 .map-pop .badge{position:absolute;top:8px;left:8px;z-index:2}
 .map-pop .map-pop__ocean{left:auto;right:8px;background:rgba(255,255,255,.95);color:var(--ink)}
 .map-pop__b{position:absolute;left:13px;right:13px;bottom:11px;z-index:2}
-.map-pop__price{font-weight:800;font-size:17px;letter-spacing:-.02em;margin-top:4px}
-.map-pop__title{font-weight:700;font-size:13.5px;margin:2px 0 3px;
+.map-pop__price{font-weight:800;font-size:18px;letter-spacing:-.02em;margin-top:4px}
+.map-pop__title{font-weight:700;font-size:14px;margin:2px 0 2px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.map-pop__meta{font-size:12.5px;opacity:.88}
+.map-pop__meta{font-size:13px;opacity:.88}
 .map-skeleton{position:absolute;inset:0;display:grid;place-items:center;color:var(--ink-2);font-weight:600}
 
 /* ===== Модалка фільтрів ===== */
@@ -285,7 +292,7 @@ textarea.input{resize:vertical;min-height:96px}
 .modal.is-open{display:block}
 .modal__box{background:#fff;border-radius:var(--radius-lg);width:min(760px,94vw);max-height:92vh;
   margin:4vh auto;box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden}
-.modal__box--sm{width:min(440px,94vw);padding:26px;max-height:none}
+.modal__box--sm{width:min(440px,94vw);padding:28px;max-height:none}
 .modal__head{position:relative;padding:20px 24px;border-bottom:1px solid var(--line);text-align:center;flex:none}
 .modal__head h3{font-size:22px}
 .modal__close{position:absolute;right:16px;top:50%;transform:translateY(-50%);width:38px;height:38px;
@@ -295,23 +302,23 @@ textarea.input{resize:vertical;min-height:96px}
 .modal__foot{flex:none;border-top:1px solid var(--line);padding:14px 24px;display:grid;
   grid-template-columns:1fr 1.4fr;gap:14px;background:#fff}
 
-.fsec{padding:22px 0;border-bottom:1px solid var(--line)}
+.fsec{padding:24px 0;border-bottom:1px solid var(--line)}
 .fsec:last-child{border-bottom:0}
 .fsec__head{display:flex;align-items:center;gap:10px;color:var(--orange);margin-bottom:16px}
-.fsec__head h4{font-size:19px;color:var(--orange)}
+.fsec__head h4{font-size:20px;color:var(--orange)}
 .fsec__ico{display:flex;align-items:center}
 .fgroup{margin-bottom:20px}
 .fgroup:last-child{margin-bottom:0}
 .fgroup > h5{font-size:15px;font-weight:800;margin:0 0 10px}
 .fgroup__head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .range-inputs{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;margin-bottom:6px}
-.range-inputs .input{background:var(--chip);border-color:transparent;text-align:center;font-weight:700;border-radius:12px;padding:13px}
+.range-inputs .input{background:var(--chip);border-color:transparent;text-align:center;font-weight:700;border-radius:12px;padding:12px}
 .cur-toggle{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13px;color:var(--ink-2)}
 
 /* ===== Слайдер діапазону + гістограма ===== */
 .rs{position:relative;padding:6px 0 14px;user-select:none}
 .rs__hist{display:flex;align-items:flex-end;gap:2px;height:64px;margin-bottom:6px}
-.rs__bar{flex:1;background:#d7d7de;border-radius:2px;min-height:2px;transition:background .15s}
+.rs__bar{flex:1;background:#d7d7de;border-radius:2px;min-height:2px;transition:background var(--dur) var(--ease)}
 .rs__bar.is-in{background:var(--ink)}
 .rs__track{position:relative;height:22px}
 .rs__rail{position:absolute;top:9px;left:0;right:0;height:4px;background:#e2e2e9;border-radius:4px}
@@ -324,7 +331,7 @@ textarea.input{resize:vertical;min-height:96px}
   background:var(--ink);border:3px solid #fff;cursor:grab}
 
 /* ===== Сторінка обʼєкта ===== */
-.crumbs{padding:18px 0 6px}
+.crumbs{padding:20px 0 6px}
 .crumbs a:hover{color:var(--orange)}
 .gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:180px 180px;gap:8px;border-radius:var(--radius-lg);overflow:hidden;margin-top:10px}
 .gallery img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
@@ -334,8 +341,8 @@ textarea.input{resize:vertical;min-height:96px}
 .gallery__tile:hover img{transform:scale(1.03)}
 .gallery__tile:first-child{grid-row:span 2}
 .gallery__more{position:absolute;inset:0;display:grid;place-items:center;background:rgba(15,15,16,.5);
-  color:#fff;font-size:26px;font-weight:800;pointer-events:none}
-.gallery__all{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:7px;
+  color:#fff;font-size:28px;font-weight:800;pointer-events:none}
+.gallery__all{position:absolute;right:14px;bottom:14px;display:inline-flex;align-items:center;gap:6px;
   border:0;border-radius:999px;padding:8px 14px;background:#fff;color:var(--ink);font-weight:700;font-size:13px;
   cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.18)}
 .gallery--n1{grid-template-columns:1fr;grid-template-rows:380px}
@@ -344,7 +351,7 @@ textarea.input{resize:vertical;min-height:96px}
 .gallery--n2 .gallery__tile{grid-row:span 2}
 .gallery--n3{grid-template-columns:2fr 1fr}
 .gallery--n4 .gallery__tile:nth-child(2){grid-row:span 2}
-.prop{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:44px;padding:30px 0 60px;align-items:start}
+.prop{display:grid;grid-template-columns:minmax(0,1fr) 370px;gap:44px;padding:32px 0 60px;align-items:start}
 .prop__head{display:flex;gap:16px;justify-content:space-between;align-items:flex-start}
 .prop__fav{position:relative;width:44px;height:44px;flex:none}
 .prop__fav .fav{position:static;width:44px;height:44px;font-size:20px;border:1px solid var(--line);background:#fff}
@@ -352,21 +359,21 @@ textarea.input{resize:vertical;min-height:96px}
    Лишаємо його тільки там, де картка опускається під увесь контент (≤1200px). */
 @media (min-width:1201px){.prop__fav{display:none}}
 .prop__price{font-size:32px;font-weight:800;letter-spacing:-.03em;margin-top:16px}
-.specs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
+.specs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}
 .spec{background:var(--bg-soft);border-radius:var(--radius);padding:14px}
-.spec b{display:block;font-size:19px;margin-top:2px}
+.spec b{display:block;font-size:20px;margin-top:2px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
-.chip{display:inline-flex;align-items:center;gap:7px;background:var(--chip);border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--chip);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600}
 .agent-card{position:sticky;top:20px;border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow)}
-.agent-card__top{display:flex;gap:13px;align-items:center}
+.agent-card__top{display:flex;gap:12px;align-items:center}
 .agent-card__top .ava{width:56px;height:56px;border-radius:50%;object-fit:cover}
-.phone-box{background:var(--bg-soft);border-radius:12px;padding:12px 14px;font-weight:800;font-size:17px;text-align:center;margin:12px 0}
+.phone-box{background:var(--bg-soft);border-radius:12px;padding:12px 14px;font-weight:800;font-size:18px;text-align:center;margin:12px 0}
 .cc-wrap{position:sticky;top:20px;scroll-margin-top:20px}
 .cc{background:#f3f4f8;border-radius:10px;overflow:hidden}
 .cc__brand{display:flex;align-items:center;justify-content:center;height:62px;padding:0 20px;color:#fff;
-  font-weight:800;font-size:17px;letter-spacing:.02em;text-align:center}
+  font-weight:800;font-size:18px;letter-spacing:.02em;text-align:center}
 .cc__brand span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cc__body{padding:22px 20px 20px}
+.cc__body{padding:24px 20px 20px}
 .cc__top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .cc__price{display:flex;align-items:center;flex-wrap:wrap;gap:4px 10px;font-size:28px;line-height:1.15;font-weight:800;letter-spacing:-.01em}
 .cc__from{font-size:15px;font-weight:600;color:var(--ink-2)}
@@ -389,7 +396,7 @@ textarea.input{resize:vertical;min-height:96px}
 .cc__badge{display:inline-flex;align-items:center;gap:2px;background:#000;color:#fff;border-radius:6px;
   padding:4px 6px;font-size:11px;font-weight:800;line-height:1}
 .cc__btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;border:0;border-radius:8px;
-  cursor:pointer;font:inherit;color:#fff;transition:filter .14s}
+  cursor:pointer;font:inherit;color:#fff;transition:filter var(--dur) var(--ease)}
 .cc__btn:hover{filter:brightness(1.1)}
 .cc__btn--phone{margin-top:16px;height:50px;background:#000;font-size:16px;font-weight:600}
 .cc__msgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
@@ -409,24 +416,24 @@ textarea.input{resize:vertical;min-height:96px}
 #miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
 
 /* ===== Кабінети ===== */
-.dash{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:26px 0 70px;align-items:start}
+.dash{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:28px 0 72px;align-items:start}
 .sidenav{background:var(--bg-soft);border-radius:var(--radius-lg);padding:10px;position:sticky;top:20px}
-.sidenav a{display:flex;gap:10px;align-items:center;padding:11px 13px;border-radius:11px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
+.sidenav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
 .sidenav a:hover{background:#e9e9ef}
 .sidenav a.is-active{background:var(--ink);color:#fff}
 .sidenav__add{justify-content:center;background:var(--orange);color:#fff !important;margin-bottom:6px}
 .sidenav__add:hover{background:#e64100 !important}
 .sidenav__add.is-active{background:var(--ink) !important}
 .sidenav__group + .sidenav__group{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
-.sidenav__title{display:block;padding:8px 13px 4px;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
-.sidenav__count{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--ink-3)}
+.sidenav__title{display:block;padding:8px 12px 4px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.sidenav__count{margin-left:auto;font-size:13px;font-weight:600;color:var(--ink-3)}
 .sidenav a.is-active .sidenav__count{color:rgba(255,255,255,.7)}
-.sidenav__count.is-alert,.sidenav a.is-active .sidenav__count.is-alert{min-width:20px;padding:2px 7px;border-radius:999px;background:var(--orange);color:#fff;text-align:center}
-.profile-head{display:flex;gap:16px;align-items:center;padding:20px;background:var(--bg-soft);border-radius:var(--radius-lg);margin-bottom:22px}
+.sidenav__count.is-alert,.sidenav a.is-active .sidenav__count.is-alert{min-width:20px;padding:2px 6px;border-radius:999px;background:var(--orange);color:#fff;text-align:center}
+.profile-head{display:flex;gap:16px;align-items:center;padding:20px;background:var(--bg-soft);border-radius:var(--radius-lg);margin-bottom:24px}
 .profile-head .ava{width:72px;height:72px;border-radius:50%;object-fit:cover}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
 .stat{background:var(--bg-soft);border-radius:var(--radius);padding:16px}
-.stat b{display:block;font-size:26px;letter-spacing:-.03em;margin-top:4px}
+.stat b{display:block;font-size:28px;letter-spacing:-.03em;margin-top:4px}
 .table{width:100%;border-collapse:collapse}
 .table th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);padding:10px 12px;border-bottom:1px solid var(--line)}
 .table td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle}
@@ -435,7 +442,7 @@ textarea.input{resize:vertical;min-height:96px}
 .pill{display:inline-block;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:700}
 .pill--on{background:#ecfdf5;color:#047857}
 .pill--off{background:var(--chip);color:var(--ink-2)}
-.panel{border:1px solid var(--line);border-radius:var(--radius-lg);padding:22px}
+.panel{border:1px solid var(--line);border-radius:var(--radius-lg);padding:24px}
 .form-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
 .form-grid .full{grid-column:1/-1}
 .empty{text-align:center;padding:60px 20px;color:var(--ink-2)}
@@ -447,9 +454,9 @@ textarea.input{resize:vertical;min-height:96px}
 /* ===== Футер ===== */
 /* правові сторінки: вузька колонка, читається як документ */
 .legal{max-width:720px;padding:36px 0 64px}
-.legal h1{font-size:32px;margin-bottom:12px}
+.legal h1{font-size:var(--fs-h1);margin-bottom:12px}
 .legal__lead{font-size:16px;color:var(--ink-2);margin-bottom:28px}
-.legal section{margin-bottom:26px}
+.legal section{margin-bottom:28px}
 .legal h2{font-size:18px;margin-bottom:8px}
 .legal p{margin:0 0 10px;font-size:15px;line-height:1.55}
 .legal ul{margin:0 0 10px;padding-left:20px}
@@ -458,28 +465,28 @@ textarea.input{resize:vertical;min-height:96px}
 .footer__in{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
 .footer__cols{display:flex;gap:56px;flex-wrap:wrap}
 .footer h4{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-bottom:10px}
-.footer li{list-style:none;margin:0 0 7px}
+.footer li{list-style:none;margin:0 0 6px}
 .footer ul{padding:0;margin:0}
-.footer__bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:26px}
+.footer__bottom{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-top:28px}
 .langswitch{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px;background:var(--bg);flex:none}
-.langswitch button{border:0;background:none;font:inherit;font-size:13px;padding:5px 12px;border-radius:999px;color:var(--ink-2);cursor:pointer}
+.langswitch button{border:0;background:none;font:inherit;font-size:13px;padding:4px 12px;border-radius:999px;color:var(--ink-2);cursor:pointer}
 .langswitch button.is-active{background:var(--ink);color:#fff;font-weight:600}
 .langswitch[aria-busy=true]{opacity:.6}
-.logo{display:flex;align-items:center;gap:9px;font-weight:900;font-size:19px;letter-spacing:-.03em}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:20px;letter-spacing:-.03em}
 .logo__mark{width:30px;height:30px;display:grid;place-items:center;color:var(--orange)}
 .logo-mark{display:block}
 .logo__sub{font-weight:700;color:var(--ink-3)}
 
 /* ===== Toast ===== */
 .toast{position:fixed;left:calc(50% + var(--side-w)/2);bottom:28px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;
-  background:var(--ink);color:#fff;padding:12px 18px;border-radius:12px;font-weight:600;z-index:3000;transition:.25s}
+  background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;z-index:3000;transition:.25s}
 .toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
 
 /* ===== Адаптив ===== */
 @media (max-width:1200px){
   .grid--4{grid-template-columns:repeat(3,1fr)}
   .home-top{grid-template-columns:1fr}
-  .prop{grid-template-columns:1fr;gap:26px}
+  .prop{grid-template-columns:1fr;gap:28px}
   .agent-card{position:static}
   .cc-wrap{position:static}
 }
@@ -523,17 +530,17 @@ textarea.input{resize:vertical;min-height:96px}
 
   .sidebar a,.sidebar button.sidelink{
     flex:1;min-width:0;width:auto;height:var(--bar-h);position:relative;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
     padding:0 2px;border-radius:0;opacity:.62}
   .sidebar a:hover,.sidebar button.sidelink:hover{background:none}
   .sidebar a.is-active{background:none}
   /* активний пункт: помаранчева іконка, підпис і риска зверху */
   .sidebar a.is-active::before{
     content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
-    width:26px;height:3px;border-radius:0 0 3px 3px;background:var(--orange)}
+    width:26px;height:3px;border-radius:0 0 4px 4px;background:var(--orange)}
   .sidebar a.is-active .sidebar__cap{color:var(--orange)}
 
-  .sidebar__cap{display:block;font-size:9.5px;letter-spacing:.04em;
+  .sidebar__cap{display:block;font-size:10px;letter-spacing:.04em;
     max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .sidebar__ico{height:20px}
   .sidebar__avatar{width:22px;height:22px}
@@ -577,21 +584,21 @@ textarea.input{resize:vertical;min-height:96px}
 .rating .ico{fill:currentColor;stroke:none}
 .card__badges .ico,.chip .ico{opacity:.8}
 .ico--ok{color:var(--green);display:inline-block;vertical-align:-3px}
-.with-ico{display:flex;align-items:center;gap:7px}
-.note-ok{display:flex;align-items:flex-start;gap:8px;background:var(--orange-soft);padding:13px 14px;border-radius:12px}
+.with-ico{display:flex;align-items:center;gap:6px}
+.note-ok{display:flex;align-items:flex-start;gap:8px;background:var(--orange-soft);padding:12px 14px;border-radius:12px}
 .link-accent{display:inline-flex;align-items:center;gap:6px;color:var(--orange);font-weight:700}
 
 /* ===== Плитки агенцій (референс: блок «Агенції нерухомості» на ЛУН) ===== */
-.agc-row{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.agc-row{display:grid;grid-template-columns:repeat(5,1fr);gap:20px}
 .agc{position:relative;display:flex;flex-direction:column;gap:14px;color:#fff;
-  border-radius:var(--radius);padding:20px;min-height:400px;overflow:hidden;transition:.16s}
+  border-radius:var(--radius);padding:20px;min-height:400px;overflow:hidden;transition:all var(--dur) var(--ease)}
 .agc:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-.agc__name{font-weight:800;font-size:16.5px;letter-spacing:-.01em}
+.agc__name{font-weight:800;font-size:16px;letter-spacing:-.01em}
 .agc__logo{flex:1;display:grid;place-items:center;text-align:center;padding:8px 4px}
 .agc__mono{width:62px;height:62px;margin:0 auto 14px;border-radius:50%;
-  border:2px solid rgba(255,255,255,.45);display:grid;place-items:center;font-weight:900;font-size:21px}
-.agc__word{font-size:19px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;line-height:1.3}
-.agc__sub{font-size:11px;letter-spacing:.34em;text-transform:uppercase;opacity:.78;margin-top:7px}
+  border:2px solid rgba(255,255,255,.45);display:grid;place-items:center;font-weight:900;font-size:22px}
+.agc__word{font-size:20px;font-weight:800;letter-spacing:.13em;text-transform:uppercase;line-height:1.3}
+.agc__sub{font-size:11px;letter-spacing:.34em;text-transform:uppercase;opacity:.78;margin-top:6px}
 .agc__stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;
   border-top:1px solid rgba(255,255,255,.28);padding-top:14px}
 .agc__stats b{display:block;font-size:22px;font-weight:800;letter-spacing:-.02em}
@@ -603,18 +610,18 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Реєстрація / вхід ===== */
 .auth{display:flex;justify-content:center;padding:56px 24px 80px}
-.auth__card{width:min(440px,100%);border:1px solid var(--line);border-radius:var(--radius-lg);padding:30px;box-shadow:var(--shadow)}
+.auth__card{width:min(440px,100%);border:1px solid var(--line);border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow)}
 .auth__card--wide{width:min(560px,100%)}
-.auth__card h1{font-size:27px}
+.auth__card h1{font-size:28px}
 .auth__form{display:grid;gap:14px}
 .auth__row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 /* вхід і реєстрація — модалка поверх поточної сторінки */
-.modal__box--auth{position:relative;width:min(440px,94vw);padding:30px;overflow-y:auto;max-height:92vh;display:block}
+.modal__box--auth{position:relative;width:min(440px,94vw);padding:32px;overflow-y:auto;max-height:92vh;display:block}
 .modal__box--auth.is-wide{width:min(560px,94vw)}
 .modal__x{position:absolute;right:14px;top:14px;width:36px;height:36px;border:0;border-radius:50%;background:none;
   display:grid;place-items:center;cursor:pointer;color:var(--ink-2)}
 .modal__x:hover{background:var(--bg-soft)}
-.auth__title{font-size:27px;padding-right:36px}
+.auth__title{font-size:28px;padding-right:36px}
 .modal__box--auth > .auth__error{margin-right:36px}
 .auth__or{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--ink-2);font-size:13px;font-weight:600}
 .auth__or::before,.auth__or::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -622,69 +629,69 @@ textarea.input{resize:vertical;min-height:96px}
 .btn--google:hover{background:var(--bg-soft)}
 .linkbtn{border:0;background:none;padding:0;font:inherit;cursor:pointer}
 @media (max-width:560px){
-  .modal__box--auth,.modal__box--auth.is-wide{width:100%;max-height:100dvh;min-height:100dvh;margin:0;border-radius:0;padding:24px 18px}
+  .modal__box--auth,.modal__box--auth.is-wide{width:100%;max-height:100dvh;min-height:100dvh;margin:0;border-radius:0;padding:24px 20px}
 }
-.auth__error{background:#fff1f2;color:#be123c;border-radius:12px;padding:11px 13px;font-size:13.5px;font-weight:600}
+.auth__error{background:#fff1f2;color:#be123c;border-radius:12px;padding:10px 12px;font-size:14px;font-weight:600}
 
 /* ===== Команда агенції ===== */
 .invite{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;
-  background:var(--orange-soft);border-radius:var(--radius);padding:16px 18px;margin-top:16px}
+  background:var(--orange-soft);border-radius:var(--radius);padding:16px 20px;margin-top:16px}
 .invite__code{font-size:24px;font-weight:900;letter-spacing:.12em;margin:4px 0 6px}
 .team-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .team-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}
 .team-row{width:100%;font:inherit;color:inherit;text-align:left;background:#fff;cursor:pointer}
 .team-row:hover{background:var(--bg-soft)}
 .team-row.is-active{border-color:var(--ink);background:var(--bg-soft)}
-.team-row__chev{flex:none;transition:transform .15s}
+.team-row__chev{flex:none;transition:transform var(--dur) var(--ease)}
 .team-row:not(.is-active) .team-row__chev{transform:rotate(-90deg)}
 .team-row.is-open .team-row__chev{transform:rotate(180deg)}
 .team-row__dot{width:14px;height:14px;border-radius:50%;flex:none}
 .team-row__name{font-weight:700;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .team-row__act{margin-left:auto}
 .team-switch{font:inherit;color:inherit;border:1px solid var(--line);border-radius:8px;padding:2px 6px;background:#fff;max-width:220px}
-.switch-inline{flex-direction:row !important;gap:22px;flex-wrap:wrap}
+.switch-inline{flex-direction:row !important;gap:24px;flex-wrap:wrap}
 .switch-inline label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;text-transform:none;letter-spacing:0;color:var(--ink)}
 
 @media (max-width:560px){ .auth__row{grid-template-columns:1fr} }
 
 /* ===== Вибір фірмового кольору ===== */
 .brand-pick{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.brand-dot{width:30px;height:30px;border-radius:9px;border:2px solid transparent;cursor:pointer}
+.brand-dot{width:30px;height:30px;border-radius:10px;border:2px solid transparent;cursor:pointer}
 .brand-dot.is-on{border-color:var(--ink);box-shadow:0 0 0 2px #fff inset}
-.brand-pick input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--line);border-radius:9px;background:none;cursor:pointer}
+.brand-pick input[type=color]{width:38px;height:30px;padding:0;border:1px solid var(--line);border-radius:10px;background:none;cursor:pointer}
 
 /* ===== Завантаження фото ===== */
 .dropzone{display:flex;align-items:center;gap:14px;border:1.5px dashed var(--line);border-radius:var(--radius);
-  padding:18px;cursor:pointer;background:var(--bg-soft);transition:.15s;color:var(--ink-2)}
+  padding:20px;cursor:pointer;background:var(--bg-soft);transition:all var(--dur) var(--ease);color:var(--ink-2)}
 .dropzone:hover,.dropzone.is-over{border-color:var(--orange);background:var(--orange-soft);color:var(--ink)}
-.dropzone b{display:block;color:var(--ink);font-size:14.5px}
+.dropzone b{display:block;color:var(--ink);font-size:15px}
 .shots{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-top:12px}
 .shot{position:relative;margin:0;border-radius:var(--radius);overflow:hidden;background:var(--bg-soft);aspect-ratio:4/3}
 .shot img{width:100%;height:100%;object-fit:cover}
 .shot__cover{position:absolute;top:8px;left:8px}
 .shot__bar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;justify-content:center;
-  padding:6px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));opacity:0;transition:.15s}
+  padding:6px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));opacity:0;transition:all var(--dur) var(--ease)}
 .shot:hover .shot__bar{opacity:1}
-.shot__bar .btn{padding:5px 8px;font-size:12px}
+.shot__bar .btn{padding:4px 8px;font-size:12px}
 
 /* ===== Аватар у профілі ===== */
 .avatar-pick{display:flex;align-items:center;gap:14px}
 .avatar-pick .ava{width:72px;height:72px;border-radius:50%;object-fit:cover;background:var(--bg-soft)}
 
 /* ===== Публічні профілі агенції та ріелтора ===== */
-.org{display:flex;gap:22px;align-items:center;color:#fff;border-radius:var(--radius-lg);padding:26px;margin-top:8px}
-.org h1{font-size:30px}
-.org__mono{width:88px;height:88px;flex:none;border-radius:20px;border:2px solid rgba(255,255,255,.45);
-  display:grid;place-items:center;font-weight:900;font-size:29px}
+.org{display:flex;gap:24px;align-items:center;color:#fff;border-radius:var(--radius-lg);padding:28px;margin-top:8px}
+.org h1{font-size:var(--fs-h1)}
+.org__mono{width:88px;height:88px;flex:none;border-radius:var(--radius-lg);border:2px solid rgba(255,255,255,.45);
+  display:grid;place-items:center;font-weight:900;font-size:28px}
 .org__avatar{width:88px;height:88px;flex:none;border-radius:50%;object-fit:cover}
 .org__about{margin:10px 0 0;max-width:70ch;opacity:.92}
-.org__contacts{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-weight:600;font-size:14px}
-.org__contacts a{display:inline-flex;align-items:center;gap:7px}
+.org__contacts{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-weight:600;font-size:14px}
+.org__contacts a{display:inline-flex;align-items:center;gap:6px}
 .org__contacts a:hover{text-decoration:underline}
 .org--person{background:var(--bg-soft);color:var(--ink)}
 .org--person .org__about{opacity:1}
 .org__contacts--light a{color:var(--ink)}
-.person{display:flex;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--radius);transition:.15s}
+.person{display:flex;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:var(--radius);transition:all var(--dur) var(--ease)}
 .person:hover{border-color:var(--ink);background:var(--bg-soft)}
 .person .ava{width:54px;height:54px;border-radius:50%;object-fit:cover;flex:none}
 .person__name{font-weight:700}
@@ -704,13 +711,13 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Кластери на карті ===== */
 .pin-cluster{display:grid;place-items:center;border-radius:50%;background:var(--ink);color:#fff;
-  font-weight:800;font-size:13.5px;border:3px solid #fff;box-shadow:var(--shadow);cursor:pointer;transition:.15s}
+  font-weight:800;font-size:14px;border:3px solid #fff;box-shadow:var(--shadow);cursor:pointer;transition:all var(--dur) var(--ease)}
 .pin-cluster:hover{background:var(--orange);transform:scale(1.06)}
 
 /* ===== Адмінка ===== */
 .admin-mark{width:72px;height:72px;flex:none;border-radius:50%;display:grid;place-items:center;
   background:var(--ink);color:#fff}
-.agc-dot{width:32px;height:32px;border-radius:9px;flex:none}
+.agc-dot{width:32px;height:32px;border-radius:10px;flex:none}
 
 /* ===== Перемикач «список ↔ карта» на вузьких екранах ===== */
 .view-toggle{display:none}
@@ -720,7 +727,7 @@ textarea.input{resize:vertical;min-height:96px}
     bottom:calc(var(--bar-h, 0px) + 20px + env(safe-area-inset-bottom,0));
     display:inline-flex;align-items:center;gap:8px;
     background:var(--ink);color:#fff;border:0;border-radius:999px;
-    padding:13px 22px;font-weight:700;font-size:14.5px;cursor:pointer;
+    padding:12px 24px;font-weight:700;font-size:15px;cursor:pointer;
     box-shadow:0 10px 26px rgba(15,15,16,.32)}
   .view-toggle:active{transform:translateX(-50%) scale(.97)}
 
@@ -741,10 +748,10 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Кнопка «назад» ===== */
 .gallery-wrap{position:relative}
-.back-btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-weight:700;
-  border:1px solid var(--line);background:#fff;color:var(--ink);transition:.15s}
+.back-btn{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:700;
+  border:1px solid var(--line);background:#fff;color:var(--ink);transition:all var(--dur) var(--ease)}
 .back-btn:hover{background:var(--bg-soft)}
-.back-btn--inline{border-radius:999px;padding:5px 13px 5px 10px;font-size:13px;margin-right:10px;vertical-align:middle}
+.back-btn--inline{border-radius:999px;padding:4px 12px 4px 10px;font-size:13px;margin-right:10px;vertical-align:middle}
 .back-btn--float{position:absolute;top:14px;left:14px;z-index:5;
   width:40px;height:40px;padding:0;justify-content:center;border-radius:50%;
   box-shadow:0 4px 14px rgba(15,15,16,.22);border-color:transparent}
@@ -752,14 +759,14 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Лист «Other» ===== */
 .sheet-wrap{position:fixed;inset:0;z-index:1100;background:rgba(15,15,16,.45);display:flex;align-items:flex-end}
-.sheet{width:100%;background:#fff;border-radius:20px 20px 0 0;padding:10px 18px 18px;
+.sheet{width:100%;background:#fff;border-radius:var(--radius-lg) var(--radius-lg) 0 0;padding:10px 20px 20px;
   display:grid;gap:6px;box-shadow:var(--shadow-lg);
-  padding-bottom:calc(18px + var(--bar-h, 0px) + env(safe-area-inset-bottom,0))}
+  padding-bottom:calc(20px + var(--bar-h, 0px) + env(safe-area-inset-bottom,0))}
 .sheet__grip{width:44px;height:4px;border-radius:4px;background:var(--line);margin:2px auto 10px}
 .sheet__me{display:flex;align-items:center;gap:12px;padding:10px 4px 14px;border-bottom:1px solid var(--line);margin-bottom:6px}
 .sheet__me .ava{width:44px;height:44px;border-radius:50%;object-fit:cover}
 .sheet__me b{display:block}
-.sheet__item{display:flex;align-items:center;gap:12px;width:100%;padding:13px 4px;border:0;background:none;
+.sheet__item{display:flex;align-items:center;gap:12px;width:100%;padding:12px 4px;border:0;background:none;
   font-size:15px;font-weight:600;color:var(--ink);cursor:pointer;text-align:left}
 .sheet__item:hover{color:var(--orange)}
 
@@ -795,7 +802,7 @@ textarea.input{resize:vertical;min-height:96px}
 /* Аватар: фото або ініціали. Розмір задає контекст (.person, .profile-head тощо). */
 .ava--ini{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;
   background:var(--chip);color:var(--ink-2);font-weight:800;font-size:15px;letter-spacing:-.02em}
-.org__avatar.ava--ini{font-size:30px}
+.org__avatar.ava--ini{font-size:32px}
 .profile-head .ava--ini,.avatar-pick .ava--ini{font-size:24px}
 .person .ava--ini,.agent-card__top .ava--ini{font-size:18px}
 .sidebar__avatar.ava--ini{font-size:11px;background:rgba(255,255,255,.16);color:#fff}
@@ -810,13 +817,13 @@ textarea.input{resize:vertical;min-height:96px}
 .ov__map{position:absolute;right:14px;top:12px;z-index:2;color:rgba(255,255,255,.5)}
 
 /* Звідки взяті факти оголошення */
-.src{display:flex;gap:9px;align-items:flex-start;margin-top:16px;padding:12px 14px;
-  background:var(--bg-soft);border-radius:12px;font-size:13.5px;color:var(--ink-2)}
+.src{display:flex;gap:8px;align-items:flex-start;margin-top:16px;padding:12px 14px;
+  background:var(--bg-soft);border-radius:12px;font-size:14px;color:var(--ink-2)}
 .src .ico{flex:none;margin-top:2px;color:var(--ink-3)}
 .src a{color:var(--orange);font-weight:700;white-space:nowrap}
 
 /* Порожній блок замість вигаданого контенту */
-.empty{text-align:center;padding:30px 24px}
+.empty{text-align:center;padding:32px 24px}
 
 
 /* ===== Скелетони ===== */
@@ -837,7 +844,7 @@ textarea.input{resize:vertical;min-height:96px}
 .sk--avatar{width:88px;height:88px;border-radius:50%;flex:none}
 .sk-stack{display:grid;gap:10px}
 .sk-row{display:flex;gap:10px;flex-wrap:wrap}
-.sk-head{padding:26px 0 14px;display:grid;gap:12px}
+.sk-head{padding:28px 0 14px;display:grid;gap:12px}
 @media (max-width:860px){
   .sk--map{display:none}
   .sk--gallery{height:210px}
@@ -849,16 +856,16 @@ textarea.input{resize:vertical;min-height:96px}
    а кнопки дій лишались за краєм екрана. */
 @media (max-width:860px){
   .sidenav{gap:6px;padding:8px;border-radius:var(--radius)}
-  .sidenav a{padding:9px 12px;font-size:13.5px}
+  .sidenav a{padding:8px 12px;font-size:14px}
   /* на телефоні — квадратна іконка «+», підпис лишається в title */
-  .sidenav__add{padding:9px 11px}
+  .sidenav__add{padding:8px 10px}
   .sidenav__add-label{display:none}
 
   .table,.table tbody,.table tr,.table td{display:block;width:auto}
   .table thead{display:none}
   .table tr{border:1px solid var(--line);border-radius:var(--radius);padding:12px 14px;margin-bottom:10px}
   .table tr:hover td{background:none}
-  .table td{border:0;padding:5px 0;white-space:normal !important;text-align:left !important}
+  .table td{border:0;padding:4px 0;white-space:normal !important;text-align:left !important}
 
   /* Підпис колонки переїжджає в рядок — інакше «Live» чи «3» ні про що не кажуть */
   .table td[data-label]::before{
@@ -886,7 +893,7 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Адмінка: панель пошуку й перевірки якості ===== */
 .adm-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-.adm-bar .input{width:auto;min-width:150px;padding:9px 13px;border-radius:12px;font-size:14px}
+.adm-bar .input{width:auto;min-width:150px;padding:8px 12px;border-radius:12px;font-size:14px}
 .adm-bar .input[type=search]{flex:1 1 240px}
 
 .quality{display:grid;gap:2px}
@@ -908,9 +915,9 @@ textarea.input{resize:vertical;min-height:96px}
 .promo__ghost,.hero__ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
 .promo__ghost:hover,.hero__ghost:hover{background:rgba(255,255,255,.1)}
 
-.page{padding-top:18px;padding-bottom:56px}
-.page > h1{font-size:clamp(28px,3.4vw,40px);margin:6px 0 14px;max-width:900px}
-.page__lead{font-size:17px;color:var(--ink-2);max-width:760px;margin:0 0 26px;line-height:1.5}
+.page{padding-top:20px;padding-bottom:56px}
+.page > h1{font-size:var(--fs-h1);margin:6px 0 14px;max-width:900px}
+.page__lead{font-size:18px;color:var(--ink-2);max-width:760px;margin:0 0 28px;line-height:1.5}
 .page__cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:36px;align-items:start;margin-top:8px}
 .page__aside{position:sticky;top:20px}
 .page__aside-btns{display:grid;gap:8px}
@@ -920,38 +927,38 @@ textarea.input{resize:vertical;min-height:96px}
 .hero--dark{background:#131316;color:#fff}
 .hero h1{font-size:clamp(30px,4vw,52px);line-height:1.02;max-width:900px;margin:10px 0 16px}
 .hero__eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
-.hero__sub{color:#c9c9d2;font-size:17px;line-height:1.55;max-width:720px;margin:0 0 24px}
+.hero__sub{color:#c9c9d2;font-size:18px;line-height:1.55;max-width:720px;margin:0 0 24px}
 .hero__cta{display:flex;gap:10px;flex-wrap:wrap}
-.hero__note{color:#9a9aa3;margin:18px 0 0}
+.hero__note{color:#9a9aa3;margin:20px 0 0}
 
 .prose{max-width:780px}
 .prose--flush{padding:0}
-.prose h1{font-size:clamp(28px,3.4vw,40px);margin:6px 0 10px}
-.prose h2{font-size:22px;margin:34px 0 12px}
-.prose h3{font-size:17px}
+.prose h1{font-size:var(--fs-h1);margin:6px 0 10px}
+.prose h2{font-size:22px;margin:36px 0 12px}
+.prose h3{font-size:18px}
 .prose p,.prose li{font-size:16px;line-height:1.62}
 .prose p{margin:0 0 14px}
-.prose ul,.prose ol{margin:0 0 14px;padding-left:22px}
+.prose ul,.prose ol{margin:0 0 14px;padding-left:24px}
 .prose li{margin-bottom:8px}
 .prose__meta{margin:0 0 20px}
-.prose__note{background:var(--orange-soft);border-radius:var(--radius);padding:14px 16px;font-size:14.5px!important}
+.prose__note{background:var(--orange-soft);border-radius:var(--radius);padding:14px 16px;font-size:15px!important}
 .prose__table{overflow-x:auto;margin:0 0 16px;border:1px solid var(--line);border-radius:var(--radius)}
-.prose__table .table td,.prose__table .table th{font-size:14.5px}
+.prose__table .table td,.prose__table .table th{font-size:15px}
 .prose__table .table tr:last-child td{border-bottom:0}
-.prose__facts{background:var(--bg-soft);border-radius:var(--radius);padding:4px 22px 8px;margin:18px 0}
-.prose__facts h2{font-size:17px;margin:16px 0 10px}
+.prose__facts{background:var(--bg-soft);border-radius:var(--radius);padding:4px 24px 8px;margin:20px 0}
+.prose__facts h2{font-size:18px;margin:16px 0 10px}
 .prose__cta{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;
-  background:#131316;color:#fff;border-radius:var(--radius-lg);padding:26px 28px;margin:36px 0 10px}
-.prose__cta h2{margin:0 0 6px;font-size:21px}
+  background:#131316;color:#fff;border-radius:var(--radius-lg);padding:28px 28px;margin:36px 0 10px}
+.prose__cta h2{margin:0 0 6px;font-size:22px}
 .prose__cta p{margin:0;color:#c9c9d2}
 .prose__cta-btns{display:flex;gap:10px;flex-wrap:wrap}
 .prose__cta .btn--ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
 
-.answer{border-left:4px solid var(--orange);background:var(--bg-soft);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:0 0 18px;max-width:880px}
+.answer{border-left:4px solid var(--orange);background:var(--bg-soft);border-radius:0 var(--radius) var(--radius) 0;padding:16px 20px;margin:0 0 20px;max-width:880px}
 .answer__k{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}
-.answer p{margin:6px 0 0;font-size:17px;line-height:1.55}
+.answer p{margin:6px 0 0;font-size:18px;line-height:1.55}
 
-.toc{border:1px solid var(--line);border-radius:var(--radius);padding:14px 18px;margin:18px 0 8px}
+.toc{border:1px solid var(--line);border-radius:var(--radius);padding:14px 20px;margin:20px 0 8px}
 .toc ol{margin:8px 0 0;padding-left:20px}
 .toc li{margin-bottom:4px;font-size:14px}
 .toc a:hover{color:var(--orange)}
@@ -960,7 +967,7 @@ textarea.input{resize:vertical;min-height:96px}
 .sources li{margin-bottom:6px;font-size:14px!important}
 
 .faq{display:grid;gap:10px}
-.faq details{border:1px solid var(--line);border-radius:var(--radius);padding:0 18px;background:#fff}
+.faq details{border:1px solid var(--line);border-radius:var(--radius);padding:0 20px;background:#fff}
 .faq summary{cursor:pointer;list-style:none;padding:16px 28px 16px 0;position:relative}
 .faq summary::-webkit-details-marker{display:none}
 .faq summary::after{content:"+";position:absolute;right:0;top:12px;font-size:22px;font-weight:500;color:var(--ink-3)}
@@ -971,23 +978,23 @@ textarea.input{resize:vertical;min-height:96px}
 
 .guide-list{display:grid;gap:12px}
 .guide-list--wide{grid-template-columns:repeat(3,1fr)}
-.guide-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:var(--radius);padding:18px;background:#fff;transition:.15s}
+.guide-card{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:var(--radius);padding:20px;background:#fff;transition:all var(--dur) var(--ease)}
 .guide-card:hover{border-color:var(--ink);box-shadow:var(--shadow)}
 .guide-card b{font-size:16px;letter-spacing:-.01em;line-height:1.3}
 
 .facts{align-items:stretch}
 .fact{background:var(--bg-soft);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:8px}
-.fact h3{font-size:17px}
+.fact h3{font-size:18px}
 .fact p{margin:0}
 .fact__ico{color:var(--orange)}
-.fact__tag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--chip);border-radius:6px;padding:3px 7px}
+.fact__tag{align-self:flex-start;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--chip);border-radius:6px;padding:2px 6px}
 .fact__tag--core{background:var(--orange);color:#fff}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
 .steps p{margin:10px 0 0}
 .steps-list{padding-left:20px;margin:12px 0 0}
 .steps-list li{margin-bottom:10px;line-height:1.5}
 
-.area-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:var(--radius);padding:20px;transition:.15s}
+.area-card{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:var(--radius);padding:20px;transition:all var(--dur) var(--ease)}
 .area-card:hover{border-color:var(--ink);box-shadow:var(--shadow)}
 .area-card__top{display:flex;justify-content:space-between;align-items:center;font-size:18px}
 .area-card__price{font-size:22px;font-weight:800;letter-spacing:-.02em;color:var(--orange)}
@@ -1019,17 +1026,17 @@ textarea.input{resize:vertical;min-height:96px}
 .lp-wrap{max-width:1200px;margin:0 auto;padding:0 32px}
 .lp-head{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .lp-head__in{display:flex;align-items:center;gap:28px;height:64px}
-.lp-head__nav{display:flex;gap:22px;margin-left:auto;font-weight:600;font-size:14px}
+.lp-head__nav{display:flex;gap:24px;margin-left:auto;font-weight:600;font-size:14px}
 .lp-head__nav a:hover{color:var(--orange)}
 .lp .wrap{max-width:1200px}
 
 .lp-hero{background:#131316;color:#fff;padding:64px 0 56px}
 .lp-hero__eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--orange)}
-.lp-hero h1{font-size:clamp(32px,4.6vw,60px);line-height:1;max-width:900px;margin:14px 0 18px}
+.lp-hero h1{font-size:clamp(32px,4.6vw,60px);line-height:1;max-width:900px;margin:14px 0 20px}
 .lp-hero__lead{color:#c9c9d2;font-size:18px;line-height:1.55;max-width:700px;margin:0}
-.lp-hero__meta{color:#8d8d97;font-size:13px;margin:16px 0 34px}
+.lp-hero__meta{color:#8d8d97;font-size:13px;margin:16px 0 36px}
 .lp-topics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
-.lp-topic{display:flex;flex-direction:column;gap:8px;background:#1d1d22;border:1px solid #2a2a31;border-radius:var(--radius);padding:18px;transition:.15s}
+.lp-topic{display:flex;flex-direction:column;gap:8px;background:#1d1d22;border:1px solid #2a2a31;border-radius:var(--radius);padding:20px;transition:all var(--dur) var(--ease)}
 .lp-topic:hover{border-color:var(--orange);background:#232329}
 .lp-topic b{font-size:15px;line-height:1.3;letter-spacing:-.01em}
 .lp-topic .tiny{color:#8d8d97}
@@ -1046,18 +1053,18 @@ textarea.input{resize:vertical;min-height:96px}
 
 .lp-content{max-width:780px}
 .lp-sec{padding-bottom:28px;margin-bottom:40px;border-bottom:1px solid var(--line);scroll-margin-top:84px}
-.lp-sec__head{display:flex;gap:18px;align-items:flex-start;margin-bottom:20px}
+.lp-sec__head{display:flex;gap:20px;align-items:flex-start;margin-bottom:20px}
 .lp-sec__num{font-size:15px;font-weight:900;color:#fff;background:var(--orange);border-radius:10px;padding:8px 10px;line-height:1}
 .lp-sec__head h2{font-size:clamp(24px,2.6vw,32px)}
 .lp-sec__head p{margin:8px 0 0;font-size:16px}
-.lp-toc{background:var(--bg-soft);border-radius:var(--radius);padding:18px 22px;margin-bottom:28px}
-.lp-toc ol{margin:0;padding-left:22px;columns:2;column-gap:32px}
-.lp-toc li{break-inside:avoid;margin-bottom:8px;font-size:14.5px;line-height:1.4}
+.lp-toc{background:var(--bg-soft);border-radius:var(--radius);padding:20px 24px;margin-bottom:28px}
+.lp-toc ol{margin:0;padding-left:24px;columns:2;column-gap:32px}
+.lp-toc li{break-inside:avoid;margin-bottom:8px;font-size:15px;line-height:1.4}
 .lp-toc a:hover{color:var(--orange)}
-.lp-qa{scroll-margin-top:84px;padding:18px 0;border-top:1px solid var(--line)}
+.lp-qa{scroll-margin-top:84px;padding:20px 0;border-top:1px solid var(--line)}
 .lp-qa:first-of-type{border-top:0}
-.lp-qa h3{font-size:19px;letter-spacing:-.015em;line-height:1.3;margin-bottom:10px;position:relative}
-.lp-qa__anchor{position:absolute;left:-22px;color:var(--ink-3);opacity:0;transition:.15s;font-weight:600}
+.lp-qa h3{font-size:20px;letter-spacing:-.015em;line-height:1.3;margin-bottom:10px;position:relative}
+.lp-qa__anchor{position:absolute;left:-22px;color:var(--ink-3);opacity:0;transition:all var(--dur) var(--ease);font-weight:600}
 .lp-qa:hover .lp-qa__anchor{opacity:1}
 .lp-qa p{margin:0 0 10px;font-size:16px;line-height:1.65;color:#2b2b31}
 .lp-qa:target h3{color:var(--orange)}
@@ -1089,7 +1096,7 @@ textarea.input{resize:vertical;min-height:96px}
   .lp-side{display:none}
   .lp-head__in{flex-wrap:wrap;height:auto;padding-top:10px;row-gap:6px}
   .lp-head__in .btn{margin-left:auto}
-  .lp-head__nav{order:3;flex:1 0 100%;margin:0;gap:18px;overflow-x:auto;white-space:nowrap;padding-bottom:10px;scrollbar-width:none}
+  .lp-head__nav{order:3;flex:1 0 100%;margin:0;gap:20px;overflow-x:auto;white-space:nowrap;padding-bottom:10px;scrollbar-width:none}
   .lp-head__nav::-webkit-scrollbar{display:none}
 }
 @media (max-width:560px){
@@ -1107,7 +1114,7 @@ textarea.input{resize:vertical;min-height:96px}
 .nearby__name{display:flex;flex-direction:column;gap:2px;min-width:0}
 .nearby__name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nearby__dist{font-weight:700;font-size:14px;white-space:nowrap}
-.place-pin{background:var(--ink);color:#fff;border-radius:999px;padding:4px 9px;font-weight:700;font-size:12px;white-space:nowrap;
+.place-pin{background:var(--ink);color:#fff;border-radius:999px;padding:4px 8px;font-weight:700;font-size:12px;white-space:nowrap;
   box-shadow:0 2px 6px rgba(0,0,0,.25);max-width:180px;overflow:hidden;text-overflow:ellipsis;cursor:default}
 .nearby-form{border-top:1px solid var(--line);padding-top:16px;display:flex;flex-direction:column;gap:10px}
 .nearby-row{display:grid;grid-template-columns:2fr 1.2fr 1.4fr;gap:8px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:var(--radius);background:var(--bg-soft)}
@@ -1134,17 +1141,17 @@ textarea.input{resize:vertical;min-height:96px}
 }
 
 /* «Units & prices»: блок новобудови — зведення по типах, а в розкритті прайс по юнітах */
-.dev{margin-top:30px}
+.dev{margin-top:32px}
 .dev__kicker{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--orange);margin-bottom:6px}
-.dev__deal + .dev__deal{margin-top:18px;border-top:1px solid var(--line)}
+.dev__deal + .dev__deal{margin-top:20px;border-top:1px solid var(--line)}
 .dev__dealhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding:16px 0 4px}
 .dev__dealhead h3{font-size:18px}
 .units__link{display:block}
 .units__link:hover b{text-decoration:underline}
-.in-dev{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:999px;background:var(--orange-soft);font-size:13.5px}
+.in-dev{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:6px 12px;border-radius:999px;background:var(--orange-soft);font-size:14px}
 .in-dev b{color:var(--orange)}
-.unit-status{display:inline-block;margin-left:10px;padding:3px 10px;border-radius:999px;background:var(--chip);font-size:13px;font-weight:700;vertical-align:middle}
-.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.unit-status{display:inline-block;margin-left:10px;padding:2px 10px;border-radius:999px;background:var(--chip);font-size:13px;font-weight:700;vertical-align:middle}
+.dev-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
 .dev-list{display:flex;flex-direction:column;gap:8px}
 .dev-list__row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 14px;border:1px solid var(--line);border-radius:var(--radius)}
 a.dev-list__row:hover{background:var(--bg-soft)}
@@ -1153,26 +1160,26 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dev-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .dev-card{display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--line);border-radius:var(--radius)}
 .dev-card__main{display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left;font:inherit;cursor:pointer;color:inherit}
-.dev-card__main > span{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dev-card__main > span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .dev-card__img{width:72px;height:56px;border-radius:10px;object-fit:cover;flex:none}
-.dev-mgr__head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:10px 0 18px}
+.dev-mgr__head{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:10px 0 20px}
 .dev-mgr__head h3{margin:0 0 2px}
 .dev-mgr__stats{display:flex;gap:14px;flex-wrap:wrap;margin-top:6px;color:var(--ink-2)}
-.dev-mgr__body{display:grid;grid-template-columns:210px 1fr;gap:22px;align-items:start}
+.dev-mgr__body{display:grid;grid-template-columns:210px 1fr;gap:24px;align-items:start}
 .dev-mgr__nav{display:flex;flex-direction:column;gap:2px;position:sticky;top:16px}
 .dev-mgr__nav button{display:flex;align-items:center;gap:10px;background:none;border:0;border-radius:10px;padding:10px 12px;font:inherit;font-weight:600;color:var(--ink-2);text-align:left;cursor:pointer}
 .dev-mgr__nav button:hover{background:var(--bg-soft)}
 .dev-mgr__nav button.is-active{background:var(--ink);color:#fff}
 .dev-mgr__pane{min-width:0}
 .dev-mgr__pane > .units-form:first-child{margin-top:0 !important;border-top:0;padding-top:0}
-.dev-mgr__todo{display:flex;flex-direction:column;gap:8px;padding:12px 14px;margin-bottom:18px;border-radius:var(--radius);background:var(--bg-soft)}
+.dev-mgr__todo{display:flex;flex-direction:column;gap:8px;padding:12px 14px;margin-bottom:20px;border-radius:var(--radius);background:var(--bg-soft)}
 .dev-mgr__todo .chip-btn{padding:8px 14px}
 @media (max-width:860px){
   .dev-mgr__body{grid-template-columns:1fr;gap:14px}
   .dev-mgr__nav{flex-direction:row;overflow-x:auto;position:static;padding-bottom:4px;scrollbar-width:none}
   .dev-mgr__nav button{white-space:nowrap;flex:none;background:var(--chip)}
 }
-.dev-logo{width:72px;height:72px;border-radius:14px;object-fit:contain;background:#fff;flex:none}
+.dev-logo{width:72px;height:72px;border-radius:var(--radius);object-fit:contain;background:#fff;flex:none}
 
 /* кабінет: фільтри оголошень і групи за ЖК */
 .dash-filters{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 8px}
@@ -1186,7 +1193,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .table tr.group-row:hover td{background:var(--bg-soft)}
 .group-row__btn{display:inline-flex;align-items:center;gap:8px;background:none;border:0;padding:4px 0;font:inherit;cursor:pointer;text-align:left;margin-right:12px}
 .group-row__txt{display:inline-flex;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
-.group-row__chev{display:inline-flex;transition:transform .15s}
+.group-row__chev{display:inline-flex;transition:transform var(--dur) var(--ease)}
 .group-row__chev.is-open{transform:rotate(90deg)}
 @media (max-width:860px){
   .dash-filters .input{flex:1 1 calc(50% - 4px)}
@@ -1195,27 +1202,27 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 }
 .dev__title{font-size:24px;margin-bottom:14px}
 .dev__box{background:var(--bg-soft);border-radius:var(--radius-lg);overflow:hidden}
-.dev__head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 22px;background:#ebebf0}
-.dev__by{color:var(--ink);font-size:17px;text-decoration:underline;text-underline-offset:3px}
+.dev__head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#ebebf0}
+.dev__by{color:var(--ink);font-size:18px;text-decoration:underline;text-underline-offset:3px}
 .dev__ask{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600}
-.dev__body{padding:8px 22px 10px}
+.dev__body{padding:8px 24px 10px}
 .dev__top{display:flex;align-items:center;gap:20px;flex-wrap:wrap;padding:12px 0 14px;border-bottom:1px solid var(--line)}
 .dev__field{display:flex;flex-direction:column;gap:2px;border:1px solid #d6d6dd;border-radius:10px;padding:8px 14px;min-width:180px;background:#fff}
 .dev__field b{font-size:16px}
-.dev__ppm{font-size:17px}
+.dev__ppm{font-size:18px}
 .dev__status{margin-left:auto;display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
 .dev__status i{width:9px;height:9px;border-radius:50%;background:var(--green)}
 .dev__status--presale i{background:var(--orange)}
 .dev__status--closed i{background:var(--ink-3)}
 .dev__row{border-bottom:1px solid var(--line)}
 .dev__row:last-child{border-bottom:0}
-.dev__row summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1.1fr 1.1fr 1.3fr 1fr .9fr 20px;gap:12px;align-items:center;padding:18px 0}
+.dev__row summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:1.1fr 1.1fr 1.3fr 1fr .9fr 20px;gap:12px;align-items:center;padding:20px 0}
 .dev__row summary::-webkit-details-marker{display:none}
 .dev__row summary:hover .dev__type{text-decoration:underline}
 .dev__type{font-size:16px}
 .dev__size{display:flex;flex-direction:column}
 .dev__from{font-size:16px;white-space:nowrap}
-.dev__chev{transition:transform .15s;justify-self:end}
+.dev__chev{transition:transform var(--dur) var(--ease);justify-self:end}
 .dev__row[open] .dev__chev{transform:rotate(90deg)}
 .dev__row .units__wrap{margin-bottom:16px;background:#fff}
 .dev__facts{list-style:none;margin:12px 0 0;padding:0;display:flex;gap:8px;flex-wrap:wrap}
@@ -1243,12 +1250,12 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 /* Сторінка ЖК: шахматка, характеристики будинку, план оплати */
 .chess__legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:10px}
 .chess__legend span{display:inline-flex;align-items:center;gap:6px}
-.chess__dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+.chess__dot{width:10px;height:10px;border-radius:4px;display:inline-block}
 .chess__grid{display:flex;flex-direction:column;gap:6px;overflow-x:auto;padding-bottom:4px}
 .chess__floor{display:flex;align-items:stretch;gap:8px}
 .chess__label{width:22px;flex:none;display:flex;align-items:center;justify-content:flex-end;font-weight:700}
 .chess__units{display:flex;gap:6px}
-.chess__cell{width:76px;flex:none;display:flex;flex-direction:column;gap:1px;padding:7px 8px;border-radius:8px;font-size:12px;line-height:1.25;border:1px solid transparent}
+.chess__cell{width:76px;flex:none;display:flex;flex-direction:column;gap:1px;padding:6px 8px;border-radius:8px;font-size:12px;line-height:1.25;border:1px solid transparent}
 .chess__cell b{font-size:14px}
 .chess__cell:hover{border-color:var(--ink)}
 .chess__cell--available,.chess__dot--available{background:#dff3e4}
@@ -1271,18 +1278,18 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .bld::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.05) 35%,rgba(0,0,0,.78) 100%)}
 .bld:hover .bld__img{transform:scale(1.03)}
 .bld__img{transition:transform .3s}
-.bld__name{position:absolute;z-index:1;top:14px;left:14px;background:rgba(15,15,16,.85);padding:5px 10px;border-radius:8px;font-size:14px;font-weight:600}
+.bld__name{position:absolute;z-index:1;top:14px;left:14px;background:rgba(15,15,16,.85);padding:4px 10px;border-radius:8px;font-size:14px;font-weight:600}
 .bld__body{position:absolute;z-index:1;left:16px;right:16px;bottom:16px;display:flex;flex-direction:column;gap:10px}
 .bld__stage{font-size:24px;line-height:1.1}
 .bld__track{display:flex;align-items:center;gap:0}
 .bld__track i{flex:1;height:3px;background:rgba(255,255,255,.35);position:relative}
-.bld__track i::before{content:'';position:absolute;left:0;top:50%;width:9px;height:9px;margin-top:-4.5px;border-radius:50%;background:rgba(255,255,255,.55)}
+.bld__track i::before{content:'';position:absolute;left:0;top:50%;width:9px;height:9px;margin-top:-4px;border-radius:50%;background:rgba(255,255,255,.55)}
 .bld__track i.is-on{background:var(--orange)}
 .bld__track i.is-on::before{background:var(--orange)}
 .bld__track.is-done i.is-on,.bld__track.is-done i.is-on::before{background:var(--green)}
 .bld__facts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;font-size:14px}
-.chess-group + .chess-group{margin-top:22px}
-.chess-group__title{font-size:17px;margin-bottom:10px}
+.chess-group + .chess-group{margin-top:24px}
+.chess-group__title{font-size:18px;margin-bottom:10px}
 
 /* ===== Повноекранні фото ===== */
 .lightbox{position:fixed;inset:0;z-index:1000;background:#0b0b0d;color:#fff;display:flex;flex-direction:column}
@@ -1294,7 +1301,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .lightbox__stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 64px}
 .lightbox__stage img{max-width:100%;max-height:100%;object-fit:contain;user-select:none}
 .lightbox__nav{position:absolute;top:50%;transform:translateY(-50%);width:48px;height:48px;border-radius:50%;border:0;
-  background:rgba(255,255,255,.12);color:#fff;font-size:30px;line-height:1;cursor:pointer;display:grid;place-items:center}
+  background:rgba(255,255,255,.12);color:#fff;font-size:32px;line-height:1;cursor:pointer;display:grid;place-items:center}
 .lightbox__nav:hover{background:rgba(255,255,255,.24)}
 .lightbox__nav--prev{left:10px}
 .lightbox__nav--next{right:10px}
@@ -1311,14 +1318,14 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 
 /* ===== Характеристики, історія ціни ===== */
 .details{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;margin:12px 0 0}
-.details__row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.details__row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
 .details__row dt{color:var(--ink-2)}
 .details__row dd{margin:0;font-weight:600;text-align:right}
 .prop__updated{font-size:13px;color:var(--ink-2);margin-top:6px;display:flex;gap:6px;align-items:center}
 .ph{margin-top:12px}
 .ph__chart{width:100%;height:120px;display:block}
 .ph__list{list-style:none;padding:0;margin:10px 0 0}
-.ph__list li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:14.5px}
+.ph__list li{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line);font-size:15px}
 .ph__list b{font-weight:700}
 .ph__down{color:#11845b;font-weight:700}
 .ph__up{color:#c0392b;font-weight:700}
@@ -1327,13 +1334,13 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 }
 
 /* «Project features»: сітка характеристик з іконками й зведення по домах, як у LUN */
-.feat__grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:22px 18px}
+.feat__grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:24px 20px}
 .feat__grid li{display:flex;gap:12px;align-items:flex-start}
 .feat__grid .ico{flex:none;margin-top:2px;color:var(--ink)}
 .feat__grid b{display:block;font-size:16px;line-height:1.3}
-.feat__grid span{display:block;font-size:13.5px;color:var(--ink-2)}
-.feat__status{list-style:none;margin:18px 0 0;padding:6px 0;border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column}
-.feat__status li{display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:14.5px}
+.feat__grid span{display:block;font-size:14px;color:var(--ink-2)}
+.feat__status{list-style:none;margin:20px 0 0;padding:6px 0;border:1px solid var(--line);border-radius:var(--radius);display:flex;flex-direction:column}
+.feat__status li{display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:15px}
 .feat__status li:first-child{border-bottom:1px solid var(--line);font-weight:600}
 .feat__status .ico{color:var(--green);flex:none}
 .feat__status li.is-construction .ico,.feat__status li.is-prep .ico{color:var(--orange)}
@@ -1341,21 +1348,21 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 @media (max-width:720px){.feat__grid{grid-template-columns:repeat(2,1fr)}}
 
 /* Сторінка квартири в ЖК: «About the building» / «About …» зі стрічкою фото */
-.pstrip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:var(--radius-lg);margin-bottom:18px;padding-bottom:4px}
+.pstrip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:var(--radius-lg);margin-bottom:20px;padding-bottom:4px}
 .pstrip__item{flex:0 0 100%;scroll-snap-align:start;aspect-ratio:16/9;border-radius:var(--radius-lg);overflow:hidden;background:var(--bg-soft)}
 .pstrip__item img{width:100%;height:100%;object-fit:cover;display:block}
-.about-dev .feat__grid{gap:16px 18px}
+.about-dev .feat__grid{gap:16px 20px}
 .about-dev h3 + .pstrip{margin-top:12px}
 
 /* Сторінки ЖК (як у LUN): назва зверху, вкладки — окремі сторінки, крихти — унизу */
-.dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-top:22px;flex-wrap:wrap}
-.dhead__title{font-size:30px;line-height:1.15}
+.dhead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;padding-top:24px;flex-wrap:wrap}
+.dhead__title{font-size:32px;line-height:1.15}
 .dhead__sub{color:var(--ink-2);font-weight:600}
-.dhead__price{font-size:26px;font-weight:800;white-space:nowrap}
-.dnav{position:sticky;top:0;z-index:700;background:#fff;border-bottom:1px solid var(--line);margin:14px 0 18px}
+.dhead__price{font-size:28px;font-weight:800;white-space:nowrap}
+.dnav{position:sticky;top:0;z-index:700;background:#fff;border-bottom:1px solid var(--line);margin:14px 0 20px}
 .dnav__row{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;overscroll-behavior-x:contain}
 .dnav__row::-webkit-scrollbar{display:none}
-.dnav__tab{flex:none;padding:13px 14px 11px;font-size:15px;font-weight:500;color:var(--ink-2);white-space:nowrap;
+.dnav__tab{flex:none;padding:12px 14px 10px;font-size:15px;font-weight:500;color:var(--ink-2);white-space:nowrap;
   border-bottom:2.5px solid transparent;text-decoration:none}
 .dnav__tab:hover{color:var(--ink)}
 .dnav__tab.is-on{color:var(--ink);border-bottom-color:var(--ink);font-weight:600}
@@ -1363,11 +1370,11 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dnav ~ .prop{padding-top:6px}
 .crumbs--foot{padding:16px 0 28px;margin-top:24px;border-top:1px solid var(--line)}
 /* крихти тепер унизу: верхній відступ, який вони давали, переходить на перший блок */
-.page-top{margin-top:18px}
+.page-top{margin-top:20px}
 .dev__head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .dev__more{font-weight:600;font-size:15px;white-space:nowrap}
 .dev__more:hover{color:var(--orange)}
-.dteaser{display:flex;align-items:center;gap:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);text-decoration:none}
+.dteaser{display:flex;align-items:center;gap:14px;padding:20px 20px;border:1px solid var(--line);border-radius:var(--radius);color:var(--ink);text-decoration:none}
 .dteaser:hover{background:var(--bg-soft)}
 .dteaser > span{display:flex;flex-direction:column;gap:2px;flex:1}
 .dteaser-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
@@ -1375,8 +1382,8 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dteaser-list .ico{color:var(--ink-2);flex:none}
 
 /* Планування */
-.lay{display:grid;gap:30px}
-.lay__kind{font-size:21px;margin-bottom:14px}
+.lay{display:grid;gap:32px}
+.lay__kind{font-size:22px;margin-bottom:14px}
 .lay__grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .lay__card{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;display:flex;flex-direction:column}
 .lay__img{display:block;aspect-ratio:4/3;background:var(--bg-soft)}
@@ -1387,11 +1394,11 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .lay__price{font-size:18px;font-weight:800}
 .lay__facts{list-style:none;margin:0;padding:0;display:grid;gap:1px}
 .lay__units{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-.lay__unit{font-size:13px;font-weight:600;padding:4px 9px;border-radius:999px;background:#e7f6ec;color:var(--ink);text-decoration:none}
+.lay__unit{font-size:13px;font-weight:600;padding:4px 8px;border-radius:999px;background:#e7f6ec;color:var(--ink);text-decoration:none}
 .lay__unit.is-off{background:var(--bg-soft);color:var(--ink-3)}
 
 /* Хід будівництва */
-.prog__month{padding:18px 0;border-top:1px solid var(--line)}
+.prog__month{padding:20px 0;border-top:1px solid var(--line)}
 .prog__month:first-of-type{border-top:0;padding-top:0}
 .prog__title{font-size:18px}
 .prog__grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
@@ -1402,8 +1409,8 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 @media (max-width:640px){.prog__grid{grid-template-columns:repeat(2,1fr)}}
 
 /* Новини */
-.news{display:grid;gap:22px}
-.news__item{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start;padding-bottom:22px;border-bottom:1px solid var(--line)}
+.news{display:grid;gap:24px}
+.news__item{display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start;padding-bottom:24px;border-bottom:1px solid var(--line)}
 .news__item:not(:has(.news__img)){grid-template-columns:1fr}
 .news__img{aspect-ratio:4/3;border-radius:var(--radius);overflow:hidden;background:var(--bg-soft)}
 .news__img img{width:100%;height:100%;object-fit:cover;display:block}
@@ -1413,26 +1420,26 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 
 /* Контакти */
 .contacts{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--radius)}
-.contacts li{display:flex;gap:14px;align-items:center;padding:14px 18px}
+.contacts li{display:flex;gap:14px;align-items:center;padding:14px 20px}
 .contacts li + li{border-top:1px solid var(--line)}
 .contacts li > .ico{flex:none;color:var(--ink-2)}
 .contacts li > div{display:flex;flex-direction:column;gap:2px}
 
 /* Документи ЖК */
-.docs{display:grid;gap:18px}
+.docs{display:grid;gap:20px}
 .docs__kind{font-size:15px;color:var(--ink-2);font-weight:600;margin-bottom:8px}
 .docs__list{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--radius)}
 .docs__item{display:flex;gap:12px;align-items:flex-start;padding:14px 16px}
 .docs__item + .docs__item{border-top:1px solid var(--line)}
 .docs__item > .ico{flex:none;margin-top:1px;color:var(--ink-2)}
-.docs__body{display:flex;flex-direction:column;gap:3px;flex:1;min-width:0}
+.docs__body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
 .docs__ok{display:inline-flex;align-items:center;gap:4px;color:var(--green);font-weight:600;margin-top:2px}
-.docs__open{flex:none;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border:1px solid var(--line);
+.docs__open{flex:none;display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);
   border-radius:999px;font-size:14px;font-weight:600;color:var(--ink);text-decoration:none}
 .docs__open:hover{background:var(--bg-soft)}
 
 /* Відео й тур 360 */
-.media{display:grid;gap:18px}
+.media{display:grid;gap:20px}
 .media__item{margin:0}
 .media__frame{position:relative;aspect-ratio:16/9;border-radius:var(--radius);overflow:hidden;background:#111}
 .media__frame iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
@@ -1441,20 +1448,20 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .media__item figcaption{display:flex;align-items:center;gap:6px;margin-top:8px}
 
 /* ===== Аналітика в кабінеті ===== */
-.an{display:grid;gap:18px;transition:opacity .2s}
+.an{display:grid;gap:20px;transition:opacity .2s}
 .an.is-loading{opacity:.55}
-.an h4{font-size:17px;display:flex;align-items:center;gap:8px}
+.an h4{font-size:18px;display:flex;align-items:center;gap:8px}
 .an .panel{min-width:0}
 .an-top{display:flex;justify-content:space-between;align-items:flex-end;gap:14px;flex-wrap:wrap}
 .an-top h3{font-size:24px;margin-bottom:4px}
 .an-filters{display:flex;gap:10px;flex-wrap:wrap}
-.an-filters .chip-btn{padding:9px 14px}
+.an-filters .chip-btn{padding:8px 14px}
 .an-note{align-items:center;gap:10px}
 .an-cap{margin:4px 0 16px}
 .an-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
 .an-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
 .an-kpi{background:var(--bg-soft);border-radius:var(--radius);padding:14px 14px 10px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.an-kpi b{font-size:26px;letter-spacing:-.03em}
+.an-kpi b{font-size:28px;letter-spacing:-.03em}
 .an-kpi__foot{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;min-height:28px}
 .an-spark{display:block;flex-shrink:0}
 .an-delta{font-size:12px;font-weight:700;color:var(--ink-3);white-space:nowrap}
@@ -1462,7 +1469,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .an-delta--down{color:#b42318}
 .an-legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;color:var(--ink-2)}
 .an-legend span{display:inline-flex;align-items:center;gap:6px}
-.an-legend i,.an-tip i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.an-legend i,.an-tip i{width:10px;height:10px;border-radius:4px;display:inline-block}
 .an-legend__ring{background:#fff!important;border:2px solid var(--ink-2);border-radius:50%!important}
 .an-link{background:none;border:0;padding:0;color:var(--ink);font-weight:700;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 .an-chart{position:relative;width:100%;overflow:hidden;touch-action:pan-y}
@@ -1471,24 +1478,24 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .an-axis{font-size:11px;fill:var(--ink-3)}
 .an-cross{stroke:var(--ink-3);stroke-width:1;stroke-dasharray:3 3}
 .an-tip{position:absolute;transform:translateX(-50%);background:var(--ink);color:#fff;border-radius:10px;padding:8px 10px;
-  font-size:12px;display:grid;gap:3px;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow);z-index:2}
+  font-size:12px;display:grid;gap:2px;pointer-events:none;white-space:nowrap;box-shadow:var(--shadow);z-index:2}
 .an-tip span{display:flex;align-items:center;gap:6px}
 .an-tip span b{margin-left:auto;padding-left:10px}
-.an-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px}
+.an-grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
 .an-funnel{display:grid;gap:12px}
-.an-funnel__label{display:flex;justify-content:space-between;font-size:14px;margin-bottom:5px}
+.an-funnel__label{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}
 .an-funnel__track{background:var(--bg-soft);border-radius:8px;height:26px;overflow:hidden}
 .an-funnel__bar{height:100%;border-radius:8px;transition:width .4s}
-.an-funnel__rate{display:block;margin-top:3px}
-.an-bars{display:grid;gap:11px}
+.an-funnel__rate{display:block;margin-top:2px}
+.an-bars{display:grid;gap:10px}
 .an-bars__head{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px;gap:10px}
 .an-bars__track{background:var(--bg-soft);border-radius:6px;height:10px;overflow:hidden}
 .an-bars__track div{height:100%;border-radius:6px;transition:width .4s}
-.an-device{margin-top:18px;display:grid;gap:8px}
+.an-device{margin-top:20px;display:grid;gap:8px}
 .an-device__bar{display:flex;height:12px;border-radius:6px;overflow:hidden;gap:2px;background:#fff}
 .an-device__bar span{display:block;height:100%}
 .an-heat__grid{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;align-items:center}
-.an-heat__cell{aspect-ratio:1;border-radius:3px;min-height:9px;cursor:default}
+.an-heat__cell{aspect-ratio:1;border-radius:4px;min-height:9px;cursor:default}
 .an-heat__cell.is-on{outline:2px solid var(--ink);outline-offset:1px}
 .an-heat__day{font-size:11px;color:var(--ink-3)}
 .an-heat__hour{font-size:10px;color:var(--ink-3);white-space:nowrap;overflow:visible}
@@ -1510,8 +1517,8 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .an-lst__title{font-weight:700;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .an-lst__title:hover{text-decoration:underline}
 .an-lst__nophoto{display:block;background:var(--chip)}
-.an-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:5px}
-.an-flag{font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px}
+.an-flags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.an-flag{font-size:11px;font-weight:700;padding:2px 6px;border-radius:999px}
 .an-flag--warn{background:#fff4ed;color:#b93815}
 .an-flag--good{background:#ecfdf3;color:#067647}
 .an-flag--info{background:var(--chip);color:var(--ink-2)}
@@ -1527,7 +1534,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .an-ins--warn .an-ins__ico{background:#d03b3b}
 .an-ins--info .an-ins__ico{background:var(--ink-2)}
 .an-devs{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
-.an-dev{background:var(--bg-soft);border-radius:var(--radius);padding:16px;display:grid;gap:10px;transition:.15s}
+.an-dev{background:var(--bg-soft);border-radius:var(--radius);padding:16px;display:grid;gap:10px;transition:all var(--dur) var(--ease)}
 .an-dev:hover{background:#ececf1}
 .an-dev__nums{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .an-dev__nums span{display:flex;flex-direction:column}
@@ -1542,14 +1549,14 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .an-area__dot--mkt{background:#fff;border:2px solid var(--ink-2);width:12px;height:12px}
 /* адмінська аналітика */
 .an-section{margin:6px 0 -6px;font-size:13px!important;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
-.an-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
-.an-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px}
+.an-grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px}
+.an-grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px}
 .an-grid3 h4,.an-grid4 h4{margin-bottom:12px}
-.an-health{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+.an-health{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid var(--line)}
 .an-health > span{display:flex;flex-direction:column;gap:2px}
 .an-health b{font-size:22px;letter-spacing:-.02em}
 .an-demand{display:grid;gap:14px}
-.an-demand__head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;margin-bottom:5px}
+.an-demand__head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;margin-bottom:4px}
 .an-demand__bars{display:grid;gap:2px}
 .an-demand__bars span{display:block;height:8px;border-radius:4px;min-width:2px}
 .an-queries{margin:0;padding:0 0 0 20px;display:grid;gap:8px;font-size:14px}
@@ -1565,7 +1572,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 @media (max-width:860px){
   .an-table tr{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px 10px}
   .an-table td:first-child{grid-column:1/-1}
-  .an-table td{min-width:0!important;font-size:13.5px}
+  .an-table td{min-width:0!important;font-size:14px}
   .an-table .an-td-trend{grid-column:span 2}
   .an-table td[data-label="vs area"]{grid-column:span 2}
   .an-table td.an-td-rank{grid-column:auto;font-weight:800;margin:0}
@@ -1577,7 +1584,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
   .an-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
   .an-kpi b{font-size:22px}
   .an-heat__grid{grid-template-columns:28px repeat(24,minmax(0,1fr));gap:1px}
-  .an-heat__hour{font-size:9px}
+  .an-heat__hour{font-size:10px}
 }
 
 /* Featured в адмінці: зірка + впорядковані списки */
@@ -1592,12 +1599,12 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .feat-row__name{font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .feat-row__act{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .feat-row__no{font-weight:700;color:var(--ink-3);min-width:22px;text-align:center}
-.feat-dev{border:1px solid var(--line);border-radius:14px;padding:4px 10px;margin-bottom:10px}
+.feat-dev{border:1px solid var(--line);border-radius:var(--radius);padding:4px 10px;margin-bottom:10px}
 @media (max-width:600px){.feat-row--sub{padding-left:16px}.feat-row{flex-wrap:wrap}.feat-row__act{margin-left:auto}}
 
 /* ---------- просування (вкладка Promote і адмінка Promotions) ---------- */
-.promo__head{margin-bottom:18px}
-.promo__steps{display:grid;gap:22px}
+.promo__head{margin-bottom:20px}
+.promo__steps{display:grid;gap:24px}
 .promo__step{display:flex;gap:14px;align-items:flex-start}
 .promo__num{flex:0 0 28px;height:28px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
 .promo__body{flex:1;min-width:0}
@@ -1612,7 +1619,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .promo__pay .tiny{max-width:360px}
 .promo__table{overflow-x:auto}
 @media (min-width:861px){ .promo__table .table{min-width:720px} }
-.promo__prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px}
+.promo__prices{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:20px}
 .promo__group{display:grid;gap:8px;align-content:start}
 .promo__row{display:grid;grid-template-columns:70px 1fr auto;gap:8px;align-items:center}
 .promo__row .input{padding:8px 10px;min-width:0}
@@ -1634,19 +1641,19 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .badge--featured svg{fill:currentColor}
 
 /* ===== Відділ продажів ЖК і запис на візит (як у LUN) ===== */
-.sales{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:12px;margin-top:34px}
+.sales{display:grid;grid-template-columns:minmax(140px,220px) 1fr;gap:12px;margin-top:36px}
 .sales--nologo{grid-template-columns:1fr}
 .sales__logo{display:flex;align-items:center;justify-content:center;background:var(--bg-soft);border-radius:var(--radius-lg);padding:20px}
 .sales__logo img{max-height:110px;width:auto;object-fit:contain}
-.sales__body{display:flex;flex-wrap:wrap;gap:22px 28px;align-items:center;justify-content:space-between;
-  background:var(--bg-soft);border-radius:var(--radius-lg);padding:26px 28px}
+.sales__body{display:flex;flex-wrap:wrap;gap:24px 28px;align-items:center;justify-content:space-between;
+  background:var(--bg-soft);border-radius:var(--radius-lg);padding:28px 28px}
 .sales__info{flex:1 1 300px;min-width:0}
 .sales__title{font-size:24px}
-.sales__addr{margin:6px 0 0;font-size:15.5px}
-.sales__hours{display:flex;align-items:flex-start;gap:14px;margin-top:18px}
+.sales__addr{margin:6px 0 0;font-size:16px}
+.sales__hours{display:flex;align-items:flex-start;gap:14px;margin-top:20px}
 .sales__ico{flex:none;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#fff;color:var(--ink-2)}
 .sales__lbl{width:70px;flex:none;font-size:14px;line-height:1.6;padding-top:6px}
-.sales__week{margin:0;display:grid;gap:6px;padding-top:6px;font-size:14.5px}
+.sales__week{margin:0;display:grid;gap:6px;padding-top:6px;font-size:15px}
 .sales__week > div{display:grid;grid-template-columns:96px auto;gap:10px}
 .sales__week dt{color:var(--ink-3)}
 .sales__week dd{margin:0;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -1660,7 +1667,7 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 @media (max-width:640px){
   .sales{grid-template-columns:1fr}
   .sales__logo{padding:14px}
-  .sales__body{padding:20px 18px}
+  .sales__body{padding:20px 20px}
   .sales__title{font-size:20px}
   .sales__lbl{display:none}
   .sales__ico{width:46px;height:46px}
@@ -1670,14 +1677,14 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 
 .visit{max-width:640px;margin:8px auto 60px}
 .visit__title{text-align:center;font-size:28px}
-.visit__dots{list-style:none;display:flex;justify-content:center;align-items:center;margin:14px 0 26px;padding:0}
+.visit__dots{list-style:none;display:flex;justify-content:center;align-items:center;margin:14px 0 28px;padding:0}
 .visit__dots li{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink-3);background:#fff}
-.visit__dots li + li{margin-left:34px;position:relative}
+.visit__dots li + li{margin-left:36px;position:relative}
 .visit__dots li + li::before{content:'';position:absolute;right:calc(100% + 4px);top:50%;width:26px;border-top:1.5px dashed var(--line)}
 .visit__dots li.is-on{border-color:var(--green)}
 .visit__dots li.is-done{border-color:var(--green);background:var(--green)}
 .visit__dots li.is-done + li::before{border-top-style:solid;border-color:var(--green)}
-.visit__office{background:var(--bg-soft);border-radius:var(--radius-lg);padding:22px 24px;display:grid;gap:12px}
+.visit__office{background:var(--bg-soft);border-radius:var(--radius-lg);padding:24px 24px;display:grid;gap:12px}
 .visit__office p{margin:0;display:flex;align-items:center;gap:10px}
 .visit__office-head{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:18px}
 .visit__office-hours{display:flex;gap:10px;align-items:flex-start}
@@ -1686,7 +1693,7 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .visit__chips{display:flex;flex-wrap:wrap;gap:10px}
 .visit__chips .chip-btn{font-weight:500}
 .visit__next{margin-top:32px}
-.visit__part h3{font-size:17px;margin:28px 0 12px}
+.visit__part h3{font-size:18px;margin:28px 0 12px}
 .visit__nav{display:grid;grid-template-columns:auto 1fr;gap:10px;margin-top:32px}
 .visit__form{display:grid;gap:14px}
 .visit__form .visit__nav{margin-top:6px}
@@ -1696,15 +1703,15 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .visit__change{border:0;background:none;padding:0;font:inherit;color:var(--orange);cursor:pointer;margin-left:6px}
 .visit__done{text-align:center;display:grid;justify-items:center;gap:6px;padding:20px 0}
 .visit__done p{margin:0}
-.visit__done .btn{margin-top:18px}
+.visit__done .btn{margin-top:20px}
 .visit__done-ico{display:grid;place-items:center;width:68px;height:68px;border-radius:50%;background:#ecfdf5;color:#047857}
 .visit__done .visit__h{margin:12px 0 4px}
-.vcal{background:var(--bg-soft);border-radius:var(--radius-lg);padding:22px 20px 26px}
+.vcal{background:var(--bg-soft);border-radius:var(--radius-lg);padding:24px 20px 28px}
 .vcal__head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;font-size:16px}
 .vcal__nav{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;border:0;background:#fff;cursor:pointer}
 .vcal__nav:disabled{opacity:.35;cursor:default}
 .vcal__grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;justify-items:center}
-.vcal__wd{font-weight:700;font-size:13.5px;padding-bottom:6px}
+.vcal__wd{font-weight:700;font-size:14px;padding-bottom:6px}
 .vcal__day{width:40px;height:40px;border:0;border-radius:8px;background:none;font:inherit;font-size:15px;cursor:pointer;
   font-variant-numeric:tabular-nums}
 .vcal__day:hover:not(:disabled){background:#fff}
@@ -1713,9 +1720,9 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .vcal__day.is-on{background:var(--orange);color:#fff;font-weight:700}
 
 .lead__visit{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin-top:8px}
-.lead__visit .pill{display:inline-flex;align-items:center;gap:5px}
+.lead__visit .pill{display:inline-flex;align-items:center;gap:4px}
 .lead__tags{display:flex;flex-wrap:wrap;gap:6px;width:100%}
-.lead__tags .tag{background:var(--chip);border-radius:8px;padding:3px 8px;font-size:12px}
+.lead__tags .tag{background:var(--chip);border-radius:8px;padding:2px 8px;font-size:12px}
 
 .sched{display:grid;gap:6px;max-width:420px}
 .sched__row{display:flex;align-items:center;gap:14px;min-height:40px}
@@ -1724,3 +1731,17 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .sched__time{display:flex;align-items:center;gap:8px}
 .sched__time .input{width:150px;padding-top:8px;padding-bottom:8px}
 .sched ~ .tiny .linkbtn{color:var(--orange);text-decoration:underline}
+
+/* ===== Рух ===== */
+/* Якорі (FAQ, зміст гайдів) доїжджають плавно; Next сам вимикає це на час переходу між сторінками */
+html{scroll-behavior:smooth}
+/* Модалки: фон проявляється, вікно м'яко піднімається — замість різкого display:block */
+.modal.is-open{animation:modal-fade var(--dur) ease-out}
+.modal.is-open .modal__box{animation:modal-rise .32s var(--ease)}
+@keyframes modal-fade{from{opacity:0}}
+@keyframes modal-rise{from{opacity:0;transform:translateY(14px) scale(.98)}}
+.btn:not(.map-area-btn):not([disabled]):active,.chip-btn:active,.cc__btn:active{transform:scale(.98)}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
+}

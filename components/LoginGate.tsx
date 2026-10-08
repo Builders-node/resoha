@@ -24,7 +24,7 @@ export default async function LoginGate({ role, title, text, signedInAs }: Props
         <div className="empty__ico"><Icon name={wantsAgent ? 'building' : 'search'} size={40} /></div>
         <h2 style={{ marginTop: 10 }}>{t(title)}</h2>
 
-        <p className="muted" style={{ margin: '10px 0 22px' }}>
+        <p className="muted" style={{ margin: '10px 0 24px' }}>
           {signedInAs ? (
             <>
               {t('You are signed in as')} <b>{signedInAs}</b>{t(', and this area is for buyer accounts. Your realtor account has its own dashboard.')}

@@ -21,9 +21,9 @@ export default async function DevelopmentsPage() {
   await trackPromo('development', devs, 'impression');
 
   return (
-    <div className="wrap" style={{ padding: '30px 32px 60px' }}>
-      <h1 style={{ fontSize: 30, marginBottom: 6 }}>New developments</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>
+    <div className="wrap" style={{ padding: '32px 32px 60px' }}>
+      <h1 style={{ fontSize: 'var(--fs-h1)', marginBottom: 6 }}>New developments</h1>
+      <p className="muted" style={{ marginBottom: 24 }}>
         Buildings on Roatán with every unit and price in one place. <Link className="link-accent" href="/developers">Browse developers</Link>
       </p>
       {!devs.length && <p className="muted">No developments listed yet.</p>}

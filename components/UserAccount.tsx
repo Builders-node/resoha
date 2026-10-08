@@ -168,8 +168,8 @@ export default function UserAccount({ session, user }: {
 
         {tab === 'profile' && (
           <div className="panel">
-            <h3 style={{ marginBottom: 18 }}>{t('My details')}</h3>
-            <div style={{ marginBottom: 18 }}>
+            <h3 style={{ marginBottom: 20 }}>{t('My details')}</h3>
+            <div style={{ marginBottom: 20 }}>
               <AvatarPicker src={avatar} name={session.name} onChanged={setAvatar} />
             </div>
             <form className="form-grid" onSubmit={async (e) => {

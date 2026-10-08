@@ -265,7 +265,7 @@ export default function ListingsExplorer({
           )}
 
           {hasMore && (
-            <div style={{ display: 'grid', placeItems: 'center', padding: '22px 0 6px' }}>
+            <div style={{ display: 'grid', placeItems: 'center', padding: '24px 0 6px' }}>
               <button className="btn btn--ghost btn--lg" onClick={loadMore} disabled={loadingMore}>
                 {loadingMore ? t('Loading…') : t('Show more — {n} left', { n: total - items.length })}
               </button>

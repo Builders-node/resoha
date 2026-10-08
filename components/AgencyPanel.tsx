@@ -196,7 +196,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
           {createForm}
         </div>
 
-        <div className="panel" style={{ marginTop: 18 }}>
+        <div className="panel" style={{ marginTop: 20 }}>
           <h3>Or join an existing one</h3>
           <p className="muted small" style={{ margin: '8px 0 14px' }}>
             Ask the agency for their invite code. Your listings then publish under their brand and their owner can
@@ -214,7 +214,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   /* ---------- у складі агенції ---------- */
   return (
     <>
-      <div className="panel" style={{ marginBottom: 18 }}>
+      <div className="panel" style={{ marginBottom: 20 }}>
         <div className="fgroup__head">
           <h3>Your teams</h3>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -290,7 +290,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
       </div>
 
       {isOwner && (
-        <div className="panel" style={{ marginTop: 18 }}>
+        <div className="panel" style={{ marginTop: 20 }}>
           <div className="invite" style={{ marginTop: 0 }}>
             <div>
               <div className="tiny muted" style={{ textTransform: 'uppercase', letterSpacing: '.06em', fontWeight: 700 }}>
@@ -311,7 +311,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
         </div>
       )}
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="panel" style={{ marginTop: 20 }}>
         <h3 style={{ marginBottom: 12 }}>Team</h3>
         <table className="table">
           <thead><tr><th>Agent</th><th>Listings</th><th>Role</th><th></th></tr></thead>
@@ -375,7 +375,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
           </tbody>
         </table>
 
-        <div style={{ marginTop: 18, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
+        <div style={{ marginTop: 20, display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
           <button className="btn btn--danger btn--sm" onClick={leave}>Leave {agency.name}</button>
           <span className="tiny muted">
             You keep your account and listings — the ones in {agency.name} simply go back to your own name.

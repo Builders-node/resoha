@@ -18,7 +18,7 @@ export default async function LayoutsPage({ params }: Props) {
   return (
     <DevelopmentShell ctx={ctx} active="layouts" title="Layouts">
       <DevelopmentLayouts units={ctx.units} buildings={ctx.buildings} />
-      <p className="tiny muted" style={{ marginTop: 18 }}>
+      <p className="tiny muted" style={{ marginTop: 20 }}>
         Prices from the developer&apos;s price list. Tap a unit number to open it; greyed-out units are reserved, sold or rented.
       </p>
     </DevelopmentShell>

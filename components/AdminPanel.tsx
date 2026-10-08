@@ -394,7 +394,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                         {l.status === 'new' ? 'New' : 'Handled'}
                       </span>
                       {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
-                      <div className="tiny muted" style={{ marginTop: 3 }}>
+                      <div className="tiny muted" style={{ marginTop: 2 }}>
                         {[l.phone, l.email, fmtDate(l.createdAt)].filter(Boolean).join(' · ')}
                       </div>
                       <div className="small" style={{ marginTop: 4 }}>
@@ -648,7 +648,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                     <div>
                       <span className="pill pill--off">{e.action}</span>{' '}
                       <b>{e.targetName || e.targetId?.slice(0, 8) || '—'}</b>
-                      <div className="tiny muted" style={{ marginTop: 3 }}>
+                      <div className="tiny muted" style={{ marginTop: 2 }}>
                         {e.actorName || 'admin'} · {fmtDate(e.createdAt)}
                       </div>
                       {e.reason && <p className="muted small" style={{ margin: '6px 0 0' }}>“{e.reason}”</p>}
@@ -694,7 +694,7 @@ function ProfileEditor({ user, onSave, onCancel }: {
   return (
     <div className="panel" style={{ margin: '14px 0' }}>
       <h3 style={{ marginBottom: 4 }}>Edit {user.name}</h3>
-      <p className="muted small" style={{ marginBottom: 18 }}>
+      <p className="muted small" style={{ marginBottom: 20 }}>
         {user.email} · the change is written to the admin log.
         {user.role === 'agent' && ' The WhatsApp number is what the green button on their listings opens.'}
       </p>

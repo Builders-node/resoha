@@ -15,11 +15,11 @@ export default function AgencyLoading() {
         </div>
       </header>
 
-      <div className="stats" style={{ marginTop: 22 }}>
+      <div className="stats" style={{ marginTop: 24 }}>
         {Array.from({ length: 4 }, (_, i) => <Sk key={i} className="sk--panel" style={{ minHeight: 66 }} />)}
       </div>
 
-      <section className="section" style={{ paddingTop: 30 }}>
+      <section className="section" style={{ paddingTop: 32 }}>
         <SkSectionHead />
         <div className="grid grid--4">
           {Array.from({ length: 4 }, (_, i) => (

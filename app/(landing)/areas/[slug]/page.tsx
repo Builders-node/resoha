@@ -148,7 +148,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="section">
-        <h2 style={{ fontSize: 22, marginBottom: 14 }}>{t('Other areas of Roatán')}</h2>
+        <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Other areas of Roatán')}</h2>
         <div className="chip-row">
           {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{t(o.name)}</Link>)}
         </div>

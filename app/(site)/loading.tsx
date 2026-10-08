@@ -6,12 +6,12 @@ export default function HomeLoading() {
     <>
       <section className="wrap home-top">
         <div className="tiles-block">
-          <Sk className="sk--pill" style={{ height: 52, marginBottom: 18 }} />
+          <Sk className="sk--pill" style={{ height: 52, marginBottom: 20 }} />
           <Sk className="sk--line" style={{ maxWidth: 90, marginBottom: 10 }} />
           <div className="tiles">
             {Array.from({ length: 4 }, (_, i) => <Sk key={i} className="sk--tile" />)}
           </div>
-          <Sk className="sk--line" style={{ maxWidth: 90, margin: '18px 0 10px' }} />
+          <Sk className="sk--line" style={{ maxWidth: 90, margin: '20px 0 10px' }} />
           <div className="tiles">
             <Sk className="sk--tile tile--wide" />
             <Sk className="sk--tile tile--wide" />

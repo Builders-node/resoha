@@ -16,9 +16,9 @@ export default async function DevelopersPage() {
   const count = (id: string) => projects.filter((p) => p.developerId === id).length;
 
   return (
-    <div className="wrap" style={{ padding: '30px 32px 60px' }}>
-      <h1 style={{ fontSize: 30, marginBottom: 6 }}>Developers</h1>
-      <p className="muted" style={{ marginBottom: 22 }}>
+    <div className="wrap" style={{ padding: '32px 32px 60px' }}>
+      <h1 style={{ fontSize: 'var(--fs-h1)', marginBottom: 6 }}>Developers</h1>
+      <p className="muted" style={{ marginBottom: 24 }}>
         Companies building on Roatán. <Link className="link-accent" href="/developer">Add your company</Link>
       </p>
       {!devs.length && <p className="muted">No developers listed yet.</p>}
