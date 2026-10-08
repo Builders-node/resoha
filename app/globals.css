@@ -67,13 +67,14 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:13px}
 .btn--primary{background:var(--ink);color:#fff}
 .btn--primary:hover{background:#000}
 .btn--orange{background:var(--orange);color:#fff}
-.btn--orange:hover{filter:brightness(1.06)}
+.btn--orange:hover{background:#e64100}  /* трохи темніший помаранчевий; інакше .btn:hover фарбує її в сірий і білий текст зникає */
 .btn--ghost{background:#fff;border-color:var(--line)}
 .btn--ghost:hover{background:var(--bg-soft)}
 .btn--sm{padding:8px 12px;font-size:13px;border-radius:10px}
 .btn--lg{padding:14px 28px;font-size:16px;border-radius:var(--radius)}
 .btn--block{width:100%}
 .btn--danger{background:#fff1f2;color:#be123c}
+.btn--danger:hover{background:#ffe4e6}
 .btn--icon{padding:10px;min-width:38px;line-height:0;vertical-align:middle}
 /* WhatsApp — фірмовий зелений месенджера: кнопку мають упізнавати з першого погляду */
 .btn--wa{background:#25d366;color:#0b2e16;font-weight:800}
@@ -1085,6 +1086,7 @@ textarea.input{resize:vertical;min-height:96px}
 .lp-cta p{margin:8px 0 0;font-size:16px;opacity:.9}
 .lp-cta__btns{display:flex;gap:10px;flex-wrap:wrap}
 .lp-cta .btn--orange{background:#131316;border-color:#131316}
+.lp-cta .btn--orange:hover{background:#000;border-color:#000}
 .lp-cta__ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.55)}
 .lp-cta__ghost:hover{background:rgba(255,255,255,.14)}
 
