@@ -30,7 +30,7 @@ export default function DevelopmentUnits({ units, buildings, developer, develope
 
   return (
     <div className="dev__box">
-      <div className="dev__head">
+      <div className="dev__boxhead">
         <span className="muted">
           {developer ? <>Project by {developerHref
             ? <Link href={developerHref}><b className="dev__by">{developer}</b></Link>
