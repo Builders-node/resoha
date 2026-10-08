@@ -13,7 +13,7 @@ const digits = (v: string) => v.replace(/[^\d]/g, '');
  * «Контакти відділу продажів», як у LUN: адреса, графік по днях і три дії — записатись
  * на візит, показати телефон, написати у WhatsApp (на цьому ринку замість Viber).
  */
-export default function SalesOffice({ name, address, schedule, note, phone, whatsapp, visitHref, logo, listingId }: {
+export default function SalesOffice({ name, address, schedule, note, phone, whatsapp, visitHref, logo, listingId, card }: {
   name: string;
   address: string;
   schedule: WeekSchedule;
@@ -26,6 +26,8 @@ export default function SalesOffice({ name, address, schedule, note, phone, what
   logo?: string;
   /** Для відмітки в аналітиці ріелтора, як у картці агента */
   listingId?: string;
+  /** Вкладка «Contacts»: вузька картка поверх карти, логотип над нею, кнопки — під графіком */
+  card?: boolean;
 }) {
   const t = useT();
   const [shown, setShown] = useState(false);
@@ -42,7 +44,7 @@ export default function SalesOffice({ name, address, schedule, note, phone, what
   }
 
   return (
-    <section className={`sales${logo ? '' : ' sales--nologo'}`} id="sales-office">
+    <section className={`sales${logo ? '' : ' sales--nologo'}${card ? ' sales--card' : ''}`} id="sales-office">
       {logo && <div className="sales__logo"><Photo src={logo} alt={name} label="" /></div>}
       <div className="sales__body">
         <div className="sales__info">

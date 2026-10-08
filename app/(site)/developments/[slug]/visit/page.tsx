@@ -5,7 +5,7 @@ import VisitBooking from '@/components/VisitBooking';
 import { developmentContext, loadDevelopment } from '@/lib/developmentPage';
 import { SITE_NAME } from '@/lib/site';
 
-type Props = { params: Promise<{ slug: string }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ day?: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const d = await loadDevelopment((await params).slug);
@@ -17,8 +17,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 /** Окрема сторінка запису на візит у відділ продажів, як /my/appointment у LUN. */
-export default async function VisitPage({ params }: Props) {
+export default async function VisitPage({ params, searchParams }: Props) {
   const ctx = await developmentContext((await params).slug);
+  // день із календаря на вкладці «Contacts»
+  const { day } = await searchParams;
   const { dev, me, units, base } = ctx;
   // без графіка слотів немає — ведемо на контакти, де є телефон і месенджер
   if (!dev.schedule.length) redirect(`${base}/contacts`);
@@ -32,7 +34,7 @@ export default async function VisitPage({ params }: Props) {
         schedule={dev.schedule} note={dev.hours}
         unitTopics={beds.map((b) => (b ? `${b} BR` : 'Studio'))}
         me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null}
-        backHref={base} />
+        backHref={base} initialDay={typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined} />
     </div>
   );
 }
