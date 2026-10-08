@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { Fragment, useMemo, useState } from 'react';
+import { Fragment, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
 import Photo from './Photo';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
@@ -9,10 +9,13 @@ import type { Listing, PropertyType } from '@/lib/types';
 
 type Sort = 'new' | 'price_asc' | 'price_desc' | 'views' | 'unit';
 type Group = { key: string; name: string; slug: string | null; items: Listing[] };
+/** Шматок групи на одній сторінці: заголовок ЖК + ті його квартири, що влізли */
+type Segment = { g: Group; items: Listing[]; cont: boolean };
 
 const STANDALONE = 'standalone';
 // Великі ЖК згорнуті, поки нічого не шукають: інакше 30 однакових квартир ховають решту
 const COLLAPSE_OVER = 8;
+const PER_PAGE = 20;
 
 /**
  * Таблиця оголошень у кабінеті: фільтри зверху, квартири згруповані за ЖК.
@@ -35,6 +38,9 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
   const [sort, setSort] = useState<Sort>('new');
   // явно розгорнуті/згорнуті групи; решта — за правилом COLLAPSE_OVER
   const [open, setOpen] = useState<Record<string, boolean>>({});
+  // сторінка памʼятає, для яких фільтрів її обрали: нові фільтри чи сортування — знову перша
+  const [pageAt, setPageAt] = useState({ key: '', page: 1 });
+  const top = useRef<HTMLDivElement>(null);
 
   const devs = useMemo(() => {
     const m = new Map<string, string>();
@@ -90,6 +96,41 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
 
   const isOpen = (g: Group) => open[g.key] ?? (filtering || groups.length === 1 || g.items.length <= COLLAPSE_OVER);
 
+  // Ріжемо на сторінки по рядках-оголошеннях; згорнутий ЖК займає одне місце.
+  // Група, що переходить на наступну сторінку, повторює там свій заголовок.
+  const pages = useMemo(() => {
+    const out: Segment[][] = [[]];
+    let n = 0;
+    const take = () => {
+      if (n < PER_PAGE) return;
+      out.push([]); n = 0;
+    };
+    for (const g of groups) {
+      if (!isOpen(g)) { take(); out[out.length - 1].push({ g, items: [], cont: false }); n++; continue; }
+      let first = true;
+      for (const l of g.items) {
+        take();
+        const cur = out[out.length - 1];
+        const seg = cur[cur.length - 1];
+        if (seg?.g === g) seg.items.push(l);
+        else cur.push({ g, items: [l], cont: !first });
+        first = false; n++;
+      }
+    }
+    return out;
+    // isOpen залежить від open/filtering/groups
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [groups, open, filtering]);
+
+  const filterKey = JSON.stringify([q, dev, deal, type, status, agent, sort]);
+  const pageCount = pages.length;
+  const cur = Math.min(pageAt.key === filterKey ? pageAt.page : 1, pageCount);
+
+  function go(p: number) {
+    setPageAt({ key: filterKey, page: p });
+    top.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   function reset() {
     setQ(''); setDev(''); setDeal(''); setType(''); setStatus(''); setAgent('');
   }
@@ -98,7 +139,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
 
   return (
     <>
-      <div className="dash-filters">
+      <div className="dash-filters" ref={top}>
         <div className="dash-filters__search">
           <Icon name="search" size={17} />
           <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
@@ -167,7 +208,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
               </tr>
             </thead>
             <tbody>
-              {groups.map((g) => {
+              {pages[cur - 1].map(({ g, items, cont }) => {
                 const live = g.items.filter((l) => l.active).length;
                 const free = g.items.filter((l) => l.status === 'available').length;
                 const expanded = isOpen(g);
@@ -184,6 +225,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                               <span className="small muted">
                                 {g.items.length} {g.items.length === 1 ? 'listing' : 'listings'} · {live} live
                                 {g.key !== STANDALONE && ` · ${free} available`}
+                                {cont && ' · continued'}
                               </span>
                             </span>
                           </button>
@@ -191,7 +233,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                         </td>
                       </tr>
                     ) : null}
-                    {expanded && g.items.map((l) => (
+                    {expanded && items.map((l) => (
                       <tr key={l.id}>
                         <td data-label="Property">
                           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
@@ -225,8 +267,28 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
               })}
             </tbody>
           </table>
+          {pageCount > 1 && <Pager page={cur} count={pageCount} onGo={go} />}
         </div>
       )}
     </>
+  );
+}
+
+/** Номери сторінок: до 7 — усі, далі перша, остання і сусіди поточної, решта — «…» */
+function Pager({ page, count, onGo }: { page: number; count: number; onGo: (p: number) => void }) {
+  const nums: (number | '…')[] = [];
+  for (let p = 1; p <= count; p++) {
+    if (count <= 7 || p === 1 || p === count || Math.abs(p - page) <= 1) nums.push(p);
+    else if (nums[nums.length - 1] !== '…') nums.push('…');
+  }
+  return (
+    <nav className="pager" aria-label="Pages">
+      <button type="button" className="pager__btn" disabled={page === 1} onClick={() => onGo(page - 1)} aria-label="Previous page">‹</button>
+      {nums.map((p, i) => p === '…'
+        ? <span key={`gap${i}`} className="pager__gap">…</span>
+        : <button key={p} type="button" className={`pager__btn ${p === page ? 'is-on' : ''}`}
+            aria-current={p === page ? 'page' : undefined} onClick={() => onGo(p)}>{p}</button>)}
+      <button type="button" className="pager__btn" disabled={page === count} onClick={() => onGo(page + 1)} aria-label="Next page">›</button>
+    </nav>
   );
 }
