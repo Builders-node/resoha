@@ -348,6 +348,9 @@ textarea.input{resize:vertical;min-height:96px}
 .prop__head{display:flex;gap:16px;justify-content:space-between;align-items:flex-start}
 .prop__fav{position:relative;width:44px;height:44px;flex:none}
 .prop__fav .fav{position:static;width:44px;height:44px;font-size:20px;border:1px solid var(--line);background:#fff}
+/* На десктопі сердечко є в контактній картці праворуч, тож біля заголовка воно лише дублює його.
+   Лишаємо його тільки там, де картка опускається під увесь контент (≤1200px). */
+@media (min-width:1201px){.prop__fav{display:none}}
 .prop__price{font-size:32px;font-weight:800;letter-spacing:-.03em;margin-top:16px}
 .specs{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:22px 0}
 .spec{background:var(--bg-soft);border-radius:var(--radius);padding:14px}
