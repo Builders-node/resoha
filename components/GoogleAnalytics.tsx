@@ -1,9 +1,9 @@
 import Script from 'next/script';
 
-// Google Analytics 4. ID береться з NEXT_PUBLIC_GA_ID (Vercel → Settings → Environment Variables);
-// поки змінної немає, нічого не вантажимо. Переходи між сторінками GA рахує сам
-// (Enhanced measurement → «Page changes based on browser history events»), тому окремо їх не шлемо.
-const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+// Google Analytics 4. На продакшені Vercel — потік сайту G-MPK4B66TKZ; NEXT_PUBLIC_GA_ID перекриває його
+// (наприклад, щоб перевірити локально). Прев'ю-деплої й локальна розробка статистику не засмічують.
+// Переходи між сторінками GA рахує сам (Enhanced measurement → «Page changes based on browser history events»).
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID || (process.env.VERCEL_ENV === 'production' ? 'G-MPK4B66TKZ' : undefined);
 
 export default function GoogleAnalytics() {
   if (!GA_ID) return null;
