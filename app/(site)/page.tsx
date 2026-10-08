@@ -127,7 +127,6 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>{t('Featured on Roatán')}</h2>
             <Link className="btn btn--primary" href="/listings?deal=sale">{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
-            <p>{t('Picked from what island agencies currently have on the market')}</p>
           </div>
           <div className="grid grid--4">
             {featured.map((l) => (
@@ -143,7 +142,6 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>{t('Browse by area')}</h2>
             <Link className="btn btn--primary" href="/areas">{t('All areas compared')} <Icon name="arrowRight" size={18} /></Link>
-            <p>{t("From West Bay's beach condos to the quiet East End")}</p>
           </div>
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
@@ -185,7 +183,6 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>{t('New developments')}</h2>
             <Link className="btn btn--primary" href="/developments">{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
-            <p>{t('Condo towers and new builds with every unit and price from the developer')}</p>
           </div>
           <div className="grid grid--4">
             {developments.map(({ d, count, from }) => (
@@ -214,7 +211,6 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>{t('Featured buildings')}</h2>
             <Link className="btn btn--primary" href="/developments">{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
-            <p>{t('Hand-picked buildings from developments selling on the island')}</p>
           </div>
           <div className="grid grid--4">
             {featuredBuildings.slice(0, 8).map((b) => (
@@ -240,7 +236,6 @@ export default async function HomePage() {
           <div className="section__head">
             <h2>{t('Real-estate agencies')}</h2>
             <Link className="btn btn--primary" href="/agents">{t('All agents & agencies')} <Icon name="arrowRight" size={18} /></Link>
-            <p>{t('Licensed agencies working the island — open one to see everything they have listed')}</p>
           </div>
           <AgencyRow rows={agencies} />
         </div>
