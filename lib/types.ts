@@ -1,6 +1,7 @@
 import type { WeekSchedule } from './visits';
 import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
+import type { PhotoRooms } from './rooms';
 import type { BuildingStage, DocKind, RentalRule, SalesStatus, UnitStatus } from './units';
 
 export type Deal = 'sale' | 'rent';
@@ -127,6 +128,8 @@ export interface Listing {
   details: ListingDetails;
   /** Коли оголошення востаннє міняли; до міграції 0036 — дата публікації */
   updatedAt: string;
+  /** Фототур: кімната для кожного фото (lib/rooms.ts) */
+  photoRooms: PhotoRooms;
   floorplan: string;         // план квартири; спільний для однакових квартир ЖК
 }
 

@@ -10,6 +10,7 @@ import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Gallery from '@/components/Gallery';
+import PhotoTour from '@/components/PhotoTour';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
 import { trackAfterResponse } from '@/lib/track';
@@ -26,6 +27,7 @@ import { areaForNeighborhood } from '@/lib/content/areas';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
 import { DETAIL_FIELDS, detailLabel, floorLine } from '@/lib/details';
+import { photoTour } from '@/lib/rooms';
 import { getLang } from '@/lib/i18n/server';
 import { makeT, type T } from '@/lib/i18n';
 
@@ -349,6 +351,9 @@ export default async function PropertyPage({ params, searchParams }: {
               </span>
             </p>
           )}
+
+          {/* Фототур — коли ріелтор позначив кімнати на фото; інакше лишається галерея вгорі */}
+          <PhotoTour groups={photoTour(listing.photos, listing.photoRooms)} title={listing.title} />
 
           {detailRows.length > 0 && (
             <section id="details">
