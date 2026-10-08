@@ -14,6 +14,8 @@ export type ListingDetails = Partial<Record<DetailKey, string>> & {
   floorsTotal?: number;
   /** «В квартирі є», як у LUN: ключі з IN_UNIT */
   inUnit?: string[];
+  /** тип планування з документації забудовника («B», «2-C1») — квартири одного типу йдуть однією карткою в «Layouts» */
+  layout?: string;
 };
 
 export type DetailField = {
@@ -103,6 +105,8 @@ export function cleanDetails(raw: unknown): ListingDetails {
   }
   const floors = Math.round(Number(src.floorsTotal));
   if (Number.isFinite(floors) && floors >= 1 && floors <= 200) out.floorsTotal = floors;
+  const layout = typeof src.layout === 'string' ? src.layout.trim() : '';
+  if (/^[\w .-]{1,16}$/.test(layout)) out.layout = layout;
   return out;
 }
 

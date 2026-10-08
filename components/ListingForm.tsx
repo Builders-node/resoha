@@ -151,8 +151,8 @@ export default function ListingForm({
     }
     // характеристики: поля detail_* і floorsTotal → обʼєкт details
     const details: Record<string, string | string[]> = {};
-    for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal']) {
-      const name = key === 'floorsTotal' ? key : `detail_${key}`;
+    for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal', 'layout']) {
+      const name = key === 'floorsTotal' || key === 'layout' ? key : `detail_${key}`;
       const v = fd.get(name);
       if (typeof v === 'string' && v) details[key] = v;
       delete body[name];
@@ -356,6 +356,11 @@ export default function ListingForm({
                 <div className="field"><label>Floor plan</label>
                   <PhotoUploader value={floorplan} onChange={setFloorplan} max={1} />
                   <span className="tiny muted">Shown on the development&apos;s Layouts page for every unit of the same type and size — one upload per layout is enough.</span></div>
+              )}
+              {developmentId && (
+                <div className="field"><label>Layout type</label>
+                  <input className="input" name="layout" maxLength={16} defaultValue={v?.details.layout ?? ''} placeholder="B" />
+                  <span className="tiny muted">As in the developer&apos;s plans. Units of one type share a card on the Layouts page.</span></div>
               )}
             </div>
           )}

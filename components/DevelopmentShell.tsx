@@ -20,7 +20,7 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
   title?: string;
   /** Те, що йде на всю ширину над назвою, — галерея на огляді (як на сторінці оголошення: спершу фото) */
   top?: React.ReactNode;
-  /** На всю ширину, без картки агента праворуч — «Contacts», де свої кнопки звʼязку, як у LUN */
+  /** На всю ширину, без картки агента праворуч, як у LUN: «Contacts» (свої кнопки звʼязку) і «Layouts» (контакт у вікні планування) */
   wide?: boolean;
   children: React.ReactNode;
 }) {

@@ -36,6 +36,11 @@ const safeUrl = (v: unknown) => {
   const s = typeof v === 'string' ? v.trim() : '';
   return /^https?:\/\//i.test(s) ? s : '';
 };
+/** План квартири: зовнішнє посилання або файл із public/ сайту («/plans/duna-tower/201.png») */
+const safePlan = (v: unknown) => {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return /^\/(?!\/)[\w./-]+$/.test(s) && !s.includes('..') ? s : safeUrl(s);
+};
 
 export const mapAgency = (r: Row): Agency => ({
   id: r.id, name: r.name, brand: r.brand, phone: r.phone, email: r.email ?? '', about: r.about,
@@ -333,7 +338,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
       ? { photo_rooms: cleanPhotoRooms(input.photoRooms, input.photos ?? []) } : {}),
     development_id: input.developmentId || null,
     ...(input.buildingId ? { building_id: input.buildingId } : {}),
-    ...(input.floorplan ? { floorplan: safeUrl(input.floorplan) } : {}),
+    ...(input.floorplan ? { floorplan: safePlan(input.floorplan) } : {}),
     unit_no: String(input.unitNo ?? '').trim().slice(0, 20),
     floor: intOrNull(input.floor),
     status: cleanStatus(input.status),
@@ -385,7 +390,8 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
   for (const [key, column] of Object.entries(LISTING_COLUMNS)) {
     const value = (patch as Row)[key];
     if (value === undefined) continue;
-    row[column] = key === 'sourceUrl' || key === 'floorplan' ? safeUrl(value)
+    row[column] = key === 'sourceUrl' ? safeUrl(value)
+      : key === 'floorplan' ? safePlan(value)
       : key === 'nearby' ? cleanNearby(value)
       : key === 'details' ? cleanDetails(value)
       : key === 'photoRooms' ? cleanPhotoRooms(value, Array.isArray(patch.photos) ? patch.photos : undefined)
