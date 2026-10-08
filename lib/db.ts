@@ -7,7 +7,7 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch, StatRow } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -1384,4 +1384,35 @@ export async function adminAnalyticsRaw(days: number) {
       .eq('active', true).gt('sqft', 0).gt('price', 0).range(a, b), 5000),
   ]);
   return { listings, events, leads, devs, people, agencies, searches, market };
+}
+
+/* ---------- статистика цін (lib/priceStats.ts) ---------- */
+/**
+ * Відкриті житлові оголошення і їхні ціни станом на `asOf` — сирі дані для блоків
+ * «Статистика цін». Історія — з listing_prices; до міграції 0036 її немає, тоді
+ * минулих цін просто нема і відсотки за рік не показуються.
+ */
+export async function priceStatsRows(asOf: string): Promise<StatRow[]> {
+  const client = await db();
+  const sel = applyFilters(client.from('listings')
+    .select('id, deal, type, beds, price, sqft, neighborhood, created_at'), {}).in('type', ['condo', 'house']);
+  const { data, error } = await sel.limit(2000);
+  if (error) throw error;
+  const rows = (data ?? []) as Row[];
+  const old = rows.filter((r) => r.created_at <= asOf).map((r) => r.id);
+
+  // остання ціна кожного оголошення на дату asOf (рядки йдуть від найновішого)
+  const then = new Map<string, number>();
+  if (old.length) {
+    const { data: pts } = await client.from('listing_prices').select('listing_id, price, deal, changed_at')
+      .in('listing_id', old).lte('changed_at', asOf).order('changed_at', { ascending: false }).limit(5000);
+    const deal = new Map(rows.map((r) => [r.id, r.deal]));
+    (pts ?? []).forEach((p: Row) => {
+      if (!then.has(p.listing_id) && p.deal === deal.get(p.listing_id)) then.set(p.listing_id, Number(p.price));
+    });
+  }
+  return rows.map((r) => ({
+    deal: r.deal, type: r.type, beds: Number(r.beds) || 0, price: Number(r.price), sqft: Number(r.sqft) || 0,
+    neighborhood: r.neighborhood, priceThen: then.get(r.id) ?? null,
+  }));
 }

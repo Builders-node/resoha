@@ -5,12 +5,14 @@ import dynamic from 'next/dynamic';
 import FiltersModal from './FiltersModal';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
+import { RoomPriceStats } from './PriceStats';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
   type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import type { RoomStat } from '@/lib/priceStats';
 import type { Listing } from '@/lib/types';
 import { useLang, useT } from './LangProvider';
 
@@ -25,10 +27,10 @@ const MapView = dynamic(() => import('./MapView'), {
 });
 
 export default function ListingsExplorer({
-  initialItems, initialPins, initialTotal, initialHasMore, initialFilters, favIds, authed,
+  initialItems, initialPins, initialTotal, initialHasMore, initialFilters, favIds, authed, roomStats = [],
 }: {
   initialItems: Listing[]; initialPins: Pin[]; initialTotal: number; initialHasMore: boolean;
-  initialFilters: Filters; favIds: string[]; authed: boolean;
+  initialFilters: Filters; favIds: string[]; authed: boolean; roomStats?: RoomStat[];
 }) {
   const t = useT();
   const lang = useLang();
@@ -236,6 +238,10 @@ export default function ListingsExplorer({
             </h1>
             <span className="muted small">{t('Bay Islands, Honduras')}</span>
           </div>
+
+          {(filters.deal === 'sale' || filters.deal === 'rent') && (
+            <RoomPriceStats deal={filters.deal} stats={roomStats} onPick={(beds) => set({ beds })} />
+          )}
 
           {total === 0 && !loading ? (
             <div className="empty">

@@ -356,3 +356,14 @@ export interface AdminLogEntry {
   reason: string;
   createdAt: string;
 }
+
+/** Житлове оголошення для статистики цін: поточна ціна і ціна рік тому (null — тоді ще не було) */
+export interface StatRow {
+  deal: Deal;
+  type: PropertyType;
+  beds: number;
+  price: number;
+  sqft: number;
+  neighborhood: string;
+  priceThen: number | null;
+}
