@@ -473,4 +473,18 @@ export const ES_CATALOG: Record<string, string> = {
   'This time is no longer available. Please pick another one.': 'Este horario ya no está disponible. Elija otro, por favor.',
   'Name, email and phone are required': 'El nombre, el correo y el teléfono son obligatorios',
   'Too many enquiries from this connection. Please try again in an hour.': 'Demasiadas solicitudes desde esta conexión. Inténtelo de nuevo en una hora.',
+  // фототур
+  'Photo tour': 'Recorrido fotográfico',
+  '{room}: {n} photos': '{room}: {n} fotos',
+  'Living room': 'Sala',
+  'Bedroom': 'Dormitorio',
+  'Kitchen': 'Cocina',
+  'Dining area': 'Comedor',
+  'Bathroom': 'Baño',
+  'Office': 'Oficina',
+  'Laundry': 'Lavandería',
+  'Terrace & balcony': 'Terraza y balcón',
+  'Garden & yard': 'Jardín y patio',
+  'Exterior': 'Exterior',
+  'Amenities': 'Áreas comunes',
 };
