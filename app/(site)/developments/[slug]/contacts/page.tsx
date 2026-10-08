@@ -60,7 +60,7 @@ export default async function ContactsPage({ params }: Props) {
           : <>Call or message the agent on the right, or use <a href="#contact">Request a viewing</a> to book a visit to the sales office or the site.</>}
       </p>
 
-      <h3 style={{ marginTop: 28, marginBottom: 12 }}>On the map</h3>
+      <h3 className="prop__h">On the map</h3>
       <div id="miniMap">
         <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
           center={[dev.lat, dev.lng]} detail />
