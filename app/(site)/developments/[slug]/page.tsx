@@ -183,12 +183,12 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
       {dev.text && (
         <>
-          <h3 style={{ marginTop: 28 }}>About {dev.name}</h3>
+          <h3 className="prop__h">About {dev.name}</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 16, whiteSpace: 'pre-line' }}>{dev.text}</p>
         </>
       )}
 
-      <h3 style={{ marginTop: 28, marginBottom: 12 }}>Location</h3>
+      <h3 className="prop__h">Location</h3>
       <div id="miniMap">
         <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
           center={[dev.lat, dev.lng]} detail />

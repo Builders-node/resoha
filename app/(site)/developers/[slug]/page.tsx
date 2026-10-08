@@ -33,7 +33,7 @@ export default async function DeveloperPage({ params }: Props) {
       <div className="profile-head">
         <Photo className="dev-logo" src={dev.logo} alt={dev.name} label="" />
         <div>
-          <h1 className="with-ico" style={{ fontSize: 28 }}>
+          <h1 className="with-ico" style={{ fontSize: 24 }}>
             {dev.name}{dev.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
           <div className="muted">

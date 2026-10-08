@@ -20,7 +20,7 @@ export default function PhotoTour({ groups, title }: { groups: TourGroup[]; titl
 
   return (
     <section className="tour" id="photo-tour">
-      <h3 style={{ marginTop: 28, marginBottom: 12 }}>{t('Photo tour')}</h3>
+      <h3 className="prop__h">{t('Photo tour')}</h3>
       <div className="tour__grid">
         {groups.map((g, k) => {
           const shown = g.photos.slice(0, 4);

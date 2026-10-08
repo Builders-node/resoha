@@ -155,7 +155,7 @@ export default async function PropertyPage({ params, searchParams }: {
         <div>
           <div className="prop__head">
             <div>
-              <h1 style={{ fontSize: 28 }}>{listing.title}</h1>
+              <h1>{listing.title}</h1>
               <p className="muted" style={{ margin: '8px 0 0' }}>
                 {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, {t('Bay Islands')}
               </p>
@@ -333,8 +333,8 @@ export default async function PropertyPage({ params, searchParams }: {
             );
           })()}
 
-          <h3 style={{ marginTop: 28 }}>{t('About this property')}</h3>
-          <p className="muted" style={{ marginTop: 8, fontSize: 16 }}>{listing.text}</p>
+          <h3 className="prop__h">{t('About this property')}</h3>
+          <p className="muted" style={{ fontSize: 15 }}>{listing.text}</p>
 
           {listing.sourceName && (
             <p className="src">
@@ -357,7 +357,7 @@ export default async function PropertyPage({ params, searchParams }: {
 
           {detailRows.length > 0 && (
             <section id="details">
-              <h3 style={{ marginTop: 28 }}>{t('Details')}</h3>
+              <h3 className="prop__h">{t('Details')}</h3>
               <dl className="details">
                 {detailRows.map(([k, v]) => (
                   <div key={k} className="details__row"><dt>{k}</dt><dd>{v}</dd></div>
@@ -367,14 +367,14 @@ export default async function PropertyPage({ params, searchParams }: {
           )}
 
           <section id="price-history">
-            <h3 style={{ marginTop: 28 }}>{t('Price history')}</h3>
+            <h3 className="prop__h">{t('Price history')}</h3>
             <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
           </section>
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
           {listing.nearby.length > 0 && (
             <section className="nearby" id="nearby">
-              <h3 style={{ marginTop: 28, marginBottom: 12 }}>{t("What's nearby")}</h3>
+              <h3 className="prop__h">{t("What's nearby")}</h3>
               <ul className="nearby__list">
                 {listing.nearby.map((p, i) => {
                   const dist = nearbyDistance(p, listing, lang);
@@ -395,14 +395,14 @@ export default async function PropertyPage({ params, searchParams }: {
             </section>
           )}
 
-          <h3 style={{ marginTop: 28, marginBottom: 12 }}>{t('Location')}</h3>
+          <h3 className="prop__h">{t('Location')}</h3>
           <div id="miniMap">
             <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} />
           </div>
 
           {dev && (
             <section className="about-dev" id="building">
-              <h3 style={{ marginTop: 32 }}>{t('About the building')}</h3>
+              <h3 className="prop__h">{t('About the building')}</h3>
               <p className="small" style={{ margin: '4px 0 12px', fontWeight: 600 }}>
                 {building?.name ?? dev.name}{(building?.address || dev.address) && ` · ${building?.address || dev.address}`}
               </p>
@@ -414,14 +414,14 @@ export default async function PropertyPage({ params, searchParams }: {
 
           {dev && docs.length > 0 && (
             <section id="documents">
-              <h3 style={{ marginTop: 32, marginBottom: 12 }}>{t('Documents')}</h3>
+              <h3 className="prop__h">{t('Documents')}</h3>
               <DevelopmentDocs docs={docs} />
             </section>
           )}
 
           {dev && (
             <section className="about-dev" id="development">
-              <h3 style={{ marginTop: 32 }}>{t('About {name}', { name: dev.name })}</h3>
+              <h3 className="prop__h">{t('About {name}', { name: dev.name })}</h3>
               <PhotoStrip photos={dev.photos} title={dev.name} />
               <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll)} />
               <Link href={`/developments/${dev.slug}`} className="btn btn--ghost" style={{ marginTop: 16 }}>
