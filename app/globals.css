@@ -1330,10 +1330,13 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 }
 
 /* ===== Характеристики, історія ціни ===== */
-.details{display:grid;grid-template-columns:1fr 1fr;column-gap:32px;margin:12px 0 0}
-.details__row{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);font-size:15px}
-.details__row dt{color:var(--ink-2)}
-.details__row dd{margin:0;font-weight:600;text-align:right}
+/* «Details» і «In the apartment», як у LUN: іконка й одне коротке значення, без рамок */
+.pfacts{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px 24px}
+.pfacts--4{grid-template-columns:repeat(4,1fr)}
+.pfacts li{display:flex;gap:12px;align-items:center;font-size:15px;line-height:1.35;min-width:0}
+.pfacts .ico{flex:none;color:var(--ink)}
+.pfacts small{font-size:inherit;color:var(--ink-2)}
+.pfacts--building{margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
 .prop__updated{font-size:13px;color:var(--ink-2);margin-top:6px;display:flex;gap:6px;align-items:center}
 .ph{margin-top:12px}
 .ph__chart{width:100%;height:120px;display:block}
@@ -1343,7 +1346,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .ph__down{color:#11845b;font-weight:700}
 .ph__up{color:#c0392b;font-weight:700}
 @media (max-width:760px){
-  .details{grid-template-columns:1fr}
+  .pfacts,.pfacts--4{grid-template-columns:repeat(2,1fr);gap:16px}
 }
 
 /* «Project features»: сітка характеристик з іконками й зведення по домах, як у LUN */
