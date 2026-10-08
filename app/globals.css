@@ -1206,7 +1206,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 }
 .dev__title{font-size:24px;margin-bottom:14px}
 .dev__box{background:var(--bg-soft);border-radius:var(--radius-lg);overflow:hidden}
-.dev__head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#ebebf0}
+.dev__boxhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#ebebf0}
 .dev__by{color:var(--ink);font-size:18px;text-decoration:underline;text-underline-offset:3px}
 .dev__ask{background:#fff;color:var(--ink);border:1px solid var(--line);font-weight:600}
 .dev__body{padding:8px 24px 10px}
@@ -1241,7 +1241,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .units__table tr.is-sold td{opacity:.55}
 @media (max-width:720px){
   .dev__body{padding:4px 14px 8px}
-  .dev__head{padding:12px 14px}
+  .dev__boxhead{padding:12px 14px}
   .dev__row summary{grid-template-columns:1fr auto 20px;row-gap:4px}
   .dev__size,.dev__per,.dev__count{grid-column:1/2;font-size:13px}
   .dev__from{grid-column:2/3;grid-row:1}
