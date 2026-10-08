@@ -13,13 +13,15 @@ import { BUILDING_STAGES, salesLabel, stageLabel } from '@/lib/units';
  * Каркас усіх сторінок ЖК, як у LUN: назва й адреса, вкладки (окремі сторінки),
  * праворуч — картка агента зі статусом продажів, а «хлібні крихти» — у самому низу.
  */
-export default function DevelopmentShell({ ctx, active, title, top, children }: {
+export default function DevelopmentShell({ ctx, active, title, top, wide, children }: {
   ctx: DevContext;
   active: string;
   /** Підзаголовок вкладки: «Layouts», «Construction progress»… На огляді не потрібен */
   title?: string;
   /** Те, що йде на всю ширину над назвою, — галерея на огляді (як на сторінці оголошення: спершу фото) */
   top?: React.ReactNode;
+  /** На всю ширину, без картки агента праворуч — «Layouts», як на LUN: контакт там у вікні планування */
+  wide?: boolean;
   children: React.ReactNode;
 }) {
   const { dev, agent, me, buildings, tabs, leadUnit, from } = ctx;
@@ -74,9 +76,9 @@ export default function DevelopmentShell({ ctx, active, title, top, children }: 
         </div>
       </nav>
 
-      <div className="prop">
+      <div className={`prop${wide ? ' prop--wide' : ''}`}>
         <div>{children}</div>
-        {leadUnit && (
+        {leadUnit && !wide && (
           <AgentContact agent={agent} listing={leadUnit} listingUrl={`${SITE_URL}${tab.href}`} topic={dev.name} fromPrice={from}
             extra={statusBox} visitHref={dev.schedule.length ? `/developments/${dev.slug}/visit` : undefined} me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
         )}
