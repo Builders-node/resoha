@@ -14,7 +14,16 @@ import type { Lang, T } from '@/lib/i18n';
 import { useLang, useT } from './LangProvider';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
-export type Pin = { id: string; lat: number; lng: number; price: number; deal: Deal; type?: PropertyType };
+export type Pin = {
+  id: string; lat: number; lng: number; price: number; deal: Deal; type?: PropertyType;
+  /** напис на піні замість ціни (напр. назва ЖК без цін) */
+  label?: string;
+  /** готова картка для попапа — тоді нічого не підвантажуємо (ЖК на сторінці новобудов) */
+  card?: PinCard;
+};
+
+/** Дані міні-картки, коли пін — не оголошення. */
+export type PinCard = { href: string; title: string; meta: string; price: string; photo?: string; badge?: string };
 
 type Props = {
   items: Pin[];
@@ -66,6 +75,26 @@ function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang) {
       <div class="map-pop__title">${l.title}</div>
       <div class="map-pop__meta">${l.neighborhood} · ${specLine(l, lang)}</div>
       <div class="map-pop__price">${fmtPrice(l.price, l.deal, lang)}</div>
+    </div>`;
+  node.addEventListener('click', onClick);
+  return node;
+}
+
+/** Міні-картка з готових даних (ЖК): той самий вигляд, що й у оголошення. */
+function buildCardNode(c: PinCard, onClick: () => void, t: T) {
+  const node = document.createElement('div');
+  node.className = 'map-pop';
+  const photo = c.photo ? photoUrl(c.photo) : '';
+  const esc = (v: string) => v.replace(/[&<>"]/g, (ch) => `&#${ch.charCodeAt(0)};`);
+  node.innerHTML = `
+    ${photo
+      ? `<img src="${esc(photo)}" alt="" loading="lazy">`
+      : `<span class="nophoto"><em>${t('No photo yet')}</em></span>`}
+    ${c.badge ? `<span class="badge badge--brand">${esc(c.badge)}</span>` : ''}
+    <div class="map-pop__b">
+      <div class="map-pop__title">${esc(c.title)}</div>
+      <div class="map-pop__meta">${esc(c.meta)}</div>
+      ${c.price ? `<div class="map-pop__price">${esc(c.price)}</div>` : ''}
     </div>`;
   node.addEventListener('click', onClick);
   return node;
@@ -300,7 +329,7 @@ export default function MapView({
     singles.forEach((l) => {
       const node = document.createElement('div');
       node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
-      node.textContent = fmtPriceShort(l.price, l.deal, lang);
+      node.textContent = l.label ?? fmtPriceShort(l.price, l.deal, lang);
       // цінник висить над будинком, як прапорець, — сам будинок і сяйво під ним лишаються видні
       const mk = new ml.Marker({ element: node, anchor: 'bottom', offset: detail ? [0, -30] : [0, -12] })
         .setLngLat([l.lng, l.lat])
@@ -309,7 +338,9 @@ export default function MapView({
       if (interactive && !detail) {
         const popup = new ml.Popup({
           closeButton: false, closeOnClick: false, offset: 46, maxWidth: '240px', className: 'map-pop-wrap',
-        }).setDOMContent(skeletonNode(l, t, lang));
+        }).setDOMContent(l.card
+          ? buildCardNode(l.card, () => router.push(l.card!.href), t)
+          : skeletonNode(l, t, lang));
         popups.current[l.id] = popup;
 
         const open = () => { cancelClose(); popup.setLngLat([l.lng, l.lat]).addTo(m); fill(); };
@@ -317,6 +348,7 @@ export default function MapView({
           closeTimer.current = setTimeout(() => { popup.remove(); onHoverRef.current?.(null); }, ms);
         };
         const fill = async () => {
+          if (l.card) return;
           const listing = cache.current[l.id]
             ?? (await fetch(`/api/listings/${l.id}`).then((r) => r.json()).then((d) => d.listing).catch(() => null));
           if (!listing) return;
@@ -361,7 +393,8 @@ export default function MapView({
       }
       if (!items.length) return;
       if (items.length > 1) {
-        m.fitBounds(boundsOf(items), { padding: 50, animate: false });
+        // запас під сам цінник: точка — його низ, а напис тягнеться в боки й угору
+        m.fitBounds(boundsOf(items), { padding: 80, animate: false });
       } else {
         m.jumpTo({ center: [items[0].lng, items[0].lat], zoom: Math.max(zoom, 14) });
       }
