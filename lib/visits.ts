@@ -125,3 +125,31 @@ export function fmtVisit(iso: string, locale = 'en-US') {
   const date = new Intl.DateTimeFormat(locale, { timeZone: SALES_TZ, weekday: 'short', month: 'short', day: 'numeric' }).format(at);
   return `${date} · ${toTime(partsIn(at).min)}`;
 }
+
+/** «У відділі продажу вам запропонують», як у LUN: що можна зробити на візиті. Іконка — з components/Icon */
+export const SALES_OFFERS: [icon: string, label: string][] = [
+  ['calendar', 'A sales manager’s time reserved just for you'],
+  ['deed', 'Brochures and price lists'],
+  ['sliders', 'Purchase terms and payment plans'],
+  ['users', 'Apartment viewings'],
+  ['calc', 'Price calculation'],
+  ['chart', 'Rental yield and ROI calculation'],
+  ['briefcase', 'Legal consultation'],
+  ['sparkle', 'Current promotions'],
+  ['tv', 'Project presentation'],
+  ['crane', 'Construction site tour'],
+  ['lock', 'Unit reservation'],
+  ['building', 'Viewing of finished units'],
+  ['plan', 'Site plan, floor plans and more'],
+  ['search', 'Property selection by your criteria'],
+  ['deed', 'Purchase paperwork and contract template'],
+  ['shield', 'Support until you get the keys'],
+];
+
+/** Про що підписка на оновлення ЖК — список у банері на вкладці «Contacts» */
+export const UPDATE_TOPICS = [
+  'Promotions, discounts and special offers',
+  'New construction photos',
+  'Price updates from the sales office',
+  'New documents',
+];

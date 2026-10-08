@@ -17,7 +17,7 @@ const PARTS = ['Morning', 'Afternoon', 'Evening'] as const;
  * Запис на візит у відділ продажів, як у LUN: 1) що цікавить, 2) дата й час за графіком офісу,
  * 3) як звʼязатись; після відправки — підтвердження. Заявка падає в Leads кабінету ріелтора.
  */
-export default function VisitBooking({ devId, devName, address, schedule, note, unitTopics, me, backHref }: {
+export default function VisitBooking({ devId, devName, address, schedule, note, unitTopics, me, backHref, initialDay }: {
   devId: string;
   devName: string;
   address: string;
@@ -27,12 +27,14 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
   unitTopics: string[];
   me: { name: string; phone: string; email: string } | null;
   backHref: string;
+  /** День, обраний у календарі на вкладці «Contacts» (?day=), — якщо в нього є вільний час */
+  initialDay?: string;
 }) {
   const t = useT();
   const locale = intlLocale(useLang());
   const [step, setStep] = useState(0);
   const [topics, setTopics] = useState<string[]>([]);
-  const [day, setDay] = useState('');
+  const [day, setDay] = useState(() => (initialDay && slotsFor(schedule, initialDay).length ? initialDay : ''));
   const [time, setTime] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -41,7 +43,7 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
   useEffect(() => { shownAt.current = Date.now(); }, []);
 
   const today = officeToday();
-  const [month, setMonth] = useState(today.slice(0, 7));
+  const [month, setMonth] = useState((day || today).slice(0, 7));
   const slots = useMemo(() => (day ? slotsFor(schedule, day) : []), [schedule, day]);
 
   // перший день з вільними слотами — щоб календар не відкривався на порожньому сьогодні
@@ -206,7 +208,32 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
   );
 }
 
-function Calendar({ month, setMonth, today, selected, isOpen, onPick, fmt, t }: {
+/**
+ * Блок «Запишіться на візит у відділ продажу» на вкладці «Contacts», як у LUN: календар місяця
+ * з робочими днями за графіком і кнопка — далі вже повна форма запису з обраним днем.
+ */
+export function VisitPicker({ schedule, href }: { schedule: WeekSchedule; href: string }) {
+  const t = useT();
+  const locale = intlLocale(useLang());
+  const today = officeToday();
+  const [month, setMonth] = useState(today.slice(0, 7));
+  const [day, setDay] = useState('');
+  const fmt = (d: string, o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat(locale, { timeZone: 'UTC', ...o })
+    .format(new Date(`${d}T12:00:00Z`));
+  return (
+    <div className="vcal vpick">
+      <Calendar month={month} setMonth={setMonth} today={today} selected={day} fmt={fmt} t={t} bare
+        isOpen={(d) => slotsFor(schedule, d).length > 0} onPick={setDay} />
+      <Link className="btn btn--primary btn--lg btn--block vpick__go" href={day ? `${href}?day=${day}` : href}>
+        {t('Book a visit')}
+      </Link>
+    </div>
+  );
+}
+
+function Calendar({ month, setMonth, today, selected, isOpen, onPick, fmt, t, bare }: {
+  /** Без власного фону — коли календар уже всередині картки */
+  bare?: boolean;
   month: string; setMonth: (m: string) => void; today: string; selected: string;
   isOpen: (d: string) => boolean; onPick: (d: string) => void;
   fmt: (d: string, o: Intl.DateTimeFormatOptions) => string;
@@ -222,7 +249,7 @@ function Calendar({ month, setMonth, today, selected, isOpen, onPick, fmt, t }: 
   const last = addDays(today, BOOK_DAYS).slice(0, 7);
 
   return (
-    <div className="vcal">
+    <div className={bare ? undefined : 'vcal'}>
       <div className="vcal__head">
         <button type="button" className="vcal__nav" disabled={month <= today.slice(0, 7)}
           onClick={() => setMonth(addDays(first, -1).slice(0, 7))} aria-label={t('Previous month')}>

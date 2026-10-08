@@ -88,6 +88,9 @@ const PATHS: Record<string, React.ReactNode> = {
   door: <><path d="M5.5 20.5h13" /><path d="M7 20.5V4.5a1 1 0 0 1 1-1h8a1 1 0 0 1 1 1v16" /><path d="M14 12.4v.01" /></>,
   elevator: <><rect x="4.5" y="3.5" width="15" height="17" rx="2" /><path d="M12 3.5v17" /><path d="m7 10 1.5-2 1.5 2M14 14l1.5 2 1.5-2" /></>,
   shield: <><path d="M12 3.5 5 6.2v5.3c0 4.4 3 7.8 7 9 4-1.2 7-4.6 7-9V6.2z" /><path d="m9 12 2.2 2.2 4-4.2" /></>,
+  calc: <><rect x="4.4" y="3.6" width="15.2" height="16.8" rx="2" /><path d="M8 7.6h8" /><path d="M8 12h.01M12 12h.01M16 12h.01M8 16h.01M12 16h.01M16 16h.01" /></>,
+  lock: <><rect x="5" y="10.4" width="14" height="10" rx="2" /><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8" /><path d="M12 14.4v2.2" /></>,
+  plan: <><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="1.6" /><path d="M10.4 3.8v7h-6.6M10.4 14.6v5.6M14.4 10.8h5.8" /></>,
   sun: <><circle cx="12" cy="12" r="3.8" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" /></>,
 };
 
