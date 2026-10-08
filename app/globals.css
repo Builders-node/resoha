@@ -673,6 +673,10 @@ textarea.input{resize:vertical;min-height:96px}
   padding:6px;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.55));opacity:0;transition:all var(--dur) var(--ease)}
 .shot:hover .shot__bar{opacity:1}
 .shot__bar .btn{padding:4px 8px;font-size:12px}
+.shot__room{position:absolute;top:8px;right:8px;max-width:calc(100% - 80px);padding:4px 6px;font-size:12px;
+  border:0;border-radius:8px;background:rgba(0,0,0,.55);color:#fff;cursor:pointer}
+.shot__room.is-set{background:var(--orange);color:#fff}
+.shot__room option{color:var(--ink);background:#fff}
 
 /* ===== Аватар у профілі ===== */
 .avatar-pick{display:flex;align-items:center;gap:14px}
@@ -1295,6 +1299,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .lightbox{position:fixed;inset:0;z-index:1000;background:#0b0b0d;color:#fff;display:flex;flex-direction:column}
 .lightbox__bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
 .lightbox__count{font-weight:700;font-size:14px;opacity:.85}
+.lightbox__caption{margin-right:10px}
 .lightbox__close{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;
   display:grid;place-items:center;cursor:pointer}
 .lightbox__close:hover{background:rgba(255,255,255,.2)}
@@ -1731,6 +1736,19 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .sched__time{display:flex;align-items:center;gap:8px}
 .sched__time .input{width:150px;padding-top:8px;padding-bottom:8px}
 .sched ~ .tiny .linkbtn{color:var(--orange);text-decoration:underline}
+
+/* ===== Фототур: плитка 2×2 на кожну кімнату, як у LUN ===== */
+.tour__grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px 14px}
+.tour__item{display:flex;flex-direction:column;gap:10px;padding:0;border:0;background:none;text-align:left;cursor:zoom-in;color:var(--ink)}
+.tour__tile{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:4px;aspect-ratio:1;
+  border-radius:var(--radius);overflow:hidden;background:var(--bg-soft)}
+.tour__tile img{width:100%;height:100%;object-fit:cover;min-height:0;transition:opacity var(--dur) var(--ease)}
+.tour__item:hover .tour__tile img{opacity:.9}
+.tour__tile--n1 img{grid-column:span 2;grid-row:span 2}
+.tour__tile--n2 img{grid-row:span 2}
+.tour__tile--n3 img:nth-child(3){grid-column:span 2}
+.tour__name{font-size:16px}
+@media (max-width:560px){ .tour__grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 10px} .tour__name{font-size:15px} }
 
 /* ===== Рух ===== */
 /* Якорі (FAQ, зміст гайдів) доїжджають плавно; Next сам вимикає це на час переходу між сторінками */

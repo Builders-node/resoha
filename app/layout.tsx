@@ -6,6 +6,7 @@ import Toaster from '@/components/Toaster';
 import Motion from '@/components/Motion';
 import AuthModal from '@/components/AuthModal';
 import JsonLd from '@/components/JsonLd';
+import GoogleAnalytics from '@/components/GoogleAnalytics';
 import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import LangProvider from '@/components/LangProvider';
@@ -41,6 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>
         </LangProvider>
+        <GoogleAnalytics />
       </body>
     </html>
   );

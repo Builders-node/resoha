@@ -42,7 +42,10 @@ export default function Gallery({ photos, title }: { photos: string[]; title: st
   );
 }
 
-function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: string; start: number; onClose: () => void }) {
+/** Повноекранний перегляд; captions — підпис до кожного фото (у фототурі — кімната). */
+export function Lightbox({ photos, title, start, onClose, captions }: {
+  photos: string[]; title: string; start: number; onClose: () => void; captions?: string[];
+}) {
   const t = useT();
   const [i, setI] = useState(start);
   const n = photos.length;
@@ -78,7 +81,10 @@ function Lightbox({ photos, title, start, onClose }: { photos: string[]; title: 
         if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
       }}>
       <div className="lightbox__bar">
-        <span className="lightbox__count">{i + 1} / {n}</span>
+        <span className="lightbox__count">
+          {captions?.[i] && <b className="lightbox__caption">{captions[i]}</b>}
+          {i + 1} / {n}
+        </span>
         <button type="button" className="lightbox__close" onClick={onClose} aria-label={t('Close')}>
           <Icon name="close" size={22} />
         </button>

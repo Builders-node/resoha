@@ -9,6 +9,7 @@ import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { DETAIL_FIELDS } from '@/lib/details';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import type { NearbyPlace } from '@/lib/nearby';
+import type { PhotoRooms } from '@/lib/rooms';
 import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 
@@ -26,6 +27,7 @@ export default function ListingForm({
   onCancel?: () => void;
 }) {
   const [photos, setPhotos] = useState<string[]>(listing?.photos ?? []);
+  const [photoRooms, setPhotoRooms] = useState<PhotoRooms>(listing?.photoRooms ?? {});
   const [nearby, setNearby] = useState<NearbyPlace[]>(listing?.nearby ?? []);
   // ЖК автора — щоб квартиру можна було привʼязати до будинку
   const [developments, setDevelopments] = useState<{ id: string; name: string; developer: string }[]>([]);
@@ -113,6 +115,8 @@ export default function ListingForm({
         // у землі цих характеристик немає
         details: type === 'land' ? {} : details,
         photos,
+        // позначки лише для фото, що лишились у формі
+        photoRooms: Object.fromEntries(Object.entries(photoRooms).filter(([url]) => photos.includes(url))),
         // рядки без назви — недописані, їх не зберігаємо
         nearby: nearby.filter((p) => p.name.trim()),
         developmentId: developmentId || null,
@@ -298,7 +302,7 @@ export default function ListingForm({
         <NearbyEditor value={nearby} onChange={setNearby} pin={pin} />
 
         <div className="field full"><label>Photos</label>
-          <PhotoUploader value={photos} onChange={setPhotos} /></div>
+          <PhotoUploader value={photos} onChange={setPhotos} rooms={photoRooms} onRoomsChange={setPhotoRooms} /></div>
 
         <div className="field full"><label>Tags (comma separated)</label>
           <input className="input" name="tags" defaultValue={v?.tags.join(', ')} placeholder="Pool, Turnkey, Rental income" /></div>

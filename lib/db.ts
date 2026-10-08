@@ -4,6 +4,7 @@ import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
 import { cleanDetails } from './details';
 import { cleanNearby } from './nearby';
+import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch } from './types';
@@ -84,6 +85,8 @@ const mapListing = (r: Row): Listing => ({
   details: cleanDetails(r.details),
   updatedAt: r.updated_at ?? r.created_at,
   floorplan: r.floorplan ?? '',
+  // до міграції 0048 колонки немає — фототуру нема, лишається звичайна галерея
+  photoRooms: cleanPhotoRooms(r.photo_rooms, r.photos ?? []),
 });
 
 /** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
@@ -286,9 +289,14 @@ export async function getListing(id: string): Promise<Listing | null> {
   return data ? mapListing(data) : null;
 }
 
-/** До міграції 0036 колонки details немає: PostgREST відповідає PGRST204 — тоді зберігаємо без неї. */
+/**
+ * До міграцій 0036 і 0048 колонок details і photo_rooms немає: PostgREST відповідає PGRST204 —
+ * тоді зберігаємо без них.
+ */
+const OPTIONAL_COLUMNS = ['details', 'photo_rooms'];
 const missingDetails = (e: { code?: string; message?: string } | null) =>
-  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details/.test(e.message ?? ''));
+  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms/.test(e.message ?? ''));
+const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
 
 export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null }) {
   const client = await db();
@@ -321,6 +329,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     source_url: safeUrl(input.sourceUrl),
     ...(input.nearby?.length ? { nearby: cleanNearby(input.nearby) } : {}),
     ...(Object.keys(cleanDetails(input.details)).length ? { details: cleanDetails(input.details) } : {}),
+    ...(Object.keys(cleanPhotoRooms(input.photoRooms, input.photos ?? [])).length
+      ? { photo_rooms: cleanPhotoRooms(input.photoRooms, input.photos ?? []) } : {}),
     development_id: input.developmentId || null,
     ...(input.buildingId ? { building_id: input.buildingId } : {}),
     ...(input.floorplan ? { floorplan: safeUrl(input.floorplan) } : {}),
@@ -330,7 +340,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
   if (missingDetails(res.error)) {
-    delete row.details;
+    dropOptional(row);
     res = await client.from('listings').insert(row).select(listingCols({})).single();
   }
   const { data, error } = res;
@@ -363,7 +373,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   ownerFinancing: 'owner_financing', lat: 'lat', lng: 'lng', tags: 'tags', photos: 'photos',
   text: 'body', active: 'active',
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
-  nearby: 'nearby', details: 'details',
+  nearby: 'nearby', details: 'details', photoRooms: 'photo_rooms',
   developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
   floorplan: 'floorplan',
 };
@@ -378,6 +388,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
     row[column] = key === 'sourceUrl' || key === 'floorplan' ? safeUrl(value)
       : key === 'nearby' ? cleanNearby(value)
       : key === 'details' ? cleanDetails(value)
+      : key === 'photoRooms' ? cleanPhotoRooms(value, Array.isArray(patch.photos) ? patch.photos : undefined)
       : key === 'developmentId' || key === 'buildingId' ? value || null
       : key === 'unitNo' ? String(value).trim().slice(0, 20)
       : key === 'floor' ? intOrNull(value)
@@ -389,8 +400,8 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
 
   const client = await db();
   let res = await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
-  if (missingDetails(res.error) && 'details' in row) {
-    delete row.details;
+  if (missingDetails(res.error) && OPTIONAL_COLUMNS.some((c) => c in row)) {
+    dropOptional(row);
     res = Object.keys(row).length
       ? await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle()
       : await client.from('listings').select(listingCols({})).eq('id', id).maybeSingle();
