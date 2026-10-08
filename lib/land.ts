@@ -100,9 +100,9 @@ export const FOREIGN_LIMIT_SQM = 3000;
 /** Орієнтири для відстаней. Аеропорт RTB — за його координатами, решта — центри районів з AREA_CENTRES. */
 const PLACES: { name: string; at: [number, number] }[] = [
   { name: 'Airport (RTB)', at: [16.3168, -86.523] },
-  { name: 'Coxen Hole', at: [16.323, -86.5374] },
-  { name: 'West End', at: [16.301, -86.5964] },
-  { name: 'French Harbour', at: [16.3494, -86.4411] },
+  { name: 'Coxen Hole', at: [16.3211, -86.5383] },
+  { name: 'West End', at: [16.3047, -86.5929] },
+  { name: 'French Harbour', at: [16.3518, -86.4570] },
 ];
 
 const km = ([lat1, lng1]: [number, number], [lat2, lng2]: [number, number]) => {
