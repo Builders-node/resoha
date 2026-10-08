@@ -85,7 +85,7 @@ export default function AgentReviews({
       ))}
 
       {isSelf ? null : canReview ? (
-        <form className="panel" style={{ marginTop: 18 }} onSubmit={submit}>
+        <form className="panel" style={{ marginTop: 20 }} onSubmit={submit}>
           <h3 style={{ marginBottom: 10 }}>{t('Worked with this agent?')}</h3>
           <div className="rate-row">
             {[1, 2, 3, 4, 5].map((n) => (

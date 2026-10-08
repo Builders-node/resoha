@@ -31,7 +31,7 @@ export default function BecomeRealtor({ name }: { name: string }) {
         <div className="empty__ico"><Icon name="building" size={40} /></div>
         <h2 style={{ marginTop: 10 }}>{t('List properties on Resoha')}</h2>
 
-        <p className="muted" style={{ margin: '10px 0 22px' }}>
+        <p className="muted" style={{ margin: '10px 0 24px' }}>
           {t('You are signed in as')} <b>{name}</b>. {t('Turn this account into a realtor account to publish listings and answer enquiries. Your saved listings and searches stay where they are.')}
         </p>
 

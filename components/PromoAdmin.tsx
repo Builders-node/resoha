@@ -142,7 +142,7 @@ export default function PromoAdmin() {
         )}
       </div>
 
-      <div className="panel" style={{ marginTop: 18 }}>
+      <div className="panel" style={{ marginTop: 20 }}>
         <h3 style={{ marginBottom: 4 }}>Prices</h3>
         <p className="muted small" style={{ marginBottom: 14 }}>
           What agents see on the Promote tab. Changes apply to new purchases only.

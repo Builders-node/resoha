@@ -376,7 +376,7 @@ function OverviewSection({ dev, patch, onDelete, onGo }: {
           <textarea className="input" name="text" rows={7} maxLength={8000} defaultValue={dev.text}
             placeholder="What makes this project special: location, views, finishes, who it suits…" /></div>
       </SectionForm>
-      <div style={{ marginTop: 26, display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ marginTop: 28, display: 'flex', justifyContent: 'flex-end' }}>
         <button type="button" className="btn btn--danger btn--sm" onClick={onDelete}><Icon name="trash" size={16} /> Delete development</button>
       </div>
     </>
@@ -529,7 +529,7 @@ function PriceListImport({ dev, buildings, onAdded }: { dev: Development; buildi
   }
 
   return (
-    <div className="units-form" style={{ marginTop: 22 }}>
+    <div className="units-form" style={{ marginTop: 24 }}>
       <label><b>Add units from a price list</b></label>
       <span className="tiny muted">
         Paste rows from the developer&apos;s table: unit, type, floor, m², ft², price — one unit per row.
@@ -593,7 +593,7 @@ function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Bui
 
   const b = editing === 'new' ? null : editing;
   return (
-    <div className="units-form" style={{ marginTop: 22 }}>
+    <div className="units-form" style={{ marginTop: 24 }}>
       <div className="fgroup__head">
         <label><b>Buildings</b></label>
         {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add building</button>}
@@ -702,7 +702,7 @@ function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }
 
   const d = editing === 'new' ? null : editing;
   return (
-    <div className="units-form" style={{ marginTop: 22 }}>
+    <div className="units-form" style={{ marginTop: 24 }}>
       <div className="fgroup__head">
         <label><b>Documents</b></label>
         {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add document</button>}
@@ -816,7 +816,7 @@ function ProgressEditor({ devId, buildings }: { devId: string; buildings: Buildi
   const e = editing === 'new' ? null : editing;
   const bname = (id: string | null) => buildings.find((b) => b.id === id)?.name;
   return (
-    <div className="units-form" style={{ marginTop: 22 }}>
+    <div className="units-form" style={{ marginTop: 24 }}>
       <div className="fgroup__head">
         <label><b>Construction progress</b></label>
         {!editing && <button type="button" className="btn btn--ghost btn--sm" onClick={() => open('new')}>+ Add month</button>}
@@ -930,7 +930,7 @@ function NewsEditor({ devId }: { devId: string }) {
         </div>
       </form>
       {!n && (
-        <div className="dev-list" style={{ marginTop: 18 }}>
+        <div className="dev-list" style={{ marginTop: 20 }}>
           <label><b>Published</b></label>
           {!items.length && <p className="muted small">No news yet.</p>}
           {items.map((x) => (

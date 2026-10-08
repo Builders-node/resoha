@@ -29,7 +29,7 @@ export default async function DeveloperPage({ params }: Props) {
   const site = dev.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
 
   return (
-    <div className="wrap" style={{ padding: '30px 32px 60px' }}>
+    <div className="wrap" style={{ padding: '32px 32px 60px' }}>
       <div className="profile-head">
         <Photo className="dev-logo" src={dev.logo} alt={dev.name} label="" />
         <div>
@@ -43,7 +43,7 @@ export default async function DeveloperPage({ params }: Props) {
       </div>
 
       {(site || dev.phone || dev.email) && (
-        <ul className="contacts" style={{ marginBottom: 22 }}>
+        <ul className="contacts" style={{ marginBottom: 24 }}>
           {site && (
             <li><Icon name="link" size={22} /><div><span className="small muted">Website</span>
               <a href={dev.website} target="_blank" rel="noopener noreferrer nofollow"><b>{site}</b></a></div></li>
@@ -59,9 +59,9 @@ export default async function DeveloperPage({ params }: Props) {
         </ul>
       )}
 
-      {dev.about && <p style={{ whiteSpace: 'pre-line', maxWidth: 760, marginBottom: 26 }}>{dev.about}</p>}
+      {dev.about && <p style={{ whiteSpace: 'pre-line', maxWidth: 760, marginBottom: 28 }}>{dev.about}</p>}
 
-      <h2 style={{ fontSize: 22, marginBottom: 14 }}>Developments</h2>
+      <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>Developments</h2>
       {!projects.length && <p className="muted">No developments listed yet.</p>}
       <div className="dev-grid">
         {projects.map((p, i) => {

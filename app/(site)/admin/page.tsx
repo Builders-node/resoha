@@ -15,7 +15,7 @@ export default async function AdminPage() {
         <div className="panel" style={{ maxWidth: 460, margin: '0 auto', textAlign: 'center' }}>
           <div className="empty__ico"><Icon name="deed" size={40} /></div>
           <h2 style={{ marginTop: 10 }}>Admin area</h2>
-          <p className="muted" style={{ margin: '10px 0 22px' }}>
+          <p className="muted" style={{ margin: '10px 0 24px' }}>
             {session
               ? 'This account does not have platform admin rights.'
               : 'Sign in with an admin account to moderate listings, agencies and reviews.'}

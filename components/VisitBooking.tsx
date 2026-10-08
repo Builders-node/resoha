@@ -131,13 +131,13 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
       {step === 1 && (
         <>
           <h2 className="visit__h">{t('Pick a date and time that suits you')}</h2>
-          <p className="small" style={{ margin: '-6px 0 18px' }}>
+          <p className="small" style={{ margin: '-6px 0 20px' }}>
             {t('Times are shown in the sales office time zone ({tz})', { tz: SALES_TZ })}
           </p>
           <Calendar month={month} setMonth={setMonth} today={today} selected={day} fmt={fmt} t={t}
             isOpen={(d) => slotsFor(schedule, d).length > 0} onPick={(d) => { setDay(d); setTime(''); }} />
 
-          {day && slots.length === 0 && <p className="muted" style={{ marginTop: 22 }}>{t('No free times on this day.')}</p>}
+          {day && slots.length === 0 && <p className="muted" style={{ marginTop: 24 }}>{t('No free times on this day.')}</p>}
           {PARTS.map((part) => {
             const list = slots.filter((s) => slotPart(s) === part);
             return list.length > 0 && (

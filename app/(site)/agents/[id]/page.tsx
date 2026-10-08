@@ -80,7 +80,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         </div>
       </header>
 
-      <div className="stats" style={{ marginTop: 22 }}>
+      <div className="stats" style={{ marginTop: 24 }}>
         <div className="stat"><span className="muted small">{t('Listings')}</span><b>{listings.length}</b></div>
         <div className="stat"><span className="muted small">{t('Years on island')}</span><b>{agent.experience || '—'}</b></div>
         <div className="stat">
@@ -90,7 +90,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         <div className="stat"><span className="muted small">{t('Areas')}</span><b>{areas.length}</b></div>
       </div>
 
-      <section className="section" style={{ paddingTop: 30 }}>
+      <section className="section" style={{ paddingTop: 32 }}>
         <div className="section__head">
           <h2>{nListings(listings.length, lang)}</h2>
           <Link className="btn btn--primary" href={`/listings?agentId=${agent.id}`}>

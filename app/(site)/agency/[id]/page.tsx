@@ -70,7 +70,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         </div>
       </header>
 
-      <div className="stats" style={{ marginTop: 22 }}>
+      <div className="stats" style={{ marginTop: 24 }}>
         <div className="stat"><span className="muted small">{t('Listings')}</span><b>{listings.length}</b></div>
         <div className="stat"><span className="muted small">{t('Agents')}</span><b>{team.length}</b></div>
         <div className="stat"><span className="muted small">{t('Areas covered')}</span><b>{areas.length}</b></div>
@@ -80,7 +80,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      <section className="section" style={{ paddingTop: 30 }}>
+      <section className="section" style={{ paddingTop: 32 }}>
         <div className="section__head"><h2>{t('The team')}</h2></div>
         <div className="grid grid--4">
           {team.map((m) => (

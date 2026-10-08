@@ -560,7 +560,7 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
         ) : (
           <>
             <TrendChart series={series} />
-            <div className="an-head" style={{ marginTop: 18 }}>
+            <div className="an-head" style={{ marginTop: 20 }}>
               <h4 className="small">Leads per day</h4>
             </div>
             <LeadBars series={series} />

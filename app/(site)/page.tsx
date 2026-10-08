@@ -151,7 +151,7 @@ export default async function HomePage() {
                 href={areaHref(name)}>
                 <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
-                  <div className="ov__title" style={{ fontSize: 19 }}>{name}</div>
+                  <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
                   <div className="ov__meta">
                     {nListings(a.count, lang)}{Number.isFinite(a.from) && ` · ${t('from {price}', { price: fmtUsd(a.from) })}`}
                   </div>
@@ -249,8 +249,8 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap cta">
           <div>
-            <h2 style={{ fontSize: 30 }}>{t('Selling on the island?')}</h2>
-            <p className="muted" style={{ fontSize: 17, margin: '12px 0 22px' }}>
+            <h2 style={{ fontSize: 'var(--fs-h1)' }}>{t('Selling on the island?')}</h2>
+            <p className="muted" style={{ fontSize: 18, margin: '12px 0 24px' }}>
               {t('Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.')}
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>

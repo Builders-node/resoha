@@ -15,7 +15,7 @@ export default async function DeveloperPage() {
     );
   }
   return (
-    <div className="wrap" style={{ padding: '30px 32px 60px', maxWidth: 900 }}>
+    <div className="wrap" style={{ padding: '32px 32px 60px', maxWidth: 900 }}>
       <DeveloperPanel />
     </div>
   );

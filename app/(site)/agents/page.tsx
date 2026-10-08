@@ -24,7 +24,7 @@ export default async function AgentsIndexPage() {
   return (
     <div className="wrap">
       <header className="page-top" style={{ paddingBottom: 4 }}>
-        <h1 style={{ fontSize: 30 }}>{t('Agents & agencies on Roatán')}</h1>
+        <h1 style={{ fontSize: 'var(--fs-h1)' }}>{t('Agents & agencies on Roatán')}</h1>
         <p className="muted" style={{ marginTop: 8 }}>
           {t('Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.')}
         </p>

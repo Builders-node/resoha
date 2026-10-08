@@ -172,7 +172,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {/* Телефон при реєстрації не питаємо — без нього на картці обʼєкта немає кнопки WhatsApp */}
         {!agent.phone && !agent.whatsapp && tab !== 'profile' && (
-          <div className="note-ok" style={{ margin: '0 0 18px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="note-ok" style={{ margin: '0 0 20px', alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{ flex: 1 }}>Add your phone or WhatsApp so buyers can reach you straight from your listings.</span>
             <button type="button" className="btn btn--ghost" onClick={() => setTab('profile')}>Add contacts</button>
           </div>
@@ -284,7 +284,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         {tab === 'profile' && (
           <div className="panel">
             <h3 style={{ marginBottom: 14 }}>Agent profile</h3>
-            <div style={{ marginBottom: 18 }}>
+            <div style={{ marginBottom: 20 }}>
               <AvatarPicker src={agent.avatar} name={agent.name} onChanged={() => load()} />
             </div>
             <form className="form-grid" onSubmit={async (e) => {

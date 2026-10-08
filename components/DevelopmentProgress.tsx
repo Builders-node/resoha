@@ -21,7 +21,7 @@ export default function DevelopmentProgress({ entries, buildings, building, base
   return (
     <div className="prog">
       {used.length > 0 && (
-        <div className="chip-row" style={{ marginBottom: 18 }}>
+        <div className="chip-row" style={{ marginBottom: 20 }}>
           <Link className={`chip-btn${building ? '' : ' is-on'}`} href={`${base}/construction`} scroll={false}>All</Link>
           {used.map((b) => (
             <Link key={b.id} className={`chip-btn${building === b.id ? ' is-on' : ''}`}

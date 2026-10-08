@@ -49,7 +49,7 @@ export default async function AreasPage() {
           );
         })}
       </div>
-      <p className="small muted" style={{ marginTop: 22 }}>
+      <p className="small muted" style={{ marginTop: 24 }}>
         {t('Not sure yet? Read')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('the best areas to live in Roatán, compared')}</Link>.
       </p>
       <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />

@@ -142,7 +142,7 @@ export default function ListingForm({
   return (
     <div className="panel">
       <h3 style={{ marginBottom: 4 }}>{editing ? 'Edit listing' : 'New listing'}</h3>
-      <p className="muted small" style={{ marginBottom: 18 }}>
+      <p className="muted small" style={{ marginBottom: 20 }}>
         {asAdmin
           ? editing
             ? <>Editing as an admin — the listing stays with its own realtor and agency.</>
