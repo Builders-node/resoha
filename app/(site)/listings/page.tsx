@@ -1,5 +1,6 @@
 import ListingsExplorer from '@/components/ListingsExplorer';
-import { getFavorites, queryPins, searchListings } from '@/lib/db';
+import { getFavorites, priceStatsRows, queryPins, searchListings } from '@/lib/db';
+import { roomStats, yearAgo } from '@/lib/priceStats';
 import { fromParams, toListingQuery, toQuery } from '@/lib/filters';
 import { getSession } from '@/lib/session';
 import { headers } from 'next/headers';
@@ -18,8 +19,11 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   // той самий розбір, що й в API: фільтри → рядок запиту → запит до бази
   const query = toListingQuery(new URLSearchParams(toQuery(filters)));
 
-  const [{ items, total, hasMore }, pins, session] = await Promise.all([
+  // статистика цін — по всьому острову для обраного розділу (Buy / Rent), як у ЛУН
+  const deal = filters.deal === 'rent' || filters.deal === 'sale' ? filters.deal : null;
+  const [{ items, total, hasMore }, pins, session, statRows] = await Promise.all([
     searchListings(query), queryPins(query), getSession(),
+    deal ? priceStatsRows(yearAgo()).catch(() => []) : [],
   ]);
   const favIds = session ? await getFavorites(session.id) : [];
   // відкриття сторінки з фільтрами — теж пошук (далі зміни фільтрів пише /api/listings)
@@ -35,6 +39,7 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
       initialFilters={filters}
       favIds={favIds}
       authed={!!session}
+      roomStats={deal ? roomStats(statRows, deal) : []}
     />
   );
 }

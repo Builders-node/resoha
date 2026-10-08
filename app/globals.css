@@ -2014,3 +2014,43 @@ html{scroll-behavior:smooth}
   .lf__bar .btn{flex:1}
   .lf__bar .lf__spacer{display:none}
 }
+
+/* ---------- статистика цін (як «Статистика цін на квартири» і «ЛУН статистика») ---------- */
+.pstat{margin:4px 0 22px}
+.pstat__head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.pstat__head h2{font-size:var(--fs-h2)}
+.pstat__more{width:48px;height:48px;padding:0;justify-content:center;flex:none}
+.pstat__grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.pstat__card{display:flex;flex-direction:column;align-items:flex-start;gap:8px;padding:14px 14px 16px;border:0;border-radius:var(--radius);
+  background:var(--bg-soft);color:var(--ink);text-align:left;font:inherit;cursor:pointer;transition:filter var(--dur) var(--ease)}
+.pstat__card:hover{filter:brightness(.97)}
+.pstat__card.is-up{background:#d3f2dd}
+.pstat__card.is-down{background:#f6d6d0}
+.pstat__k{font-size:15px;font-weight:600}
+.pstat__v{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.pstat__v small{font-size:13px;font-weight:700;margin-left:3px;letter-spacing:0}
+.pstat__ch{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700}
+.pstat-badge{display:inline-block;border-radius:6px;padding:3px 7px;font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap}
+.pstat-badge.is-up{background:#4fc96d}
+.pstat-badge.is-down{background:#e2574c;color:#fff}
+
+.section__head--start .btn{margin-left:0}
+.city-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px;align-items:start}
+.city-stat{display:grid;gap:2px}
+.city-stat__top,.city-stat__bottom{background:#000;color:#fff;padding:20px 18px}
+.city-stat__top{border-radius:var(--radius) var(--radius) 0 0}
+.city-stat__bottom{border-radius:0 0 var(--radius) var(--radius);display:grid;gap:18px}
+.city-stat__bottom:empty{display:none}
+.city-stat:has(.city-stat__bottom:empty) .city-stat__top{border-radius:var(--radius)}
+.city-stat__title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.city-stat__title h3{font-size:26px;line-height:1.15;color:#fff}
+.city-stat__brand{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:#fff;flex:none;padding-top:4px}
+.city-stat__brand .logo-mark{color:var(--orange)}
+.city-stat__month{display:block;margin:14px 0 22px;font-size:14px;color:rgba(255,255,255,.8)}
+.city-stat__row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:start}
+.city-stat__k{font-weight:700;font-size:17px}
+.city-stat__row.is-lead .city-stat__k{font-weight:500;font-size:14px;color:rgba(255,255,255,.65)}
+.city-stat__v{display:grid;gap:4px;min-width:84px}
+.city-stat__v b{font-size:20px;font-weight:700}
+.city-stat__v small,.city-stat__ch small{font-size:13px;color:rgba(255,255,255,.6)}
+.city-stat__ch{display:grid;justify-items:end;gap:6px;min-width:64px}

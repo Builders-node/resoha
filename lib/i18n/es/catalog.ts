@@ -594,4 +594,13 @@ export const ES_CATALOG: Record<string, string> = {
   '{n} layouts': '{n} distribuciones',
   '{n} of {total} available': '{n} de {total} disponibles',
   '{n}-bedroom apartments': 'Apartamentos de {n} habitaciones',
+  // Статистика цін (каталог і головна)
+  'Price statistics': 'Estadísticas de precios',
+  'Rent price statistics': 'Estadísticas de precios de alquiler',
+  'Home price statistics': 'Estadísticas de precios de vivienda',
+  '3+ bedrooms': '3+ habitaciones',
+  'vs {date}': 'vs {date}',
+  'Resoha statistics': 'Estadísticas de Resoha',
+  'Median price': 'Precio mediano',
+  'in a year': 'en un año',
 };

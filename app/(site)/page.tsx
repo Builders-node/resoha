@@ -4,7 +4,9 @@ import Icon from '@/components/Icon';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
-import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, queryListings } from '@/lib/db';
+import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, priceStatsRows, queryListings } from '@/lib/db';
+import { CityPriceStats } from '@/components/PriceStats';
+import { cityStats, statsPeriod, yearAgo } from '@/lib/priceStats';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { trackPromo } from '@/lib/promo';
@@ -34,7 +36,7 @@ const RENT_TILES = [
 
 export default async function HomePage() {
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
-  const [session, all, newest, board, devs, featuredBuildings, lang] = await Promise.all([
+  const [session, all, newest, board, devs, featuredBuildings, lang, statRows] = await Promise.all([
     getSession(),
     queryListings(),
     queryListings({ sort: 'new' }),
@@ -42,6 +44,8 @@ export default async function HomePage() {
     listDevelopments(),
     listFeaturedBuildings(),
     getLang(),
+    // статистика не має валити головну: без неї просто не буде блоку
+    priceStatsRows(yearAgo()).catch(() => []),
   ]);
   const t = makeT(lang);
   const favIds = session ? await getFavorites(session.id) : [];
@@ -230,6 +234,8 @@ export default async function HomePage() {
         </div>
       </section>
       )}
+
+      <CityPriceStats cities={cityStats(statRows)} period={statsPeriod()} />
 
       <section className="section">
         <div className="wrap">
