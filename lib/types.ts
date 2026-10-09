@@ -1,4 +1,5 @@
 import type { WeekSchedule } from './visits';
+import type { AgencyRole } from './teamRoles';
 import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
 import type { PhotoRooms } from './rooms';
@@ -45,6 +46,7 @@ export interface Profile {
   /* профіль ріелтора */
   agencyId: string | null;  // null — незалежний ріелтор
   isOwner: boolean;         // власник агенції
+  agencyRole?: AgencyRole | null; // роль в активній команді (0055)
   isAdmin: boolean;         // адміністратор платформи
   agency: string;           // назва агенції для показу ('Independent agent')
   experience: number;
@@ -212,6 +214,8 @@ export interface Development {
   office: string;              // адреса відділу продажів
   hours: string;               // години роботи відділу продажів вільним текстом: примітка до графіка
   schedule: WeekSchedule;      // графік по днях — з нього слоти запису на візит; [] — не задано
+  visitCapacity: number;       // скільки візитів в один слот (0055)
+  blackoutDates: string[];     // «YYYY-MM-DD», коли відділ продажів зачинений: свята
   agentId: string;
   agencyId: string | null;
   active: boolean;
@@ -326,6 +330,7 @@ export interface Session {
   avatar: string;
   agencyId: string | null;
   isOwner: boolean;         // власник агенції
+  agencyRole?: AgencyRole | null;
   isAdmin: boolean;         // адміністратор платформи
 }
 

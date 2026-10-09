@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
+import VisitSettings from './VisitSettings';
 import LocationPicker from './LocationPicker';
 import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
@@ -292,7 +293,12 @@ function DevelopmentManager({ initial, section: start, onBack, onDeleted, onUnit
             </>
           )}
           {section === 'details' && <FeaturesSection dev={dev} patch={patch} />}
-          {section === 'location' && <LocationSection dev={dev} patch={patch} />}
+          {section === 'location' && (
+            <>
+              <LocationSection dev={dev} patch={patch} />
+              <VisitSettings dev={dev} onSaved={(visitCapacity, blackoutDates) => setDev({ ...dev, visitCapacity, blackoutDates })} />
+            </>
+          )}
           {section === 'media' && <MediaSection dev={dev} patch={patch} />}
           {section === 'documents' && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
           {section === 'construction' && <ProgressEditor devId={dev.id} buildings={buildings} />}

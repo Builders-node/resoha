@@ -20,6 +20,8 @@ import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
+import VisitsCalendar from './VisitsCalendar';
+import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
 
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
@@ -37,6 +39,7 @@ function navGroups({ agency, total, newLeads }: { agency: boolean; total: number
       { tab: 'listings', icon: 'home', label: 'Listings', count: total },
       { tab: 'developments', icon: 'building', label: 'Developments' },
       { tab: 'leads', icon: 'inbox', label: 'Leads', count: newLeads || undefined, alert: true },
+      { tab: 'visits', icon: 'calendar', label: 'Visits' },
     ] },
     { title: 'Growth', items: [
       { tab: 'analytics', icon: 'chart', label: 'Analytics' },
@@ -139,6 +142,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   if (!agent || !stats) return <div className="wrap" style={{ padding: 60 }}>Loading dashboard…</div>;
 
   const isOwner = agent.isOwner && !!agency;
+  // усі оголошення команди бачать власник, менеджер і редактор (0055); роль — із сесії (публічний профіль її не має)
+  const role = { agencyId: agent.agencyId, isOwner: agent.isOwner, agencyRole: session.agencyRole };
+  const canListings = !!agency && agencyCan(role, 'listings');
 
   return (
     <div className="wrap dash">
@@ -177,7 +183,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                   {teams.map((t) => <option key={t.agency.id} value={t.agency.id}>{t.agency.name}</option>)}
                 </select>
               ) : agency ? agency.name : 'Independent agent'}
-              {isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>Owner</span>}
+              {agency && agencyRoleOf(role) !== 'agent' && <span className="pill pill--on" style={{ marginLeft: 8 }}>{roleLabel(agencyRoleOf(role))}</span>}
               {agent.phone && ` · ${agent.phone}`}
             </div>
           </div>
@@ -201,7 +207,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'promote' && <PromotePanel />}
 
-        {tab === 'analytics' && <AnalyticsPanel isOwner={isOwner} agencyName={agency?.name} />}
+        {tab === 'analytics' && <AnalyticsPanel isOwner={canListings} agencyName={agency?.name} />}
+
+        {tab === 'visits' && <VisitsCalendar meId={session.id} />}
 
         {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin} />}
 
@@ -209,7 +217,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div className="panel">
             <div className="fgroup__head">
               <h3>{scope === 'agency' ? `${agency?.name} listings` : 'My listings'}</h3>
-              {isOwner && (
+              {canListings && (
                 <div className="chip-row">
                   <button className={`chip-btn ${scope === 'own' ? 'is-on' : ''}`} onClick={() => setScope('own')}>Mine</button>
                   <button className={`chip-btn ${scope === 'agency' ? 'is-on' : ''}`} onClick={() => setScope('agency')}>Whole agency</button>

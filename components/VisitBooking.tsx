@@ -1,14 +1,31 @@
 'use client';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import { useLang, useT } from './LangProvider';
 import { intlLocale } from '@/lib/i18n';
 import {
-  BOOK_DAYS, CONTACT_PREFS, SALES_TZ, VISIT_TOPICS, WEEKDAYS, addDays, officeTimeToDate, officeToday,
-  scheduleLines, slotPart, slotsFor, weekdayOf, type WeekSchedule,
+  BOOK_DAYS, CONTACT_PREFS, NO_LIMITS, SALES_TZ, VISIT_TOPICS, WEEKDAYS, addDays, freeSlotsFor, officeTimeToDate, officeToday,
+  scheduleLines, slotPart, weekdayOf, type Availability, type WeekSchedule,
 } from '@/lib/visits';
+
+/**
+ * Свята й зайняті слоти ЖК (0055): спершу те, що прийшло зі сторінки, потім свіжі дані з API.
+ * Без devId або до міграції — лише графік, як раніше.
+ */
+export function useAvailability(devId: string | undefined, initial?: Partial<Availability>) {
+  const [avail, setAvail] = useState<Availability>({ ...NO_LIMITS, ...initial });
+  const reload = useCallback(() => {
+    if (!devId) return;
+    fetch(`/api/developments/${devId}/availability`, { cache: 'no-store' })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: Availability | null) => { if (d && d.busy) setAvail(d); })
+      .catch(() => {});
+  }, [devId]);
+  useEffect(() => { reload(); }, [reload]);
+  return [avail, reload] as const;
+}
 
 const STEPS = 4;
 const PARTS = ['Morning', 'Afternoon', 'Evening'] as const;
@@ -17,8 +34,10 @@ const PARTS = ['Morning', 'Afternoon', 'Evening'] as const;
  * Запис на візит у відділ продажів, як у LUN: 1) що цікавить, 2) дата й час за графіком офісу,
  * 3) як звʼязатись; після відправки — підтвердження. Заявка падає в Leads кабінету ріелтора.
  */
-export default function VisitBooking({ devId, devName, address, schedule, note, unitTopics, me, backHref, initialDay }: {
+export default function VisitBooking({ devId, devName, address, schedule, blackout, note, unitTopics, me, backHref, initialDay }: {
   devId: string;
+  /** Свята відділу продажів — щоб календар не мигав до відповіді API */
+  blackout?: string[];
   devName: string;
   address: string;
   schedule: WeekSchedule;
@@ -34,7 +53,9 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
   const locale = intlLocale(useLang());
   const [step, setStep] = useState(0);
   const [topics, setTopics] = useState<string[]>([]);
-  const [day, setDay] = useState(() => (initialDay && slotsFor(schedule, initialDay).length ? initialDay : ''));
+  const [avail, reloadAvail] = useAvailability(devId, { blackout: blackout ?? [] });
+  const openSlots = (d: string) => freeSlotsFor(schedule, d, avail);
+  const [day, setDay] = useState(() => (initialDay && freeSlotsFor(schedule, initialDay, { ...NO_LIMITS, blackout: blackout ?? [] }).length ? initialDay : ''));
   const [time, setTime] = useState('');
   const [sending, setSending] = useState(false);
 
@@ -44,14 +65,14 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
 
   const today = officeToday();
   const [month, setMonth] = useState((day || today).slice(0, 7));
-  const slots = useMemo(() => (day ? slotsFor(schedule, day) : []), [schedule, day]);
+  const slots = useMemo(() => (day ? freeSlotsFor(schedule, day, avail) : []), [schedule, day, avail]);
 
   // перший день з вільними слотами — щоб календар не відкривався на порожньому сьогодні
   function toDates() {
     if (!day) {
       for (let i = 0; i <= BOOK_DAYS; i++) {
         const d = addDays(today, i);
-        if (slotsFor(schedule, d).length) { setDay(d); setMonth(d.slice(0, 7)); break; }
+        if (openSlots(d).length) { setDay(d); setMonth(d.slice(0, 7)); break; }
       }
     }
     setStep(1);
@@ -80,8 +101,8 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
     if (res.ok) return setStep(3);
     const error = (await res.json().catch(() => ({}))).error;
     toast(error ? t(error) : t('Something went wrong'));
-    // слот могли вже прибрати (минув час) — повертаємо на вибір часу
-    if (res.status === 400 && /time/i.test(error ?? '')) { setTime(''); setStep(1); }
+    // слот могли вже прибрати (минув час чи хтось зайняв останнє місце) — повертаємо на вибір часу
+    if (res.status === 400 && /time/i.test(error ?? '')) { setTime(''); setStep(1); reloadAvail(); }
   }
 
   const lines = scheduleLines(schedule);
@@ -137,7 +158,7 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
             {t('Times are shown in the sales office time zone ({tz})', { tz: SALES_TZ })}
           </p>
           <Calendar month={month} setMonth={setMonth} today={today} selected={day} fmt={fmt} t={t}
-            isOpen={(d) => slotsFor(schedule, d).length > 0} onPick={(d) => { setDay(d); setTime(''); }} />
+            isOpen={(d) => openSlots(d).length > 0} onPick={(d) => { setDay(d); setTime(''); }} />
 
           {day && slots.length === 0 && <p className="muted" style={{ marginTop: 24 }}>{t('No free times on this day.')}</p>}
           {PARTS.map((part) => {
@@ -212,8 +233,11 @@ export default function VisitBooking({ devId, devName, address, schedule, note, 
  * Блок «Запишіться на візит у відділ продажу» на вкладці «Contacts», як у LUN: календар місяця
  * з робочими днями за графіком і кнопка — далі вже повна форма запису з обраним днем.
  */
-export function VisitPicker({ schedule, href }: { schedule: WeekSchedule; href: string }) {
+export function VisitPicker({ schedule, href, devId, blackout }: {
+  schedule: WeekSchedule; href: string; devId?: string; blackout?: string[];
+}) {
   const t = useT();
+  const [avail] = useAvailability(devId, { blackout: blackout ?? [] });
   const locale = intlLocale(useLang());
   const today = officeToday();
   const [month, setMonth] = useState(today.slice(0, 7));
@@ -223,7 +247,7 @@ export function VisitPicker({ schedule, href }: { schedule: WeekSchedule; href: 
   return (
     <div className="vcal vpick">
       <Calendar month={month} setMonth={setMonth} today={today} selected={day} fmt={fmt} t={t} bare
-        isOpen={(d) => slotsFor(schedule, d).length > 0} onPick={setDay} />
+        isOpen={(d) => freeSlotsFor(schedule, d, avail).length > 0} onPick={setDay} />
       <Link className="btn btn--primary btn--lg btn--block vpick__go" href={day ? `${href}?day=${day}` : href}>
         {t('Book a visit')}
       </Link>
@@ -231,7 +255,7 @@ export function VisitPicker({ schedule, href }: { schedule: WeekSchedule; href: 
   );
 }
 
-function Calendar({ month, setMonth, today, selected, isOpen, onPick, fmt, t, bare }: {
+export function Calendar({ month, setMonth, today, selected, isOpen, onPick, fmt, t, bare }: {
   /** Без власного фону — коли календар уже всередині картки */
   bare?: boolean;
   month: string; setMonth: (m: string) => void; today: string; selected: string;
