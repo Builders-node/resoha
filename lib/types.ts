@@ -140,6 +140,10 @@ export interface Listing {
   duplicateOf: string | null;
   /** Коли перестане показуватись покупцям; null — без строку (квартири ЖК) */
   expiresAt: string | null;
+  /** живі види платного просування: top, highlight, homepage, premium_agent… (міграція 0060) */
+  promo?: string[];
+  /** показано на платному місці «Sponsored» угорі пошуку */
+  sponsored?: boolean;
 }
 
 export type ListingReview = 'draft' | 'pending' | 'approved' | 'rejected';

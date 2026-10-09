@@ -52,7 +52,10 @@ export default async function HomePage() {
   const favIds = session ? await getFavorites(session.id) : [];
 
   // відмічені адміном ідуть першими, у порядку з вкладки Featured; решта — як прийшли (найновіші)
-  const featured = [...all].sort((a, b) => Number(b.featured) - Number(a.featured)
+  // платне «Home page spot» (міграція 0060) — одразу за відміченими
+  const onHome = (l: (typeof all)[number]) => l.featured || !!l.promo?.includes('homepage');
+  const featured = [...all].sort((a, b) => Number(onHome(b)) - Number(onHome(a))
+    || Number(b.featured) - Number(a.featured)
     || (a.featured ? a.featuredRank - b.featuredRank : 0)).slice(0, 4);
   // на невеликому каталозі обидва блоки показували майже одні й ті самі картки
   const featuredIds = new Set(featured.map((l) => l.id));

@@ -2,7 +2,7 @@ import { after } from 'next/server';
 import { headers } from 'next/headers';
 import { supabaseServer } from './supabase/server';
 import type { Agent } from './types';
-import type { PromoCampaign, PromoKind, PromoPackage, PromoTarget } from './promoShared';
+import { isPromoProduct, type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget } from './promoShared';
 
 /**
  * Платне просування (міграція 0046). Кампанія = Featured на N днів для оголошення,
@@ -17,6 +17,7 @@ type Row = Record<string, any>;
 
 const mapPackage = (r: Row): PromoPackage => ({
   id: r.id, kind: r.target_kind, days: r.days, priceCents: r.price_cents, currency: r.currency, active: r.active,
+  product: isPromoProduct(r.product) ? r.product : 'featured',
 });
 
 const mapCampaign = (r: Row): PromoCampaign => ({
@@ -26,6 +27,9 @@ const mapCampaign = (r: Row): PromoCampaign => ({
   status: r.status, payMethod: r.pay_method, payRef: r.pay_ref,
   paidAt: r.paid_at, startsAt: r.starts_at, endsAt: r.ends_at,
   impressions: r.impressions, clicks: r.clicks, createdAt: r.created_at,
+  // до міграції 0060 колонок немає — усе Featured і без повернень
+  product: isPromoProduct(r.product) ? r.product : 'featured',
+  refundedAt: r.refunded_at ?? null, refundCents: r.refund_cents ?? 0, refundRef: r.refund_ref ?? '',
 });
 
 export async function listPackages(includeInactive = false): Promise<PromoPackage[]> {
@@ -51,8 +55,9 @@ export async function listCampaigns(opts: { all?: boolean } = {}): Promise<Promo
   return (data ?? []).map(mapCampaign);
 }
 
-export async function getCampaign(id: string): Promise<PromoCampaign | null> {
-  const { data } = await (await supabaseServer()).from('promo_campaigns').select('*').eq('id', id).maybeSingle();
+export async function getCampaign(id: string, withOwner = false): Promise<PromoCampaign | null> {
+  const cols = withOwner ? '*, owner:profiles!promo_campaigns_owner_id_fkey(name)' : '*';
+  const { data } = await (await supabaseServer()).from('promo_campaigns').select(cols).eq('id', id).maybeSingle();
   return data ? mapCampaign(data) : null;
 }
 
@@ -134,12 +139,19 @@ export async function sweepPromotions() {
   if (error) console.error('promo_sweep failed:', error.message);
 }
 
-export async function savePackage(input: { id?: string; kind: PromoKind; days: number; priceCents: number; active: boolean }) {
+export async function savePackage(input: { id?: string; kind: PromoKind; product?: PromoProduct; days: number; priceCents: number; active: boolean }) {
   const client = await supabaseServer();
-  const row = { target_kind: input.kind, days: input.days, price_cents: input.priceCents, active: input.active };
-  const { error } = input.id
-    ? await client.from('promo_packages').update(row).eq('id', input.id)
-    : await client.from('promo_packages').upsert(row, { onConflict: 'target_kind,days' });
+  const product = input.product ?? 'featured';
+  const row: Row = { target_kind: input.kind, product, days: input.days, price_cents: input.priceCents, active: input.active };
+  const write = () => (input.id
+    ? client.from('promo_packages').update(row).eq('id', input.id)
+    : client.from('promo_packages').upsert(row, { onConflict: 'product' in row ? 'target_kind,product,days' : 'target_kind,days' }));
+  let { error } = await write();
+  // до міграції 0060 колонки product немає: пакети бувають лише Featured
+  if (error && missingColumn(error) && product === 'featured') {
+    delete row.product;
+    ({ error } = await write());
+  }
   if (error) throw new Error(error.message);
 }
 
@@ -150,8 +162,11 @@ const BOT = /bot|crawl|spider|slurp|preview|facebookexternalhit|whatsapp|telegra
  * Показ (обʼєкт був у списку) або перехід (відкрили його сторінку) для кампаній, що йдуть.
  * Пишемо після відповіді, тож сторінка на це не чекає. Без міграції 0046 просто мовчить.
  */
-export async function trackPromo(kind: PromoKind, items: { id: string; featured: boolean }[], field: 'impression' | 'click') {
-  const ids = items.filter((i) => i.featured).map((i) => i.id).slice(0, 60);
+export async function trackPromo(
+  kind: PromoKind, items: { id: string; featured?: boolean; sponsored?: boolean; promo?: string[] }[], field: 'impression' | 'click',
+) {
+  // не лише Featured: будь-який живий вид просування оголошення (міграція 0060)
+  const ids = items.filter((i) => i.featured || i.sponsored || i.promo?.length).map((i) => i.id).slice(0, 60);
   if (ids.length === 0) return;
   try {
     const h = await headers();
@@ -165,4 +180,45 @@ export async function trackPromo(kind: PromoKind, items: { id: string; featured:
   } catch {
     // поза запитом (збірка) заголовків немає — нічого не рахуємо
   }
+}
+
+/* ---------- повернення і «до/після» (міграція 0060) ---------- */
+
+const missingColumn = (e: { code?: string; message?: string }) =>
+  e.code === 'PGRST204' || e.code === '42703' || e.code === '42P01' || e.code === 'PGRST202' || e.code === '42883';
+
+/**
+ * Гроші повернули — кампанію скасувати й позначки зняти. Адмін — за id від свого імені;
+ * вебхук Stripe — за платежем (payment_intent) із секретом PROMO_SECRET.
+ * Повертає, скільки кампаній зачепило (0 — платіж не наш).
+ */
+export async function markRefunded(by: { id: string } | { paymentRef: string }, opts: { amountCents?: number | null; refundRef?: string; withSecret?: boolean } = {}) {
+  const { data, error } = await (await supabaseServer()).rpc('promo_refunded', {
+    p_id: 'id' in by ? by.id : null,
+    p_ref: 'paymentRef' in by ? by.paymentRef : '',
+    p_amount: opts.amountCents ?? null,
+    p_refund_ref: (opts.refundRef ?? '').slice(0, 200),
+    p_secret: opts.withSecret ? process.env.PROMO_SECRET ?? null : null,
+  });
+  if (error) throw new Error(missingColumn(error) ? 'Run migration 0060 to record refunds' : error.message);
+  return Number(data ?? 0);
+}
+
+/** Перегляди й заявки «до/під час» для своїх кампаній. Без міграції 0060 — порожньо. */
+export async function campaignEffects(ids: string[]): Promise<Record<string, PromoEffect>> {
+  if (!ids.length) return {};
+  const { data, error } = await (await supabaseServer()).rpc('promo_effect', { p_ids: ids.slice(0, 200) });
+  if (error) {
+    if (!missingColumn(error)) console.error('promo_effect failed:', error.message);
+    return {};
+  }
+  const out: Record<string, PromoEffect> = {};
+  for (const r of (data ?? []) as Row[]) {
+    out[r.campaign_id] = {
+      campaignId: r.campaign_id, windowDays: Number(r.window_days) || 0,
+      viewsBefore: Number(r.views_before) || 0, viewsDuring: Number(r.views_during) || 0,
+      leadsBefore: Number(r.leads_before) || 0, leadsDuring: Number(r.leads_during) || 0,
+    };
+  }
+  return out;
 }

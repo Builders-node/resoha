@@ -99,6 +99,8 @@ const mapListing = (r: Row): Listing => ({
   reviewNote: r.review_note ?? '',
   duplicateOf: r.duplicate_of ?? null,
   expiresAt: r.expires_at ?? null,
+  // до міграції 0060 колонки немає — платних позначок, крім featured, нема
+  promo: Array.isArray(r.promo_flags) ? r.promo_flags : [],
 });
 const REVIEWS: ListingReview[] = ['draft', 'pending', 'approved', 'rejected'];
 
@@ -282,12 +284,14 @@ async function withTerms(q: ListingQuery): Promise<ListingQuery> {
 }
 
 /**
- * Featured — це реклама: на публічних сторінках відмічене адміном завжди йде першим
- * (у порядку з вкладки Featured), а вже потім обране сортування. Кабінет і адмінка
- * (includeInactive) бачать чистий порядок — там людина керує своїм, а не дивиться вітрину.
+ * Featured — це реклама: у добірках (queryListings) відмічене йде першим (у порядку з
+ * вкладки Featured), а вже потім обране сортування. Пошук (searchListings) тримає
+ * сортування людини, а платне ставить окремо — не більше двох місць «Sponsored» угорі.
+ * Кабінет і адмінка (includeInactive) бачать чистий порядок.
+ * fresh — «нові» за fresh_at (публікація або платний bump, міграція 0060), а не created_at.
  */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function applySort(sel: any, sort: ListingQuery['sort'], promote = true) {
+function applySort(sel: any, sort: ListingQuery['sort'], promote = true, fresh = false) {
   if (promote) sel = sel.order('featured', { ascending: false }).order('featured_rank', { ascending: true });
   switch (sort) {
     case 'price_asc': return sel.order('price', { ascending: true });
@@ -297,28 +301,39 @@ function applySort(sel: any, sort: ListingQuery['sort'], promote = true) {
     // обчислювані колонки з міграції 0051; без площі чи без знижки — в кінець
     case 'ppsf_asc': return sel.order('price_per_sqft', { ascending: true, nullsFirst: false });
     case 'reduced': return sel.order('price_cut_pct', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
-    default: return sel.order('created_at', { ascending: false });
+    default: return sel.order(fresh ? 'fresh_at' : 'created_at', { ascending: false });
   }
 }
 
 export const PAGE_SIZE = 24;
 
-/** Сторінка результатів + скільки всього збігів (для «показати ще» і лічильника). */
+/**
+ * Сторінка результатів + скільки всього збігів (для «показати ще» і лічильника).
+ * Платні місця «Sponsored» (sponsoredSlots) — на першій сторінці над рештою; з органічної
+ * видачі їх прибрано на всіх сторінках, тож дублів немає, а total — усі збіги.
+ */
 export async function searchListings(query: ListingQuery = {}, page = 0, pageSize = PAGE_SIZE) {
   const q = await withTerms(query);
   const from = page * pageSize;
-  const run = async (sort: ListingQuery['sort']) => applySort(
-    applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q), sort, !q.includeInactive,
-  ).range(from, from + pageSize - 1);
+  const sponsored = await sponsoredSlots(q);
+  const skip = sponsored.map((l) => l.id);
+  const run = async (sort: ListingQuery['sort'], fresh: boolean) => {
+    let sel = applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q);
+    if (skip.length) sel = sel.not('id', 'in', `(${skip.join(',')})`);
+    return applySort(sel, sort, false, fresh).range(from, from + pageSize - 1);
+  };
 
-  let { data, error, count } = await run(q.sort);
+  let { data, error, count } = await run(q.sort, true);
+  // до міграції 0060 колонки fresh_at немає — «нові» за датою публікації
+  if (error && /fresh_at/.test(error.message ?? '')) ({ data, error, count } = await run(q.sort, false));
   // до міграції 0051 колонок для «за ft²» і «подешевшали» немає — тоді звичайний порядок
   if (error && NEW_SORTS.includes(q.sort ?? '') && (error.code === '42703' || /price_per_sqft|price_cut_pct/.test(error.message))) {
-    ({ data, error, count } = await run(undefined));
+    ({ data, error, count } = await run(undefined, false));
   }
   if (error) throw error;
-  const items = (data ?? []).map(mapListing);
-  return { items, total: count ?? items.length, hasMore: from + items.length < (count ?? 0) };
+  const organic = (data ?? []).map(mapListing);
+  const items = page === 0 ? [...sponsored, ...organic] : organic;
+  return { items, total: (count ?? organic.length) + sponsored.length, hasMore: from + organic.length < (count ?? 0) };
 }
 
 /** Координати всіх збігів — щоб карта показувала повну картину, а список вантажився сторінками. */
@@ -1648,4 +1663,43 @@ export async function applyPriceListRpc(input: {
     throw error;
   }
   return data as { created: number; updated: number };
+}
+
+/* ---------- платні місця в пошуку (міграція 0060) ---------- */
+
+/** Скільки місць «Sponsored» угорі видачі. */
+export const SPONSORED_SLOTS = 2;
+
+/** FNV-1a: стабільне «випадкове» число з рядка — для ротації платних місць. */
+function fnv(s: string) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193);
+  return h >>> 0;
+}
+
+/**
+ * Платні оголошення, що відповідають тим самим фільтрам: «Top of search» або Featured.
+ * Не більше SPONSORED_SLOTS; Top має перевагу, серед рівних — ротація, що міняється щогодини
+ * (стабільна між сторінками, але кожен покупець не бачить вічно тих самих).
+ * Портфель агента/агенції, ЖК, обране і кабінет — без реклами.
+ * До міграції 0060 платне — це featured.
+ */
+async function sponsoredSlots(q: ListingQuery): Promise<Listing[]> {
+  if (q.includeInactive || q.ids?.length || q.agentId || q.agencyId || q.developmentId) return [];
+  const client = await db();
+  const base = () => applyFilters(client.from('listings').select(listingCols(q)), q);
+  let { data, error } = await base().overlaps('promo_flags', ['top', 'featured']).limit(60);
+  if (error && (error.code === '42703' || /promo_flags/.test(error.message ?? ''))) {
+    ({ data, error } = await base().eq('featured', true).limit(60));
+  }
+  if (error) {
+    console.error('sponsored slots failed:', error.message);
+    return [];
+  }
+  const hour = Math.floor(Date.now() / 3.6e6);
+  const top = (l: Listing) => (l.promo?.includes('top') ? 0 : 1);
+  return ((data ?? []) as Row[]).map(mapListing)
+    .sort((a, b) => top(a) - top(b) || fnv(`${a.id}:${hour}`) - fnv(`${b.id}:${hour}`))
+    .slice(0, SPONSORED_SLOTS)
+    .map((l) => ({ ...l, sponsored: true }));
 }
