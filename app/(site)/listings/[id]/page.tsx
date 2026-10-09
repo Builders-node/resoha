@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
+import CompareButton from '@/components/CompareButton';
 import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
@@ -186,7 +187,10 @@ export default async function PropertyPage({ params, searchParams }: {
                 </Link>
               )}
             </div>
-            <div className="prop__fav"><FavButton listingId={listing.id} initial={favIds.includes(listing.id)} /></div>
+            <div className="prop__acts">
+              <CompareButton listingId={listing.id} variant="page" />
+              <div className="prop__fav"><FavButton listingId={listing.id} initial={favIds.includes(listing.id)} /></div>
+            </div>
           </div>
 
           <div className="prop__price">

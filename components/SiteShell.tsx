@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import SidebarSlot from './SidebarSlot';
 import Footer from './Footer';
+import CompareTray from './CompareTray';
 
 /** Каркас каталогу: темна рейка зліва, контент і футер. Лендинги живуть без нього. */
 export default function SiteShell({ children }: { children: React.ReactNode }) {
@@ -13,6 +14,7 @@ export default function SiteShell({ children }: { children: React.ReactNode }) {
         <main>{children}</main>
         <Footer />
       </div>
+      <CompareTray />
     </div>
   );
 }

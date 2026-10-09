@@ -13,4 +13,22 @@ export const ES_BUYER: Record<string, string> = {
   // --- нещодавно переглянуте ---
   'Recently viewed': 'Vistos recientemente',
   'Clear history': 'Borrar historial',
+
+  // --- порівняння (CompareButton, CompareTray, /compare) ---
+  'Compare': 'Comparar',
+  'In compare': 'En comparación',
+  'Add to compare': 'Añadir a comparación',
+  'Remove from compare': 'Quitar de comparación',
+  'Added to compare': 'Añadido a comparación',
+  'Removed from compare': 'Quitado de comparación',
+  'You can compare up to {n} listings. Remove one first.': 'Puede comparar hasta {n} propiedades. Quite una primero.',
+  'Compare listings': 'Comparar propiedades',
+  'Clear compare': 'Vaciar comparación',
+  'Up to {n} listings side by side. Add them with the compare button on any card or listing page.':
+    'Hasta {n} propiedades lado a lado. Añádalas con el botón de comparar en cualquier tarjeta o página de propiedad.',
+  'Nothing to compare yet.': 'Aún no hay nada que comparar.',
+  'Price per area': 'Precio por superficie',
+  'Neighborhood': 'Zona',
+  'Yes': 'Sí',
+  'No': 'No',
 };

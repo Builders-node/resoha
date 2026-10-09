@@ -92,6 +92,8 @@ const PATHS: Record<string, React.ReactNode> = {
   lock: <><rect x="5" y="10.4" width="14" height="10" rx="2" /><path d="M8.2 10.4V7.6a3.8 3.8 0 0 1 7.6 0v2.8" /><path d="M12 14.4v2.2" /></>,
   plan: <><rect x="3.8" y="3.8" width="16.4" height="16.4" rx="1.6" /><path d="M10.4 3.8v7h-6.6M10.4 14.6v5.6M14.4 10.8h5.8" /></>,
   sun: <><circle cx="12" cy="12" r="3.8" /><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6 7 7M17 17l1.4 1.4M5.6 18.4 7 17M17 7l1.4-1.4" /></>,
+  /* порівняння: дві колонки поруч */
+  compare: <><rect x="3.6" y="4.4" width="7" height="15.2" rx="1.6" /><rect x="13.4" y="4.4" width="7" height="15.2" rx="1.6" /><path d="M6 9h2.2M6 12.6h2.2M15.8 9H18M15.8 12.6H18" /></>,
 };
 
 type Props = SVGProps<SVGSVGElement> & { name: keyof typeof PATHS | string; size?: number };
