@@ -114,6 +114,7 @@ const mapLead = (r: Row): Lead => ({
   visitAt: r.visit_at ?? null, interests: r.interests ?? [], contactVia: r.contact_via ?? '',
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
   developmentName: r.listing?.development?.name ?? '', developmentSlug: r.listing?.development?.slug ?? '',
+  source: r.source ?? '',   // до міграції 0056 колонки немає
 });
 
 /**
@@ -926,6 +927,8 @@ export async function createLead(input: {
   visitAt?: string; interests?: string[]; contactVia?: string;
   /** Візит текстом — для бази без міграції 0047, де дату й теми нікуди більше покласти */
   visitSummary?: string;
+  /** 'widget' — заявка з віджета ЖК на чужому сайті (міграція 0056) */
+  source?: string;
 }): Promise<boolean> {
   const client = await db();
   const { data: listing } = await client.from('listings')
@@ -941,7 +944,12 @@ export async function createLead(input: {
   };
   const visit = input.channel === 'visit'
     ? { visit_at: input.visitAt, interests: input.interests ?? [], contact_via: input.contactVia ?? '' } : {};
-  let { error } = await client.from('leads').insert({ ...row, ...visit });
+  let { error } = await client.from('leads').insert({ ...row, ...visit, ...(input.source ? { source: input.source } : {}) });
+  // до міграції 0056 колонки source немає — позначку джерела ставимо першим рядком повідомлення
+  if (error && input.source && (error.code === 'PGRST204' || error.code === '42703' || /source/.test(error.message ?? ''))) {
+    const message = `[${input.source === 'widget' ? 'Website widget' : input.source}]\n${input.message}`.slice(0, 2000);
+    ({ error } = await client.from('leads').insert({ ...row, ...visit, message }));
+  }
   // до міграції 0047 немає ні каналу «visit», ні його колонок — тоді звичайна заявка
   // з датою візиту й темами в тексті повідомлення
   if (error && input.channel === 'visit' && /visit_at|interests|contact_via|channel_check/.test(error.message ?? '')) {

@@ -251,6 +251,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                     {l.status === 'new' ? 'New' : 'Handled'}
                   </span>
                   {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
+                  {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>Website widget</span>}
                   {l.visitAt && <VisitLine lead={l} />}
                   {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
                   <div className="tiny muted" style={{ marginTop: 6 }}>

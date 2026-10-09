@@ -5,6 +5,7 @@ import Icon from './Icon';
 import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
+import EmbedSnippets from './EmbedSnippets';
 import type { Developer } from '@/lib/types';
 
 /**
@@ -25,15 +26,20 @@ export default function DeveloperPanel() {
 
   if (editing || !items.length) {
     return (
-      <DeveloperForm
-        dev={editing && editing !== 'new' ? editing : null}
-        onCancel={items.length ? () => setEditing(null) : undefined}
-        onSaved={() => { setEditing(null); load(); }}
-      />
+      <>
+        <DeveloperForm
+          dev={editing && editing !== 'new' ? editing : null}
+          onCancel={items.length ? () => setEditing(null) : undefined}
+          onSaved={() => { setEditing(null); load(); }}
+        />
+        {/* ЖК ріелтора можна вбудувати й без профілю компанії */}
+        {!editing && <EmbedSnippets companyIds={[]} />}
+      </>
     );
   }
 
   return (
+    <>
     <div className="panel">
       <div className="fgroup__head">
         <h3>Developer profile</h3>
@@ -60,6 +66,8 @@ export default function DeveloperPanel() {
         ))}
       </div>
     </div>
+    <EmbedSnippets companyIds={items.map((d) => d.id)} />
+    </>
   );
 }
 

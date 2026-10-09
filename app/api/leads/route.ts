@@ -34,6 +34,9 @@ export async function POST(req: Request) {
 
   const user = await currentUser();
   const channel = body.channel === 'whatsapp' ? 'whatsapp' : 'form';
+  // віджет ЖК на сайті забудовника (/embed/developments/<slug>): позначаємо джерело й сайт, де стоїть віджет
+  const widget = body.source === 'widget';
+  const site = widget ? clip(body.site, 120).replace(/^https?:\/\//, '').replace(/\/.*$/, '') : '';
 
   const name = channel === 'whatsapp' ? (user?.name || 'WhatsApp visitor') : clip(body.name, 120);
   const phone = channel === 'whatsapp' ? (user?.phone ?? '') : clip(body.phone, 40);
@@ -47,9 +50,11 @@ export async function POST(req: Request) {
       name,
       phone: clip(phone, 40),
       email: clip(body.email, 200) || user?.email || '',
-      message: channel === 'whatsapp' ? 'Opened WhatsApp from the listing page.' : clip(body.message, 2000),
+      message: channel === 'whatsapp' ? 'Opened WhatsApp from the listing page.'
+        : [clip(body.message, 1900), site && `Sent from the widget on ${site}`].filter(Boolean).join('\n\n'),
       userId: user?.id ?? null,   // залогінений бачитиме звернення у своєму кабінеті
       channel,
+      source: widget ? 'widget' : undefined,
     });
     if (!ok) return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
     // ріелтор дізнається про заявку одразу, а не з наступним проходом черги

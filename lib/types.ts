@@ -306,6 +306,7 @@ export interface Lead {
   developmentSlug: string;
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
+  source?: string;            // 'widget' — з віджета ЖК на сайті забудовника; '' — з Resoha
 }
 
 export interface SavedSearch {

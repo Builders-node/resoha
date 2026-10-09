@@ -5,6 +5,7 @@ import { ES_LANDING } from './es/landing';
 import { ES_LIFECYCLE } from './es/lifecycle';
 import { ES_BUYER } from './es/buyer';
 import { ES_SEARCH } from './es/search';
+import { ES_EMBED } from './es/embed';
 
 /** Іспанський словник: англійський рядок → переклад. Розбитий на файли за розділами сайту. */
 export const ES: Record<string, string> = {
@@ -15,4 +16,5 @@ export const ES: Record<string, string> = {
   ...ES_LIFECYCLE,
   ...ES_BUYER,
   ...ES_SEARCH,
+  ...ES_EMBED,
 };
