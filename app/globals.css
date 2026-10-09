@@ -2118,34 +2118,6 @@ html{scroll-behavior:smooth}
   .cmp-table tbody th,.cmp-table thead th:first-child{width:96px;min-width:96px;font-size:12px}
 }
 
-/* пошук на головній: вкладки угоди, поле з підказками, кнопка */
-.hsearch{padding-top:28px}
-.hsearch + .home-top{padding-top:20px}
-.hsearch__tabs{display:flex;gap:8px;margin-bottom:12px;overflow-x:auto;scrollbar-width:none}
-.hsearch__tabs::-webkit-scrollbar{display:none}
-.hsearch__tabs .chip-btn{flex:none}
-.hsearch__form{display:flex;gap:10px;align-items:stretch}
-.hsearch__field{position:relative;flex:1;min-width:0;display:flex;align-items:center;gap:10px;
-  border:2px solid var(--ink);border-radius:var(--radius);padding:0 16px;background:#fff}
-.hsearch__field > .ico{color:var(--ink-2)}
-.hsearch__input{flex:1;min-width:0;border:0;outline:none;background:none;height:52px;font-size:16px;font-weight:500}
-.hsearch__input::-webkit-search-cancel-button{cursor:pointer}
-.hsearch__list{position:absolute;left:-2px;right:-2px;top:calc(100% + 6px);z-index:900;list-style:none;margin:0;padding:6px;
-  background:#fff;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-lg);max-height:min(420px,60vh);overflow-y:auto}
-.hsearch__group{padding:10px 10px 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3)}
-.hsearch__opt{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:10px;cursor:pointer}
-.hsearch__opt.is-active{background:var(--bg-soft)}
-.hsearch__ico{width:34px;height:34px;flex:none;display:grid;place-items:center;border-radius:10px;background:var(--chip);color:var(--ink-2)}
-.hsearch__txt{display:grid;min-width:0}
-.hsearch__txt b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hsearch__txt .small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.hsearch__go{flex:none}
-@media (max-width:560px){
-  .hsearch{padding-top:20px}
-  .hsearch__go{padding:0 16px}
-  .hsearch__go span{display:none}
-}
-
 /* калькулятор витрат і розстрочки на сторінці обʼєкта */
 .calc__grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
 .calc__card{border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 24px;background:#fff}
