@@ -412,3 +412,6 @@ export interface StatRow {
   neighborhood: string;
   priceThen: number | null;
 }
+
+/** Перемикачі сайту з адмінки (міграція 0052). */
+export type SiteSettings = { showPurchaseCosts: boolean; showFinancing: boolean };

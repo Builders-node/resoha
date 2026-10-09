@@ -7,7 +7,7 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, StatRow } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -1177,8 +1177,8 @@ export async function listFeaturedBuildings(): Promise<(Building & { development
 /* ---------- журнал дій адміністратора ---------- */
 type AdminLogInput = {
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign' | 'report';
-  targetId: string;
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign' | 'report' | 'site';
+  targetId: string | null;
   targetName?: string;
   reason?: string;
 };
@@ -1558,4 +1558,26 @@ export async function adminSetReport(id: string, status: 'open' | 'resolved' | '
     .select('id, listing_id').maybeSingle();
   if (error) throw error;
   return data as { id: string; listing_id: string } | null;
+}
+
+/* ---------- налаштування сайту (міграція 0052) ---------- */
+const SITE_DEFAULTS: SiteSettings = { showPurchaseCosts: true, showFinancing: true };
+
+/** До міграції 0052 таблиці немає — тоді все ввімкнено, як було. */
+export async function getSiteSettings(): Promise<SiteSettings> {
+  const { data, error } = await (await db()).from('site_settings')
+    .select('show_purchase_costs, show_financing').eq('id', 1).maybeSingle();
+  if (error || !data) return SITE_DEFAULTS;
+  return { showPurchaseCosts: data.show_purchase_costs, showFinancing: data.show_financing };
+}
+
+export async function updateSiteSettings(patch: Partial<SiteSettings>): Promise<SiteSettings> {
+  const row: Row = { updated_at: new Date().toISOString() };
+  if (typeof patch.showPurchaseCosts === 'boolean') row.show_purchase_costs = patch.showPurchaseCosts;
+  if (typeof patch.showFinancing === 'boolean') row.show_financing = patch.showFinancing;
+  const { data, error } = await (await db()).from('site_settings').update(row).eq('id', 1)
+    .select('show_purchase_costs, show_financing').maybeSingle();
+  if (error) throw error;
+  if (!data) throw new Error('Settings are not set up yet');
+  return { showPurchaseCosts: data.show_purchase_costs, showFinancing: data.show_financing };
 }
