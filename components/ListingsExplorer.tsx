@@ -146,6 +146,23 @@ export default function ListingsExplorer({
 
   const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
 
+  /*
+   * Текстовий пошук: поле живе окремим станом, а у фільтри (і в запит) текст іде після
+   * паузи ~300 мс — раніше кожна літера була окремим походом в API. Скидання фільтрів,
+   * модалка й навігація міняють filters.q ззовні — тоді поле підхоплює нове значення.
+   */
+  const [qDraft, setQDraft] = useState(filters.q);
+  const [seenQ, setSeenQ] = useState(filters.q);
+  if (filters.q !== seenQ) { setSeenQ(filters.q); setQDraft(filters.q); }
+  const qTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(qTimer.current), []);
+  const typeQ = (v: string) => {
+    setQDraft(v);
+    clearTimeout(qTimer.current);
+    qTimer.current = setTimeout(() => set({ q: v }), 300);
+  };
+  const flushQ = () => { clearTimeout(qTimer.current); if (qDraft !== filters.q) set({ q: qDraft }); };
+
   const onSelect = useCallback((id: string) => {
     setActiveId(id);
     document.getElementById(`card-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -180,7 +197,8 @@ export default function ListingsExplorer({
       <div className="filters" ref={filtersRef}>
         <div className="wrap filters__in">
           <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
-            value={filters.q} onChange={(e) => set({ q: e.target.value })} />
+            value={qDraft} onChange={(e) => typeQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
 
           <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
             <option value="">{t('Any type')}</option>

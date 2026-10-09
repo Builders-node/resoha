@@ -31,4 +31,11 @@ export const ES_BUYER: Record<string, string> = {
   'Neighborhood': 'Zona',
   'Yes': 'Sí',
   'No': 'No',
+
+  // --- пошук на головній (HomeSearch) ---
+  'What are you looking for?': '¿Qué está buscando?',
+  'Area, development or listing': 'Zona, proyecto o propiedad',
+  'Development or developer': 'Proyecto o desarrollador',
+  'Search': 'Buscar',
+  'Developments': 'Proyectos',
 };

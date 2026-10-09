@@ -4,6 +4,7 @@ import Icon from '@/components/Icon';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
+import HomeSearch from '@/components/HomeSearch';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, priceStatsRows, queryListings } from '@/lib/db';
 import { CityPriceStats } from '@/components/PriceStats';
@@ -91,6 +92,8 @@ export default async function HomePage() {
 
   return (
     <>
+      <HomeSearch />
+
       <section className="wrap home-top">
         <div className="tiles-block">
           <h3>{t('For sale')}</h3>
