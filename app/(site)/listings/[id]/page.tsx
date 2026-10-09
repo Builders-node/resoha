@@ -14,6 +14,7 @@ import Gallery from '@/components/Gallery';
 import PhotoTour from '@/components/PhotoTour';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
+import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
@@ -145,6 +146,7 @@ export default async function PropertyPage({ params, searchParams }: {
 
   return (
     <div className="wrap">
+      <RecordView id={listing.id} />
       <JsonLd data={graph(listingLd(listing, agent.name), breadcrumbLd([
         { name: 'Home', path: '/' },
         { name: DEAL_LABELS[listing.deal], path: `/listings?deal=${listing.deal}` },

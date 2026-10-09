@@ -6,6 +6,7 @@ import FiltersModal from './FiltersModal';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
+import RecentlyViewed from './RecentlyViewed';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
@@ -277,6 +278,8 @@ export default function ListingsExplorer({
               </button>
             </div>
           )}
+
+          <RecentlyViewed favIds={favIds} variant="list" />
         </div>
 
         <div className="split__map">

@@ -9,4 +9,8 @@ export const ES_BUYER: Record<string, string> = {
   'Nothing saved yet. Tap the heart on any listing to keep it here.':
     'Aún no hay nada guardado. Toque el corazón en cualquier propiedad para guardarla aquí.',
   'These listings are no longer on the market.': 'Estas propiedades ya no están en el mercado.',
+
+  // --- нещодавно переглянуте ---
+  'Recently viewed': 'Vistos recientemente',
+  'Clear history': 'Borrar historial',
 };

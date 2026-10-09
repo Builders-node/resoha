@@ -2073,3 +2073,6 @@ html{scroll-behavior:smooth}
 .notify-row:last-child{border-bottom:0;padding-bottom:0}
 .notify-row>span{display:grid;gap:2px}
 .notify-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--orange);flex:none}
+/* ===== Інструменти покупця: переглянуте, порівняння, пошук на головній, калькулятор ===== */
+.recent--list{margin-top:36px;padding-top:24px;border-top:1px solid var(--line)}
+.recent--list .section__head h2{font-size:20px}
