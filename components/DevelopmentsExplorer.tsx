@@ -75,7 +75,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
 
   return (
     <>
-      <div className={`split split--${mobileView}`} style={{ '--filters-h': '0px' } as React.CSSProperties}>
+      <div className={`split split--${mobileView}`}>
         <div className="split__list">
           <div className="list-head">
             <h1>{t('New developments')}</h1>

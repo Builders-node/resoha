@@ -58,19 +58,6 @@ export default function ListingsExplorer({
     document.body.dataset.mapView = '1';
     return () => { delete document.body.dataset.mapView; };
   }, [mobileView]);
-  const filtersRef = useRef<HTMLDivElement>(null);
-
-  /* висота панелі → в CSS, щоб карта займала рівно решту вікна */
-  useEffect(() => {
-    const el = filtersRef.current;
-    if (!el) return;
-    const apply = () => document.documentElement.style.setProperty('--filters-h', `${el.offsetHeight}px`);
-    const ro = new ResizeObserver(apply);
-    ro.observe(el);
-    apply();
-    return () => { ro.disconnect(); document.documentElement.style.removeProperty('--filters-h'); };
-  }, []);
-
   const qs = useMemo(() => toQuery(filters), [filters]);
   const area = useMemo(() => parseBbox(filters.bbox) ?? null, [filters.bbox]);
 
@@ -195,57 +182,59 @@ export default function ListingsExplorer({
 
   return (
     <>
-      <div className="filters" ref={filtersRef}>
-        <div className="wrap filters__in">
-          <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
-            value={qDraft} onChange={(e) => typeQ(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
-
-          <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
-            <option value="">{t('Any type')}</option>
-            <option value="condo">{t('Condos')}</option>
-            <option value="house">{t('Houses & villas')}</option>
-            <option value="land">{t('Land')}</option>
-            <option value="commercial">{t('Commercial')}</option>
-          </select>
-
-          {/* Oceanfront і Reset живуть ще й у модалці фільтрів, тож на телефоні
-              ховаємо їх, щоб панель влазила у ширину без бокової прокрутки. */}
-          <button className={`btn btn--sm filters__ocean ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
-            onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> {t('Oceanfront')}</button>
-
-          {/* лише в режимі Land: титул + дорога + світло + вода на місці */}
-          {filters.type === 'land' && (
-            <button className={`btn btn--sm filters__ocean ${filters.ready ? 'btn--primary' : 'btn--ghost'}`}
-              onClick={() => set({ ready: !filters.ready })}><Icon name="check" size={17} /> {t('Ready to build')}</button>
-          )}
-
-          <button className="btn btn--sm btn--orange filters__more" onClick={() => setModal(true)}>
-            <Icon name="sliders" size={17} /> {t('Filters')} {active > 0 && <span className="f-badge">{active}</span>}
-          </button>
-
-          <button className="btn btn--sm filters__save" onClick={saveSearch} aria-label={t('Save search')}>
-            <Icon name="bookmark" size={17} /> <span className="btn__t">{t('Save search')}</span>
-          </button>
-
-          {filters.bbox && (
-            <button className="btn btn--sm btn--primary filters__area" onClick={() => set({ bbox: '' })}
-              aria-label={t('Clear map area')}>
-              <Icon name="map" size={17} /> <span className="btn__t">{t('Map area')}</span> <Icon name="close" size={15} />
-            </button>
-          )}
-
-          {active > 0 && (
-            <button className="btn btn--sm btn--ghost filters__reset"
-              onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>{t('Reset all')}</button>
-          )}
-
-          <span className="filters__count">{loading ? t('Searching…') : nListings(total, lang)}</span>
-        </div>
-      </div>
-
+      {/* Як на ЛУН: уся панель (пошук, фільтри, заголовок, картки) — в одній колонці,
+          карта — на всю висоту поруч, тож панель фільтрів більше не налазить на карту. */}
       <div className={`split split--${mobileView}`}>
         <div className="split__list">
+          <div className="filters">
+            <div className="filters__in">
+              <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
+                value={qDraft} onChange={(e) => typeQ(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
+
+              <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
+                <option value="">{t('Any type')}</option>
+                <option value="condo">{t('Condos')}</option>
+                <option value="house">{t('Houses & villas')}</option>
+                <option value="land">{t('Land')}</option>
+                <option value="commercial">{t('Commercial')}</option>
+              </select>
+
+              {/* Oceanfront і Reset живуть ще й у модалці фільтрів, тож на телефоні
+                  ховаємо їх, щоб панель влазила у ширину без бокової прокрутки. */}
+              <button className={`btn btn--sm filters__ocean ${filters.oceanfront ? 'btn--primary' : 'btn--ghost'}`}
+                onClick={() => set({ oceanfront: !filters.oceanfront })}><Icon name="wave" size={17} /> {t('Oceanfront')}</button>
+
+              {/* лише в режимі Land: титул + дорога + світло + вода на місці */}
+              {filters.type === 'land' && (
+                <button className={`btn btn--sm filters__ocean ${filters.ready ? 'btn--primary' : 'btn--ghost'}`}
+                  onClick={() => set({ ready: !filters.ready })}><Icon name="check" size={17} /> {t('Ready to build')}</button>
+              )}
+
+              <button className="btn btn--sm btn--orange filters__more" onClick={() => setModal(true)}>
+                <Icon name="sliders" size={17} /> {t('Filters')} {active > 0 && <span className="f-badge">{active}</span>}
+              </button>
+
+              <button className="btn btn--sm filters__save" onClick={saveSearch} aria-label={t('Save search')}>
+                <Icon name="bookmark" size={17} /> <span className="btn__t">{t('Save search')}</span>
+              </button>
+
+              {filters.bbox && (
+                <button className="btn btn--sm btn--primary filters__area" onClick={() => set({ bbox: '' })}
+                  aria-label={t('Clear map area')}>
+                  <Icon name="map" size={17} /> <span className="btn__t">{t('Map area')}</span> <Icon name="close" size={15} />
+                </button>
+              )}
+
+              {active > 0 && (
+                <button className="btn btn--sm btn--ghost filters__reset"
+                  onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })}>{t('Reset all')}</button>
+              )}
+
+              <span className="filters__count">{loading ? t('Searching…') : nListings(total, lang)}</span>
+            </div>
+          </div>
+
           <FilterChips filters={filters} onChange={set} onReset={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })} />
           <div className="list-head">
             <h1>
