@@ -15,18 +15,20 @@ alter table public.listings add constraint listings_review_check
 alter table public.listings drop constraint if exists listings_review_note_len;
 alter table public.listings add constraint listings_review_note_len check (char_length(review_note) <= 500);
 
+-- бекфіл без тригерів: інакше touch_listing позначив би всі оголошення «оновленими сьогодні»
+alter table public.listings disable trigger user;
 update public.listings set published_at = created_at where published_at is null and review = 'approved';
 -- квартири ЖК живуть, поки їх продає забудовник; строк — лише в окремих оголошень
 update public.listings set expires_at = now() + interval '90 days'
   where development_id is null and expires_at is null;
+alter table public.listings enable trigger user;
 
 create index if not exists listings_review_idx on public.listings (review) where review <> 'approved';
 create index if not exists listings_expires_idx on public.listings (expires_at) where expires_at is not null;
 create index if not exists listings_duplicate_of_idx on public.listings (duplicate_of) where duplicate_of is not null;
 
 -- 2. Публічно видно лише перевірене й не прострочене. Автор, власник агенції й адмін бачать усе своє.
-drop policy if exists listings_read on public.listings;
-create policy listings_read on public.listings for select using (
+alter policy listings_read on public.listings using (
   (active and review = 'approved' and (expires_at is null or expires_at > now())
     and exists (select 1 from public.profiles p where p.id = listings.agent_id and p.active))
   or agent_id = (select auth.uid()) or public.is_agency_owner(agency_id) or public.is_admin()
@@ -115,8 +117,7 @@ begin
   return new;
 end $$;
 
-drop trigger if exists listings_review on public.listings;
-create trigger listings_review before insert or update on public.listings
+create or replace trigger listings_review before insert or update on public.listings
   for each row execute function public.listings_review();
 revoke all on function public.listings_review() from public, anon, authenticated;
 
@@ -142,13 +143,16 @@ create index if not exists listing_reports_user_idx on public.listing_reports (u
 create index if not exists listing_reports_handled_by_idx on public.listing_reports (handled_by);
 alter table public.listing_reports enable row level security;
 
-drop policy if exists listing_reports_insert on public.listing_reports;
-create policy listing_reports_insert on public.listing_reports for insert
+do $$ begin
+  create policy listing_reports_insert on public.listing_reports for insert
   with check (user_id is null or user_id = (select auth.uid()));
-drop policy if exists listing_reports_admin on public.listing_reports;
-create policy listing_reports_admin on public.listing_reports for select using (public.is_admin());
-drop policy if exists listing_reports_update on public.listing_reports;
-create policy listing_reports_update on public.listing_reports for update using (public.is_admin());
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy listing_reports_admin on public.listing_reports for select using (public.is_admin());
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy listing_reports_update on public.listing_reports for update using (public.is_admin());
+exception when duplicate_object then null; end $$;
 
 -- прямий запит у PostgREST не обходить меж: статус новий, не більше 5 скарг на обʼєкт за годину
 create or replace function public.listing_reports_guard()
@@ -169,8 +173,7 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists listing_reports_guard on public.listing_reports;
-create trigger listing_reports_guard before insert or update on public.listing_reports
+create or replace trigger listing_reports_guard before insert or update on public.listing_reports
   for each row execute function public.listing_reports_guard();
 revoke all on function public.listing_reports_guard() from public, anon, authenticated;
 

@@ -204,6 +204,9 @@ export async function agencyBoard() {
 /** Спільні фільтри для вибірки та для лічильників — щоб критерії не розʼїхались. */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function applyFilters(sel: any, q: ListingQuery) {
+  // Кожна умова «одне з» — окрема група. PostgREST не поєднує кілька параметрів or=
+  // через І, тож наприкінці збираємо їх в один: or=(and(or(…),or(…))).
+  const anyOf: string[] = [];
   if (!q.includeInactive) sel = sel.eq('active', true);
   // продані й здані квартири лишаються на сторінці ЖК, але не в пошуку
   if (q.developmentId) sel = sel.eq('development_id', q.developmentId);
@@ -235,22 +238,27 @@ function applyFilters(sel: any, q: ListingQuery) {
   if (q.ready) sel = sel.eq('land_facts.ready', true);
   if (q.beds?.length) {
     // 4 у фільтрі означає «4+»
-    sel = sel.or(q.beds.map((b) => (b >= 4 ? 'beds.gte.4' : `beds.eq.${b}`)).join(','));
+    anyOf.push(q.beds.map((b) => (b >= 4 ? 'beds.gte.4' : `beds.eq.${b}`)).join(','));
   }
   // характеристики живуть у details (міграція 0036)
   if (q.furnished) sel = sel.in('details->>furnished', ['furnished', 'partly']);
   if (q.pets) sel = sel.in('details->>pets', ['yes', 'ask']);
   if (q.parking) sel = sel.in('details->>parking', ['garage', 'covered', 'open', 'street']);
   if (q.ac) sel = sel.in('details->>ac', ['central', 'split', 'some']);
-  if (q.build === 'new') sel = sel.or('development_id.not.is.null,details->>condition.eq.new');
-  if (q.build === 'resale') sel = sel.is('development_id', null).or('details->>condition.is.null,details->>condition.neq.new');
+  if (q.build === 'new') anyOf.push('development_id.not.is.null,details->>condition.eq.new');
+  if (q.build === 'resale') {
+    sel = sel.is('development_id', null);
+    anyOf.push('details->>condition.is.null,details->>condition.neq.new');
+  }
   if (q.reduced) sel = sel.gt('old_price', 0);
   if (q.days) sel = sel.gte('created_at', new Date(Date.now() - q.days * 864e5).toISOString());
   // кожне слово має знайтись хоч десь; значення в or() беремо в лапки — інакше пробіли ламають розбір у PostgREST
   for (const w of q.terms ?? splitWords(q.q)) {
     const s = `"%${w}%"`;
-    sel = sel.or(`title.ilike.${s},address.ilike.${s},neighborhood.ilike.${s},island.ilike.${s},body.ilike.${s}`);
+    anyOf.push(`title.ilike.${s},address.ilike.${s},neighborhood.ilike.${s},island.ilike.${s},body.ilike.${s}`);
   }
+  if (anyOf.length === 1) sel = sel.or(anyOf[0]);
+  else if (anyOf.length > 1) sel = sel.or(`and(${anyOf.map((g) => `or(${g})`).join(',')})`);
   return sel;
 }
 

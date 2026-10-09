@@ -19,11 +19,13 @@ create unique index if not exists notify_settings_tg_token on public.notify_sett
 create unique index if not exists notify_settings_unsub_token on public.notify_settings (unsub_token);
 alter table public.notify_settings enable row level security;
 
-drop policy if exists notify_settings_own on public.notify_settings;
-create policy notify_settings_own on public.notify_settings for select using (user_id = (select auth.uid()));
-drop policy if exists notify_settings_update on public.notify_settings;
-create policy notify_settings_update on public.notify_settings for update
+do $$ begin
+  create policy notify_settings_own on public.notify_settings for select using (user_id = (select auth.uid()));
+exception when duplicate_object then null; end $$;
+do $$ begin
+  create policy notify_settings_update on public.notify_settings for update
   using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+exception when duplicate_object then null; end $$;
 
 -- сам користувач може лише вмикати/вимикати листи й відʼєднати Telegram
 create or replace function public.notify_settings_guard()
@@ -38,8 +40,7 @@ begin
   end if;
   return new;
 end $$;
-drop trigger if exists notify_settings_guard on public.notify_settings;
-create trigger notify_settings_guard before update on public.notify_settings
+create or replace trigger notify_settings_guard before update on public.notify_settings
   for each row execute function public.notify_settings_guard();
 revoke all on function public.notify_settings_guard() from public, anon, authenticated;
 
@@ -54,8 +55,7 @@ begin
   insert into public.notify_settings (user_id) values (new.id) on conflict do nothing;
   return new;
 end $$;
-drop trigger if exists profiles_notify_settings on public.profiles;
-create trigger profiles_notify_settings after insert on public.profiles
+create or replace trigger profiles_notify_settings after insert on public.profiles
   for each row execute function public.notify_settings_create();
 revoke all on function public.notify_settings_create() from public, anon, authenticated;
 
@@ -128,8 +128,7 @@ exception when others then
   raise warning 'notify_on_lead: %', sqlerrm;
   return new;
 end $$;
-drop trigger if exists leads_notify on public.leads;
-create trigger leads_notify after insert on public.leads
+create or replace trigger leads_notify after insert on public.leads
   for each row execute function public.notify_on_lead();
 revoke all on function public.notify_on_lead() from public, anon, authenticated;
 
@@ -162,8 +161,7 @@ exception when others then
   raise warning 'notify_on_listing: %', sqlerrm;
   return new;
 end $$;
-drop trigger if exists listings_notify on public.listings;
-create trigger listings_notify after insert or update on public.listings
+create or replace trigger listings_notify after insert or update on public.listings
   for each row execute function public.notify_on_listing();
 revoke all on function public.notify_on_listing() from public, anon, authenticated;
 
@@ -180,8 +178,7 @@ exception when others then
   raise warning 'notify_on_report: %', sqlerrm;
   return new;
 end $$;
-drop trigger if exists listing_reports_notify on public.listing_reports;
-create trigger listing_reports_notify after insert on public.listing_reports
+create or replace trigger listing_reports_notify after insert on public.listing_reports
   for each row execute function public.notify_on_report();
 revoke all on function public.notify_on_report() from public, anon, authenticated;
 
@@ -223,10 +220,6 @@ begin
   )
   select count(*) into k from ins;
   n := n + k;
-
-  -- відправлене старше 60 днів більше не потрібне
-  delete from public.notify_outbox where sent_at < now() - interval '60 days'
-    or (sent_at is null and attempts >= 5 and created_at < now() - interval '60 days');
   return n;
 end $$;
 revoke all on function public.notify_schedule() from public, anon, authenticated;
@@ -394,7 +387,7 @@ end $$;
 
 do $$
 begin
-  perform cron.unschedule(jobid) from cron.job where jobname = 'notify-tick';
+  -- однойменне завдання cron.schedule просто оновлює
   perform cron.schedule('notify-tick', '*/5 * * * *', 'select public.notify_tick()');
 exception when others then
   raise notice 'pg_cron unavailable (%)', sqlerrm;
