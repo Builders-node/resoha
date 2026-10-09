@@ -131,6 +131,38 @@ export interface Listing {
   /** Фототур: кімната для кожного фото (lib/rooms.ts) */
   photoRooms: PhotoRooms;
   floorplan: string;         // план квартири; спільний для однакових квартир ЖК
+  /** Модерація: чернетка → на перевірці → опубліковано / відхилено (міграція 0049) */
+  review: ListingReview;
+  reviewNote: string;
+  /** Схоже на вже наявне оголошення — модератор бачить посилання */
+  duplicateOf: string | null;
+  /** Коли перестане показуватись покупцям; null — без строку (квартири ЖК) */
+  expiresAt: string | null;
+}
+
+export type ListingReview = 'draft' | 'pending' | 'approved' | 'rejected';
+
+export type ReportReason = 'sold' | 'wrong_price' | 'wrong_info' | 'photos' | 'scam' | 'duplicate' | 'other';
+
+/** Скарга покупця на оголошення */
+export interface ListingReport {
+  id: string;
+  listingId: string;
+  listingTitle: string;
+  listingActive: boolean;
+  reason: ReportReason;
+  message: string;
+  email: string;
+  status: 'open' | 'resolved' | 'dismissed';
+  createdAt: string;
+}
+
+/** Що й куди надсилати користувачу (міграція 0050) */
+export interface NotifySettings {
+  emailLeads: boolean;
+  emailAlerts: boolean;
+  telegramLinked: boolean;
+  telegramToken: string;
 }
 
 /** Одна точка в історії ціни */
@@ -297,7 +329,7 @@ export interface Session {
   isAdmin: boolean;         // адміністратор платформи
 }
 
-export type SortKey = 'new' | 'price_asc' | 'price_desc' | 'sqft_desc' | 'popular';
+export type SortKey = 'new' | 'price_asc' | 'price_desc' | 'sqft_desc' | 'popular' | 'ppsf_asc' | 'reduced';
 
 export interface ListingQuery {
   deal?: Deal;
@@ -330,6 +362,19 @@ export interface ListingQuery {
   developmentId?: string;
   /** лише земля, готова до будівництва (land_facts.ready) */
   ready?: boolean;
+  /** характеристики з details (міграція 0036) */
+  furnished?: boolean;
+  pets?: boolean;
+  parking?: boolean;
+  ac?: boolean;
+  /** новобудова (квартира ЖК або стан «New build») чи вторинка */
+  build?: 'new' | 'resale';
+  /** ціну знижували (old_price) */
+  reduced?: boolean;
+  /** додано за останні N днів */
+  days?: number;
+  /** слова тексту після виправлення опечаток (search_terms) — заповнює сам db.ts */
+  terms?: string[];
 }
 
 /** Відгук про ріелтора. Рейтинг у профілі перераховує тригер у базі. */

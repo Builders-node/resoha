@@ -5,6 +5,7 @@ import { readiness } from '@/lib/land';
 import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import FavButton from './FavButton';
+import CompareButton from './CompareButton';
 import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
@@ -45,6 +46,7 @@ export default function ListingCard({
         {l.type === 'land' && !l.land?.checkedAt && l.titled && <span className="badge">{t('Titled')}</span>}
       </div>
       <FavButton listingId={l.id} initial={isFav} />
+      <CompareButton listingId={l.id} />
       <div className="ov__b">
         {l.development
           ? <div className="ov__agency">{l.development.name}{l.unitNo && ` · ${t('Unit {n}', { n: l.unitNo })}`}</div>

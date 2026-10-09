@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { bumpViews, deleteListing, getAgency, getAgent, getBuilding, getDevelopment, getListing, saveLandFacts, updateListing } from '@/lib/db';
+import { kickNotifications } from '@/lib/notify';
 import { currentUser } from '@/lib/session';
 import { canManageDevelopment } from '@/lib/units';
 
@@ -40,6 +41,8 @@ export async function PATCH(req: Request, { params }: Ctx) {
     await saveLandFacts(id, patch.land);
     listing = (await getListing(id)) ?? listing;
   }
+  // зниження ціни (тим, хто зберіг) і «на перевірку» (модератору) — у черзі сповіщень
+  if (patch.price !== undefined || patch.review !== undefined) kickNotifications();
   return NextResponse.json({ listing });
 }
 

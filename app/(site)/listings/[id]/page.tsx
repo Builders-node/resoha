@@ -1,10 +1,12 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import { lifecycle } from '@/lib/lifecycle';
 import { notFound } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
+import CompareButton from '@/components/CompareButton';
 import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
@@ -13,6 +15,8 @@ import Gallery from '@/components/Gallery';
 import PhotoTour from '@/components/PhotoTour';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
+import PurchaseCalculator from '@/components/PurchaseCalculator';
+import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
@@ -138,17 +142,33 @@ export default async function PropertyPage({ params, searchParams }: {
 
   const isLand = listing.type === 'land';
   const inDevelopment = listing.development !== null;
+  const lc = lifecycle(listing);
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
 
   return (
     <div className="wrap">
+      <RecordView id={listing.id} />
       <JsonLd data={graph(listingLd(listing, agent.name), breadcrumbLd([
         { name: 'Home', path: '/' },
         { name: DEAL_LABELS[listing.deal], path: `/listings?deal=${listing.deal}` },
         { name: listing.neighborhood, path: areaPath },
         { name: listing.title, path: `/listings/${listing.id}` },
       ]))} />
+      {/* Не публічне (чернетка, перевірка, строк минув, приховане) відкривається лише автору й адміну */}
+      {!lc.public && (
+        <div className="lc-banner is-warn page-top" style={{ marginBottom: 0 }}>
+          <Icon name="eye" size={18} />
+          <div>
+            <b>{t('Buyers can’t see this listing.')}</b>{' '}
+            {lc.key === 'draft' ? t('It’s a draft.')
+              : lc.key === 'pending' ? t('It’s waiting for a moderator’s check.')
+                : lc.key === 'rejected' ? t('The moderator sent it back: {note}', { note: listing.reviewNote || '—' })
+                  : lc.key === 'expired' ? t('Its 90 days are over. Renew it in your dashboard.')
+                    : t('It’s unpublished.')}
+          </div>
+        </div>
+      )}
       <div className="gallery-wrap page-top">
         <BackButton fallback={`/listings?deal=${listing.deal}`} />
         <Gallery photos={listing.photos} title={listing.title} />
@@ -168,7 +188,10 @@ export default async function PropertyPage({ params, searchParams }: {
                 </Link>
               )}
             </div>
-            <div className="prop__fav"><FavButton listingId={listing.id} initial={favIds.includes(listing.id)} /></div>
+            <div className="prop__acts">
+              <CompareButton listingId={listing.id} variant="page" />
+              <div className="prop__fav"><FavButton listingId={listing.id} initial={favIds.includes(listing.id)} /></div>
+            </div>
           </div>
 
           <div className="prop__price">
@@ -274,7 +297,7 @@ export default async function PropertyPage({ params, searchParams }: {
                       <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
                       <span className="small muted">
                         {t('Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.')}{' '}
-                        <Link href="/guides/roatan-closing-costs">{t('How it adds up')}</Link>
+                        <a href="#costs">{t('How it adds up')}</a>
                       </span>
                     </div>
                   )}
@@ -386,6 +409,11 @@ export default async function PropertyPage({ params, searchParams }: {
             <h3 className="prop__h">{t('Price history')}</h3>
             <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
           </section>
+
+          {/* витрати на купівлю й розстрочка — для будь-якого продажу; у землі паспорт посилається сюди */}
+          {listing.deal === 'sale' && listing.price > 0 && (
+            <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing} />
+          )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
           {listing.nearby.length > 0 && (

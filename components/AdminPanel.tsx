@@ -12,21 +12,24 @@ import { QUALITY_CHECKS, type QualityKey } from '@/lib/quality';
 import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
+import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
 import TabStrip from './TabStrip';
 
-type Tab = 'overview' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
+type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
   listings: number; hidden: number; agencies: number; reviews: number; leads: number;
   newLeads: number; views: number; agents: number; buyers: number;
   unverifiedAgents: number; suspended: number; quality: Quality;
+  pending: number; reports: number;
 };
 type AgencyRowData = { agency: Agency; agents: number; listings: number };
 
 const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'overview', label: 'Overview', ico: 'sliders' },
+  { v: 'moderation', label: 'Moderation', ico: 'flag' },
   { v: 'analytics', label: 'Analytics', ico: 'chart' },
   { v: 'featured', label: 'Featured', ico: 'star' },
   { v: 'promotions', label: 'Promotions', ico: 'sparkle' },
@@ -70,7 +73,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   const load = useCallback(async (which: Tab) => {
     // ці вкладки вантажать себе самі
-    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions') return;
+    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions' || which === 'moderation') return;
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -193,6 +196,18 @@ export default function AdminPanel({ session }: { session: Session }) {
               {/* Рядок із нулем — це не «увага», а шум: показуємо лише те, що справді чекає */}
               {(() => {
                 const rows = [
+                  overview.pending > 0 && {
+                    key: 'pending',
+                    body: <><b>{overview.pending}</b> {overview.pending === 1 ? 'listing is' : 'listings are'} waiting for review</>,
+                    hint: 'New listings from realtors who are not verified yet, and possible duplicates',
+                    go: () => setTab('moderation'),
+                  },
+                  overview.reports > 0 && {
+                    key: 'reports',
+                    body: <><b>{overview.reports}</b> open {overview.reports === 1 ? 'report' : 'reports'} from buyers</>,
+                    hint: 'Sold, wrong price, scam and other complaints about listings',
+                    go: () => setTab('moderation'),
+                  },
                   overview.unverifiedAgents > 0 && {
                     key: 'unverified',
                     body: <><b>{overview.unverifiedAgents}</b> {plural(overview.unverifiedAgents, 'realtor')} not verified yet</>,
@@ -217,7 +232,7 @@ export default function AdminPanel({ session }: { session: Session }) {
                   <div className="panel">
                     <h3 style={{ marginBottom: rows.length ? 12 : 4 }}>Needs attention</h3>
                     {rows.length === 0 ? (
-                      <p className="muted small">Nothing waiting — no unverified realtors, unanswered enquiries or suspended accounts.</p>
+                      <p className="muted small">Nothing waiting — no listings to review, reports, unverified realtors, unanswered enquiries or suspended accounts.</p>
                     ) : rows.map((r) => (
                       <div key={r.key} className="lead">
                         <div>{r.body}<div className="tiny muted">{r.hint}</div></div>
@@ -257,6 +272,8 @@ export default function AdminPanel({ session }: { session: Session }) {
         {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}
 
         {tab === 'promotions' && <PromoAdmin />}
+
+        {tab === 'moderation' && <ModerationAdmin />}
 
         {tab === 'listings' && (
           <div className="panel">

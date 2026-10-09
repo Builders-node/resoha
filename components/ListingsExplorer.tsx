@@ -2,14 +2,16 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import FilterChips from './FilterChips';
 import FiltersModal from './FiltersModal';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
+import RecentlyViewed from './RecentlyViewed';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
-  type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
+  SORTS, type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { RoomStat } from '@/lib/priceStats';
@@ -145,6 +147,23 @@ export default function ListingsExplorer({
 
   const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
 
+  /*
+   * Текстовий пошук: поле живе окремим станом, а у фільтри (і в запит) текст іде після
+   * паузи ~300 мс — раніше кожна літера була окремим походом в API. Скидання фільтрів,
+   * модалка й навігація міняють filters.q ззовні — тоді поле підхоплює нове значення.
+   */
+  const [qDraft, setQDraft] = useState(filters.q);
+  const [seenQ, setSeenQ] = useState(filters.q);
+  if (filters.q !== seenQ) { setSeenQ(filters.q); setQDraft(filters.q); }
+  const qTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(qTimer.current), []);
+  const typeQ = (v: string) => {
+    setQDraft(v);
+    clearTimeout(qTimer.current);
+    qTimer.current = setTimeout(() => set({ q: v }), 300);
+  };
+  const flushQ = () => { clearTimeout(qTimer.current); if (qDraft !== filters.q) set({ q: qDraft }); };
+
   const onSelect = useCallback((id: string) => {
     setActiveId(id);
     document.getElementById(`card-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -179,7 +198,8 @@ export default function ListingsExplorer({
       <div className="filters" ref={filtersRef}>
         <div className="wrap filters__in">
           <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
-            value={filters.q} onChange={(e) => set({ q: e.target.value })} />
+            value={qDraft} onChange={(e) => typeQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
 
           <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
             <option value="">{t('Any type')}</option>
@@ -226,6 +246,7 @@ export default function ListingsExplorer({
 
       <div className={`split split--${mobileView}`}>
         <div className="split__list">
+          <FilterChips filters={filters} onChange={set} onReset={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })} />
           <div className="list-head">
             <h1>
               {loading
@@ -236,7 +257,12 @@ export default function ListingsExplorer({
                     ? t('{n} for sale on Roatán', { n: fmtNumber(total) })
                     : t('{listings} on Roatán', { listings: nListings(total, lang) })}
             </h1>
-            <span className="muted small">{t('Bay Islands, Honduras')}</span>
+            <label className="list-sort">
+              <span className="muted small">{t('Sort')}</span>
+              <select className="input" value={filters.sort} onChange={(e) => set({ sort: e.target.value })}>
+                {SORTS.map((s) => <option key={s.v} value={s.v}>{t(s.label)}</option>)}
+              </select>
+            </label>
           </div>
 
           {(filters.deal === 'sale' || filters.deal === 'rent') && (
@@ -277,6 +303,8 @@ export default function ListingsExplorer({
               </button>
             </div>
           )}
+
+          <RecentlyViewed favIds={favIds} variant="list" />
         </div>
 
         <div className="split__map">

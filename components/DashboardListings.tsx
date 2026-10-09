@@ -4,6 +4,7 @@ import { Fragment, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
 import Photo from './Photo';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
+import { lifecycle } from '@/lib/lifecycle';
 import { UNIT_STATUSES, statusLabel } from '@/lib/units';
 import type { Listing, PropertyType } from '@/lib/types';
 
@@ -21,13 +22,17 @@ const PER_PAGE = 20;
  * Таблиця оголошень у кабінеті: фільтри зверху, квартири згруповані за ЖК.
  * Фільтрує на клієнті — кабінет і так вантажить усі оголошення ріелтора чи агенції.
  */
-export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete }: {
+export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete, onRenew, onSubmit }: {
   listings: Listing[];
   /** Є лише в режимі «вся агенція» — тоді показуємо колонку й фільтр «Agent» */
   agentName?: (id: string) => string;
   onEdit: (l: Listing) => void;
   onToggle: (l: Listing) => void;
   onDelete: (l: Listing) => void;
+  /** Продовжити показ ще на 90 днів */
+  onRenew?: (l: Listing) => void;
+  /** Чернетку чи відхилене — на публікацію (перевіреному ріелтору) або на перевірку */
+  onSubmit?: (l: Listing) => void;
 }) {
   const [q, setQ] = useState('');
   const [dev, setDev] = useState('');
@@ -60,9 +65,12 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
       if (deal && l.deal !== deal) return false;
       if (type && l.type !== type) return false;
       if (agent && l.agentId !== agent) return false;
-      if (status === 'live' && !l.active) return false;
+      const lc = lifecycle(l);
+      if (status === 'live' && lc.key !== 'live') return false;
       if (status === 'hidden' && l.active) return false;
-      if (status && status !== 'live' && status !== 'hidden' && l.status !== status) return false;
+      if (status === 'review' && !['draft', 'pending', 'rejected'].includes(lc.key)) return false;
+      if (status === 'expiring' && !lc.canRenew) return false;
+      if (status && !['live', 'hidden', 'review', 'expiring'].includes(status) && l.status !== status) return false;
       if (needle && ![l.title, l.unitNo, l.neighborhood, l.address, l.development?.name ?? '']
         .some((s) => s.toLowerCase().includes(needle))) return false;
       return true;
@@ -167,6 +175,8 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
           <option value="">Any status</option>
           <option value="live">Live</option>
           <option value="hidden">Hidden</option>
+          <option value="review">Drafts &amp; review</option>
+          <option value="expiring">Expiring or expired</option>
           {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
         </select>
         {agentName && agents.length > 1 && (
@@ -209,7 +219,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
             </thead>
             <tbody>
               {pages[cur - 1].map(({ g, items, cont }) => {
-                const live = g.items.filter((l) => l.active).length;
+                const live = g.items.filter((l) => lifecycle(l).key === 'live').length;
                 const free = g.items.filter((l) => l.status === 'available').length;
                 const expanded = isOpen(g);
                 return (
@@ -249,15 +259,17 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                         {agentName && <td className="small" data-label="Agent">{agentName(l.agentId)}</td>}
                         <td data-label="Price" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
                         <td data-label="Views">{fmtNumber(l.views)}</td>
-                        <td data-label="Status" style={{ whiteSpace: 'nowrap' }}>
-                          <span className={`pill ${l.active ? 'pill--on' : 'pill--off'}`}>{l.active ? 'Live' : 'Hidden'}</span>
-                          {l.status !== 'available' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{statusLabel(l.status)}</span>}
+                        <td data-label="Status">
+                          <StatusCell l={l} onRenew={onRenew} onSubmit={onSubmit} />
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
                           <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
-                          <button className="btn btn--sm btn--ghost" onClick={() => onToggle(l)}>
-                            {l.active ? 'Unpublish' : 'Publish'}
-                          </button>{' '}
+                          {/* чернетку й те, що на перевірці, публікує «Publish» у колонці статусу */}
+                          {!['draft', 'pending', 'rejected'].includes(l.review) && (
+                            <><button className="btn btn--sm btn--ghost" onClick={() => onToggle(l)}>
+                              {l.active ? 'Unpublish' : 'Publish'}
+                            </button>{' '}</>
+                          )}
                           <button className="btn btn--sm btn--danger btn--icon" title="Delete" aria-label="Delete" onClick={() => onDelete(l)}><Icon name="trash" size={16} /></button>
                         </td>
                       </tr>
@@ -271,6 +283,33 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
         </div>
       )}
     </>
+  );
+}
+
+/** Стан у життєвому циклі + продаж; під ним — що зробити далі (продовжити, надіслати, примітка модератора) */
+function StatusCell({ l, onRenew, onSubmit }: { l: Listing; onRenew?: (l: Listing) => void; onSubmit?: (l: Listing) => void }) {
+  const lc = lifecycle(l);
+  const tone = lc.key === 'live' ? 'pill--on' : lc.key === 'rejected' || lc.key === 'expired' ? 'pill--warn' : 'pill--off';
+  return (
+    <div className="lc-cell">
+      <div style={{ whiteSpace: 'nowrap' }}>
+        <span className={`pill ${tone}`}>{lc.label}</span>
+        {l.status !== 'available' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{statusLabel(l.status)}</span>}
+      </div>
+      {lc.key === 'pending' && <span className="tiny muted">Visible to buyers after a quick check</span>}
+      {lc.key === 'rejected' && l.reviewNote && <span className="tiny lc-note">{l.reviewNote}</span>}
+      {lc.daysLeft !== null && lc.daysLeft <= 30 && lc.key !== 'expired' && (
+        <span className="tiny muted">Expires in {lc.daysLeft} {lc.daysLeft === 1 ? 'day' : 'days'}</span>
+      )}
+      {lc.canRenew && onRenew && (
+        <button type="button" className="link-btn tiny" onClick={() => onRenew(l)}>Renew for 90 days</button>
+      )}
+      {lc.canSubmit && onSubmit && (
+        <button type="button" className="link-btn tiny" onClick={() => onSubmit(l)}>
+          {lc.key === 'draft' ? 'Publish' : 'Send for review again'}
+        </button>
+      )}
+    </div>
   );
 }
 

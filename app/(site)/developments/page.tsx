@@ -22,8 +22,8 @@ export default async function DevelopmentsPage() {
     const from = fromPrice(units[i].filter((u) => u.deal === 'sale'));
     return {
       id: d.id, slug: d.slug, name: d.name, developer: d.developer, neighborhood: d.neighborhood,
-      completion: d.completion, photo: d.photos[0], featured: d.featured, sales: salesLabel(d.sales),
-      units: units[i].length, from: from === null ? null : fmtUsd(from), lat: d.lat, lng: d.lng,
+      completion: d.completion, photo: d.photos[0], featured: d.featured, sales: salesLabel(d.sales), salesKey: d.sales,
+      units: units[i].length, from: from === null ? null : fmtUsd(from), fromValue: from, lat: d.lat, lng: d.lng,
     };
   });
 

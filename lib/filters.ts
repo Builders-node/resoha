@@ -20,6 +20,16 @@ export type Filters = {
   ownerFinancing: boolean;
   /** земля, готова до будівництва — має сенс лише при type = land */
   ready: boolean;
+  /** оренда: меблі, тварини, паркінг, кондиціонер */
+  furnished: boolean;
+  pets: boolean;
+  parking: boolean;
+  ac: boolean;
+  /** '' | 'new' | 'resale' */
+  build: string;
+  reduced: boolean;
+  /** додано за N днів: '' | '1' | '7' | '30' */
+  days: string;
   tags: string[];
   agentId: string;
   agencyId: string;
@@ -33,6 +43,7 @@ export const EMPTY_FILTERS: Filters = {
   deal: '', type: '', neighborhoods: [], beds: [], bathsMin: '',
   priceMin: '', priceMax: '', sqftMin: '', sqftMax: '', lotMin: '', lotMax: '',
   hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false, ready: false,
+  furnished: false, pets: false, parking: false, ac: false, build: '', reduced: false, days: '',
   tags: [], agentId: '', agencyId: '', q: '', sort: '', bbox: '',
 };
 
@@ -61,6 +72,13 @@ export function toQuery(f: Filters): string {
   if (f.titled) p.set('titled', '1');
   if (f.ownerFinancing) p.set('ownerFinancing', '1');
   if (f.ready && f.type === 'land') p.set('ready', '1');
+  if (f.furnished) p.set('furnished', '1');
+  if (f.pets) p.set('pets', '1');
+  if (f.parking) p.set('parking', '1');
+  if (f.ac) p.set('ac', '1');
+  put('build', f.build);
+  if (f.reduced) p.set('reduced', '1');
+  put('days', f.days);
   put('tags', f.tags.join(','));
   put('agentId', f.agentId);
   put('agencyId', f.agencyId);
@@ -91,6 +109,11 @@ export function fromParams(bag: ParamBag): Filters {
     titled: get('titled') === '1',
     ownerFinancing: get('ownerFinancing') === '1',
     ready: get('ready') === '1',
+    furnished: get('furnished') === '1', pets: get('pets') === '1',
+    parking: get('parking') === '1', ac: get('ac') === '1',
+    build: ['new', 'resale'].includes(get('build')) ? get('build') : '',
+    reduced: get('reduced') === '1',
+    days: DAYS.includes(get('days')) ? get('days') : '',
     tags: arr('tags'), agentId: get('agentId'), agencyId: get('agencyId'), q: get('q'), sort: get('sort'),
     bbox: parseBbox(get('bbox')) ? get('bbox') : '',
   };
@@ -112,11 +135,29 @@ export function countActive(f: Filters): number {
   if (f.titled) n++;
   if (f.ownerFinancing) n++;
   if (f.ready && f.type === 'land') n++;
+  for (const k of ['furnished', 'pets', 'parking', 'ac', 'reduced'] as const) if (f[k]) n++;
+  if (f.build) n++;
+  if (f.days) n++;
   n += f.tags.length;
   if (f.q) n++;
   if (f.bbox) n++;
   return n;
 }
+
+/** Сортування — одне на модалку й на список над результатами. */
+export const SORTS = [
+  { v: '', label: 'Default' },
+  { v: 'new', label: 'Newest first' },
+  { v: 'price_asc', label: 'Cheapest first' },
+  { v: 'price_desc', label: 'Most expensive' },
+  { v: 'ppsf_asc', label: 'Lowest price per ft²' },
+  { v: 'reduced', label: 'Biggest price drop' },
+  { v: 'sqft_desc', label: 'Largest' },
+  { v: 'popular', label: 'Most viewed' },
+];
+
+/** «Додано за»: доба, тиждень, місяць */
+export const DAYS = ['1', '7', '30'];
 
 export type Bbox = [south: number, west: number, north: number, east: number];
 
@@ -164,6 +205,13 @@ export function toListingQuery(sp: URLSearchParams): ListingQuery {
     titled: flag('titled'),
     ownerFinancing: flag('ownerFinancing'),
     ready: sp.get('type') === 'land' ? flag('ready') : undefined,
+    furnished: flag('furnished'),
+    pets: flag('pets'),
+    parking: flag('parking'),
+    ac: flag('ac'),
+    build: sp.get('build') === 'new' || sp.get('build') === 'resale' ? (sp.get('build') as 'new' | 'resale') : undefined,
+    reduced: flag('reduced'),
+    days: DAYS.includes(sp.get('days') ?? '') ? Number(sp.get('days')) : undefined,
     tags: list('tags'),
     q: sp.get('q') || undefined,
     agentId: sp.get('agentId') || undefined,

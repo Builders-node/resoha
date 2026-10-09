@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Icon from './Icon';
 import RangeSlider from './RangeSlider';
-import { AMENITIES, EMPTY_FILTERS, type Filters, toQuery } from '@/lib/filters';
+import { AMENITIES, EMPTY_FILTERS, type Filters, SORTS, toQuery } from '@/lib/filters';
 import { fmtNumber, nListings, sqftToM2 } from '@/lib/format';
 import { useLang, useT } from './LangProvider';
 
@@ -16,13 +16,6 @@ type Facets = {
   oceanfront: number; titled: number; ownerFinancing: number; noHoa: number;
 };
 
-const SORTS = [
-  { v: '', label: 'Default' },
-  { v: 'new', label: 'Newest first' },
-  { v: 'price_asc', label: 'Cheapest first' },
-  { v: 'price_desc', label: 'Most expensive' },
-  { v: 'sqft_desc', label: 'Largest' },
-];
 const TYPES = [
   { v: '', label: 'All' },
   { v: 'condo', label: 'Condos' },
@@ -41,6 +34,17 @@ const YEARS = [
   { v: '2020', label: '2020 and newer' },
   { v: '2010', label: '2010 and newer' },
   { v: '2000', label: '2000 and newer' },
+];
+const BUILD = [
+  { v: '', label: 'Any' },
+  { v: 'new', label: 'New build' },
+  { v: 'resale', label: 'Resale' },
+];
+const ADDED = [
+  { v: '', label: 'Any time' },
+  { v: '1', label: 'Today' },
+  { v: '7', label: 'This week' },
+  { v: '30', label: 'This month' },
 ];
 const HNL_RATE = 26.2;
 
@@ -184,6 +188,55 @@ export default function FiltersModal({
               </div>
             </div>
           </section>
+
+          {/* ——— Listing ——— */}
+          <section className="fsec">
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="clock" size={19} /></span><h4>{t('Listing')}</h4></div>
+
+            <div className="fgroup">
+              <h5>{t('New build or resale')}</h5>
+              <div className="chip-row">
+                {BUILD.map((b) => (
+                  <button key={b.v || 'any'} className={`chip-btn ${draft.build === b.v ? 'is-on' : ''}`}
+                    onClick={() => set({ build: b.v })}>{t(b.label)}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="fgroup">
+              <h5>{t('Added')}</h5>
+              <div className="chip-row">
+                {ADDED.map((d) => (
+                  <button key={d.v || 'any'} className={`chip-btn ${draft.days === d.v ? 'is-on' : ''}`}
+                    onClick={() => set({ days: d.v })}>{t(d.label)}</button>
+                ))}
+              </div>
+            </div>
+
+            <div className="switch-row">
+              <span className="switch-row__label">{t('Price reduced')}</span>
+              <button className={`switch ${draft.reduced ? 'is-on' : ''}`}
+                onClick={() => set({ reduced: !draft.reduced })} aria-label={t('Price reduced')} />
+            </div>
+          </section>
+
+          {/* ——— Living: для оренди ще меблі й тварини ——— */}
+          {draft.type !== 'land' && (
+            <section className="fsec">
+              <div className="fsec__head"><span className="fsec__ico"><Icon name="sofa" size={19} /></span><h4>{t('Living')}</h4></div>
+              {([
+                ...(draft.deal === 'rent' ? [['furnished', 'Furnished'], ['pets', 'Pets allowed']] as const : []),
+                ['parking', 'Parking'],
+                ['ac', 'Air conditioning'],
+              ] as const).map(([k, label]) => (
+                <div className="switch-row" key={k}>
+                  <span className="switch-row__label">{t(label)}</span>
+                  <button className={`switch ${draft[k] ? 'is-on' : ''}`}
+                    onClick={() => set({ [k]: !draft[k] })} aria-label={t(label)} />
+                </div>
+              ))}
+            </section>
+          )}
 
           {/* ——— Property ——— */}
           <section className="fsec">

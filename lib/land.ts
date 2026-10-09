@@ -1,4 +1,5 @@
 import type { LandFacts } from './types';
+import { PROPERTY_TAX_RATE, TYPICAL_CLOSING } from './purchaseCosts';
 
 /**
  * «Паспорт ділянки»: єдине місце, де описано, що ми питаємо про землю і як
@@ -145,9 +146,9 @@ export function landNumbers(lot: Lot, peers: Lot[]) {
     benchmark,
     /** на скільки відсотків дорожче (+) чи дешевше (−) за медіану */
     vsBenchmark: perAcre && benchmark ? Math.round((perAcre / benchmark.perAcre - 1) * 100) : null,
-    closing: sale ? { low: lot.price * 0.04, high: lot.price * 0.055 } : null,
+    closing: sale ? { low: lot.price * TYPICAL_CLOSING.low, high: lot.price * TYPICAL_CLOSING.high } : null,
     /** 0.25% від кадастрової вартості; вона зазвичай нижча за ціну, тож це верхня межа */
-    taxMax: sale ? lot.price * 0.0025 : 0,
+    taxMax: sale ? lot.price * PROPERTY_TAX_RATE : 0,
     foreign: sqm ? (sqm <= FOREIGN_LIMIT_SQM ? 'personal' as const : 'company' as const) : null,
     distances: PLACES.map((p) => ({ name: p.name, km: km([lot.lat, lot.lng], p.at) })),
   };

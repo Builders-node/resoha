@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 
-const PRIVATE = ['/admin', '/agent', '/account', '/api/', '/login', '/signup', '/forgot', '/reset'];
+const PRIVATE = ['/admin', '/agent', '/account', '/api/', '/login', '/signup', '/forgot', '/reset', '/unsubscribe'];
 
 /**
  * Кабінети й API індексувати нема чого; усе інше — відкрите. AI-пошуковиків називаємо явно:

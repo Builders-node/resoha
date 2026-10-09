@@ -5,9 +5,9 @@ import Icon from './Icon';
 import FavButton from './FavButton';
 import { toast } from './Toaster';
 import { fmtPerArea, fmtPrice } from '@/lib/format';
-import { CONTACT_EMAIL } from '@/lib/site';
 import type { Agency, Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
+import ReportListing from './ReportListing';
 import { useLang, useT } from './LangProvider';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
@@ -134,11 +134,6 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     else toast((await res.json().catch(() => ({}))).error ?? t('Something went wrong'));
   }
 
-  const reportHref = CONTACT_EMAIL
-    ? `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`Report listing ${listing.id}`)}`
-      + `&body=${encodeURIComponent(`${listingUrl}\n\nWhat's wrong with this listing:\n`)}`
-    : '';
-
   return (
     <aside className="cc-wrap" id="contact">
       <div className="cc">
@@ -244,11 +239,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
         <button className="cc__link" onClick={() => { if (!formOpen) track('form_open'); setFormOpen((v) => !v); }} aria-expanded={formOpen}>
           <Icon name="calendar" size={20} /> <span>{t('Request a viewing')}</span>
         </button>
-        {reportHref && (
-          <a className="cc__link" href={reportHref}>
-            <Icon name="flag" size={20} /> <span>{t('Report listing')}</span>
-          </a>
-        )}
+        <ReportListing listingId={listing.id} email={me?.email} />
       </div>
 
       {formOpen && (
