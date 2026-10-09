@@ -16,15 +16,42 @@ export const notifySecret = () => process.env.NOTIFY_SECRET || process.env.PROMO
 
 const EMAIL_FROM = () => process.env.EMAIL_FROM || `${SITE_NAME} <onboarding@resend.dev>`;
 
-async function sendEmail(to: string, subject: string, html: string, text: string) {
+async function sendEmail(to: string, subject: string, html: string, text: string, ics?: string) {
   const key = process.env.RESEND_API_KEY;
   if (!key) return 'email: RESEND_API_KEY is not set';
-  const res = await fetch('https://api.resend.com/emails', {
+  const post = (withIcs: boolean) => fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: EMAIL_FROM(), to: [to], subject, html, text }),
+    body: JSON.stringify({
+      from: EMAIL_FROM(), to: [to], subject, html, text,
+      // календарний файл візиту — вкладенням (Resend приймає base64)
+      ...(withIcs && ics ? { attachments: [{ filename: 'visit.ics', content: Buffer.from(ics).toString('base64') }] } : {}),
+    }),
   });
+  let res = await post(true);
+  // вкладення відхилили (4xx) — лист без нього кращий, ніж жодного
+  if (!res.ok && ics && res.status >= 400 && res.status < 500 && res.status !== 429) res = await post(false);
   return res.ok ? null : `email ${res.status}: ${(await res.text()).slice(0, 200)}`;
+}
+
+/**
+ * Лист про візит із календарним файлом: дописуємо адресу офісу й id заявки з visit_lookup (0055),
+ * щоб у календарі був правильний UID і місце. Без міграції чи токена — лист іде як був.
+ */
+async function withVisitDetails(client: SupabaseClient, r: Claimed) {
+  const p = r.payload;
+  const visit = (r.kind === 'lead_receipt' && p.channel === 'visit') || (r.kind === 'visit_reminder' && p.event === 'rescheduled');
+  if (!visit || typeof p.manageToken !== 'string' || !r.email) return p;
+  try {
+    const { data } = await client.rpc('visit_lookup', { p_token: p.manageToken });
+    const v = data as { leadId?: string; development?: { office?: string; address?: string; neighborhood?: string; name?: string } | null } | null;
+    if (!v?.leadId) return p;
+    const d = v.development;
+    const location = d ? d.office || [d.name, d.address, d.neighborhood].filter(Boolean).join(', ') : '';
+    return { ...p, leadId: v.leadId, ...(location ? { location } : {}) };
+  } catch {
+    return p;
+  }
 }
 
 export async function sendTelegram(chatId: number | string, text: string) {
@@ -61,11 +88,11 @@ export async function processOutbox(client: SupabaseClient = supabaseAnon(), bat
     const rows = (data ?? []) as Claimed[];
     if (!rows.length) break;
     await Promise.all(rows.map(async (r) => {
-      const msg = render(r.kind, r.payload, r.unsub_token);
+      const msg = render(r.kind, await withVisitDetails(client, r), r.unsub_token);
       const errors: string[] = [];
       let delivered = false;
       if (msg && r.email && msg.html) {
-        const e = await sendEmail(r.email, msg.subject, msg.html, msg.text).catch((x) => `email: ${(x as Error).message}`);
+        const e = await sendEmail(r.email, msg.subject, msg.html, msg.text, msg.ics).catch((x) => `email: ${(x as Error).message}`);
         if (e) errors.push(e); else delivered = true;
       }
       if (msg && r.telegram_chat_id && msg.telegram) {

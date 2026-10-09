@@ -38,6 +38,7 @@ import { makeT, type T } from '@/lib/i18n';
 import ListingGone from '@/components/ListingGone';
 import ListingTools from '@/components/ListingTools';
 import { getGoneListing, similarActive, type GoneListing } from '@/lib/gone';
+import { rankSimilar } from '@/lib/similar';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -114,7 +115,8 @@ export default async function PropertyPage({ params, searchParams }: {
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
-    queryListings({ deal: listing.deal, neighborhoods: [listing.neighborhood] }),
+    // «схожі»: уся угода по острову — ранжуємо за ціною, типом, спальнями й відстанню (lib/similar.ts)
+    queryListings({ deal: listing.deal }).catch(() => []),
     // уся земля на продаж — для медіани $/акр у паспорті
     listing.type === 'land' ? queryListings({ deal: 'sale', type: 'land' }) : Promise.resolve([]),
     getPriceHistory(listing.id),
@@ -156,7 +158,7 @@ export default async function PropertyPage({ params, searchParams }: {
       || Math.abs((a.floor ?? 0) - (listing.floor ?? 0)) - Math.abs((b.floor ?? 0) - (listing.floor ?? 0)))
     .slice(0, 8);
   const siblingIds = new Set(siblings.map((l) => l.id));
-  const similar = similarAll.filter((l) => l.id !== listing.id && !siblingIds.has(l.id)).slice(0, 4);
+  const similar = rankSimilar(listing, similarAll, siblingIds, 4);
 
   // «Details», як у LUN: іконка й коротке значення, три колонки; порожнє не показуємо
   const floorText = floorLine(listing.floor, listing.details.floorsTotal, lang);
@@ -548,7 +550,7 @@ export default async function PropertyPage({ params, searchParams }: {
 
       {similar.length > 0 && (
         <section className="section" style={{ paddingTop: 0 }}>
-          <div className="section__head"><div><h2>{t('More in {place}', { place: listing.neighborhood })}</h2></div></div>
+          <div className="section__head"><div><h2>{t('Similar listings near {place}', { place: listing.neighborhood })}</h2></div></div>
           <div className="grid grid--4">
             {similar.map((l) => <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} />)}
           </div>

@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FilterChips from './FilterChips';
 import FiltersModal from './FiltersModal';
+import GuestSearchAlert from './GuestSearchAlert';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
@@ -46,6 +47,8 @@ export default function ListingsExplorer({
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
+  // підписка гостя на пошук: назва й запит, з якими відкрито вікно
+  const [guestAlert, setGuestAlert] = useState<{ title: string; query: string } | null>(null);
   // межі, куди користувач посунув карту після останнього пошуку — тоді й зʼявляється «Search this area»
   const [movedTo, setMovedTo] = useState<Bbox | null>(null);
   // на вузьких екранах показуємо щось одне: список або карту
@@ -170,7 +173,6 @@ export default function ListingsExplorer({
   }, []);
 
   async function saveSearch() {
-    if (!authed) return toast(t('Sign in to save searches'));
     const title = [
       filters.deal === 'rent' ? t('Rentals') : t('For sale'),
       filters.oceanfront && t('oceanfront'),
@@ -178,6 +180,8 @@ export default function ListingsExplorer({
       filters.neighborhoods[0],
       filters.priceMax && t('under {price}', { price: fmtUsd(Number(filters.priceMax)) }),
     ].filter(Boolean).join(', ');
+    // гість підписується лише email-ом, з листом-підтвердженням (0058)
+    if (!authed) return setGuestAlert({ title: title || t('All listings'), query: qs });
     const res = await fetch('/api/saved-searches', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: title || t('All listings'), query: qs }),
@@ -333,6 +337,7 @@ export default function ListingsExplorer({
         onClose={() => setModal(false)}
         onApply={(f) => setFilters(f)}
       />
+      {guestAlert && <GuestSearchAlert {...guestAlert} onClose={() => setGuestAlert(null)} />}
     </>
   );
 }

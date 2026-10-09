@@ -2360,3 +2360,22 @@ html{scroll-behavior:smooth}
 .vsettings__days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .vsettings__days .fchip{cursor:default}
 .vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}
+
+/* ---------- календар візиту, підписка гостя на пошук, автозбереження форми оголошення (0058) ---------- */
+.addcal{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 12px}
+.addcal__btn{display:inline-flex;align-items:center;gap:8px}
+.addcal__link{color:var(--ink-2);text-decoration:underline}
+.visit__done .addcal .btn{margin-top:12px}
+.vmanage .addcal{align-items:stretch;margin:0 0 16px}
+.gsa{display:grid;gap:12px;margin-top:12px}
+.gsa__err{margin:0;color:#b91c1c}
+.gsa__link{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.lf__restore{align-items:center;flex-wrap:wrap}
+.lf__restore > div:first-of-type{flex:1 1 260px}
+.lf__restore-btns{display:flex;gap:8px}
+.lf__auto{margin:8px 0 0;text-align:right}
+@media (max-width:640px){
+  .lf__restore-btns{width:100%}
+  .lf__restore-btns .btn{flex:1}
+  .lf__auto{text-align:left}
+}
