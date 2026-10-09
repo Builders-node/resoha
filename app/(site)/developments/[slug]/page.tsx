@@ -16,6 +16,9 @@ import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 import { fmtNumber } from '@/lib/format';
+import { getLang } from '@/lib/i18n/server';
+import { makeT } from '@/lib/i18n';
+import { getMoney } from '@/lib/currencyServer';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -29,21 +32,23 @@ export default async function DevelopmentPage({ params, searchParams }: {
   const { slug } = await params;
   const ctx = await developmentContext(slug);
   const { dev, units, buildings, docs, progress, news, base, from } = ctx;
+  const [lang, money] = await Promise.all([getLang(), getMoney()]);
+  const t = makeT(lang);
   await trackAfterResponse({ developmentId: dev.id }, 'dev_view', { utm: (await searchParams).utm_source });
   await trackPromo('development', [dev], 'click');
 
   const beds = units.map((u) => u.beds);
   const types = units.length
-    ? [...new Set([Math.min(...beds), Math.max(...beds)])].map((b) => (b ? `${b} BR` : 'Studio')).join(' – ')
+    ? [...new Set([Math.min(...beds), Math.max(...beds)])].map((b) => (b ? t('{n} bd', { n: b }) : t('Studio'))).join(' – ')
     : '—';
   const sizes = units.filter((u) => u.sqft > 0).map((u) => u.sqft);
   const floors = units.flatMap((u) => (u.floor !== null ? [u.floor] : []));
   const chessGroups = [
     ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
-    { id: '', name: 'Other units', units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
+    { id: '', name: t('Other units'), units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
   ].filter((g) => g.units.some((u) => u.floor !== null));
   // характеристики будинку: показуємо лише заповнене
-  const facts = developmentFeatures(dev, buildings, units);
+  const facts = developmentFeatures(dev, buildings, units, money);
   const latest = progress.find((p) => p.photos.length);
 
   return (
@@ -54,19 +59,19 @@ export default async function DevelopmentPage({ params, searchParams }: {
       </div>
     )}>
       <div className="specs" style={{ marginTop: 0 }}>
-        <div className="spec"><span className="muted small">Units</span><b>{units.length || '—'}</b></div>
-        <div className="spec"><span className="muted small">Types</span><b>{types}</b></div>
-        <div className="spec"><span className="muted small">Sizes</span>
+        <div className="spec"><span className="muted small">{t('Units')}</span><b>{units.length || '—'}</b></div>
+        <div className="spec"><span className="muted small">{t('Types')}</span><b>{types}</b></div>
+        <div className="spec"><span className="muted small">{t('Sizes')}</span>
           <b>{sizes.length ? `${Math.round(toM2(Math.min(...sizes)))} – ${Math.round(toM2(Math.max(...sizes)))} m²` : '—'}</b>
           {sizes.length > 0 && <span className="muted small">{fmtNumber(Math.min(...sizes))} – {fmtNumber(Math.max(...sizes))} ft²</span>}</div>
-        <div className="spec"><span className="muted small">{dev.completion ? 'Completion' : 'Floors'}</span>
+        <div className="spec"><span className="muted small">{t(dev.completion ? 'Completion' : 'Floors')}</span>
           <b>{dev.completion || (floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '—')}</b></div>
       </div>
 
       <section className="dev" id="units">
         <div className="dev__head">
-          <h2 className="dev__title">Units &amp; prices</h2>
-          {units.length > 0 && <Link className="dev__more" href={`${base}/layouts`}>Layouts →</Link>}
+          <h2 className="dev__title">{t('Units & prices')}</h2>
+          {units.length > 0 && <Link className="dev__more" href={`${base}/layouts`}>{t('Layouts')} →</Link>}
         </div>
         <DevelopmentUnits units={units}
           buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} developerHref={dev.developerId ? `/developers/${dev.developerId}` : undefined} completion={dev.completion} sales={dev.sales}
@@ -78,17 +83,17 @@ export default async function DevelopmentPage({ params, searchParams }: {
           )}
         </ul>
         <p className="tiny muted" style={{ marginTop: 8 }}>
-          Prices from the developer&apos;s price list — ask the agent which units are still open.
+          {t('Prices from the developer’s price list — ask the agent which units are still open.')}
         </p>
         {/* PDF для покупця: прайс одним аркушем і повний буклет ЖК */}
         <div className="ptools">
           {units.length > 0 && (
             <a className="ptools__btn" href={`${base}/price-list`} target="_blank" rel="noreferrer">
-              <Icon name="download" size={16} /> Price list (PDF)
+              <Icon name="download" size={16} /> {t('Price list (PDF)')}
             </a>
           )}
           <a className="ptools__btn" href={`${base}/booklet`} target="_blank" rel="noreferrer">
-            <Icon name="download" size={16} /> Booklet (PDF)
+            <Icon name="download" size={16} /> {t('Booklet (PDF)')}
           </a>
         </div>
       </section>
@@ -96,8 +101,8 @@ export default async function DevelopmentPage({ params, searchParams }: {
       {buildings.length > 0 && (
         <section className="dev" id="buildings">
           <div className="dev__head">
-            <h2 className="dev__title">{buildings.length > 1 ? 'Buildings' : 'Construction status'}</h2>
-            <Link className="dev__more" href={`${base}/construction`}>Construction progress →</Link>
+            <h2 className="dev__title">{t(buildings.length > 1 ? 'Buildings' : 'Construction status')}</h2>
+            <Link className="dev__more" href={`${base}/construction`}>{t('Construction progress')} →</Link>
           </div>
           <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''} />
         </section>
@@ -105,7 +110,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
       {units.some((u) => u.floor !== null) && (
         <section className="dev" id="floors">
-          <h2 className="dev__title">Availability by floor</h2>
+          <h2 className="dev__title">{t('Availability by floor')}</h2>
           {/* у кожного дому своя шахматка; квартири без дому — окремим блоком наприкінці */}
           {chessGroups.map((g) => (
             <div key={g.id} id={g.id ? `bld-${g.id}` : undefined} className="chess-group">
@@ -118,11 +123,11 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
       {(facts.length > 0 || dev.amenities.length > 0) && (
         <section className="dev" id="features">
-          <h2 className="dev__title">Project features</h2>
-          <p className="small muted" style={{ margin: '-6px 0 16px' }}>As stated by the developer.</p>
+          <h2 className="dev__title">{t('Project features')}</h2>
+          <p className="small muted" style={{ margin: '-6px 0 16px' }}>{t('As stated by the developer.')}</p>
           <FeatureGrid items={facts} />
           {dev.amenities.length > 0 && (
-            <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{a}</li>)}</ul>
+            <ul className="dev__facts" style={{ marginTop: 16 }}>{dev.amenities.map((a) => <li key={a}>{t(a)}</li>)}</ul>
           )}
         </section>
       )}
@@ -130,13 +135,13 @@ export default async function DevelopmentPage({ params, searchParams }: {
       {latest && (
         <section className="dev">
           <div className="dev__head">
-            <h2 className="dev__title">Construction progress</h2>
-            <Link className="dev__more" href={`${base}/construction`}>All updates →</Link>
+            <h2 className="dev__title">{t('Construction progress')}</h2>
+            <Link className="dev__more" href={`${base}/construction`}>{t('All updates')} →</Link>
           </div>
           <p className="small muted" style={{ margin: '-6px 0 12px' }}>
-            {fmtMonth(latest.month)}{latest.buildingId && buildings.length > 1 ? ` · ${buildings.find((b) => b.id === latest.buildingId)?.name ?? ''}` : ''}
+            {fmtMonth(latest.month, lang)}{latest.buildingId && buildings.length > 1 ? ` · ${buildings.find((b) => b.id === latest.buildingId)?.name ?? ''}` : ''}
           </p>
-          <ProgressPhotos photos={latest.photos} max={4} title={`${dev.name}, ${fmtMonth(latest.month)}`} />
+          <ProgressPhotos photos={latest.photos} max={4} title={`${dev.name}, ${fmtMonth(latest.month, lang)}`} />
         </section>
       )}
 
@@ -144,7 +149,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <section className="dev">
           <Link className="dteaser" href={`${base}/tour`}>
             <Icon name={dev.tour ? 'orbit' : 'play'} size={28} />
-            <span><b>{dev.tour ? 'Video & 360° tour' : 'Video'}</b><span className="small muted">Walk around {dev.name} without leaving home</span></span>
+            <span><b>{t(dev.tour ? 'Video & 360° tour' : 'Video')}</b><span className="small muted">{t('Walk around {name} without leaving home', { name: dev.name })}</span></span>
             <Icon name="arrowRight" size={20} />
           </Link>
         </section>
@@ -152,24 +157,24 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
       {dev.payment && (
         <section className="dev">
-          <h2 className="dev__title">Payment plan</h2>
+          <h2 className="dev__title">{t('Payment plan')}</h2>
           <ol className="dev__pay">
             {dev.payment.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
           </ol>
-          <p className="tiny muted" style={{ marginTop: 8 }}>Terms come from the developer — confirm the current plan with the agent.</p>
+          <p className="tiny muted" style={{ marginTop: 8 }}>{t('Terms come from the developer — confirm the current plan with the agent.')}</p>
         </section>
       )}
 
       {docs.length > 0 && (
         <section className="dev">
           <div className="dev__head">
-            <h2 className="dev__title">Documents</h2>
-            <Link className="dev__more" href={`${base}/documents`}>All {docs.length} →</Link>
+            <h2 className="dev__title">{t('Documents')}</h2>
+            <Link className="dev__more" href={`${base}/documents`}>{t('All {n}', { n: docs.length })} →</Link>
           </div>
           <ul className="dteaser-list">
             {docs.slice(0, 4).map((d) => (
               <li key={d.id}><Icon name="deed" size={18} /> <span>{d.title}</span>
-                {d.verified && <span className="docs__ok tiny"><Icon name="check" size={13} strokeWidth={2.6} /> Checked</span>}</li>
+                {d.verified && <span className="docs__ok tiny"><Icon name="check" size={13} strokeWidth={2.6} /> {t('Checked')}</span>}</li>
             ))}
           </ul>
         </section>
@@ -178,12 +183,12 @@ export default async function DevelopmentPage({ params, searchParams }: {
       {news.length > 0 && (
         <section className="dev">
           <div className="dev__head">
-            <h2 className="dev__title">News</h2>
-            <Link className="dev__more" href={`${base}/news`}>All news →</Link>
+            <h2 className="dev__title">{t('News')}</h2>
+            <Link className="dev__more" href={`${base}/news`}>{t('All news')} →</Link>
           </div>
           <ul className="dteaser-list">
             {news.slice(0, 3).map((n) => (
-              <li key={n.id}><span className="small muted" style={{ minWidth: 110 }}>{fmtDay(n.publishedOn)}</span>
+              <li key={n.id}><span className="small muted" style={{ minWidth: 110 }}>{fmtDay(n.publishedOn, lang)}</span>
                 <Link href={`${base}/news#n-${n.id}`}>{n.title}</Link></li>
             ))}
           </ul>
@@ -194,12 +199,12 @@ export default async function DevelopmentPage({ params, searchParams }: {
 
       {dev.text && (
         <>
-          <h3 className="prop__h">About {dev.name}</h3>
+          <h3 className="prop__h">{t('About {name}', { name: dev.name })}</h3>
           <p className="muted" style={{ marginTop: 8, fontSize: 16, whiteSpace: 'pre-line' }}>{dev.text}</p>
         </>
       )}
 
-      <h3 className="prop__h">Location</h3>
+      <h3 className="prop__h">{t('Location')}</h3>
       <div id="miniMap">
         <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
           center={[dev.lat, dev.lng]} detail />

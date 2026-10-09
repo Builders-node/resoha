@@ -13,6 +13,7 @@ import type { NearbyPlace } from '@/lib/nearby';
 import type { PhotoRooms } from '@/lib/rooms';
 import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
+import DescriptionEs from './DescriptionEs';
 
 /** Кроки форми: одна тема на екран, щоб ріелтор не губився в сорока полях */
 const STEPS = [
@@ -486,6 +487,8 @@ export default function ListingForm({
           <div className="field"><label>Description</label>
             <textarea className="input" name="text" rows={7} defaultValue={v?.text}
               placeholder="What makes this property worth the flight…" /></div>
+
+          <DescriptionEs defaultValue={v?.textEs} />
 
           <div className="field"><label>Tags</label>
             <input className="input" name="tags" defaultValue={v?.tags.join(', ')} placeholder="Pool, Turnkey, Rental income" />

@@ -34,8 +34,8 @@ export default async function GuidesPage() {
       <div className="guide-list guide-list--wide">
         {GUIDES.map((g) => (
           <Link key={g.slug} className="guide-card" href={`/guides/${g.slug}`}>
-            <b>{g.title}</b>
-            <span className="small muted">{g.description}</span>
+            <b>{t(g.title)}</b>
+            <span className="small muted">{t(g.description)}</span>
             <span className="tiny muted">{t('Updated')} {fmtDate(g.updated, lang)}</span>
           </Link>
         ))}

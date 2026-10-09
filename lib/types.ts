@@ -111,6 +111,8 @@ export interface Listing {
   tags: string[];
   photos: string[];
   text: string;
+  /** Опис іспанською (body_es, міграція 0059); порожньо — іспаномовні бачать англійський */
+  textEs?: string;
   /* Звідки взяті факти. Порожньо — оголошення завів сам ріелтор. */
   sourceName: string;
   sourceRef: string;

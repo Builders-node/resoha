@@ -7,12 +7,13 @@ import Icon from '@/components/Icon';
 import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
 import { trackPromo } from '@/lib/promo';
-import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import { fmtNumber, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
+import { getMoney } from '@/lib/currencyServer';
 
 const loadAgency = cache(getAgency);
 
@@ -38,6 +39,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
     getLang(),
   ]);
   const t = makeT(lang);
+  const money = await getMoney();
   // перехід на сторінку просунутої агенції; getAgency позначку не читає, тож фільтрує сама база
   await trackPromo('agency', [{ id: agency.id, featured: true }], 'click');
   const favIds = session ? await getFavorites(session.id) : [];
@@ -76,7 +78,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         <div className="stat"><span className="muted small">{t('Areas covered')}</span><b>{areas.length}</b></div>
         <div className="stat">
           <span className="muted small">{cheapest ? t('From') : t('Views')}</span>
-          <b>{cheapest ? fmtUsd(cheapest.price) : fmtNumber(views)}</b>
+          <b>{cheapest ? money.amount(cheapest.price) : fmtNumber(views)}</b>
         </div>
       </div>
 

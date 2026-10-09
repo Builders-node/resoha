@@ -4,12 +4,13 @@ import Link from 'next/link';
 import Icon from './Icon';
 import FavButton from './FavButton';
 import { toast } from './Toaster';
-import { fmtPerArea, fmtPrice } from '@/lib/format';
+import { fmtPrice } from '@/lib/format';
 import type { Agency, Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
 import ReportListing from './ReportListing';
 import StickyContactBar from './StickyContactBar';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -58,6 +59,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
 }) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   const [shown, setShown] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [sending, setSending] = useState(false);
@@ -73,7 +75,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const price = forBuilding ? fromPrice ?? 0 : listing.price;
   const dropped = !hasUnits && listing.oldPrice > listing.price;
   const perSqft = !hasUnits && listing.deal === 'sale' && listing.sqft > 0
-    ? fmtPerArea(listing.price, listing.sqft) : '';
+    ? money.perArea(listing.price, listing.sqft) : '';
   const place = [listing.address, listing.neighborhood].filter(Boolean).join(', ');
 
   const msg = t('Hi {name}, I\'m interested in "{what}" ', { name: agent.name.split(' ')[0], what: topic ?? listing.title })
@@ -134,7 +136,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     });
     setSending(false);
     if (res.ok) { setSent(true); toast(t('Enquiry sent to the agent')); }
-    else toast((await res.json().catch(() => ({}))).error ?? t('Something went wrong'));
+    else toast(t((await res.json().catch(() => ({}))).error ?? 'Something went wrong'));
   }
 
   return (
@@ -152,7 +154,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               {price > 0 ? (
                 <>
                   {hasUnits && <span className="cc__from">{t('From')}</span>}
-                  {fmtPrice(price, listing.deal, lang)}
+                  {money.price(price, listing.deal, lang)}
                 </>
               ) : t('Price on request')}
               {dropped && <Icon name="arrowDown" size={26} className="ico cc__drop" aria-label={t('Price reduced')} />}
@@ -167,7 +169,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
 
           {(dropped || perSqft) && (
             <div className="cc__sub">
-              {dropped && <s className="cc__old">{fmtPrice(listing.oldPrice, listing.deal, lang)}</s>}
+              {dropped && <s className="cc__old">{money.price(listing.oldPrice, listing.deal, lang)}</s>}
               {perSqft && <span className="cc__per">{perSqft}</span>}
             </div>
           )}

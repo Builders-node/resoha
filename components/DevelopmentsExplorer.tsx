@@ -7,7 +7,7 @@ import Photo from './Photo';
 import type { Pin } from './MapView';
 import { useT } from './LangProvider';
 import { SALES_STATUSES } from '@/lib/units';
-import { fmtUsd } from '@/lib/format';
+import { useMoney } from './CurrencyProvider';
 
 /** ЖК для списку й карти: усе пораховано на сервері. */
 export type DevItem = {
@@ -30,6 +30,7 @@ const MapView = dynamic(() => import('./MapView'), { ssr: false, loading: () => 
 /** Сторінка новобудов: ліворуч картки ЖК, праворуч карта з їхніми пінами — як у пошуку. */
 export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] }) {
   const t = useT();
+  const money = useMoney();
   const [year, setYear] = useState('');
   const [area, setArea] = useState('');
   const [cap, setCap] = useState('');
@@ -102,7 +103,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
               <label>{t('Prices from')}
                 <select className="input" value={cap} onChange={(e) => setCap(e.target.value)}>
                   <option value="">{t('Any price')}</option>
-                  {PRICE_CAPS.map((p) => <option key={p} value={p}>{t('under {price}', { price: fmtUsd(p) })}</option>)}
+                  {PRICE_CAPS.map((p) => <option key={p} value={p}>{t('under {price}', { price: money.amount(p) })}</option>)}
                 </select>
               </label>
               <label>{t('Sales')}

@@ -22,7 +22,7 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, getSiteSettings, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
-import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPerArea, fmtPrice, fmtUsd, specLine, sqftToM2 } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, specLine, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
@@ -38,6 +38,8 @@ import { makeT, type T } from '@/lib/i18n';
 import ListingGone from '@/components/ListingGone';
 import ListingTools from '@/components/ListingTools';
 import { getGoneListing, similarActive, type GoneListing } from '@/lib/gone';
+import { getMoney } from '@/lib/currencyServer';
+import ListingDescription from '@/components/ListingDescription';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -130,6 +132,7 @@ export default async function PropertyPage({ params, searchParams }: {
     getSiteSettings(),
   ]);
   const t = makeT(lang);
+  const money = await getMoney();
   const docs = [...unitDocs, ...devDocs];
   const building = devBuildings.find((b) => b.id === listing.buildingId) ?? null;
   const buildingFacts: Feature[] = dev ? ([
@@ -171,7 +174,7 @@ export default async function PropertyPage({ params, searchParams }: {
     ['calendar', listing.year ? t('built {year}', { year: listing.year }) : ''],
     ...DETAIL_FIELDS.filter((f) => !f.rentOnly || listing.deal === 'rent')
       .map((f): Fact => [f.icon, t(detailLabel(f, listing.details[f.key])), f.hint && t(f.hint)]),
-    ['wallet', listing.hoa > 0 ? `${fmtUsd(listing.hoa)}${t('/mo')}` : '', t('HOA')],
+    ['wallet', listing.hoa > 0 ? `${money.amount(listing.hoa)}${t('/mo')}` : '', t('HOA')],
     ['deed', listing.ownerFinancing ? t('Owner financing available') : ''],
   ] as Fact[]).filter(([, v]) => v);
   const inUnit = IN_UNIT.filter(([k]) => listing.details.inUnit?.includes(k));
@@ -235,15 +238,17 @@ export default async function PropertyPage({ params, searchParams }: {
           </div>
 
           <div className="prop__price">
-            {fmtPrice(listing.price, listing.deal, lang)}
+            {money.price(listing.price, listing.deal, lang)}
+            {/* в іншій валюті показуємо й долари: це ціна, яку виставив ріелтор */}
+            {money.converted && <span className="prop__usd">{fmtPrice(listing.price, listing.deal, lang)}</span>}
             {listing.status !== 'available' && <span className={`unit-status unit-status--${listing.status}`}>{t(statusLabel(listing.status))}</span>}
             {listing.deal === 'sale' && listing.sqft > 0 && (
               <span className="muted small" style={{ fontWeight: 500 }}>
-                {' '}· {fmtPerArea(listing.price, listing.sqft)}
+                {' '}· {money.perArea(listing.price, listing.sqft)}
               </span>
             )}
             {listing.hoa > 0 && (
-              <span className="muted small" style={{ fontWeight: 500 }}> · {t('HOA')} {fmtUsd(listing.hoa)}{t('/mo')}</span>
+              <span className="muted small" style={{ fontWeight: 500 }}> · {t('HOA')} {money.amount(listing.hoa)}{t('/mo')}</span>
             )}
           </div>
           <p className="prop__updated" title={t('Updated {date}', { date: fmtDate(listing.updatedAt, lang) })}>
@@ -320,13 +325,13 @@ export default async function PropertyPage({ params, searchParams }: {
                   {n.perAcre > 0 && (
                     <div className="land__stat">
                       <span className="land__k">{t('Price per acre')}</span>
-                      <b>{fmtUsd(Math.round(n.perAcre))}</b>
+                      <b>{money.amount(Math.round(n.perAcre))}</b>
                       <span className="small muted">
-                        {fmtUsd(Math.round(n.perSqm))}/m²
+                        {money.amount(Math.round(n.perSqm))}/m²
                         {n.benchmark && n.vsBenchmark !== null && (
                           <> · <span className={n.vsBenchmark > 10 ? 'land__up' : n.vsBenchmark < -10 ? 'land__down' : ''}>
                             {n.vsBenchmark === 0 ? t('at') : t(n.vsBenchmark > 0 ? '{n}% above' : '{n}% below', { n: Math.abs(n.vsBenchmark) })}
-                          </span>{' '}{t('the {where} median of {price}/ac', { where: n.benchmark.where, price: fmtUsd(Math.round(n.benchmark.perAcre)) })}
+                          </span>{' '}{t('the {where} median of {price}/ac', { where: n.benchmark.where, price: money.amount(Math.round(n.benchmark.perAcre)) })}
                           {' '}({t('{n} lots', { n: n.benchmark.count })})</>
                         )}
                       </span>
@@ -335,7 +340,7 @@ export default async function PropertyPage({ params, searchParams }: {
                   {n.closing && site.showPurchaseCosts && (
                     <div className="land__stat">
                       <span className="land__k">{t('Cost to buy')}</span>
-                      <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
+                      <b>{money.range(Math.round(n.closing.low), Math.round(n.closing.high))}</b>
                       <span className="small muted">
                         {t('Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.')}{' '}
                         <a href="#costs">{t('How it adds up')}</a>
@@ -345,7 +350,7 @@ export default async function PropertyPage({ params, searchParams }: {
                   {n.taxMax > 0 && (
                     <div className="land__stat">
                       <span className="land__k">{t('Property tax')}</span>
-                      <b>{t('up to {price}/yr', { price: fmtUsd(Math.round(n.taxMax)) })}</b>
+                      <b>{t('up to {price}/yr', { price: money.amount(Math.round(n.taxMax)) })}</b>
                       <span className="small muted">{t('0.25% of the cadastral value, which is usually below the asking price.')}</span>
                     </div>
                   )}
@@ -411,10 +416,10 @@ export default async function PropertyPage({ params, searchParams }: {
             </section>
           )}
 
-          {listing.text && (
+          {(listing.text || listing.textEs) && (
             <>
               <h3 className="prop__h">{t('About this property')}</h3>
-              <p className="muted" style={{ fontSize: 15 }}>{listing.text}</p>
+              <ListingDescription text={listing.text} textEs={listing.textEs ?? ''} lang={lang} t={t} />
             </>
           )}
 
@@ -515,7 +520,7 @@ export default async function PropertyPage({ params, searchParams }: {
             <section className="about-dev" id="development">
               <h3 className="prop__h">{t('About {name}', { name: dev.name })}</h3>
               <PhotoStrip photos={dev.photos} title={dev.name} />
-              <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll)} />
+              <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll, money)} />
               <Link href={`/developments/${dev.slug}`} className="btn btn--ghost" style={{ marginTop: 16 }}>
                 {t('Open {name}', { name: dev.name })} <Icon name="arrowRight" size={18} />
               </Link>

@@ -13,10 +13,11 @@ import { toast } from './Toaster';
 import {
   SORTS, type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
-import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import { fmtNumber, nListings } from '@/lib/format';
 import type { RoomStat } from '@/lib/priceStats';
 import type { Listing } from '@/lib/types';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
 
 function MapLoading() {
   const t = useT();
@@ -36,6 +37,7 @@ export default function ListingsExplorer({
 }) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [items, setItems] = useState<Listing[]>(initialItems);
   const [pins, setPins] = useState<Pin[]>(initialPins);
@@ -176,7 +178,7 @@ export default function ListingsExplorer({
       filters.oceanfront && t('oceanfront'),
       filters.beds.length && t('{n} bd', { n: filters.beds.join('/') }),
       filters.neighborhoods[0],
-      filters.priceMax && t('under {price}', { price: fmtUsd(Number(filters.priceMax)) }),
+      filters.priceMax && t('under {price}', { price: money.amount(Number(filters.priceMax)) }),
     ].filter(Boolean).join(', ');
     const res = await fetch('/api/saved-searches', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },

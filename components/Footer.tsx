@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Logo from './Logo';
 import LangSwitch from './LangSwitch';
+import CurrencySwitch from './CurrencySwitch';
 import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 import { getT } from '@/lib/i18n/server';
 
@@ -61,7 +62,7 @@ export default async function Footer() {
         <div className="tiny muted">
           © 2026 {OPERATOR}. {t('Resoha is a listing platform, not a broker — listing details are as published by the agency holding each property.')}
         </div>
-        <LangSwitch />
+        <span className="prefs"><LangSwitch /><CurrencySwitch /></span>
       </div>
     </footer>
   );

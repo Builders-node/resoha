@@ -11,6 +11,8 @@ import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import LangProvider from '@/components/LangProvider';
 import { getLang } from '@/lib/i18n/server';
+import CurrencyProvider from '@/components/CurrencyProvider';
+import { getCurrencyRate } from '@/lib/currencyServer';
 
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
 const inter = Inter({
@@ -30,10 +32,12 @@ export const metadata: Metadata = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();
+  const money = await getCurrencyRate();
   return (
     <html lang={lang} className={inter.variable} data-scroll-behavior="smooth">
       <body>
         <LangProvider lang={lang}>
+        <CurrencyProvider cur={money.cur} rate={money.rate}>
         {/* хто ми — на кожній сторінці, щоб пошуковики й AI-асистенти звʼязували всі сторінки з одним брендом */}
         <JsonLd data={graph(organizationLd(), websiteLd())} />
         {children}
@@ -41,6 +45,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Motion />
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>
+        </CurrencyProvider>
         </LangProvider>
         <GoogleAnalytics />
       </body>

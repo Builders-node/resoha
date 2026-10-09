@@ -9,6 +9,7 @@ import Avatar from './Avatar';
 import AuthLink from './AuthLink';
 import AccountSwitcher from './AccountSwitcher';
 import LangSwitch from './LangSwitch';
+import CurrencySwitch from './CurrencySwitch';
 import { useT } from './LangProvider';
 
 type Match = (path: string, deal: string, type: string) => boolean;
@@ -160,7 +161,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
             )}
 
             {/* футер на телефоні схований — правові сторінки мають бути досяжні звідси */}
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}><LangSwitch /></div>
+            <div className="prefs" style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}><LangSwitch /><CurrencySwitch /></div>
             <p className="tiny muted" style={{ textAlign: 'center', margin: '6px 0 10px' }}>
               <Link href="/privacy">{t('Privacy')}</Link> · <Link href="/terms">{t('Terms')}</Link>
             </p>

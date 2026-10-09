@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { DEAL_LABELS, fmtPrice, specLine } from '@/lib/format';
+import { DEAL_LABELS, specLine } from '@/lib/format';
 import { readiness } from '@/lib/land';
 import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
@@ -9,6 +9,7 @@ import CompareButton from './CompareButton';
 import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
 
 type Props = {
   listing: Listing;
@@ -26,6 +27,7 @@ export default function ListingCard({
 }: Props) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   return (
     <Link
       href={`/listings/${l.id}`}
@@ -53,7 +55,7 @@ export default function ListingCard({
           : agentName && <div className="ov__agency">{agentName}</div>}
         <div className="ov__title">{l.title}</div>
         <div className="ov__meta">{l.neighborhood} · {specLine(l, lang)}</div>
-        <div className="ov__price">{fmtPrice(l.price, l.deal, lang)}</div>
+        <div className="ov__price">{money.price(l.price, l.deal, lang)}</div>
       </div>
     </Link>
   );

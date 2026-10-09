@@ -6,6 +6,7 @@ import Rich, { plain } from '@/components/Rich';
 import SourceList from '@/components/SourceList';
 import { HELP_ITEMS, HELP_SECTIONS, HELP_UPDATED } from '@/lib/content/help';
 import { fmtDate } from '@/lib/format';
+import { localizeContent } from '@/lib/content/localize';
 import { makeT } from '@/lib/i18n';
 import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
@@ -25,6 +26,8 @@ export default async function FaqLanding() {
   const lang = await getLang();
   const t = makeT(lang);
   const url = `${SITE_URL}/faq`;
+  // розділи мовою відвідувача; якорі (id) і FAQPage-розмітка — з англійського оригіналу
+  const sections = localizeContent(HELP_SECTIONS, t);
   return (
     <>
       <JsonLd data={graph(
@@ -59,7 +62,7 @@ export default async function FaqLanding() {
           </p>
 
           <div className="lp-topics">
-            {HELP_SECTIONS.map((s) => (
+            {sections.map((s) => (
               <a key={s.id} className="lp-topic" href={`#${s.id}`}>
                 <span className="lp-topic__ico"><Icon name={s.icon} size={22} /></span>
                 <b>{s.title}</b>
@@ -74,13 +77,13 @@ export default async function FaqLanding() {
         <aside className="lp-side" aria-label={t('Topics')}>
           <b className="tiny">{t('Topics')}</b>
           <ol>
-            {HELP_SECTIONS.map((s) => <li key={s.id}><a href={`#${s.id}`}>{s.title}</a></li>)}
+            {sections.map((s) => <li key={s.id}><a href={`#${s.id}`}>{s.title}</a></li>)}
           </ol>
           <Link className="btn btn--primary btn--block btn--sm" href="/listings?deal=sale">{t('Browse listings')}</Link>
         </aside>
 
         <div className="lp-content">
-          {HELP_SECTIONS.map((s, si) => (
+          {sections.map((s, si) => (
             <section key={s.id} id={s.id} className="lp-sec">
               <div className="lp-sec__head">
                 <span className="lp-sec__num">{String(si + 1).padStart(2, '0')}</span>

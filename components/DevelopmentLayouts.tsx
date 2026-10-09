@@ -7,11 +7,13 @@ import Icon from './Icon';
 import Photo from './Photo';
 import RangeSlider from './RangeSlider';
 import { useT } from './LangProvider';
-import { fmtNumber, fmtUsd, SQFT_PER_M2 } from '@/lib/format';
+import { fmtNumber, SQFT_PER_M2 } from '@/lib/format';
 import { OPEN_STATUSES, stageLabel, statusLabel, toM2 } from '@/lib/units';
 import { SITE_URL } from '@/lib/site';
 import type { Agent, Building, Development, Listing } from '@/lib/types';
 import type { T } from '@/lib/i18n';
+import { useMoney } from './CurrencyProvider';
+import type { Money } from '@/lib/currency';
 
 /** Особливості для чипів фільтра: показуємо лише ті, що є хоч в одному плануванні */
 const FEATURES: [key: string, label: string, test: (u: Listing) => boolean][] = [
@@ -78,9 +80,11 @@ function floorRanges(fl: number[]) {
 }
 const span = (a: number, b: number, f: (v: number) => string = String) => (a === b ? f(a) : `${f(a)}–${f(b)}`);
 const kind = (t: T, beds: number) => (beds ? t(beds === 1 ? '1 bedroom' : '{n} bedrooms', { n: beds }) : t('Studio'));
-const ppmLine = (l: Layout) => {
+const ppmLine = (l: Layout, money: Money) => {
   const list = (l.open.length ? l.open : l.units).filter((u) => u.deal === 'sale').map(ppm).filter(Boolean);
-  return list.length ? span(Math.min(...list), Math.max(...list), fmtUsd) : '';
+  if (!list.length) return '';
+  const [a, b] = [Math.min(...list), Math.max(...list)];
+  return a === b ? money.amount(a) : money.range(a, b);
 };
 
 type Props = {
@@ -101,6 +105,7 @@ type Props = {
  */
 export default function DevelopmentLayouts({ units, buildings, dev, agent, me, favIds, levelPlans, visitHref }: Props) {
   const t = useT();
+  const money = useMoney();
   // LUN показує продаж; оренду лишаємо, лише якщо продажу в ЖК немає взагалі
   const pool = useMemo(() => (units.some((u) => u.deal === 'sale') ? units.filter((u) => u.deal === 'sale') : units), [units]);
   const layouts = useMemo(() => buildLayouts(pool), [pool]);
@@ -273,7 +278,7 @@ export default function DevelopmentLayouts({ units, buildings, dev, agent, me, f
           <section key={r} className="lay__group">
             <h2 className="lay__kind">
               {r === 0 ? t('Studios') : r === 4 ? t('4+ bedroom apartments') : t('{n}-bedroom apartments', { n: r })}
-              {prices.length > 0 && <> {t('from {price}', { price: fmtUsd(Math.min(...prices)) })}</>}
+              {prices.length > 0 && <> {t('from {price}', { price: money.amount(Math.min(...prices)) })}</>}
             </h2>
             <div className="lay__grid">
               {list.map((l) => (
@@ -318,7 +323,8 @@ function facts(l: Layout, t: T, buildings: Building[], dev: Props['dev']) {
 function LayoutCard({ l, t, buildings, dev, fav, onOpen }: {
   l: Layout; t: T; buildings: Building[]; dev: Props['dev']; fav: boolean; onOpen: () => void;
 }) {
-  const per = ppmLine(l);
+  const money = useMoney();
+  const per = ppmLine(l, money);
   return (
     <article className="lay__card" role="button" tabIndex={0} onClick={onOpen}
       onKeyDown={(e) => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onOpen())}>
@@ -329,11 +335,11 @@ function LayoutCard({ l, t, buildings, dev, fav, onOpen }: {
       </div>
       <div className="lay__body">
         <div className="lay__price">
-          {l.open.length ? (per ? <>{per} <span>{t('per m²')}</span></> : fmtUsd(l.lead.price)) : t('Sold out')}
+          {l.open.length ? (per ? <>{per} <span>{t('per m²')}</span></> : money.amount(l.lead.price)) : t('Sold out')}
         </div>
         {l.open.length > 0 && (
           <div className="lay__sub">
-            {t('from {price}', { price: fmtUsd(l.lead.price) })} · <span className="lay__avail">{t('{n} of {total} available', { n: l.open.length, total: l.units.length })}</span>
+            {t('from {price}', { price: money.amount(l.lead.price) })} · <span className="lay__avail">{t('{n} of {total} available', { n: l.open.length, total: l.units.length })}</span>
           </div>
         )}
         <ul className="lay__facts">
@@ -351,6 +357,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
   me: Props['me']; favIds: string[]; levelPlans: Record<number, string>; visitHref?: string;
   onClose: () => void; onOpen: (key: string) => void;
 }) {
+  const money = useMoney();
   const boxRef = useRef<HTMLDivElement>(null);
   const [more, setMore] = useState(4);
   const planFloors = l.floors.filter((f) => levelPlans[f]);
@@ -374,7 +381,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
 
   const similar = all.filter((x) => x.key !== l.key)
     .sort((a, b) => Math.abs(a.beds - l.beds) - Math.abs(b.beds - l.beds) || Math.abs(a.area[0] - l.area[0]) - Math.abs(b.area[0] - l.area[0]));
-  const per = ppmLine(l);
+  const per = ppmLine(l, money);
   const payment = dev.payment.split('\n').map((s) => s.trim()).filter(Boolean);
   const ownerFin = l.units.some((u) => u.ownerFinancing);
   const hoa = l.lead.hoa;
@@ -399,13 +406,13 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
               </div>
 
               <div className="lm__price">
-                {l.open.length ? (per ? <>{per}<span>/m²</span></> : fmtUsd(l.lead.price)) : t('Sold out')}
+                {l.open.length ? (per ? <>{per}<span>/m²</span></> : money.amount(l.lead.price)) : t('Sold out')}
               </div>
-              {l.open.length > 0 && <div className="lm__from">{t('from {price}', { price: fmtUsd(l.lead.price) })}</div>}
+              {l.open.length > 0 && <div className="lm__from">{t('from {price}', { price: money.amount(l.lead.price) })}</div>}
               <h4 className="lm__name">{title}</h4>
               <ul className="lm__facts">
                 {facts(l, t, buildings, dev).map(([icon, v]) => <li key={icon}><Icon name={icon} size={20} /><span>{v}</span></li>)}
-                {hoa > 0 && <li><Icon name="wallet" size={20} /><span>{t('HOA ~{sum}/mo', { sum: fmtUsd(hoa) })}</span></li>}
+                {hoa > 0 && <li><Icon name="wallet" size={20} /><span>{t('HOA ~{sum}/mo', { sum: money.amount(hoa) })}</span></li>}
               </ul>
 
               <h3 className="lm__h">{t('Units with this layout')}</h3>
@@ -416,7 +423,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
                     <b>{u.unitNo || '—'}</b>
                     <span>{u.floor ?? '—'}</span>
                     <span>{m2(u) ? `${m2(u)} m²` : '—'}</span>
-                    <span><b>{fmtUsd(u.price)}</b>{ppm(u) > 0 && <em>{fmtUsd(ppm(u))}/m²</em>}</span>
+                    <span><b>{money.amount(u.price)}</b>{ppm(u) > 0 && <em>{money.amount(ppm(u))}/m²</em>}</span>
                     <span className={`lm__st is-${u.status}`}>{t(statusLabel(u.status))}</span>
                   </Link>
                 ))}

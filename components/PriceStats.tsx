@@ -7,13 +7,17 @@ import { fmtNumber } from '@/lib/format';
 import { intlLocale } from '@/lib/i18n';
 import type { CityStat, PriceStats, RoomStat, StatValue } from '@/lib/priceStats';
 import type { Deal } from '@/lib/types';
+import type { Money } from '@/lib/currency';
+import { useMoney } from './CurrencyProvider';
 
-/** $283K, $1.2M, $1.5K — як «25к грн» у ЛУН */
-function fmtCompact(v: number) {
-  const cut = (n: number, unit: string) => `$${(n >= 100 ? Math.round(n) : Math.round(n * 10) / 10)}${unit}`;
-  if (v >= 1_000_000) return cut(v / 1_000_000, 'M');
-  if (v >= 1_000) return cut(v / 1_000, 'K');
-  return `$${Math.round(v)}`;
+/** $283K, $1.2M, $1.5K — як «25к грн» у ЛУН; в іншій валюті — «≈ €260K» */
+function fmtCompact(v: number, money: Money) {
+  const s = money.symbol;
+  const x = money.fromUsd(v);
+  const cut = (n: number, unit: string) => `${money.converted ? '≈ ' : ''}${s}${(n >= 100 ? Math.round(n) : Math.round(n * 10) / 10)}${unit}`;
+  if (x >= 1_000_000) return cut(x / 1_000_000, 'M');
+  if (x >= 1_000) return cut(x / 1_000, 'K');
+  return cut(x, '');
 }
 
 /** «+4%» / «-5%»; бейджа немає, поки історії замало */
@@ -37,6 +41,7 @@ export function RoomPriceStats({ deal, stats, onPick }: {
   deal: Deal; stats: RoomStat[]; onPick: (beds: string[]) => void;
 }) {
   const t = useT();
+  const money = useMoney();
   if (stats.length < 2) return null;
   const label = (beds: number) => (beds === 0 ? t('Studios') : beds === 3 ? t('3+ bedrooms') : beds === 1 ? t('1 bedroom') : t('{n} bedrooms', { n: beds }));
 
@@ -53,7 +58,7 @@ export function RoomPriceStats({ deal, stats, onPick }: {
           <button key={s.beds} type="button" className={`pstat__card ${tone(s)}`}
             onClick={() => onPick(s.beds === 3 ? ['3', '4'] : [String(s.beds)])}>
             <span className="pstat__k">{label(s.beds)}</span>
-            <span className="pstat__v">{fmtCompact(s.value)}{deal === 'rent' && <small>{t('/mo')}</small>}</span>
+            <span className="pstat__v">{fmtCompact(s.value, money)}{deal === 'rent' && <small>{t('/mo')}</small>}</span>
             {s.change !== null && (
               <span className="pstat__ch"><Change change={s.change} /> <span>{t('in a year')}</span></span>
             )}
@@ -66,10 +71,11 @@ export function RoomPriceStats({ deal, stats, onPick }: {
 
 function CityRow({ label, stat, since, lead }: { label: string; stat: StatValue; since: string; lead?: boolean }) {
   const t = useT();
+  const money = useMoney();
   return (
     <div className={`city-stat__row ${lead ? 'is-lead' : ''}`}>
       <span className="city-stat__k">{label}</span>
-      <span className="city-stat__v"><b>{fmtNumber(stat.value)}</b><small>$/m²</small></span>
+      <span className="city-stat__v"><b>{money.converted && '≈ '}{fmtNumber(Math.round(money.fromUsd(stat.value)))}</b><small>{money.symbol.trim()}/m²</small></span>
       <span className="city-stat__ch">
         <Change change={stat.change} digits={1} />
         {stat.change !== null && <small>{t('vs {date}', { date: since })}</small>}

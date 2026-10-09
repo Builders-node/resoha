@@ -6,11 +6,12 @@ import SourceList from '@/components/SourceList';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { DIRECT_FLIGHTS, MARKET_FACTS, MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
-import { fmtDate, fmtNumber, fmtUsd } from '@/lib/format';
+import { fmtDate, fmtNumber } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
 import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { getMoney } from '@/lib/currencyServer';
 
 export const metadata: Metadata = {
   title: `Roatán real-estate market 2026: prices, sales and rentals | ${SITE_NAME}`,
@@ -28,6 +29,7 @@ const median = (xs: number[]) => {
 export default async function MarketPage() {
   const lang = await getLang();
   const t = makeT(lang);
+  const money = await getMoney();
   const all = await queryListings();
   const sale = all.filter((l) => l.deal === 'sale');
   const homes = sale.filter((l) => l.type !== 'land');
@@ -91,7 +93,7 @@ export default async function MarketPage() {
           <div className="stat"><span className="muted small">{t('For sale')}</span><b>{fmtNumber(sale.length)}</b></div>
           <div className="stat"><span className="muted small">{t('For rent')}</span><b>{fmtNumber(all.length - sale.length)}</b></div>
           <div className="stat"><span className="muted small">{t('Median home asking price')}</span>
-            <b>{median(homes.map((l) => l.price)) !== null ? fmtUsd(median(homes.map((l) => l.price))!) : '—'}</b></div>
+            <b>{median(homes.map((l) => l.price)) !== null ? money.amount(median(homes.map((l) => l.price))!) : '—'}</b></div>
         </div>
         <div className="chip-row">
           {[...byArea.entries()].sort((a, b) => b[1] - a[1]).map(([name, n]) => {

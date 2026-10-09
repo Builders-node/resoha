@@ -11,11 +11,12 @@ import SourceList from '@/components/SourceList';
 import { AREAS, areaBySlug } from '@/lib/content/areas';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
-import { AREA_CENTRES, fmtDate, fmtUsd, nListings } from '@/lib/format';
+import { AREA_CENTRES, fmtDate, nListings } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
 import { getLang } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { getMoney } from '@/lib/currencyServer';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => AREAS.map((a) => ({ slug: a.slug }));
@@ -38,6 +39,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   if (!a) notFound();
   const lang = await getLang();
   const t = makeT(lang);
+  const money = await getMoney();
   const name = t(a.name);
 
   const listings = await queryListings({ neighborhoods: a.neighborhoods });
@@ -70,7 +72,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <h1>{t('{area}, Roatán: property and area guide', { area: name })}</h1>
       <section className="answer" aria-label={t('Summary')}>
         <span className="answer__k">{t('In short')}</span>
-        <p>{a.summary}</p>
+        <p>{t(a.summary)}</p>
       </section>
 
       <div className="stats area-stats">
@@ -82,7 +84,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         <div className="stat">
           <span className="muted small">{t('On Resoha now')}</span>
           <b>{nListings(listings.length, lang)}</b>
-          <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: fmtUsd(from) }) : t('Live count from our catalogue')}</span>
+          <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: money.amount(from) }) : t('Live count from our catalogue')}</span>
         </div>
         <div className="stat stat--wide">
           <span className="muted small">{t('Best for')}</span>
@@ -93,13 +95,13 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <div className="page__cols">
         <div className="prose prose--flush">
           <h2>{t('About {area}', { area: name })}</h2>
-          {a.intro.map((p) => <p key={p}><Rich text={p} /></p>)}
+          {a.intro.map((p) => <p key={p}><Rich text={t(p)} /></p>)}
 
           <h2>{t('Why buyers choose {area}', { area: name })}</h2>
-          <ul>{a.highlights.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
+          <ul>{a.highlights.map((h) => <li key={h}><Rich text={t(h)} /></li>)}</ul>
 
           <h2>{t('What to check before buying')}</h2>
-          <ul>{a.considerations.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
+          <ul>{a.considerations.map((h) => <li key={h}><Rich text={t(h)} /></li>)}</ul>
         </div>
 
         <aside className="panel page__aside">

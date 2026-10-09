@@ -2360,3 +2360,19 @@ html{scroll-behavior:smooth}
 .vsettings__days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .vsettings__days .fchip{cursor:default}
 .vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}
+
+/* ===== Валюта (перемикач поруч із мовою), опис іспанською ===== */
+.prefs{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
+.curswitch{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--bg);flex:none;position:relative}
+.curswitch select{appearance:none;-webkit-appearance:none;border:0;background:none;font:inherit;font-size:13px;font-weight:600;color:var(--ink);
+  padding:5px 26px 5px 12px;border-radius:999px;cursor:pointer;outline:none}
+.curswitch::after{content:'';position:absolute;right:11px;top:50%;width:6px;height:6px;margin-top:-5px;border-right:1.6px solid var(--ink-2);
+  border-bottom:1.6px solid var(--ink-2);transform:rotate(45deg);pointer-events:none}
+.curswitch select:focus-visible{box-shadow:0 0 0 2px var(--ink)}
+.curswitch[aria-busy=true]{opacity:.6}
+.cur-toggle .curswitch select{padding-top:3px;padding-bottom:3px}
+.prop__usd{display:inline-block;margin-left:10px;font-size:15px;font-weight:600;color:var(--ink-2);letter-spacing:0}
+.ldesc__text{white-space:pre-line}
+.ldesc__note{margin:6px 0 0}
+.ldesc__note a{text-decoration:underline}
+.desc-es__head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}

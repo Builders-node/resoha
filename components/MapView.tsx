@@ -5,13 +5,15 @@ import type { GeoJSONSource, Map as MLMap, Marker, Popup } from 'maplibre-gl';
 import type { FeatureCollection } from 'geojson';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import type { Bbox } from '@/lib/filters';
-import { DEAL_LABELS, fmtPrice, fmtPriceShort, photoUrl, specLine } from '@/lib/format';
+import { DEAL_LABELS, photoUrl, specLine } from '@/lib/format';
 import { fmtDistance, listingFootprint, pathLength } from '@/lib/mapGeo';
 import { BUILDINGS_LAYER, FILL_LAYERS, SATELLITE_LAYER, mapStyle } from '@/lib/mapStyle';
 import { categoryLabel, type NearbyPlace } from '@/lib/nearby';
 import type { Deal, Listing, PropertyType } from '@/lib/types';
 import type { Lang, T } from '@/lib/i18n';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
+import type { Money } from '@/lib/currency';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
 export type Pin = {
@@ -52,16 +54,16 @@ const FALLBACK_HEIGHT: Record<PropertyType, number> = { condo: 12, commercial: 9
 const EMPTY: FeatureCollection = { type: 'FeatureCollection', features: [] };
 
 /** Скелет картки: показуємо одразу, поки вантажиться сам обʼєкт. */
-function skeletonNode(pin: Pin, t: T, lang: Lang) {
+function skeletonNode(pin: Pin, t: T, lang: Lang, money: Money) {
   const node = document.createElement('div');
   node.className = 'map-pop map-pop--loading';
-  node.innerHTML = `<div class="map-pop__b"><div class="map-pop__price">${fmtPrice(pin.price, pin.deal, lang)}</div>
+  node.innerHTML = `<div class="map-pop__b"><div class="map-pop__price">${money.price(pin.price, pin.deal, lang)}</div>
     <div class="map-pop__meta">${t('Loading…')}</div></div>`;
   return node;
 }
 
 /** Міні-картка, що зʼявляється прямо на карті при наведенні на цінник. */
-function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang) {
+function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang, money: Money) {
   const node = document.createElement('div');
   node.className = 'map-pop';
   const photo = photoUrl(l.photos[0]);
@@ -74,7 +76,7 @@ function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang) {
     <div class="map-pop__b">
       <div class="map-pop__title">${l.title}</div>
       <div class="map-pop__meta">${l.neighborhood} · ${specLine(l, lang)}</div>
-      <div class="map-pop__price">${fmtPrice(l.price, l.deal, lang)}</div>
+      <div class="map-pop__price">${money.price(l.price, l.deal, lang)}</div>
     </div>`;
   node.addEventListener('click', onClick);
   return node;
@@ -151,6 +153,7 @@ export default function MapView({
 }: Props) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const lib = useRef<typeof import('maplibre-gl') | null>(null);
@@ -329,7 +332,7 @@ export default function MapView({
     singles.forEach((l) => {
       const node = document.createElement('div');
       node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
-      node.textContent = l.label ?? fmtPriceShort(l.price, l.deal, lang);
+      node.textContent = l.label ?? money.short(l.price, l.deal, lang);
       // цінник висить над будинком, як прапорець, — сам будинок і сяйво під ним лишаються видні
       const mk = new ml.Marker({ element: node, anchor: 'bottom', offset: detail ? [0, -30] : [0, -12] })
         .setLngLat([l.lng, l.lat])
@@ -340,7 +343,7 @@ export default function MapView({
           closeButton: false, closeOnClick: false, offset: 46, maxWidth: '240px', className: 'map-pop-wrap',
         }).setDOMContent(l.card
           ? buildCardNode(l.card, () => router.push(l.card!.href), t)
-          : skeletonNode(l, t, lang));
+          : skeletonNode(l, t, lang, money));
         popups.current[l.id] = popup;
 
         const open = () => { cancelClose(); popup.setLngLat([l.lng, l.lat]).addTo(m); fill(); };
@@ -353,7 +356,7 @@ export default function MapView({
             ?? (await fetch(`/api/listings/${l.id}`).then((r) => r.json()).then((d) => d.listing).catch(() => null));
           if (!listing) return;
           cache.current[l.id] = listing;
-          popup.setDOMContent(buildPopupNode(listing, () => router.push(`/listings/${l.id}`), t, lang));
+          popup.setDOMContent(buildPopupNode(listing, () => router.push(`/listings/${l.id}`), t, lang, money));
         };
         // курсор із цінника переїхав на саму картку — не закриваємо її
         // (контейнер попапа створюється заново при кожному відкритті)
@@ -407,7 +410,7 @@ export default function MapView({
     fittedFor.current = items;
     fitToItems(first);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, ready, zoomTick, lang]);
+  }, [items, ready, zoomTick, lang, money]);
 
   /*
    * --- будинки обʼєктів помаранчеві: шукаємо їх у векторних тайлах біля пінів ---

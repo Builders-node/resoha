@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Logo from '@/components/Logo';
 import Icon from '@/components/Icon';
 import LangSwitch from '@/components/LangSwitch';
+import CurrencySwitch from '@/components/CurrencySwitch';
 import { getT } from '@/lib/i18n/server';
 import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 
@@ -45,7 +46,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
             <p className="tiny muted" style={{ marginTop: 8 }}>
               © 2026 {OPERATOR}. {t('A listing platform, not a broker.')}
             </p>
-            <LangSwitch className="lp-foot__lang" />
+            <span className="prefs lp-foot__lang"><LangSwitch /><CurrencySwitch /></span>
           </div>
           <nav className="lp-foot__nav small">
             <Link href="/">{t('Catalogue')}</Link>

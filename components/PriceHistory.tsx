@@ -1,7 +1,8 @@
 'use client';
-import { fmtDate, fmtPrice, fmtPriceShort } from '@/lib/format';
+import { fmtDate } from '@/lib/format';
 import { useLang, useT } from './LangProvider';
 import type { Deal, PricePoint } from '@/lib/types';
+import { useMoney } from './CurrencyProvider';
 
 /**
  * Історія ціни, як у LUN: ступінчастий графік і список змін з різницею.
@@ -12,6 +13,7 @@ export default function PriceHistory({ points, deal, price, since }: {
 }) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   // сусідні однакові ціни — не зміна
   const steps: PricePoint[] = [];
   for (const p of points.filter((x) => x.deal === deal)) {
@@ -45,7 +47,7 @@ export default function PriceHistory({ points, deal, price, since }: {
   return (
     <div className="ph">
       <svg className="ph__chart" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" role="img"
-        aria-label={t('Price went from {from} to {to}', { from: fmtPriceShort(steps[0].price, deal, lang), to: fmtPriceShort(steps.at(-1)!.price, deal, lang) })}>
+        aria-label={t('Price went from {from} to {to}', { from: money.short(steps[0].price, deal, lang), to: money.short(steps.at(-1)!.price, deal, lang) })}>
         <path d={d} fill="none" stroke="var(--orange)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
       </svg>
       <ul className="ph__list">
@@ -56,7 +58,7 @@ export default function PriceHistory({ points, deal, price, since }: {
             <li key={r.at}>
               <span className="muted">{fmtDate(r.at, lang)}</span>
               <span>
-                <b>{fmtPrice(r.price, deal, lang)}</b>
+                <b>{money.price(r.price, deal, lang)}</b>
                 {r.prev === null ? <span className="muted small"> · {t('listed')}</span>
                   : <span className={diff < 0 ? 'ph__down' : 'ph__up'}> {diff < 0 ? '↓' : '↑'} {Math.abs(pct)}%</span>}
               </span>

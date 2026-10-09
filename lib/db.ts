@@ -78,6 +78,7 @@ const mapListing = (r: Row): Listing => ({
   lat: r.lat, lng: r.lng, agentId: r.agent_id, agencyId: r.agency_id,
   featured: r.featured, featuredRank: r.featured_rank ?? 0, active: r.active, views: r.views,
   createdAt: r.created_at, tags: r.tags ?? [], photos: r.photos ?? [], text: r.body ?? '',
+  textEs: r.body_es ?? '',   // до міграції 0059 колонки немає
   sourceName: r.source_name ?? '', sourceRef: r.source_ref ?? '', sourceUrl: r.source_url ?? '',
   land: mapLand(r.land_facts),
   // до міграції 0028 колонки немає — тоді просто порожньо
@@ -353,10 +354,13 @@ export async function getListing(id: string): Promise<Listing | null> {
  * До міграцій 0036, 0048 і 0049 колонок details, photo_rooms, review і expires_at немає:
  * PostgREST відповідає PGRST204 — тоді зберігаємо без них.
  */
-const OPTIONAL_COLUMNS = ['details', 'photo_rooms', 'review', 'expires_at'];
+const OPTIONAL_COLUMNS = ['details', 'photo_rooms', 'review', 'expires_at', 'body_es'];
 const missingDetails = (e: { code?: string; message?: string } | null) =>
-  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at/.test(e.message ?? ''));
+  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at|body_es/.test(e.message ?? ''));
 const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
+/** До міграції 0059 немає лише body_es — тоді прибираємо тільки його, щоб не губити решту полів. */
+const onlyBodyEsMissing = (e: { code?: string; message?: string } | null, row: Row) =>
+  Boolean(missingDetails(e) && /body_es/.test(e?.message ?? '') && 'body_es' in row && delete row.body_es);
 
 export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null; externalId?: string }) {
   const client = await db();
@@ -384,6 +388,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     tags: input.tags ?? [],
     photos: input.photos ?? [],
     body: input.text ?? '',
+    ...(input.textEs ? { body_es: String(input.textEs).slice(0, 8000) } : {}),
     source_name: input.sourceName ?? '',
     source_ref: input.sourceRef ?? '',
     source_url: safeUrl(input.sourceUrl),
@@ -403,6 +408,7 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     ...(input.externalId ? { external_id: input.externalId.slice(0, 120) } : {}),
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
+  if (onlyBodyEsMissing(res.error, row)) res = await client.from('listings').insert(row).select(listingCols({})).single();
   if (missingDetails(res.error)) {
     dropOptional(row);
     res = await client.from('listings').insert(row).select(listingCols({})).single();
@@ -435,7 +441,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   address: 'address', price: 'price', hoa: 'hoa', beds: 'beds', baths: 'baths', sqft: 'sqft',
   lotAcres: 'lot_acres', year: 'year', oceanfront: 'oceanfront', titled: 'titled',
   ownerFinancing: 'owner_financing', lat: 'lat', lng: 'lng', tags: 'tags', photos: 'photos',
-  text: 'body', active: 'active',
+  text: 'body', textEs: 'body_es', active: 'active',
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
   nearby: 'nearby', details: 'details', photoRooms: 'photo_rooms',
   developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
@@ -458,6 +464,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
       : key === 'photoRooms' ? cleanPhotoRooms(value, Array.isArray(patch.photos) ? patch.photos : undefined)
       : key === 'developmentId' || key === 'buildingId' ? value || null
       : key === 'unitNo' ? String(value).trim().slice(0, 20)
+      : key === 'textEs' ? String(value ?? '').slice(0, 8000)
       : key === 'floor' ? intOrNull(value)
       : key === 'status' ? cleanStatus(value)
       : key === 'review' ? (value === 'draft' ? 'draft' : 'pending')
@@ -469,6 +476,11 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
 
   const client = await db();
   let res = await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
+  if (onlyBodyEsMissing(res.error, row)) {
+    res = Object.keys(row).length
+      ? await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle()
+      : await client.from('listings').select(listingCols({})).eq('id', id).maybeSingle();
+  }
   if (missingDetails(res.error) && OPTIONAL_COLUMNS.some((c) => c in row)) {
     dropOptional(row);
     res = Object.keys(row).length

@@ -191,11 +191,14 @@ export const canManageDevelopment = (
   || (agencyCan(user, 'listings') && !!dev.agencyId && dev.agencyId === user.agencyId);
 
 /** «2026-06-01» → «June 2026»; «2026-06-15» з датою → «15 June 2026» */
-export function fmtMonth(iso: string) {
+export function fmtMonth(iso: string, lang: 'en' | 'es' = 'en') {
   const [y, m] = iso.split('-').map(Number);
-  return m ? `${new Date(Date.UTC(y, m - 1, 1)).toLocaleString('en-US', { month: 'long', timeZone: 'UTC' })} ${y}` : iso;
+  if (!m) return iso;
+  const month = new Date(Date.UTC(y, m - 1, 1)).toLocaleString(lang === 'es' ? 'es-HN' : 'en-US', { month: 'long', timeZone: 'UTC' });
+  // «junio de 2026» — як пишуть дати іспанською
+  return lang === 'es' ? `${month} de ${y}` : `${month} ${y}`;
 }
-export function fmtDay(iso: string) {
+export function fmtDay(iso: string, lang: 'en' | 'es' = 'en') {
   const [, , d] = iso.split('-').map(Number);
-  return d ? `${d} ${fmtMonth(iso)}` : fmtMonth(iso);
+  return d ? `${d}${lang === 'es' ? ' de' : ''} ${fmtMonth(iso, lang)}` : fmtMonth(iso, lang);
 }

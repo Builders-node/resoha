@@ -4,7 +4,8 @@ import { notFound } from 'next/navigation';
 import Icon from '@/components/Icon';
 import Photo from '@/components/Photo';
 import { getDeveloper, listDevelopments, queryListings } from '@/lib/db';
-import { fmtUsd } from '@/lib/format';
+import { getT } from '@/lib/i18n/server';
+import { getMoney } from '@/lib/currencyServer';
 import { SITE_NAME } from '@/lib/site';
 import { fromPrice, salesLabel } from '@/lib/units';
 
@@ -26,6 +27,7 @@ export default async function DeveloperPage({ params }: Props) {
   if (!dev) notFound();
   const projects = await listDevelopments({ developerId: dev.id });
   const units = await Promise.all(projects.map((p) => queryListings({ developmentId: p.id })));
+  const [t, money] = await Promise.all([getT(), getMoney()]);
   const site = dev.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
 
   return (
@@ -37,7 +39,7 @@ export default async function DeveloperPage({ params }: Props) {
             {dev.name}{dev.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
           <div className="muted">
-            Developer{dev.founded && ` · since ${dev.founded}`} · {projects.length === 1 ? '1 development' : `${projects.length} developments`}
+            {t('Developer')}{dev.founded && ` · ${t('since {year}', { year: dev.founded })}`} · {t(projects.length === 1 ? '1 development' : '{n} developments', { n: projects.length })}
           </div>
         </div>
       </div>
@@ -45,15 +47,15 @@ export default async function DeveloperPage({ params }: Props) {
       {(site || dev.phone || dev.email) && (
         <ul className="contacts" style={{ marginBottom: 24 }}>
           {site && (
-            <li><Icon name="link" size={22} /><div><span className="small muted">Website</span>
+            <li><Icon name="link" size={22} /><div><span className="small muted">{t('Website')}</span>
               <a href={dev.website} target="_blank" rel="noopener noreferrer nofollow"><b>{site}</b></a></div></li>
           )}
           {dev.phone && (
-            <li><Icon name="phone" size={22} /><div><span className="small muted">Phone</span>
+            <li><Icon name="phone" size={22} /><div><span className="small muted">{t('Phone')}</span>
               <a href={`tel:${dev.phone.replace(/[^+\d]/g, '')}`}><b>{dev.phone}</b></a></div></li>
           )}
           {dev.email && (
-            <li><Icon name="inbox" size={22} /><div><span className="small muted">Email</span>
+            <li><Icon name="inbox" size={22} /><div><span className="small muted">{t('Email')}</span>
               <a href={`mailto:${dev.email}`}><b>{dev.email}</b></a></div></li>
           )}
         </ul>
@@ -61,19 +63,19 @@ export default async function DeveloperPage({ params }: Props) {
 
       {dev.about && <p style={{ whiteSpace: 'pre-line', maxWidth: 760, marginBottom: 28 }}>{dev.about}</p>}
 
-      <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>Developments</h2>
-      {!projects.length && <p className="muted">No developments listed yet.</p>}
+      <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Developments')}</h2>
+      {!projects.length && <p className="muted">{t('No developments listed yet.')}</p>}
       <div className="dev-grid">
         {projects.map((p, i) => {
           const from = fromPrice(units[i].filter((u) => u.deal === 'sale'));
           return (
             <Link key={p.id} href={`/developments/${p.slug}`} className="ov ov--wide">
               <Photo src={p.photos[0]} alt={p.name} />
-              <div className="card__badges">{p.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> Featured</span>}<span className="badge badge--brand">{salesLabel(p.sales)}</span></div>
+              <div className="card__badges">{p.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}<span className="badge badge--brand">{t(salesLabel(p.sales))}</span></div>
               <div className="ov__b">
                 <div className="ov__title">{p.name}</div>
-                <div className="ov__meta">{p.neighborhood} · {units[i].length} units{p.completion && ` · ${p.completion}`}</div>
-                {from !== null && <div className="ov__price">From {fmtUsd(from)}</div>}
+                <div className="ov__meta">{p.neighborhood} · {t(units[i].length === 1 ? '1 unit' : '{n} units', { n: units[i].length })}{p.completion && ` · ${p.completion}`}</div>
+                {from !== null && <div className="ov__price">{t('From {price}', { price: money.amount(from) })}</div>}
               </div>
             </Link>
           );

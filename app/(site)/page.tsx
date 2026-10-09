@@ -8,13 +8,14 @@ import RecentlyViewed from '@/components/RecentlyViewed';
 import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, priceStatsRows, queryListings } from '@/lib/db';
 import { CityPriceStats } from '@/components/PriceStats';
 import { cityStats, statsPeriod, yearAgo } from '@/lib/priceStats';
-import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import { fmtNumber, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { trackPromo } from '@/lib/promo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
+import { getMoney } from '@/lib/currencyServer';
 
 export const metadata: Metadata = { alternates: { canonical: '/' } };
 
@@ -49,6 +50,7 @@ export default async function HomePage() {
     priceStatsRows(yearAgo()).catch(() => []),
   ]);
   const t = makeT(lang);
+  const money = await getMoney();
   const favIds = session ? await getFavorites(session.id) : [];
 
   // відмічені адміном ідуть першими, у порядку з вкладки Featured; решта — як прийшли (найновіші)
@@ -159,7 +161,7 @@ export default async function HomePage() {
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
                   <div className="ov__meta">
-                    {nListings(a.count, lang)}{Number.isFinite(a.from) && ` · ${t('from {price}', { price: fmtUsd(a.from) })}`}
+                    {nListings(a.count, lang)}{Number.isFinite(a.from) && ` · ${t('from {price}', { price: money.amount(a.from) })}`}
                   </div>
                 </div>
               </Link>
@@ -204,7 +206,7 @@ export default async function HomePage() {
                   {d.developer && <div className="ov__agency">{d.developer}</div>}
                   <div className="ov__title">{d.name}</div>
                   <div className="ov__meta">{d.neighborhood} · {t('{n} units', { n: count })}{d.completion && ` · ${d.completion}`}</div>
-                  {from !== null && <div className="ov__price">{t('From {price}', { price: fmtUsd(from) })}</div>}
+                  {from !== null && <div className="ov__price">{t('From {price}', { price: money.amount(from) })}</div>}
                 </div>
               </Link>
             ))}

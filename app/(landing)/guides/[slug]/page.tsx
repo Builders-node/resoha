@@ -10,6 +10,7 @@ import Rich from '@/components/Rich';
 import SourceList from '@/components/SourceList';
 import { GUIDES, guideBySlug } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
+import { localizeContent } from '@/lib/content/localize';
 import { makeT } from '@/lib/i18n';
 import { getLang } from '@/lib/i18n/server';
 import { articleLd, breadcrumbLd, faqLd, graph } from '@/lib/seo';
@@ -37,40 +38,42 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   if (!g) notFound();
   const lang = await getLang();
   const t = makeT(lang);
+  // видимий текст — мовою відвідувача; JSON-LD нижче лишається з англійського оригіналу
+  const lg = localizeContent(g, t);
 
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Guides', path: '/guides' }, { name: g.short, path: `/guides/${g.slug}` }];
-  const related = g.related.map(guideBySlug).filter((x) => x !== undefined);
+  const related = g.related.map(guideBySlug).filter((x) => x !== undefined).map((r) => localizeContent(r, t));
 
   return (
     <article className="wrap prose page-top">
       <JsonLd data={graph(articleLd(g), faqLd(g.faq), breadcrumbLd(crumbs))} />
 
-      <h1>{g.title}</h1>
+      <h1>{lg.title}</h1>
       <p className="prose__meta tiny muted">
         {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time> · {t('By the {site} team', { site: SITE_NAME })} · {t('{n} sources', { n: g.sources.length })}
       </p>
 
       <section className="answer" aria-label={t('Short answer')}>
         <span className="answer__k">{t('Short answer')}</span>
-        <p><Rich text={g.answer} /></p>
+        <p><Rich text={lg.answer} /></p>
       </section>
 
       <section className="prose__facts">
         <h2>{t('Key facts')}</h2>
-        <ul>{g.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
+        <ul>{lg.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
       </section>
 
       <nav className="toc small" aria-label={t('Contents')}>
         <b>{t('On this page')}</b>
         <ol>
-          {g.sections.map((s) => <li key={s.h}><a href={`#${anchor(s.h)}`}>{s.h}</a></li>)}
+          {lg.sections.map((s, i) => <li key={s.h}><a href={`#${anchor(g.sections[i].h)}`}>{s.h}</a></li>)}
           <li><a href="#faq">{t('Frequently asked questions')}</a></li>
           <li><a href="#sources">{t('Sources')}</a></li>
         </ol>
       </nav>
 
-      {g.sections.map((s) => (
-        <section key={s.h} id={anchor(s.h)}>
+      {lg.sections.map((s, i) => (
+        <section key={s.h} id={anchor(g.sections[i].h)}>
           <h2>{s.h}</h2>
           <Blocks body={s.body} />
         </section>
@@ -78,7 +81,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
       <section id="faq">
         <h2>{t('Frequently asked questions')}</h2>
-        <Faq items={g.faq} open={g.faq.length} />
+        <Faq items={lg.faq} open={lg.faq.length} />
       </section>
 
       <section id="sources">

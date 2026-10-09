@@ -3,25 +3,27 @@ import Link from 'next/link';
 import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
-import { TYPE_LABELS, fmtArea, fmtNumber, fmtPerArea, fmtPrice, fmtUsd } from '@/lib/format';
+import { TYPE_LABELS, fmtArea, fmtNumber } from '@/lib/format';
 import { COMPARE_KEY, COMPARE_MAX, useIds, writeIds } from '@/lib/localLists';
 import { useListingsByIds } from '@/lib/useListingsByIds';
 import type { Listing } from '@/lib/types';
 import type { Lang, T } from '@/lib/i18n';
+import { useMoney } from './CurrencyProvider';
+import type { Money } from '@/lib/currency';
 
 const SQM_PER_ACRE = 4046.86;
 
 /** Рядки таблиці: підпис і значення для одного обʼєкта. Порожнє — тире. */
-const ROWS: [label: string, value: (l: Listing, t: T, lang: Lang) => string][] = [
-  ['Price', (l, _t, lang) => fmtPrice(l.price, l.deal, lang)],
-  ['Price per area', (l) => (l.deal === 'sale' && l.sqft > 0 ? fmtPerArea(l.price, l.sqft) : '')],
+const ROWS: [label: string, value: (l: Listing, t: T, lang: Lang, money: Money) => string][] = [
+  ['Price', (l, _t, lang, money) => money.price(l.price, l.deal, lang)],
+  ['Price per area', (l, _t, _lang, money) => (l.deal === 'sale' && l.sqft > 0 ? money.perArea(l.price, l.sqft) : '')],
   ['Type', (l, t) => `${t(TYPE_LABELS[l.type])} · ${t(l.deal === 'rent' ? 'For rent' : 'For sale')}`],
   ['Bedrooms', (l, t) => (l.type === 'land' ? '' : l.beds > 0 ? String(l.beds) : t('Studio'))],
   ['Bathrooms', (l) => (l.baths ? String(l.baths) : '')],
   ['Interior', (l) => (l.sqft > 0 ? fmtArea(l.sqft) : '')],
   ['Lot size', (l, t) => (l.lotAcres > 0
     ? `${t('{n} ac', { n: l.lotAcres })} · ${fmtNumber(Math.round(l.lotAcres * SQM_PER_ACRE))} m²` : '')],
-  ['HOA', (l, t) => (l.hoa > 0 ? `${fmtUsd(l.hoa)}${t('/mo')}` : t('None'))],
+  ['HOA', (l, t, _lang, money) => (l.hoa > 0 ? `${money.amount(l.hoa)}${t('/mo')}` : t('None'))],
   ['Year built', (l) => (l.year ? String(l.year) : '')],
   ['Oceanfront', (l, t) => (l.oceanfront ? t('Yes') : t('No'))],
   // як на сторінці обʼєкта: заповнений паспорт ділянки важить більше за старий прапорець
@@ -33,6 +35,7 @@ const ROWS: [label: string, value: (l: Listing, t: T, lang: Lang) => string][] =
 export default function CompareTable() {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
   const ids = useIds(COMPARE_KEY);
   const { items, loading } = useListingsByIds(ids);
   const remove = (id: string) => writeIds(COMPARE_KEY, ids.filter((x) => x !== id));
@@ -86,7 +89,7 @@ export default function CompareTable() {
                 <tr key={label}>
                   <th scope="row">{t(label)}</th>
                   {items.map((l) => {
-                    const v = value(l, t, lang);
+                    const v = value(l, t, lang, money);
                     const best = label === 'Price per area' && bestPerArea !== null && l.deal === 'sale' && l.sqft > 0
                       && l.price / l.sqft === bestPerArea;
                     return <td key={l.id} className={best ? 'is-best' : ''}>{v || '—'}</td>;
