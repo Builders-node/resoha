@@ -5,6 +5,7 @@ import { toListingQuery } from '@/lib/filters';
 import { currentUser } from '@/lib/session';
 import { trackSearchAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
+import { kickNotifications } from '@/lib/notify';
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -65,6 +66,8 @@ export async function POST(req: Request) {
         action: 'listing.create', targetKind: 'listing', targetId: listing.id, targetName: listing.title,
       });
     }
+    // нове оголошення неперевіреного ріелтора — сповіщення модератору
+    if (listing.review === 'pending') kickNotifications();
     return NextResponse.json({ listing }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 400 });

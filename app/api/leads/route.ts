@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createLead, listLeads } from '@/lib/db';
 import { clip, looksAutomated, withinLimit } from '@/lib/guard';
+import { kickNotifications } from '@/lib/notify';
 import { currentUser } from '@/lib/session';
 
 /**
@@ -51,6 +52,8 @@ export async function POST(req: Request) {
       channel,
     });
     if (!ok) return NextResponse.json({ error: 'Listing not found' }, { status: 404 });
+    // ріелтор дізнається про заявку одразу, а не з наступним проходом черги
+    if (channel === 'form') kickNotifications();
   } catch (e) {
     // межі з тригера leads_guard приходять готовим текстом
     const message = (e as { message?: string }).message ?? '';

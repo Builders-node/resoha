@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AvatarPicker from './AvatarPicker';
+import NotifySettings from './NotifySettings';
 import Icon, { HeartIcon } from './Icon';
 import ListingCard from './ListingCard';
 import { toast } from './Toaster';
@@ -204,6 +205,8 @@ export default function UserAccount({ session, user }: {
             </form>
           </div>
         )}
+
+        {tab === 'profile' && <NotifySettings agent={false} />}
       </div>
     </div>
   );

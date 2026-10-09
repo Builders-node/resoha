@@ -100,8 +100,8 @@ export const ES_LANDING: Record<string, string> = {
   'Nothing for founding partners: no listing fees and no commission for the first 12 months. Resoha does not take a share of your sales commission.':
     'Nada para los socios fundadores: sin tarifas de publicación ni comisión durante los primeros 12 meses. Resoha no se queda con parte de su comisión de venta.',
   'Do buyers contact me or Resoha?': '¿Los compradores me contactan a mí o a Resoha?',
-  'You. Every enquiry goes to the listing agent, by WhatsApp, phone or email, and appears in your agent dashboard.':
-    'A usted. Cada consulta llega al agente del anuncio por WhatsApp, teléfono o correo, y aparece en su panel de agente.',
+  'You. WhatsApp messages and calls go straight to your phone. Enquiry forms and visit bookings arrive by email and, if you connect it, in Telegram the moment they are sent, and appear in your agent dashboard.':
+    'A usted. Los mensajes de WhatsApp y las llamadas llegan directo a su teléfono. Los formularios de consulta y las reservas de visita llegan por correo y, si lo conecta, por Telegram en el momento en que se envían, y aparecen en su panel de agente.',
   'Can my whole team join?': '¿Puede unirse todo mi equipo?',
   'Yes. The agency owner creates the agency and shares an invite code; each agent then publishes and manages their own listings, and the owner sees the whole agency’s enquiries.':
     'Sí. El dueño de la agencia crea la agencia y comparte un código de invitación; luego cada agente publica y administra sus propios anuncios, y el dueño ve las consultas de toda la agencia.',

@@ -23,7 +23,7 @@ const OFFER = [
 
 const FAQ = [
   { q: 'What does it cost to list on Resoha?', a: 'Nothing for founding partners: no listing fees and no commission for the first 12 months. Resoha does not take a share of your sales commission.' },
-  { q: 'Do buyers contact me or Resoha?', a: 'You. Every enquiry goes to the listing agent, by WhatsApp, phone or email, and appears in your agent dashboard.' },
+  { q: 'Do buyers contact me or Resoha?', a: 'You. WhatsApp messages and calls go straight to your phone. Enquiry forms and visit bookings arrive by email and, if you connect it, in Telegram the moment they are sent, and appear in your agent dashboard.' },
   { q: 'Can my whole team join?', a: 'Yes. The agency owner creates the agency and shares an invite code; each agent then publishes and manages their own listings, and the owner sees the whole agency’s enquiries.' },
   { q: 'Will my listings be duplicated or out of date?', a: 'Each listing keeps a link to its source and the agent who holds it. You can edit, pause or remove listings at any time from your dashboard.' },
 ];

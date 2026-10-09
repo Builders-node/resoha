@@ -10,6 +10,8 @@ import DevelopmentsPanel from './DevelopmentsPanel';
 import Icon from './Icon';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
+import NotifySettings from './NotifySettings';
+import { renewedUntil } from '@/lib/lifecycle';
 import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
@@ -89,6 +91,17 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
       body: JSON.stringify({ active: !l.active }),
     });
     toast(res.ok ? (l.active ? 'Listing unpublished' : 'Listing published') : 'Not allowed');
+    load();
+  }
+
+  /** Продовжити показ або надіслати чернетку: що саме дозволено, вирішує база (listings_review) */
+  async function patchListing(l: Listing, patch: Record<string, unknown>, done: string) {
+    const res = await fetch(`/api/listings/${l.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(d.error ?? 'Not allowed');
+    toast(d.listing?.review === 'pending' ? 'Sent for review — it goes live once checked' : done);
     load();
   }
 
@@ -211,6 +224,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                 onEdit={(l) => { setEditing(l); setTab('new'); }}
                 onToggle={toggleActive}
                 onDelete={remove}
+                onRenew={(l) => patchListing(l, { expiresAt: renewedUntil() }, 'Renewed for 90 days')}
+                onSubmit={(l) => patchListing(l, { review: 'pending' }, 'Listing published')}
               />
             )}
             {listings.length === 0 && (
@@ -317,6 +332,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
             </form>
           </div>
         )}
+
+        {tab === 'profile' && <NotifySettings agent />}
       </div>
     </div>
   );

@@ -138,9 +138,14 @@ export default function ListingForm({
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
+    // яка кнопка: «Save draft», «Publish» (для чернетки) чи звичайне збереження
+    const intent = ((e.nativeEvent as SubmitEvent).submitter as HTMLButtonElement | null)?.value ?? '';
+    const asDraft = intent === 'draft';
     // Enter у полі нового оголошення — це «далі», а не «опублікувати» посеред форми
-    if (!editing && step < last) return next();
-    if (!reportInvalid(form)) return;
+    if (!editing && step < last && !asDraft) return next();
+    // чернетці досить основного: назви й ціни; решту можна дописати потім
+    const scope = asDraft ? form.querySelector('[data-step="0"]') ?? form : form;
+    if (!reportInvalid(scope)) return;
     const fd = new FormData(form);
     const body = Object.fromEntries(fd.entries());
     // паспорт ділянки збираємо окремо: поля land_* → обʼєкт land
@@ -183,12 +188,19 @@ export default function ListingForm({
         titled: fd.get('titled') === 'on',
         ownerFinancing: fd.get('ownerFinancing') === 'on',
         tags: String(body.tags ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+        // нове: чернетка або на публікацію; чернетку/відхилене — «Publish» шле на перевірку
+        ...(asDraft && !editing ? { review: 'draft' } : {}),
+        ...(intent === 'publish' && editing ? { review: 'pending' } : {}),
       }),
     });
     setSaving(false);
 
-    if (!res.ok) return toast((await res.json()).error ?? 'Something went wrong');
-    toast(editing ? 'Listing updated' : 'Listing published');
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(d.error ?? 'Something went wrong');
+    const review = d.listing?.review;
+    toast(review === 'draft' ? 'Draft saved — only you can see it'
+      : review === 'pending' ? 'Saved. Buyers will see it once a moderator checks it'
+        : editing ? 'Listing updated' : 'Listing published');
     if (!editing) {
       form.reset(); setPhotos([]); setPhotoRooms({}); setNearby([]);
       setStep(0); setSeen(new Set([0]));
@@ -198,6 +210,8 @@ export default function ListingForm({
 
   const v = listing;
   const isLand = type === 'land';
+  // чернетка чи повернуте модератором — поряд зі «Зберегти» є «Опублікувати»
+  const unpublished = editing && (listing?.review === 'draft' || listing?.review === 'rejected');
   // Поля, що не стосуються обраного типу, ховаємо, а не прибираємо з DOM:
   // так їхні значення не губляться, якщо ріелтор передумав щодо типу
   const hideIf = (cond: boolean) => (cond ? 'field is-hidden' : 'field');
@@ -217,6 +231,25 @@ export default function ListingForm({
               : <>Published under your own name. Join or open an agency in the <b>Agency</b> tab to list under a brand.</>}
         </p>
       </div>
+
+      {listing?.review === 'rejected' && (
+        <div className="lc-banner is-warn">
+          <Icon name="flag" size={18} />
+          <div><b>The moderator sent this listing back.</b>{listing.reviewNote && <> “{listing.reviewNote}”</>} Fix it and press “Send for review”.</div>
+        </div>
+      )}
+      {listing?.review === 'pending' && (
+        <div className="lc-banner">
+          <Icon name="clock" size={18} />
+          <div><b>In review.</b> Buyers will see this listing once a moderator checks it. You can keep editing.</div>
+        </div>
+      )}
+      {listing?.review === 'draft' && (
+        <div className="lc-banner">
+          <Icon name="pencil" size={18} />
+          <div><b>Draft.</b> Only you can see it. Press “Publish” when it’s ready.</div>
+        </div>
+      )}
 
       {/* Степер: кожен крок клікабельний — при редагуванні можна одразу стрибнути до фото */}
       <ol className="lf__steps" aria-label="Steps">
@@ -488,9 +521,20 @@ export default function ListingForm({
               Next: {STEPS[step + 1].title}
             </button>
           )}
+          {/* чернетку можна зберегти з будь-якого кроку: заповнити решту — потім */}
+          {!editing && !asAdmin && (
+            <button type="submit" name="intent" value="draft" className="btn btn--ghost btn--lg" disabled={saving}>
+              Save draft
+            </button>
+          )}
           {(editing || step === last) && (
-            <button type="submit" className="btn btn--primary btn--lg" disabled={saving}>
+            <button type="submit" className={`btn btn--lg ${unpublished ? 'btn--ghost' : 'btn--primary'}`} disabled={saving}>
               {saving ? 'Saving…' : editing ? 'Save changes' : 'Publish listing'}
+            </button>
+          )}
+          {unpublished && (
+            <button type="submit" name="intent" value="publish" className="btn btn--primary btn--lg" disabled={saving}>
+              {listing?.review === 'rejected' ? 'Send for review' : 'Publish'}
             </button>
           )}
         </div>

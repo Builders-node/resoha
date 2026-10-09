@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createLead, getDevelopment, queryListings } from '@/lib/db';
 import { pickLeadUnit } from '@/lib/developmentPage';
 import { clip, looksAutomated, withinLimit } from '@/lib/guard';
+import { kickNotifications } from '@/lib/notify';
 import { currentUser } from '@/lib/session';
 import { CONTACT_PREFS, contactPrefShort, fmtVisit, isOpenSlot } from '@/lib/visits';
 
@@ -64,6 +65,7 @@ export async function POST(req: Request, { params }: Ctx) {
     if (/too many/i.test(msg)) return NextResponse.json({ error: msg }, { status: 429 });
     return NextResponse.json({ error: 'Could not book the visit' }, { status: 400 });
   }
+  kickNotifications();
   return NextResponse.json({ ok: true }, { status: 201 });
 }
 

@@ -2054,3 +2054,22 @@ html{scroll-behavior:smooth}
 .city-stat__v b{font-size:20px;font-weight:700}
 .city-stat__v small,.city-stat__ch small{font-size:13px;color:rgba(255,255,255,.6)}
 .city-stat__ch{display:grid;justify-items:end;gap:6px;min-width:64px}
+
+/* ---------- життєвий цикл оголошення, модерація, скарги, сповіщення ---------- */
+.pill--warn{background:#fff4e5;color:#b45309}
+.lc-cell{display:grid;gap:3px;justify-items:start}
+.lc-note{color:#b45309;max-width:240px;white-space:normal}
+.lc-banner{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--radius);background:var(--bg-soft);margin-bottom:16px;font-size:14px}
+.lc-banner.is-warn{background:#fff4e5;color:#7c2d12}
+.lc-banner .ico,.lc-banner svg{flex:none;margin-top:1px}
+.mod-row{align-items:flex-start;flex-wrap:wrap}
+.mod-dup{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;color:#b45309}
+.report-reasons{display:grid;gap:6px}
+.report-reason{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;cursor:pointer;font-size:14px}
+.report-reason.is-on{border-color:var(--ink);background:var(--bg-soft)}
+.report-reason input{accent-color:var(--ink);margin:0}
+.notify-list{display:grid}
+.notify-row{display:flex;gap:16px;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.notify-row:last-child{border-bottom:0;padding-bottom:0}
+.notify-row>span{display:grid;gap:2px}
+.notify-row input[type=checkbox]{width:20px;height:20px;accent-color:var(--orange);flex:none}

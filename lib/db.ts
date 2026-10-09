@@ -7,7 +7,7 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, PricePoint, Review, SavedSearch, StatRow } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, StatRow } from './types';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -92,7 +92,13 @@ const mapListing = (r: Row): Listing => ({
   floorplan: r.floorplan ?? '',
   // до міграції 0048 колонки немає — фототуру нема, лишається звичайна галерея
   photoRooms: cleanPhotoRooms(r.photo_rooms, r.photos ?? []),
+  // до міграції 0049 модерації й строку немає — усе опубліковано й безстрокове
+  review: REVIEWS.includes(r.review) ? r.review : 'approved',
+  reviewNote: r.review_note ?? '',
+  duplicateOf: r.duplicate_of ?? null,
+  expiresAt: r.expires_at ?? null,
 });
+const REVIEWS: ListingReview[] = ['draft', 'pending', 'approved', 'rejected'];
 
 /** Паспорт ділянки їде разом з оголошенням; !inner — коли фільтруємо за готовністю. */
 const LAND_EMBED = '*, checker:profiles!land_facts_checked_by_fkey(name)';
@@ -295,12 +301,12 @@ export async function getListing(id: string): Promise<Listing | null> {
 }
 
 /**
- * До міграцій 0036 і 0048 колонок details і photo_rooms немає: PostgREST відповідає PGRST204 —
- * тоді зберігаємо без них.
+ * До міграцій 0036, 0048 і 0049 колонок details, photo_rooms, review і expires_at немає:
+ * PostgREST відповідає PGRST204 — тоді зберігаємо без них.
  */
-const OPTIONAL_COLUMNS = ['details', 'photo_rooms'];
+const OPTIONAL_COLUMNS = ['details', 'photo_rooms', 'review', 'expires_at'];
 const missingDetails = (e: { code?: string; message?: string } | null) =>
-  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms/.test(e.message ?? ''));
+  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at/.test(e.message ?? ''));
 const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
 
 export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null }) {
@@ -342,6 +348,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     unit_no: String(input.unitNo ?? '').trim().slice(0, 20),
     floor: intOrNull(input.floor),
     status: cleanStatus(input.status),
+    // чернетку видно лише автору; інакше статус модерації ставить тригер listings_review
+    ...(input.review === 'draft' ? { review: 'draft' } : {}),
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
   if (missingDetails(res.error)) {
@@ -381,6 +389,8 @@ const LISTING_COLUMNS: Record<string, string> = {
   nearby: 'nearby', details: 'details', photoRooms: 'photo_rooms',
   developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
   floorplan: 'floorplan',
+  // «на перевірку» / «в чернетку» і продовження строку; що з цього дозволено, вирішує тригер
+  review: 'review', expiresAt: 'expires_at',
 };
 const NUMERIC = new Set(['price', 'hoa', 'beds', 'baths', 'sqft', 'lotAcres', 'year', 'lat', 'lng']);
 const BOOLEAN = new Set(['oceanfront', 'titled', 'ownerFinancing', 'active']);
@@ -399,6 +409,8 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
       : key === 'unitNo' ? String(value).trim().slice(0, 20)
       : key === 'floor' ? intOrNull(value)
       : key === 'status' ? cleanStatus(value)
+      : key === 'review' ? (value === 'draft' ? 'draft' : 'pending')
+      : key === 'expiresAt' ? (Number.isNaN(Date.parse(String(value))) ? undefined : new Date(String(value)).toISOString())
       : NUMERIC.has(key) ? Number(value) || 0
         : BOOLEAN.has(key) ? Boolean(value) : value;
   }
@@ -934,7 +946,7 @@ export async function adminOverview() {
     return n ?? 0;
   };
 
-  const [listings, hidden, agencies, reviews, leads, newLeads] = await Promise.all([
+  const [listings, hidden, agencies, reviews, leads, newLeads, pending, reports] = await Promise.all([
     count('listings'),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     count('listings', ((q: any) => q.eq('active', false)) as never),
@@ -943,6 +955,11 @@ export async function adminOverview() {
     count('leads'),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     count('leads', ((q: any) => q.eq('status', 'new')) as never),
+    // до міграції 0049 колонки й таблиці немає — запит падає, лічильник лишається нулем
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    count('listings', ((q: any) => q.eq('review', 'pending')) as never),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    count('listing_reports', ((q: any) => q.eq('status', 'open')) as never),
   ]);
 
   const { data: people } = await client.from('profiles').select('role, verified, is_admin, active');
@@ -967,7 +984,7 @@ export async function adminOverview() {
   ) as Record<QualityKey, number>;
 
   return {
-    listings, hidden, agencies, reviews, leads, newLeads, views, quality,
+    listings, hidden, agencies, reviews, leads, newLeads, views, quality, pending, reports,
     agents: rows.filter((r) => r.role === 'agent').length,
     buyers: rows.filter((r) => r.role === 'user').length,
     unverifiedAgents: rows.filter((r) => r.role === 'agent' && !r.verified).length,
@@ -1116,7 +1133,7 @@ export async function listFeaturedBuildings(): Promise<(Building & { development
 /* ---------- журнал дій адміністратора ---------- */
 type AdminLogInput = {
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign';
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign' | 'report';
   targetId: string;
   targetName?: string;
   reason?: string;
@@ -1415,4 +1432,86 @@ export async function priceStatsRows(asOf: string): Promise<StatRow[]> {
     deal: r.deal, type: r.type, beds: Number(r.beds) || 0, price: Number(r.price), sqft: Number(r.sqft) || 0,
     neighborhood: r.neighborhood, priceThen: then.get(r.id) ?? null,
   }));
+}
+
+/* ---------- сповіщення (міграція 0050) ---------- */
+/**
+ * Нові обʼєкти за збереженим пошуком після `since`. Клієнт передають ззовні: черга працює
+ * без кукі (supabaseAnon), а RLS і так віддає лише опубліковане. Нове — це «вперше показане
+ * покупцям» (published_at), бо оголошення могло довго чекати модерації; до 0049 — created_at.
+ */
+export async function newListingsSince(client: DB, query: ListingQuery, since: string, limit = 5) {
+  const run = (col: string) => applySort(
+    applyFilters(client.from('listings').select(listingCols(query), { count: 'exact' }), query).gt(col, since),
+    'new', false,
+  ).limit(limit);
+  let { data, error, count } = await run('published_at');
+  if (error && /published_at/.test(error.message ?? '')) ({ data, error, count } = await run('created_at'));
+  if (error) throw error;
+  const items: Listing[] = ((data ?? []) as Row[]).map(mapListing);
+  return { items, count: count ?? 0 };
+}
+
+export async function getNotifySettings(userId: string): Promise<NotifySettings | null> {
+  const { data, error } = await (await db()).from('notify_settings')
+    .select('email_leads, email_alerts, telegram_chat_id, telegram_token').eq('user_id', userId).maybeSingle();
+  if (error || !data) return null;
+  return {
+    emailLeads: data.email_leads, emailAlerts: data.email_alerts,
+    telegramLinked: data.telegram_chat_id !== null, telegramToken: data.telegram_token,
+  };
+}
+
+export async function updateNotifySettings(userId: string, patch: { emailLeads?: boolean; emailAlerts?: boolean; unlinkTelegram?: boolean }) {
+  const row: Row = {};
+  if (typeof patch.emailLeads === 'boolean') row.email_leads = patch.emailLeads;
+  if (typeof patch.emailAlerts === 'boolean') row.email_alerts = patch.emailAlerts;
+  if (patch.unlinkTelegram) row.telegram_chat_id = null;
+  if (!Object.keys(row).length) return;
+  const { error } = await (await db()).from('notify_settings').update(row).eq('user_id', userId);
+  if (error) throw error;
+}
+
+/* ---------- модерація і скарги (міграція 0049) ---------- */
+/** Черга модерації: усе, що чекає перевірки, від найстарішого. */
+export async function adminModerationQueue(): Promise<Listing[]> {
+  const { data, error } = await (await db()).from('listings').select(listingCols({}))
+    .eq('review', 'pending').order('created_at', { ascending: true }).limit(200);
+  if (error) return [];
+  return (data ?? []).map(mapListing);
+}
+
+/** Рішення модератора. Записує адмін від свого імені — тригер пропускає адміна як є. */
+export async function adminReviewListing(id: string, decision: 'approved' | 'rejected', note: string) {
+  const { data, error } = await (await db()).from('listings')
+    .update({ review: decision, review_note: note.slice(0, 500) }).eq('id', id).select('id, title').maybeSingle();
+  if (error) throw error;
+  return data as { id: string; title: string } | null;
+}
+
+export const REPORT_REASONS: ReportReason[] = ['sold', 'wrong_price', 'wrong_info', 'photos', 'scam', 'duplicate', 'other'];
+
+export async function createReport(input: { listingId: string; reason: ReportReason; message: string; email: string; userId: string | null }) {
+  // без .select(): гість має право написати скаргу, але не читати її
+  const { error } = await (await db()).from('listing_reports').insert({
+    listing_id: input.listingId, reason: input.reason, message: input.message, email: input.email, user_id: input.userId,
+  });
+  if (error) throw error;
+}
+
+export async function adminListReports(): Promise<ListingReport[]> {
+  const { data, error } = await (await db()).from('listing_reports')
+    .select('*, listing:listings(title, active)').order('created_at', { ascending: false }).limit(300);
+  if (error) return [];
+  return (data ?? []).map((r: Row) => ({
+    id: r.id, listingId: r.listing_id, listingTitle: r.listing?.title ?? '', listingActive: r.listing?.active ?? false,
+    reason: r.reason, message: r.message ?? '', email: r.email ?? '', status: r.status, createdAt: r.created_at,
+  }));
+}
+
+export async function adminSetReport(id: string, status: 'open' | 'resolved' | 'dismissed') {
+  const { data, error } = await (await db()).from('listing_reports').update({ status }).eq('id', id)
+    .select('id, listing_id').maybeSingle();
+  if (error) throw error;
+  return data as { id: string; listing_id: string } | null;
 }
