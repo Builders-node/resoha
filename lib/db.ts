@@ -55,7 +55,7 @@ export const mapAgent = (r: Row): Agent => ({
   phone: r.phone, whatsapp: r.whatsapp,
   // до міграції 0034 колонок немає — тоді порожньо
   viber: r.viber ?? '', telegram: r.telegram ?? '', createdAt: r.created_at, active: r.active,
-  agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
+  agencyId: r.agency_id, isOwner: r.is_owner, agencyRole: r.agency_role ?? null, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
   experience: r.experience, rating: Number(r.rating), reviews: r.reviews,
   verified: r.verified, languages: r.languages ?? [], about: r.about,
@@ -524,6 +524,8 @@ const mapDevelopment = (r: Row): Development => ({
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
   schedule: cleanSchedule(r.schedule),
+  // до міграції 0055 колонок немає
+  visitCapacity: r.visit_capacity ?? 1, blackoutDates: r.blackout_dates ?? [],
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
   // до міграції 0044 колонок немає
   featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,

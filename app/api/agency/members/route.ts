@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { agencyInviteCode, agencyMembers, mapAgency, queryListings } from '@/lib/db';
 import { currentUserWithAgency } from '@/lib/session';
+import { memberRoles } from '@/lib/team';
+import { agencyCan, agencyRoleOf } from '@/lib/teamRoles';
 import { supabaseServer } from '@/lib/supabase/server';
 
 export async function GET() {
@@ -10,16 +12,20 @@ export async function GET() {
   }
   if (!agency) return NextResponse.json({ agency: null, members: [], inviteCode: null });
 
-  const team = await agencyMembers(agency.id, true);
+  const [team, roles] = await Promise.all([agencyMembers(agency.id, true), memberRoles(agency.id)]);
   const members = await Promise.all(team.map(async (m) => ({
     ...m,
+    agencyRole: m.isOwner ? 'owner' : roles[m.id] ?? 'agent',
     listings: (await queryListings({ agentId: m.id, includeInactive: true })).length,
   })));
 
+  // код бачать власник і менеджер (з 0055); до міграції функція пустить лише власника
+  const canTeam = agencyCan(user, 'team');
   return NextResponse.json({
     agency,
     members,
-    inviteCode: user.isOwner ? await agencyInviteCode() : null,
+    myRole: agencyRoleOf(user),
+    inviteCode: canTeam ? await agencyInviteCode() : null,
   });
 }
 

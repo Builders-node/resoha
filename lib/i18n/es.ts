@@ -7,6 +7,7 @@ import { ES_BUYER } from './es/buyer';
 import { ES_SEARCH } from './es/search';
 import { ES_EMBED } from './es/embed';
 import { ES_BOOKLET } from './es/booklet';
+import { ES_VIEWINGS } from './es/viewings';
 
 /** Іспанський словник: англійський рядок → переклад. Розбитий на файли за розділами сайту. */
 export const ES: Record<string, string> = {
@@ -19,4 +20,5 @@ export const ES: Record<string, string> = {
   ...ES_SEARCH,
   ...ES_EMBED,
   ...ES_BOOKLET,
+  ...ES_VIEWINGS,
 };

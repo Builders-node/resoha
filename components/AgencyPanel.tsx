@@ -6,6 +6,8 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import type { Agency, Agent } from '@/lib/types';
 import Avatar from './Avatar';
+import TeamInvites from './TeamInvites';
+import { AGENCY_ROLES, agencyRoleOf, roleLabel, type AgencyRole } from '@/lib/teamRoles';
 
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
@@ -21,6 +23,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
   const [agency, setAgency] = useState<Agency | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
   const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [myRole, setMyRole] = useState<AgencyRole>('agent');
   const [brand, setBrand] = useState('#16305c');
   const [editing, setEditing] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +37,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     setAgency(d.agency ?? null);
     setMembers(d.members ?? []);
     setInviteCode(d.inviteCode ?? null);
+    setMyRole(d.myRole ?? 'agent');
     if (d.agency) setBrand(d.agency.brand);
     setLoading(false);
   }, []);
@@ -57,6 +61,9 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
 
   const me = members.find((m) => m.id === meId);
   const isOwner = Boolean(me?.isOwner && agency);
+  // команду ведуть власник і менеджер (0055); менеджер не чіпає власників
+  const canTeam = Boolean(agency) && (isOwner || myRole === 'manager');
+  const canEdit = (m: Member) => isOwner || (canTeam && !m.isOwner);
 
   async function saveAgency(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -121,13 +128,13 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     load(); onChanged();
   }
 
-  async function toggleOwner(m: Member) {
+  async function setRole(m: Member, role: AgencyRole) {
     const res = await fetch(`/api/agency/members/${m.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ isOwner: !m.isOwner }),
+      body: JSON.stringify({ role }),
     });
-    const d = await res.json();
-    toast(res.ok ? (m.isOwner ? `${m.name} is now a regular agent` : `${m.name} is now an owner`) : d.error);
+    const d = await res.json().catch(() => ({}));
+    toast(res.ok ? `${m.name} is now ${roleLabel(role).toLowerCase()}` : d.error ?? 'Not allowed');
     load(); onChanged();
   }
 
@@ -265,11 +272,11 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
       {open && (<>
       <div className="panel">
         <div className="fgroup__head">
-          <h3>{isOwner ? 'Agency profile' : agency.name}</h3>
+          <h3>{canTeam ? 'Agency profile' : agency.name}</h3>
           <span className="muted small">{members.length} {members.length === 1 ? 'agent' : 'agents'}</span>
         </div>
 
-        {isOwner ? (
+        {canTeam ? (
           <form className="form-grid" onSubmit={saveAgency}>
             <div className="field full"><label>Agency name</label>
               <input className="input" name="name" defaultValue={agency.name} required /></div>
@@ -289,7 +296,9 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
         )}
       </div>
 
-      {isOwner && (
+      {canTeam && <TeamInvites agencyName={agency.name} canInviteOwner={isOwner} />}
+
+      {canTeam && inviteCode && (
         <div className="panel" style={{ marginTop: 20 }}>
           <div className="invite" style={{ marginTop: 0 }}>
             <div>
@@ -333,25 +342,33 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                     </div>
                   </td>
                   <td data-label="Listings">{m.listings ?? 0}</td>
-                  <td data-label="Role"><span className={`pill ${m.isOwner ? 'pill--on' : 'pill--off'}`}>{m.isOwner ? 'Owner' : 'Agent'}</span></td>
+                  <td data-label="Role">
+                    {canEdit(m) && m.id !== meId ? (
+                      <select className="input input--sm role-select" value={agencyRoleOf(m)} aria-label={`Role of ${m.name}`}
+                        onChange={(e) => setRole(m, e.target.value as AgencyRole)}>
+                        {AGENCY_ROLES.filter((r) => isOwner || r.role !== 'owner').map((r) => (
+                          <option key={r.role} value={r.role} title={r.hint}>{r.label}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <span className={`pill ${m.isOwner ? 'pill--on' : 'pill--off'}`}>{roleLabel(agencyRoleOf(m))}</span>
+                    )}
+                  </td>
                   <td className="td--act" style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                    {isOwner && (
+                    {canEdit(m) && (
                       <>
                         <button className="btn btn--sm btn--ghost btn--icon" title={editing === m.id ? 'Close' : 'Edit'}
                           aria-label={editing === m.id ? 'Close' : 'Edit'}
                           onClick={() => setEditing(editing === m.id ? null : m.id)}>
                           <Icon name={editing === m.id ? 'close' : 'pencil'} size={16} />
                         </button>{' '}
-                        <button className="btn btn--sm" onClick={() => toggleOwner(m)}>
-                          {m.isOwner ? 'Make agent' : 'Make owner'}
-                        </button>{' '}
-                        {!m.isOwner && <button className="btn btn--sm btn--danger btn--icon" title="Remove from the team" aria-label="Remove from the team" onClick={() => remove(m)}><Icon name="trash" size={16} /></button>}
+                        {isOwner && !m.isOwner && <button className="btn btn--sm btn--danger btn--icon" title="Remove from the team" aria-label="Remove from the team" onClick={() => remove(m)}><Icon name="trash" size={16} /></button>}
                       </>
                     )}
                   </td>
                 </tr>
 
-                {isOwner && editing === m.id && (
+                {canEdit(m) && editing === m.id && (
                   <tr>
                     <td colSpan={4} style={{ background: 'var(--bg-soft)' }}>
                       <form className="form-grid" onSubmit={(e) => saveMember(m.id, e)} style={{ padding: '6px 2px 10px' }}>

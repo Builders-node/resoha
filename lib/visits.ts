@@ -153,3 +153,44 @@ export const UPDATE_TOPICS = [
   'Price updates from the sales office',
   'New documents',
 ];
+
+/* ---------- місткість слота й неробочі дні (міграція 0055) ---------- */
+
+/** Що ще, крім графіка, закриває слоти: свята й уже зайняті місця */
+export type Availability = {
+  /** «YYYY-MM-DD» за часом офісу */
+  blackout: string[];
+  /** Момент візиту (ISO) → скільки вже записано */
+  busy: Record<string, number>;
+  capacity: number;
+};
+
+export const NO_LIMITS: Availability = { blackout: [], busy: {}, capacity: 1 };
+
+/** Ключ слота в busy: однаковий для відповіді бази й для слота з графіка */
+export const slotKey = (at: Date | string) => new Date(at).toISOString();
+
+/** Вільні слоти з урахуванням свят і місткості; ignore — поточний час запису при перенесенні */
+export function freeSlotsFor(week: WeekSchedule, day: string, a: Availability, now = new Date(), ignore?: string): string[] {
+  if (a.blackout.includes(day)) return [];
+  return slotsFor(week, day, now).filter((time) => {
+    const key = slotKey(officeTimeToDate(day, time));
+    return key === ignore || (a.busy[key] ?? 0) < Math.max(1, a.capacity);
+  });
+}
+
+/** День за часом офісу для моменту візиту — щоб звірити зі списком свят */
+export const officeDayOf = (at: Date) => partsIn(at).day;
+
+/** Свята з форми: «2026-12-25» по одному в рядку або через кому, без повторів і минулих днів */
+export function cleanBlackout(v: unknown, today = officeToday()): string[] {
+  const list = Array.isArray(v) ? v.map(String) : String(v ?? '').split(/[\s,;]+/);
+  return [...new Set(list.map((d) => d.trim()).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d)
+    && !Number.isNaN(Date.parse(`${d}T12:00:00Z`)) && d >= today))].sort().slice(0, 120);
+}
+
+/** Статус запису на візит: записаний, скасований, прийшов, не прийшов */
+export type VisitStatus = 'booked' | 'cancelled' | 'attended' | 'no_show';
+export const VISIT_STATUS_LABEL: Record<VisitStatus, string> = {
+  booked: 'Booked', cancelled: 'Cancelled', attended: 'Attended', no_show: 'No-show',
+};

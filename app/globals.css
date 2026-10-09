@@ -2331,3 +2331,30 @@ html{scroll-behavior:smooth}
   .imp-table td,.imp-table th{padding:8px}
   .imp-change{white-space:normal}
 }
+
+/* ---------- візити: календар команди, керування записом, ролі й запрошення (0055) ---------- */
+.pill--info{background:#eef2ff;color:#3730a3}
+.vteam__week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.vteam__day{background:var(--bg-soft);border-radius:14px;padding:10px;min-height:120px;display:flex;flex-direction:column;gap:8px}
+.vteam__day h4{margin:0;font-size:13px}
+.vteam__day.is-today{box-shadow:inset 0 0 0 2px var(--ink)}
+.vteam__visit{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:4px;font-size:13px}
+.vteam__visit.is-cancelled{opacity:.6}
+.vteam__visit.is-cancelled .vteam__time b{text-decoration:line-through}
+.vteam__time{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.vteam__acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.vteam__acts .btn{padding:4px 10px;font-size:12px}
+@media (max-width:1100px){ .vteam__week{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:640px){
+  .vteam__week{grid-template-columns:1fr}
+  .vteam__day.is-empty{min-height:0}
+}
+.vmanage__when{font-weight:700}
+.vmanage__when.is-off{text-decoration:line-through;color:var(--ink-2)}
+.team-invite{display:flex;gap:10px;flex-wrap:wrap}
+.team-invite .input[type=email]{flex:1 1 220px}
+.team-invite select.input{flex:0 1 180px;width:auto}
+.role-select{width:auto;min-width:140px;padding:6px 28px 6px 10px;font-size:13px}
+.vsettings__days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vsettings__days .fchip{cursor:default}
+.vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}

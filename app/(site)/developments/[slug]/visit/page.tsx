@@ -31,7 +31,7 @@ export default async function VisitPage({ params, searchParams }: Props) {
       <div className="page-top"><BackButton fallback={base} variant="inline" label={dev.name} /></div>
       <VisitBooking devId={dev.id} devName={dev.name}
         address={dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ')}
-        schedule={dev.schedule} note={dev.hours}
+        schedule={dev.schedule} blackout={dev.blackoutDates} note={dev.hours}
         unitTopics={beds.map((b) => (b ? `${b} BR` : 'Studio'))}
         me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null}
         backHref={base} initialDay={typeof day === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : undefined} />

@@ -3,6 +3,7 @@
  * звичайне оголошення з development_id, номером, поверхом і станом.
  */
 import { SQFT_PER_M2 } from './format';
+import { agencyCan, type AgencyRole } from './teamRoles';
 
 export { SQFT_PER_M2 };
 
@@ -182,11 +183,12 @@ export function groupUnits<U extends UnitLike>(units: U[]): UnitGroup<U>[] {
   });
 }
 
-/** Хто може вести ЖК і додавати в нього квартири: автор, власник його агенції, адмін */
+/** Хто може вести ЖК і додавати в нього квартири: автор, власник, менеджер чи редактор його агенції, адмін */
 export const canManageDevelopment = (
   dev: { agentId: string; agencyId: string | null },
-  user: { id: string; agencyId: string | null; isOwner: boolean; isAdmin: boolean },
-) => user.isAdmin || dev.agentId === user.id || (user.isOwner && !!dev.agencyId && dev.agencyId === user.agencyId);
+  user: { id: string; agencyId: string | null; isOwner: boolean; agencyRole?: AgencyRole | null; isAdmin: boolean },
+) => user.isAdmin || dev.agentId === user.id
+  || (agencyCan(user, 'listings') && !!dev.agencyId && dev.agencyId === user.agencyId);
 
 /** «2026-06-01» → «June 2026»; «2026-06-15» з датою → «15 June 2026» */
 export function fmtMonth(iso: string) {

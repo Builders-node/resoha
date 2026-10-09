@@ -1,10 +1,12 @@
 import { NextResponse } from 'next/server';
 import { mapAgent } from '@/lib/db';
 import { supabaseServer } from '@/lib/supabase/server';
+import { setMemberRole } from '@/lib/team';
+import { isAgencyRole } from '@/lib/teamRoles';
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Власник редагує профіль, роль або доступ члена команди — межі задає RLS profiles_update. */
+/** Власник чи менеджер редагує профіль, роль або доступ члена команди — межі задає RLS profiles_update. */
 export async function PATCH(req: Request, { params }: Ctx) {
   const { id } = await params;
   const b = await req.json().catch(() => ({}));
@@ -19,6 +21,19 @@ export async function PATCH(req: Request, { params }: Ctx) {
   if (b.active !== undefined) patch.active = Boolean(b.active);
 
   const supabase = await supabaseServer();
+
+  // роль у команді (0055): менеджер, редактор, лише заявки…
+  if (b.role !== undefined) {
+    if (!isAgencyRole(b.role)) return NextResponse.json({ error: 'Unknown role' }, { status: 400 });
+    let error = await setMemberRole(id, b.role);
+    // до міграції 0055 ролей немає — власник / агент як і раніше через set_member_owner
+    if (error && /database update/.test(error) && (b.role === 'owner' || b.role === 'agent')) {
+      const r = await supabase.rpc('set_member_owner', { p_member: id, p_owner: b.role === 'owner' });
+      error = r.error?.message ?? null;
+    }
+    if (error) return NextResponse.json({ error }, { status: 403 });
+    if (!Object.keys(patch).length) return NextResponse.json({ ok: true });
+  }
 
   // власника міняють у членстві активної команди, а не в профілі
   if (b.isOwner !== undefined) {
