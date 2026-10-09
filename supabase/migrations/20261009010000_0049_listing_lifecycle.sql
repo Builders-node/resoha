@@ -66,9 +66,10 @@ begin
           new.review := old.review;               -- відхиляє лише адмін
         end if;
       end if;
-      -- продовження: не далі ніж на 90 днів від сьогодні
+      -- продовження опублікованого: не далі ніж на 90 днів від сьогодні
       if new.expires_at is distinct from old.expires_at then
-        if new.expires_at is null or new.expires_at <= now() or old.development_id is not null then
+        if new.expires_at is null or new.expires_at <= now() or old.expires_at is null
+           or old.review <> 'approved' or old.development_id is not null then
           new.expires_at := old.expires_at;
         else
           new.expires_at := least(new.expires_at, now() + interval '90 days');
