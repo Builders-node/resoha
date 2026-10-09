@@ -8,12 +8,13 @@ import { fmtUsd } from '@/lib/format';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
 import { BUILDING_STAGES, salesLabel, stageLabel } from '@/lib/units';
+import { getLp } from '@/lib/i18n/server';
 
 /**
  * Каркас усіх сторінок ЖК, як у LUN: назва й адреса, вкладки (окремі сторінки),
  * праворуч — картка агента зі статусом продажів, а «хлібні крихти» — у самому низу.
  */
-export default function DevelopmentShell({ ctx, active, title, top, wide, children }: {
+export default async function DevelopmentShell({ ctx, active, title, top, wide, children }: {
   ctx: DevContext;
   active: string;
   /** Підзаголовок вкладки: «Layouts», «Construction progress»… На огляді не потрібен */
@@ -24,6 +25,7 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
   wide?: boolean;
   children: React.ReactNode;
 }) {
+  const lp = await getLp();
   const { dev, agent, me, buildings, tabs, leadUnit, from } = ctx;
   const area = areaForNeighborhood(dev.neighborhood);
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(dev.neighborhood)}`;
@@ -88,8 +90,8 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
 
       {/* «хлібні крихти» — унизу сторінки, щоб зверху були лише назва й вкладки */}
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">Home</Link> · <Link href="/developments">Developments</Link> · <Link href={areaPath}>{dev.neighborhood}</Link>
-        {' · '}<Link href={`/developments/${dev.slug}`}>{dev.name}</Link>
+        <Link href={lp('/')}>Home</Link> · <Link href={lp('/developments')}>Developments</Link> · <Link href={lp(areaPath)}>{dev.neighborhood}</Link>
+        {' · '}<Link href={lp(`/developments/${dev.slug}`)}>{dev.name}</Link>
         {active !== 'overview' && <> · <span>{tab.label}</span></>}
       </div>
     </div>

@@ -9,6 +9,7 @@ import CompareButton from './CompareButton';
 import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
+import { useLp } from './useLp';
 
 type Props = {
   listing: Listing;
@@ -24,11 +25,12 @@ type Props = {
 export default function ListingCard({
   listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave,
 }: Props) {
+  const lp = useLp();
   const t = useT();
   const lang = useLang();
   return (
     <Link
-      href={`/listings/${l.id}`}
+      href={lp(`/listings/${l.id}`)}
       className={`ov ${ratio === 'tall' ? 'ov--tall' : 'ov--wide'} ${highlighted ? 'is-hl' : ''}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}

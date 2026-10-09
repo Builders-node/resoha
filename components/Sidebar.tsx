@@ -10,6 +10,8 @@ import AuthLink from './AuthLink';
 import AccountSwitcher from './AccountSwitcher';
 import LangSwitch from './LangSwitch';
 import { useT } from './LangProvider';
+import { useLp } from './useLp';
+import { stripLang } from '@/lib/i18n/paths';
 
 type Match = (path: string, deal: string, type: string) => boolean;
 
@@ -28,7 +30,9 @@ const NAV: { href: string; ico: string; cap: string; deskOnly?: boolean; match: 
 
 export default function Sidebar({ session }: { session: Session | null }) {
   const router = useRouter();
-  const pathname = usePathname();
+  // на /es/... активний пункт рахуємо за шляхом без префікса мови
+  const pathname = stripLang(usePathname()).path;
+  const lp = useLp();
   const [more, setMore] = useState(false);   // лист «Other» на телефоні
   const [menu, setMenu] = useState(false);   // меню «Me» на десктопі: акаунти й вихід
   const t = useT();
@@ -50,7 +54,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
   return (
     <>
       <aside className="sidebar">
-        <Link className="sidebar__logo" href="/">
+        <Link className="sidebar__logo" href={lp('/')}>
           <span className="sidebar__mark"><Logo size={40} /></span>
           <span className="sidebar__word">Resoha</span>
         </Link>
@@ -63,7 +67,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
         )}
 
         {NAV.map((n) => (
-          <Link key={n.cap} href={n.href}
+          <Link key={n.cap} href={lp(n.href)}
             className={`${n.match(pathname, deal, type) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
             <span className="sidebar__cap">{t(n.cap)}</span>
@@ -131,14 +135,14 @@ export default function Sidebar({ session }: { session: Session | null }) {
               <Icon name="heart" size={19} /> {t('Saved listings')}
             </Link>
 
-            <Link className="sheet__item" href="/agents">
+            <Link className="sheet__item" href={lp('/agents')}>
               <Icon name="building" size={19} /> {t('Agents & agencies')}
             </Link>
 
-            <Link className="sheet__item" href="/developments">
+            <Link className="sheet__item" href={lp('/developments')}>
               <Icon name="building" size={19} /> {t('New developments')}
             </Link>
-            <Link className="sheet__item" href="/listings?type=land">
+            <Link className="sheet__item" href={lp('/listings?type=land')}>
               <Icon name="land" size={19} /> {t('Land & lots')}
             </Link>
 

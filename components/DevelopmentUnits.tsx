@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { fmtNumber, fmtUsd } from '@/lib/format';
 import { SQFT_PER_M2, groupUnits, salesLabel, statusLabel, toM2, type SalesStatus } from '@/lib/units';
 import type { Deal, Listing } from '@/lib/types';
+import { getLp } from '@/lib/i18n/server';
 
 const span = (r: [number, number] | null, fmt: (n: number) => string, unit = '') =>
   !r ? '—' : r[0] === r[1] ? `${fmt(r[0])}${unit}` : `${fmt(r[0])} – ${fmt(r[1])}${unit}`;
@@ -15,7 +16,7 @@ const money = (v: number, deal: Deal) => (deal === 'rent' ? `${fmtUsd(v)}/mo` : 
  * рядок на тип квартир із діапазонами, а по кліку — список квартир із посиланнями.
  * Окремо для продажу й оренди. Без клієнтського JS: розкриття тримає <details>.
  */
-export default function DevelopmentUnits({ units, buildings, developer, developerHref, completion, sales, contactHref }: {
+export default async function DevelopmentUnits({ units, buildings, developer, developerHref, completion, sales, contactHref }: {
   units: Listing[];
   /** id → назва дому; лише коли домів кілька — тоді в таблиці зʼявляється колонка «Building» */
   buildings?: Record<string, string>;
@@ -26,6 +27,7 @@ export default function DevelopmentUnits({ units, buildings, developer, develope
   sales: SalesStatus;
   contactHref: string;
 }) {
+  const lp = await getLp();
   const deals = (['sale', 'rent'] as Deal[]).filter((d) => units.some((u) => u.deal === d));
 
   return (
@@ -85,7 +87,7 @@ export default function DevelopmentUnits({ units, buildings, developer, develope
                       <tbody>
                         {g.units.map((u) => (
                           <tr key={u.id} className={u.status === 'sold' || u.status === 'rented' ? 'is-sold' : undefined}>
-                            <td><Link href={`/listings/${u.id}`} className="units__link"><b>{u.unitNo || '—'}</b></Link></td>
+                            <td><Link href={lp(`/listings/${u.id}`)} className="units__link"><b>{u.unitNo || '—'}</b></Link></td>
                             {buildings && <td>{(u.buildingId && buildings[u.buildingId]) || '—'}</td>}
                             <td>{u.floor ?? '—'}</td>
                             <td>
@@ -93,7 +95,7 @@ export default function DevelopmentUnits({ units, buildings, developer, develope
                             </td>
                             {deal === 'sale' && <td className="units__ppm">{u.sqft > 0 ? fmtNumber(Math.round(u.price / toM2(u.sqft))) : '—'}</td>}
                             <td className="units__num">
-                              <Link href={`/listings/${u.id}`} className="units__link">
+                              <Link href={lp(`/listings/${u.id}`)} className="units__link">
                                 {u.status === 'available' ? <b>{money(u.price, deal)}</b> : <span className="muted">{statusLabel(u.status)}</span>}
                               </Link>
                             </td>

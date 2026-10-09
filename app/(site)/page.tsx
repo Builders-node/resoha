@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import AgencyRow from '@/components/AgencyRow';
@@ -13,10 +14,12 @@ import { getSession } from '@/lib/session';
 import { trackPromo } from '@/lib/promo';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 
-export const metadata: Metadata = { alternates: { canonical: '/' } };
+export async function generateMetadata(): Promise<Metadata> {
+  return localized('/');
+}
 
 /** Район із бази веде на сторінку-гайд району, якщо така є; інакше — на фільтр. */
 function areaHref(name: string) {
@@ -36,6 +39,7 @@ const RENT_TILES = [
 ];
 
 export default async function HomePage() {
+  const lp = await getLp();
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
   const [session, all, newest, board, devs, featuredBuildings, lang, statRows] = await Promise.all([
     getSession(),
@@ -121,8 +125,8 @@ export default async function HomePage() {
             {t('Homes, condos, rentals and land from island agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
           </p>
           <div className="promo__btns">
-            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
-            <Link className="btn btn--lg promo__ghost" href="/land-passport">{t('How the land passport works')}</Link>
+            <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--lg promo__ghost" href={lp('/land-passport')}>{t('How the land passport works')}</Link>
           </div>
         </aside>
       </section>
@@ -134,7 +138,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Featured on Roatán')}</h2>
-            <Link className="btn btn--primary" href="/listings?deal=sale">{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {featured.map((l) => (
@@ -149,7 +153,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Browse by area')}</h2>
-            <Link className="btn btn--primary" href="/areas">{t('All areas compared')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/areas')}>{t('All areas compared')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
@@ -173,7 +177,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Just listed')}</h2>
-            <Link className="btn btn--primary" href="/listings?deal=sale&sort=new">{t('All new listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/listings?deal=sale&sort=new')}>{t('All new listings')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {fresh.map((l) => (
@@ -190,11 +194,11 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('New developments')}</h2>
-            <Link className="btn btn--primary" href="/developments">{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/developments')}>{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {developments.map(({ d, count, from }) => (
-              <Link key={d.id} href={`/developments/${d.slug}`} className="ov ov--tall">
+              <Link key={d.id} href={lp(`/developments/${d.slug}`)} className="ov ov--tall">
                 <Photo src={d.photos[0]} alt={d.name} />
                 <div className="card__badges">
                   {d.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
@@ -218,11 +222,11 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Featured buildings')}</h2>
-            <Link className="btn btn--primary" href="/developments">{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/developments')}>{t('All developments')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {featuredBuildings.slice(0, 8).map((b) => (
-              <Link key={b.id} href={`/developments/${b.development.slug}/layouts`} className="ov ov--tall">
+              <Link key={b.id} href={lp(`/developments/${b.development.slug}/layouts`)} className="ov ov--tall">
                 <Photo src={b.photo || b.development.photo} alt={`${b.name}, ${b.development.name}`} />
                 <div className="card__badges"><span className="badge badge--brand">{t(stageLabel(b.stage))}</span></div>
                 <div className="ov__b">
@@ -245,7 +249,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Real-estate agencies')}</h2>
-            <Link className="btn btn--primary" href="/agents">{t('All agents & agencies')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp('/agents')}>{t('All agents & agencies')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <AgencyRow rows={agencies} />
         </div>
@@ -259,7 +263,7 @@ export default async function HomePage() {
               {t('Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.')}
             </p>
             <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-              <Link className="btn btn--primary btn--lg" href="/for-agents">{t('List for free')}</Link>
+              <Link className="btn btn--primary btn--lg" href={lp('/for-agents')}>{t('List for free')}</Link>
               <Link className="btn btn--ghost btn--lg" href="/agent">{t('Agent dashboard')}</Link>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import JsonLd from '@/components/JsonLd';
@@ -8,15 +9,17 @@ import { DIRECT_FLIGHTS, MARKET_FACTS, MARKET_UPDATED } from '@/lib/content/mark
 import { queryListings } from '@/lib/db';
 import { fmtDate, fmtNumber, fmtUsd } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `Roatán real-estate market 2026: prices, sales and rentals | ${SITE_NAME}`,
-  description: 'Roatán property market in numbers: about 340 homes for sale, a median sold price near $354K, ten months to sell, 3–7% closing costs and 43% holiday-rental occupancy. Sourced and updated.',
-  alternates: { canonical: '/market' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/market', {
+    title: `${t('Roatán real-estate market 2026: prices, sales and rentals')} | ${SITE_NAME}`,
+    description: t('Roatán property market in numbers: about 340 homes for sale, a median sold price near $354K, ten months to sell, 3–7% closing costs and 43% holiday-rental occupancy. Sourced and updated.'),
+  });
+}
 
 const median = (xs: number[]) => {
   if (!xs.length) return null;
@@ -26,6 +29,7 @@ const median = (xs: number[]) => {
 };
 
 export default async function MarketPage() {
+  const lp = await getLp();
   const lang = await getLang();
   const t = makeT(lang);
   const all = await queryListings();
@@ -109,9 +113,9 @@ export default async function MarketPage() {
         <h2>{t('What this means for buyers')}</h2>
         <ul>
           <li><b>{t('You have time and leverage.')}</b> {t('With roughly 340 homes on the market and single-digit monthly sales, there is no need to rush or to pay the asking price.')}</li>
-          <li><b>{t('Due diligence matters more than speed.')}</b> {t('There is no MLS and agents need no licence, so verify the title and the seller. See')} <Link className="link-accent" href="/guides/how-to-check-land-title-in-roatan">{t('how to check a land title')}</Link>.</li>
-          <li><b>{t('Budget beyond the price.')}</b> {t('Add 3–7% for closing costs; see')} <Link className="link-accent" href="/guides/roatan-closing-costs">{t('Roatán closing costs')}</Link>.</li>
-          <li><b>{t('Rental numbers need to be real.')}</b> {t('Use island-wide occupancy and rates, not brochure projections; see')} <Link className="link-accent" href="/guides/roatan-rental-income">{t('Roatán rental income')}</Link>.</li>
+          <li><b>{t('Due diligence matters more than speed.')}</b> {t('There is no MLS and agents need no licence, so verify the title and the seller. See')} <Link className="link-accent" href={lp('/guides/how-to-check-land-title-in-roatan')}>{t('how to check a land title')}</Link>.</li>
+          <li><b>{t('Budget beyond the price.')}</b> {t('Add 3–7% for closing costs; see')} <Link className="link-accent" href={lp('/guides/roatan-closing-costs')}>{t('Roatán closing costs')}</Link>.</li>
+          <li><b>{t('Rental numbers need to be real.')}</b> {t('Use island-wide occupancy and rates, not brochure projections; see')} <Link className="link-accent" href={lp('/guides/roatan-rental-income')}>{t('Roatán rental income')}</Link>.</li>
         </ul>
         <h2>{t('Sources')}</h2>
         <SourceList sources={MARKET_FACTS.map((f) => f.source)} />

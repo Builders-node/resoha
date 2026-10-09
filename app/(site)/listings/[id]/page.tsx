@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import type { Listing } from '@/lib/types';
 import Link from 'next/link';
 import { lifecycle } from '@/lib/lifecycle';
@@ -33,7 +34,7 @@ import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
 import { DETAIL_FIELDS, IN_UNIT, detailLabel, floorLine } from '@/lib/details';
 import { photoTour } from '@/lib/rooms';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp } from '@/lib/i18n/server';
 import { makeT, type T } from '@/lib/i18n';
 import ListingGone from '@/components/ListingGone';
 import ListingTools from '@/components/ListingTools';
@@ -61,13 +62,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 
   const title = `${l.title} — ${fmtPrice(l.price, l.deal)}`;
   const description = `${specLine(l)} · ${l.neighborhood}, Roatán. ${l.text}`.slice(0, 200);
-  return {
+  return localized(`/listings/${l.id}`, {
     title: `${title} | ${SITE_NAME}`,
     description,
-    alternates: { canonical: `/listings/${l.id}` },
     openGraph: { title, description, url: `/listings/${l.id}`, type: 'website', siteName: SITE_NAME },
     ...(soldStandalone(l) ? { robots: { index: false, follow: true } } : {}),
-  };
+  });
 }
 
 /** Продане чи здане окреме оголошення (квартири ЖК лишаються в шахматці ЖК зі статусом) */
@@ -84,6 +84,7 @@ async function GonePage({ id, gone }: { id: string; gone: GoneListing }) {
 export default async function PropertyPage({ params, searchParams }: {
   params: Promise<{ id: string }>; searchParams: Promise<{ utm_source?: string }>;
 }) {
+  const lp = await getLp();
   const { id } = await params;
   const listing = await loadListing(id);
   if (!listing) {
@@ -223,7 +224,7 @@ export default async function PropertyPage({ params, searchParams }: {
                 {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, {t('Bay Islands')}
               </p>
               {listing.development && (
-                <Link href={`/developments/${listing.development.slug}`} className="in-dev">
+                <Link href={lp(`/developments/${listing.development.slug}`)} className="in-dev">
                   <Icon name="building" size={16} /> {t('Unit in')} <b>{listing.development.name}</b> · {t('see all units')}
                 </Link>
               )}
@@ -357,7 +358,7 @@ export default async function PropertyPage({ params, searchParams }: {
                         {n.foreign === 'personal'
                           ? t('Under the {n} m² limit for a foreigner’s home (Decree 90-90).', { n: fmtNumber(FOREIGN_LIMIT_SQM) })
                           : t('Over the {n} m² a foreigner can hold personally; larger lots are usually bought through a company.', { n: fmtNumber(FOREIGN_LIMIT_SQM) })}
-                        {' '}<Link href="/guides/can-foreigners-buy-property-in-roatan">{t('The 3,000 m² rule')}</Link>
+                        {' '}<Link href={lp('/guides/can-foreigners-buy-property-in-roatan')}>{t('The 3,000 m² rule')}</Link>
                       </span>
                     </div>
                   )}
@@ -389,7 +390,7 @@ export default async function PropertyPage({ params, searchParams }: {
                   })}
                 </div>
                 <div className="land__foot">
-                  <a className="btn btn--ghost" href={`/listings/${listing.id}/report`} target="_blank" rel="noreferrer">
+                  <a className="btn btn--ghost" href={lp(`/listings/${listing.id}/report`)} target="_blank" rel="noreferrer">
                     <Icon name="link" size={16} /> {t('Download land report (PDF)')}
                   </a>
                   <span className="tiny muted">
@@ -516,7 +517,7 @@ export default async function PropertyPage({ params, searchParams }: {
               <h3 className="prop__h">{t('About {name}', { name: dev.name })}</h3>
               <PhotoStrip photos={dev.photos} title={dev.name} />
               <FeatureGrid items={developmentFeatures(dev, devBuildings, devAll)} />
-              <Link href={`/developments/${dev.slug}`} className="btn btn--ghost" style={{ marginTop: 16 }}>
+              <Link href={lp(`/developments/${dev.slug}`)} className="btn btn--ghost" style={{ marginTop: 16 }}>
                 {t('Open {name}', { name: dev.name })} <Icon name="arrowRight" size={18} />
               </Link>
             </section>
@@ -538,7 +539,7 @@ export default async function PropertyPage({ params, searchParams }: {
         <section className="section" style={{ paddingTop: 0 }}>
           <div className="section__head">
             <div><h2>{t('Other units in {name}', { name: listing.development.name })}</h2></div>
-            <Link className="btn btn--ghost" href={`/developments/${listing.development.slug}`}>{t('See all units')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--ghost" href={lp(`/developments/${listing.development.slug}`)}>{t('See all units')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {siblings.map((l) => <ListingCard key={l.id} listing={l} isFav={favIds.includes(l.id)} />)}
@@ -556,10 +557,10 @@ export default async function PropertyPage({ params, searchParams }: {
       )}
 
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">{t('Home')}</Link> ·{' '}
-        <Link href={`/listings?deal=${listing.deal}`}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
+        <Link href={lp('/')}>{t('Home')}</Link> ·{' '}
+        <Link href={lp(`/listings?deal=${listing.deal}`)}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
         <Link href={areaPath}>{listing.neighborhood}</Link>
-        {listing.development && <> · <Link href={`/developments/${listing.development.slug}`}>{listing.development.name}</Link></>}
+        {listing.development && <> · <Link href={lp(`/developments/${listing.development.slug}`)}>{listing.development.name}</Link></>}
       </div>
     </div>
   );

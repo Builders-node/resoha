@@ -16,6 +16,8 @@ import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 import { fmtNumber } from '@/lib/format';
+import JsonLd from '@/components/JsonLd';
+import { developmentLd, graph } from '@/lib/seo';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -53,6 +55,8 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <Gallery photos={dev.photos} title={dev.name} />
       </div>
     )}>
+      {/* ЖК для пошуковиків: ApartmentComplex і діапазон цін квартир */}
+      <JsonLd data={graph(developmentLd(dev, units))} />
       <div className="specs" style={{ marginTop: 0 }}>
         <div className="spec"><span className="muted small">Units</span><b>{units.length || '—'}</b></div>
         <div className="spec"><span className="muted small">Types</span><b>{types}</b></div>
