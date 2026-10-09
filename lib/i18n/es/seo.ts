@@ -36,7 +36,7 @@ export const ES_SEO: Record<string, string> = {
   '{name} — new development in {area}, Roatán': '{name}: proyecto nuevo en {area}, Roatán',
   /* вкладки ЖК у заголовку сторінки */
   'Overview': 'Resumen',
-  'Layouts': 'Planos',
+  'Layouts': 'Distribuciones',
   'Contacts': 'Contactos',
   'News': 'Noticias',
   'Video & 360°': 'Video y 360°',
