@@ -15,6 +15,7 @@ import Gallery from '@/components/Gallery';
 import PhotoTour from '@/components/PhotoTour';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
+import PurchaseCalculator from '@/components/PurchaseCalculator';
 import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
@@ -296,7 +297,7 @@ export default async function PropertyPage({ params, searchParams }: {
                       <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
                       <span className="small muted">
                         {t('Typical 4–5.5% closing costs: 1.5% transfer tax, attorney, notary, registration.')}{' '}
-                        <Link href="/guides/roatan-closing-costs">{t('How it adds up')}</Link>
+                        <a href="#costs">{t('How it adds up')}</a>
                       </span>
                     </div>
                   )}
@@ -408,6 +409,11 @@ export default async function PropertyPage({ params, searchParams }: {
             <h3 className="prop__h">{t('Price history')}</h3>
             <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
           </section>
+
+          {/* витрати на купівлю й розстрочка — для будь-якого продажу; у землі паспорт посилається сюди */}
+          {listing.deal === 'sale' && listing.price > 0 && (
+            <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing} />
+          )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}
           {listing.nearby.length > 0 && (

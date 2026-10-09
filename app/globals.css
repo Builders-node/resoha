@@ -2145,3 +2145,33 @@ html{scroll-behavior:smooth}
   .hsearch__go{padding:0 16px}
   .hsearch__go span{display:none}
 }
+
+/* калькулятор витрат і розстрочки на сторінці обʼєкта */
+.calc__grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.calc__card{border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 24px;background:#fff}
+.calc__card h4{font-size:18px;margin:0 0 12px}
+.calc__rows{margin:0;display:grid}
+.calc__rows > div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.calc__rows > div:last-child{border-bottom:0}
+.calc__rows dt{display:grid;gap:2px;font-size:15px;min-width:0}
+.calc__rows dt small{font-size:12px;color:var(--ink-2)}
+.calc__rows dd{margin:0;display:flex;align-items:center;gap:10px;white-space:nowrap;font-size:15px}
+.calc__total dt{font-weight:700}
+.calc__total--big b{font-size:20px;letter-spacing:-.01em}
+.calc__inline{display:inline-flex;align-items:center;gap:6px}
+.calc__inline .input{width:96px;padding:8px 10px;font-weight:600}
+.calc__inline .calc__pct{width:72px}
+.calc__presets{margin-bottom:12px}
+.calc__presets .chip-btn{padding:8px 14px;font-size:13px}
+.calc__hint{background:var(--orange-soft);border-radius:12px;padding:10px 12px;margin:0 0 12px}
+.calc__inputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:8px}
+.calc__inputs .calc__inline .input{width:100%;min-width:0}
+.calc__inputs .calc__inline{display:flex}
+.calc__note{margin:12px 0 0;line-height:1.5}
+.calc__note .link-accent{display:inline-flex;vertical-align:middle}
+@media (max-width:900px){ .calc__grid{grid-template-columns:1fr} }
+@media (max-width:560px){
+  .calc__card{padding:16px}
+  .calc__inputs{grid-template-columns:1fr 1fr}
+  .calc__inputs .field:first-child{grid-column:span 2}
+}
