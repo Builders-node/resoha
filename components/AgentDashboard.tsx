@@ -8,6 +8,7 @@ import DashboardListings from './DashboardListings';
 import DeveloperPanel from './DeveloperPanel';
 import DevelopmentsPanel from './DevelopmentsPanel';
 import Icon from './Icon';
+import ImportPanel from './ImportPanel';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import NotifySettings from './NotifySettings';
@@ -36,6 +37,7 @@ function navGroups({ agency, total, newLeads }: { agency: boolean; total: number
     { title: 'Sales', items: [
       { tab: 'listings', icon: 'home', label: 'Listings', count: total },
       { tab: 'developments', icon: 'building', label: 'Developments' },
+      { tab: 'import', icon: 'download', label: 'Import' },
       { tab: 'leads', icon: 'inbox', label: 'Leads', count: newLeads || undefined, alert: true },
     ] },
     { title: 'Growth', items: [
@@ -291,6 +293,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
             onCancel={editing ? () => { setEditing(null); setTab('listings'); } : undefined}
           />
         )}
+
+        {tab === 'import' && <ImportPanel onDone={load} />}
 
         {tab === 'developer' && <DeveloperPanel />}
 
