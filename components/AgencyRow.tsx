@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 import { fmtNumber } from '@/lib/format';
 import type { Agency } from '@/lib/types';
 
@@ -7,6 +7,7 @@ type Row = { agency: Agency; listings: number; agents: number };
 
 /** Плитки агенцій у стилі блоку «Агенції нерухомості» на ЛУН. */
 export default async function AgencyRow({ rows }: { rows: Row[] }) {
+  const lp = await getLp();
   const t = await getT();
   if (rows.length === 0) {
     return (
@@ -29,7 +30,7 @@ export default async function AgencyRow({ rows }: { rows: Row[] }) {
         const initials = words.map((w) => w[0]).join('').slice(0, 2).toUpperCase();
 
         return (
-          <Link key={agency.id} className="agc" href={`/agency/${agency.id}`} style={{ background: agency.brand }}>
+          <Link key={agency.id} className="agc" href={lp(`/agency/${agency.id}`)} style={{ background: agency.brand }}>
             <div className="agc__name">{agency.name}</div>
             {agency.featured && <span className="badge badge--accent agc__badge">{t('Featured')}</span>}
 

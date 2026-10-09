@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Icon from '@/components/Icon';
@@ -7,21 +8,22 @@ import { getDeveloper, listDevelopments, queryListings } from '@/lib/db';
 import { fmtUsd } from '@/lib/format';
 import { SITE_NAME } from '@/lib/site';
 import { fromPrice, salesLabel } from '@/lib/units';
+import { getLp, getT } from '@/lib/i18n/server';
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dev = await getDeveloper((await params).slug);
   if (!dev) return {};
-  return {
-    title: `${dev.name} — developer in Roatán | ${SITE_NAME}`,
+  return localized(`/developers/${dev.slug}`, {
+    title: `${dev.name} — ${(await getT())('developer in Roatán')} | ${SITE_NAME}`,
     description: dev.about.slice(0, 160) || `Developments by ${dev.name} on Roatán.`,
-    alternates: { canonical: `/developers/${dev.slug}` },
-  };
+  });
 }
 
 /** Сторінка забудовника: хто він, контакти і всі його ЖК */
 export default async function DeveloperPage({ params }: Props) {
+  const lp = await getLp();
   const dev = await getDeveloper((await params).slug);
   if (!dev) notFound();
   const projects = await listDevelopments({ developerId: dev.id });
@@ -67,7 +69,7 @@ export default async function DeveloperPage({ params }: Props) {
         {projects.map((p, i) => {
           const from = fromPrice(units[i].filter((u) => u.deal === 'sale'));
           return (
-            <Link key={p.id} href={`/developments/${p.slug}`} className="ov ov--wide">
+            <Link key={p.id} href={lp(`/developments/${p.slug}`)} className="ov ov--wide">
               <Photo src={p.photos[0]} alt={p.name} />
               <div className="card__badges">{p.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> Featured</span>}<span className="badge badge--brand">{salesLabel(p.sales)}</span></div>
               <div className="ov__b">

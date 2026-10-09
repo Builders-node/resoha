@@ -2409,3 +2409,16 @@ html{scroll-behavior:smooth}
 @media (max-width:640px){
   .promo__products{grid-template-columns:1fr}
 }
+
+/* ---------- сторінки каталогу ?page=N: «Показати ще» посиланням і номери сторінок ---------- */
+.cpager{display:grid;justify-items:center;gap:14px;padding:24px 0 6px}
+.cpager__more[aria-disabled=true]{opacity:.6;pointer-events:none}
+.cpager__nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:14px}
+.cpager__num,.cpager__step{min-width:36px;height:36px;padding:0 10px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--chip);color:var(--ink);font-weight:600;text-decoration:none}
+.cpager__num:hover,.cpager__step:hover{background:#e6e6ec}
+.cpager__num.is-on{background:var(--ink);color:#fff}
+.cpager__gap{color:var(--ink-3);padding:0 2px}
+.cpager__back{margin:0 0 12px;color:var(--ink-2)}
+@media (max-width:640px){
+  .cpager__step{padding:0 8px}
+}

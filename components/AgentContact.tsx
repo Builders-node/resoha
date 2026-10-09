@@ -10,6 +10,7 @@ import Avatar from './Avatar';
 import ReportListing from './ReportListing';
 import StickyContactBar from './StickyContactBar';
 import { useLang, useT } from './LangProvider';
+import { useLp } from './useLp';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -56,6 +57,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   /** Панель WhatsApp / дзвінок / перегляд унизу екрана на телефоні — лише одна на сторінку */
   sticky?: boolean;
 }) {
+  const lp = useLp();
   const t = useT();
   const lang = useLang();
   const [shown, setShown] = useState(false);
@@ -141,7 +143,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     <aside className="cc-wrap" id="contact">
       <div className="cc">
         {agency && (
-          <Link className="cc__brand" href={`/agency/${agency.id}`} style={{ background: agency.brand }}>
+          <Link className="cc__brand" href={lp(`/agency/${agency.id}`)} style={{ background: agency.brand }}>
             <span>{agency.name}</span>
           </Link>
         )}
@@ -175,11 +177,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
           {place && <div className="cc__addr">{place}</div>}
 
           <div className="cc__agent">
-            <Link href={`/agents/${agent.id}`}><Avatar src={agent.avatar} name={agent.name} /></Link>
+            <Link href={lp(`/agents/${agent.id}`)}><Avatar src={agent.avatar} name={agent.name} /></Link>
             <div>
-              <Link className="cc__name" href={`/agents/${agent.id}`}>{agent.name}</Link>
+              <Link className="cc__name" href={lp(`/agents/${agent.id}`)}>{agent.name}</Link>
               {agent.agencyId
-                ? <Link className="cc__org" href={`/agency/${agent.agencyId}`}>{agency?.name || agent.agency}</Link>
+                ? <Link className="cc__org" href={lp(`/agency/${agent.agencyId}`)}>{agency?.name || agent.agency}</Link>
                 : <span className="cc__org cc__org--plain">{agent.agency || t('Independent agent')}</span>}
             </div>
           </div>

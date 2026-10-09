@@ -8,6 +8,7 @@ import type { Pin } from './MapView';
 import { useT } from './LangProvider';
 import { SALES_STATUSES } from '@/lib/units';
 import { fmtUsd } from '@/lib/format';
+import { useLp } from './useLp';
 
 /** ЖК для списку й карти: усе пораховано на сервері. */
 export type DevItem = {
@@ -29,6 +30,7 @@ const MapView = dynamic(() => import('./MapView'), { ssr: false, loading: () => 
 
 /** Сторінка новобудов: ліворуч картки ЖК, праворуч карта з їхніми пінами — як у пошуку. */
 export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] }) {
+  const lp = useLp();
   const t = useT();
   const [year, setYear] = useState('');
   const [area, setArea] = useState('');
@@ -82,7 +84,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
           </div>
           <p className="muted" style={{ margin: '-6px 0 18px' }}>
             {t('Buildings on Roatán with every unit and price in one place.')}{' '}
-            <Link className="link-accent" href="/developers">{t('Browse developers')}</Link>
+            <Link className="link-accent" href={lp('/developers')}>{t('Browse developers')}</Link>
           </p>
           {all.length > 0 && (
             <div className="fsel-row">
@@ -125,7 +127,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
           )}
           <div className="grid grid--list">
             {items.map((d) => (
-              <Link key={d.id} id={`dev-${d.id}`} href={`/developments/${d.slug}`}
+              <Link key={d.id} id={`dev-${d.id}`} href={lp(`/developments/${d.slug}`)}
                 className={`ov ov--wide ${activeId === d.id ? 'is-hl' : ''}`}
                 onMouseEnter={() => setActiveId(d.id)} onMouseLeave={() => setActiveId(null)}>
                 <Photo src={d.photo} alt={d.name} />

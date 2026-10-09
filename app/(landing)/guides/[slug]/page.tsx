@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Blocks from '@/components/Blocks';
@@ -11,7 +12,7 @@ import SourceList from '@/components/SourceList';
 import { GUIDES, guideBySlug } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp } from '@/lib/i18n/server';
 import { articleLd, breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME } from '@/lib/site';
 
@@ -21,18 +22,18 @@ export const generateStaticParams = () => GUIDES.map((g) => ({ slug: g.slug }));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const g = guideBySlug((await params).slug);
   if (!g) return {};
-  return {
+  return localized(`/guides/${g.slug}`, {
     title: `${g.title} | ${SITE_NAME}`,
     description: g.description,
-    alternates: { canonical: `/guides/${g.slug}` },
     openGraph: { title: g.title, description: g.description, type: 'article', url: `/guides/${g.slug}`,
       publishedTime: g.published, modifiedTime: g.updated },
-  };
+  });
 }
 
 const anchor = (h: string) => h.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 
 export default async function GuidePage({ params }: { params: Promise<{ slug: string }> }) {
+  const lp = await getLp();
   const g = guideBySlug((await params).slug);
   if (!g) notFound();
   const lang = await getLang();
@@ -92,8 +93,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <p className="muted">{t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
         </div>
         <div className="prose__cta-btns">
-          <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--ghost btn--lg" href="/listings?type=land">{t('Land with a passport')}</Link>
+          <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--ghost btn--lg" href={lp('/listings?type=land')}>{t('Land with a passport')}</Link>
         </div>
       </section>
 
@@ -102,7 +103,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
           <h2>{t('Related guides')}</h2>
           <div className="guide-list">
             {related.map((r) => (
-              <Link key={r.slug} className="guide-card" href={`/guides/${r.slug}`}>
+              <Link key={r.slug} className="guide-card" href={lp(`/guides/${r.slug}`)}>
                 <b>{r.title}</b>
                 <span className="small muted">{r.description}</span>
               </Link>

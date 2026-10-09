@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Crumbs from '@/components/Crumbs';
@@ -13,7 +14,7 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
 import { AREA_CENTRES, fmtDate, fmtUsd, nListings } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -23,17 +24,18 @@ export const generateStaticParams = () => AREAS.map((a) => ({ slug: a.slug }));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const a = areaBySlug((await params).slug);
   if (!a) return {};
-  const title = `${a.name}, Roatán: homes, condos & land for sale`;
+  const t = await getT();
+  const title = t('{area}, Roatán: homes, condos & land for sale', { area: t(a.name) });
   const description = `${a.summary}${a.priceRange ? ` Typical prices: ${a.priceRange}.` : ''}`.slice(0, 300);
-  return {
+  return localized(`/areas/${a.slug}`, {
     title: `${title} | ${SITE_NAME}`,
     description,
-    alternates: { canonical: `/areas/${a.slug}` },
     openGraph: { title, description, url: `/areas/${a.slug}`, type: 'website' },
-  };
+  });
 }
 
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
+  const lp = await getLp();
   const a = areaBySlug((await params).slug);
   if (!a) notFound();
   const lang = await getLang();
@@ -113,7 +115,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
             <Link className="btn btn--ghost btn--block" href={`${filterHref}&type=land`}>{t('Land & lots')}</Link>
           </div>
           <p className="tiny muted" style={{ marginTop: 14 }}>
-            {t('Read next:')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('all areas compared')}</Link>
+            {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
           </p>
         </aside>
       </div>
@@ -130,7 +132,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         ) : (
           <div className="panel empty">
             <p>{t('No listings in {area} yet. We are adding island agencies every week.', { area: name })}</p>
-            <Link className="btn btn--primary" href="/listings?deal=sale">{t('Browse the whole island')}</Link>
+            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the whole island')}</Link>
           </div>
         )}
       </section>
@@ -150,7 +152,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <section className="section">
         <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Other areas of Roatán')}</h2>
         <div className="chip-row">
-          {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{t(o.name)}</Link>)}
+          {others.map((o) => <Link key={o.slug} className="chip-btn" href={lp(`/areas/${o.slug}`)}>{t(o.name)}</Link>)}
         </div>
       </section>
       <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />

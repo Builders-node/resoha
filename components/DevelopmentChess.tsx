@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { statusLabel, toM2 } from '@/lib/units';
 import type { Listing } from '@/lib/types';
+import { getLp } from '@/lib/i18n/server';
 
 const short = (v: number) => (v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(2).replace(/\.?0+$/, '')}M` : `$${Math.round(v / 1_000)}K`);
 const kind = (beds: number) => (beds ? `${beds}BR` : 'ST');
@@ -10,7 +11,8 @@ const kind = (beds: number) => (beds ? `${beds}BR` : 'ST');
  * Колір клітинки — стан квартири, клік веде на її оголошення.
  * Квартири без поверху сюди не потрапляють — вони є в таблиці вище.
  */
-export default function DevelopmentChess({ units }: { units: Listing[] }) {
+export default async function DevelopmentChess({ units }: { units: Listing[] }) {
+  const lp = await getLp();
   const placed = units.filter((u) => u.floor !== null);
   if (!placed.length) return null;
   const floors = [...new Set(placed.map((u) => u.floor as number))].sort((a, b) => b - a);
@@ -29,7 +31,7 @@ export default function DevelopmentChess({ units }: { units: Listing[] }) {
             <span className="chess__label tiny muted">{f}</span>
             <div className="chess__units">
               {placed.filter((u) => u.floor === f).sort(byNo).map((u) => (
-                <Link key={u.id} href={`/listings/${u.id}`} className={`chess__cell chess__cell--${u.status}`}
+                <Link key={u.id} href={lp(`/listings/${u.id}`)} className={`chess__cell chess__cell--${u.status}`}
                   title={`Unit ${u.unitNo} · ${u.beds ? `${u.beds} BR` : 'Studio'}${u.sqft ? ` · ${toM2(u.sqft)} m² / ${u.sqft} ft²` : ''} · ${statusLabel(u.status)}`}>
                   <b>{u.unitNo || '—'}</b>
                   <span>{kind(u.beds)}</span>

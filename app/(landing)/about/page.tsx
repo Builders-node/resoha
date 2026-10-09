@@ -1,17 +1,20 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 import { breadcrumbLd, graph, ORG_DESCRIPTION } from '@/lib/seo';
 import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `About Resoha: every property on Roatán in one checked place | ${SITE_NAME}`,
-  description: ORG_DESCRIPTION,
-  alternates: { canonical: '/about' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/about', {
+    title: `${t('About Resoha: every property on Roatán in one checked place')} | ${SITE_NAME}`,
+    description: t(ORG_DESCRIPTION),
+  });
+}
 
 const PRINCIPLES = [
   { icon: 'link', title: 'Every listing says where it came from', text: 'Each property links back to the island agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.' },
@@ -21,6 +24,7 @@ const PRINCIPLES = [
 ];
 
 export default async function AboutPage() {
+  const lp = await getLp();
   const t = await getT();
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'About', path: '/about' }];
   return (
@@ -59,10 +63,10 @@ export default async function AboutPage() {
             <h2>{t('Who Resoha is for')}</h2>
             <ul>
               <li><b>{t('Retirees and future residents')}</b> {t('from the US and Canada who want a home on the island and cannot afford a mistake.')}</li>
-              <li><b>{t('Investors')}</b> {t('looking at holiday rentals who need honest numbers. See our')} <Link className="link-accent" href="/market">{t('market report')}</Link>.</li>
+              <li><b>{t('Investors')}</b> {t('looking at holiday rentals who need honest numbers. See our')} <Link className="link-accent" href={lp('/market')}>{t('market report')}</Link>.</li>
               <li><b>{t('Divers and returning visitors')}</b> {t('who already love the island and want to know where to start.')}</li>
               <li><b>{t('Hondurans abroad')}</b> {t('buying for family or for retirement, remotely and safely.')}</li>
-              <li><b>{t('Island agencies and agents')}</b> {t('who want serious buyers to find their listings. See')} <Link className="link-accent" href="/for-agents">{t('for agents')}</Link>.</li>
+              <li><b>{t('Island agencies and agents')}</b> {t('who want serious buyers to find their listings. See')} <Link className="link-accent" href={lp('/for-agents')}>{t('for agents')}</Link>.</li>
             </ul>
           </div>
           <div className="panel">
