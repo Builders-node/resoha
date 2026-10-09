@@ -237,12 +237,35 @@ function applyFilters(sel: any, q: ListingQuery) {
     // 4 у фільтрі означає «4+»
     sel = sel.or(q.beds.map((b) => (b >= 4 ? 'beds.gte.4' : `beds.eq.${b}`)).join(','));
   }
-  if (q.q) {
-    // значення в or() беремо в лапки — інакше пробіли ламають розбір фільтра на боці PostgREST
-    const s = `"%${q.q.replace(/["\\]/g, '')}%"`;
-    sel = sel.or(`title.ilike.${s},address.ilike.${s},neighborhood.ilike.${s},body.ilike.${s}`);
+  // характеристики живуть у details (міграція 0036)
+  if (q.furnished) sel = sel.in('details->>furnished', ['furnished', 'partly']);
+  if (q.pets) sel = sel.in('details->>pets', ['yes', 'ask']);
+  if (q.parking) sel = sel.in('details->>parking', ['garage', 'covered', 'open', 'street']);
+  if (q.ac) sel = sel.in('details->>ac', ['central', 'split', 'some']);
+  if (q.build === 'new') sel = sel.or('development_id.not.is.null,details->>condition.eq.new');
+  if (q.build === 'resale') sel = sel.is('development_id', null).or('details->>condition.is.null,details->>condition.neq.new');
+  if (q.reduced) sel = sel.gt('old_price', 0);
+  if (q.days) sel = sel.gte('created_at', new Date(Date.now() - q.days * 864e5).toISOString());
+  // кожне слово має знайтись хоч десь; значення в or() беремо в лапки — інакше пробіли ламають розбір у PostgREST
+  for (const w of q.terms ?? splitWords(q.q)) {
+    const s = `"%${w}%"`;
+    sel = sel.or(`title.ilike.${s},address.ilike.${s},neighborhood.ilike.${s},island.ilike.${s},body.ilike.${s}`);
   }
   return sel;
+}
+
+const splitWords = (q?: string) =>
+  (q ?? '').toLowerCase().replace(/["\\%_(),]/g, ' ').split(/\s+/).filter(Boolean).slice(0, 8);
+
+/**
+ * Текст запиту → слова з виправленими опечатками (search_terms, міграція 0051).
+ * До міграції функції немає — шукаємо слова як є.
+ */
+async function withTerms(q: ListingQuery): Promise<ListingQuery> {
+  const words = splitWords(q.q);
+  if (!words.length || q.terms) return q;
+  const { data, error } = await (await db()).rpc('search_terms', { p_q: words.join(' ') });
+  return { ...q, terms: !error && Array.isArray(data) && data.length ? splitWords((data as string[]).join(' ')) : words };
 }
 
 /**
@@ -258,6 +281,9 @@ function applySort(sel: any, sort: ListingQuery['sort'], promote = true) {
     case 'price_desc': return sel.order('price', { ascending: false });
     case 'sqft_desc': return sel.order('sqft', { ascending: false });
     case 'popular': return sel.order('views', { ascending: false });
+    // обчислювані колонки з міграції 0051; без площі чи без знижки — в кінець
+    case 'ppsf_asc': return sel.order('price_per_sqft', { ascending: true, nullsFirst: false });
+    case 'reduced': return sel.order('price_cut_pct', { ascending: false, nullsFirst: false }).order('created_at', { ascending: false });
     default: return sel.order('created_at', { ascending: false });
   }
 }
@@ -265,19 +291,28 @@ function applySort(sel: any, sort: ListingQuery['sort'], promote = true) {
 export const PAGE_SIZE = 24;
 
 /** Сторінка результатів + скільки всього збігів (для «показати ще» і лічильника). */
-export async function searchListings(q: ListingQuery = {}, page = 0, pageSize = PAGE_SIZE) {
+export async function searchListings(query: ListingQuery = {}, page = 0, pageSize = PAGE_SIZE) {
+  const q = await withTerms(query);
   const from = page * pageSize;
-  let sel = applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q);
-  sel = applySort(sel, q.sort, !q.includeInactive).range(from, from + pageSize - 1);
+  const run = async (sort: ListingQuery['sort']) => applySort(
+    applyFilters((await db()).from('listings').select(listingCols(q), { count: 'exact' }), q), sort, !q.includeInactive,
+  ).range(from, from + pageSize - 1);
 
-  const { data, error, count } = await sel;
+  let { data, error, count } = await run(q.sort);
+  // до міграції 0051 колонок для «за ft²» і «подешевшали» немає — тоді звичайний порядок
+  if (error && NEW_SORTS.includes(q.sort ?? '') && (error.code === '42703' || /price_per_sqft|price_cut_pct/.test(error.message))) {
+    ({ data, error, count } = await run(undefined));
+  }
   if (error) throw error;
   const items = (data ?? []).map(mapListing);
   return { items, total: count ?? items.length, hasMore: from + items.length < (count ?? 0) };
 }
 
 /** Координати всіх збігів — щоб карта показувала повну картину, а список вантажився сторінками. */
-export async function queryPins(q: ListingQuery = {}) {
+const NEW_SORTS = ['ppsf_asc', 'reduced'];
+
+export async function queryPins(query: ListingQuery = {}) {
+  const q = await withTerms(query);
   const pins = q.ready ? 'id, lat, lng, price, deal, land_facts!inner(ready)' : 'id, lat, lng, price, deal';
   const sel = applyFilters((await db()).from('listings').select(pins), q);
   const { data, error } = await sel.limit(2000);
@@ -286,7 +321,8 @@ export async function queryPins(q: ListingQuery = {}) {
   return (data ?? []).map((r: any) => ({ id: r.id, lat: r.lat, lng: r.lng, price: Number(r.price), deal: r.deal }));
 }
 
-export async function queryListings(q: ListingQuery = {}): Promise<Listing[]> {
+export async function queryListings(query: ListingQuery = {}): Promise<Listing[]> {
+  const q = await withTerms(query);
   let sel = applyFilters((await db()).from('listings').select(listingCols(q)), q);
   sel = applySort(sel, q.sort, !q.includeInactive);
 

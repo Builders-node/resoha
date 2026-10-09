@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import FilterChips from './FilterChips';
 import FiltersModal from './FiltersModal';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
@@ -10,7 +11,7 @@ import RecentlyViewed from './RecentlyViewed';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
-  type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
+  SORTS, type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
 import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
 import type { RoomStat } from '@/lib/priceStats';
@@ -245,6 +246,7 @@ export default function ListingsExplorer({
 
       <div className={`split split--${mobileView}`}>
         <div className="split__list">
+          <FilterChips filters={filters} onChange={set} onReset={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })} />
           <div className="list-head">
             <h1>
               {loading
@@ -255,7 +257,12 @@ export default function ListingsExplorer({
                     ? t('{n} for sale on Roatán', { n: fmtNumber(total) })
                     : t('{listings} on Roatán', { listings: nListings(total, lang) })}
             </h1>
-            <span className="muted small">{t('Bay Islands, Honduras')}</span>
+            <label className="list-sort">
+              <span className="muted small">{t('Sort')}</span>
+              <select className="input" value={filters.sort} onChange={(e) => set({ sort: e.target.value })}>
+                {SORTS.map((s) => <option key={s.v} value={s.v}>{t(s.label)}</option>)}
+              </select>
+            </label>
           </div>
 
           {(filters.deal === 'sale' || filters.deal === 'rent') && (

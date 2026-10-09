@@ -2175,3 +2175,16 @@ html{scroll-behavior:smooth}
   .calc__inputs{grid-template-columns:1fr 1fr}
   .calc__inputs .field:first-child{grid-column:span 2}
 }
+
+/* ---------- каталог: чипи активних фільтрів і сортування над списком ---------- */
+.fchips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 14px}
+.fchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#fff;color:var(--ink);
+  border-radius:999px;padding:6px 10px 6px 12px;font-size:13px;font-weight:600;cursor:pointer}
+.fchip:hover{border-color:var(--ink)}
+.fchip--reset{border-color:transparent;background:none;color:var(--ink-2);padding-left:6px}
+.fchip--reset:hover{color:var(--ink);border-color:transparent}
+.list-head{gap:12px;flex-wrap:wrap}
+.list-sort{display:flex;align-items:center;gap:8px;margin-left:auto}
+.list-sort .input{width:auto;min-width:0;padding-right:30px}
+.fsel-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
+.fsel-row label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);flex:1 1 160px}
