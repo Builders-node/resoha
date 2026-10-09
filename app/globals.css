@@ -2360,3 +2360,33 @@ html{scroll-behavior:smooth}
 .vsettings__days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .vsettings__days .fchip{cursor:default}
 .vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}
+
+/* ===== Promotion types, Sponsored places, refunds and before/after (0060) ===== */
+/* Платне місце в пошуку: чесний підпис «Sponsored» і тонка рамка */
+.badge--sponsored{background:rgba(15,15,16,.72);color:#fff;letter-spacing:.02em;backdrop-filter:blur(6px)}
+.ov--sponsored{box-shadow:0 0 0 1px rgba(15,15,16,.12)}
+/* «Colour highlight» — кольорова рамка і теплий відтінок знизу картки */
+.ov--promo{box-shadow:0 0 0 3px var(--orange),var(--shadow)}
+.ov--promo::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,transparent 55%,rgba(255,72,0,.28))}
+.ov--promo.is-hl{outline-color:var(--orange)}
+/* Premium agent на сторінці оголошення */
+.premium-agent{display:flex;align-items:center;gap:6px;margin-top:12px;padding:8px 12px;border-radius:10px;
+  background:var(--orange-soft);color:var(--ink);font-weight:600}
+.premium-agent svg{color:var(--orange)}
+/* Кабінет: вибір виду просування */
+.promo__products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px;max-width:760px}
+.promo__product{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;background:var(--bg-soft);
+  border:2px solid transparent;border-radius:var(--radius);padding:12px 14px;cursor:pointer;font:inherit;color:inherit}
+.promo__product:hover{border-color:var(--line)}
+.promo__product.is-on{border-color:var(--ink);background:var(--bg)}
+/* «До/під час» і повернення */
+.promo-effect{display:flex;flex-direction:column;gap:2px;font-size:13px;white-space:nowrap}
+.promo-effect span{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2)}
+.promo-effect em{font-style:normal;font-weight:600;margin-left:4px}
+.promo-effect .is-up em{color:#15803d}
+.promo-effect .is-down em{color:#b91c1c}
+.promo-refunded{color:#b91c1c}
+@media (max-width:640px){
+  .promo__products{grid-template-columns:1fr}
+}
