@@ -296,7 +296,7 @@ begin
   with due as (
     update public.visit_bookings b set reminded_24h_at = now()
     from public.leads l
-    where l.id = b.lead_id and b.status = 'booked' and b.reminded_24h_at is null
+    where l.id = b.lead_id and b.status = 'booked' and l.status not in ('deal', 'lost') and b.reminded_24h_at is null
       and l.visit_at between now() + interval '2 hours' and now() + interval '25 hours'
     returning l.*, b.token
   ), agent as (
@@ -317,7 +317,7 @@ begin
   with due as (
     update public.visit_bookings b set reminded_1h_at = now(), reminded_24h_at = coalesce(b.reminded_24h_at, now())
     from public.leads l
-    where l.id = b.lead_id and b.status = 'booked' and b.reminded_1h_at is null
+    where l.id = b.lead_id and b.status = 'booked' and l.status not in ('deal', 'lost') and b.reminded_1h_at is null
       and l.visit_at between now() + interval '15 minutes' and now() + interval '75 minutes'
     returning l.*, b.token
   ), agent as (
@@ -640,3 +640,11 @@ begin
 end $$;
 revoke all on function public.accept_invite(text) from public, anon;
 grant execute on function public.accept_invite(text) to authenticated;
+
+/* ---------- RLS: заявки — менеджер і «лише заявки» бачать і ведуть заявки агенції ---------- */
+alter policy leads_read on public.leads using (
+  agent_id = (select auth.uid()) or user_id = (select auth.uid()) or public.agency_can(agency_id, 'leads') or public.is_admin()
+);
+alter policy leads_update on public.leads using (
+  agent_id = (select auth.uid()) or public.agency_can(agency_id, 'leads')
+);
