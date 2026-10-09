@@ -14,6 +14,7 @@ import Avatar from './Avatar';
 import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
 import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
+import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
 
 type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
@@ -265,6 +266,8 @@ export default function AdminPanel({ session }: { session: Session }) {
                   })}
                 </div>
               </div>
+
+              <SiteSettingsAdmin />
             </>
           ) : <div className="panel">Loading…</div>
         )}

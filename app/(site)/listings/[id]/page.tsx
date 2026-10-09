@@ -19,7 +19,7 @@ import PurchaseCalculator from '@/components/PurchaseCalculator';
 import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
-import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
+import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, getSiteSettings, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPerArea, fmtPrice, fmtUsd, specLine, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -71,7 +71,7 @@ export default async function PropertyPage({ params, searchParams }: {
   await trackPromo('listing', [listing], 'click');
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs, site] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
@@ -88,6 +88,7 @@ export default async function PropertyPage({ params, searchParams }: {
     // документи: спершу цієї квартири (план юніта), потім спільні для ЖК (декларація тощо)
     listing.developmentId ? listUnitDocuments(listing.id) : Promise.resolve([]),
     listing.developmentId ? listDocuments(listing.developmentId) : Promise.resolve([]),
+    getSiteSettings(),
   ]);
   const t = makeT(lang);
   const docs = [...unitDocs, ...devDocs];
@@ -291,7 +292,7 @@ export default async function PropertyPage({ params, searchParams }: {
                       </span>
                     </div>
                   )}
-                  {n.closing && (
+                  {n.closing && site.showPurchaseCosts && (
                     <div className="land__stat">
                       <span className="land__k">{t('Cost to buy')}</span>
                       <b>{fmtUsd(Math.round(n.closing.low))}–{fmtUsd(Math.round(n.closing.high))}</b>
@@ -411,8 +412,10 @@ export default async function PropertyPage({ params, searchParams }: {
           </section>
 
           {/* витрати на купівлю й розстрочка — для будь-якого продажу; у землі паспорт посилається сюди */}
-          {listing.deal === 'sale' && listing.price > 0 && (
-            <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing} />
+          {/* кожну половину адмін вимикає окремо (Admin → Overview → Listing page) */}
+          {listing.deal === 'sale' && listing.price > 0 && (site.showPurchaseCosts || site.showFinancing) && (
+            <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing}
+              showCosts={site.showPurchaseCosts} showFinancing={site.showFinancing} />
           )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}

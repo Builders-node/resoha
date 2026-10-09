@@ -2120,6 +2120,7 @@ html{scroll-behavior:smooth}
 
 /* калькулятор витрат і розстрочки на сторінці обʼєкта */
 .calc__grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+.calc__grid--one{grid-template-columns:minmax(0,640px)}
 .calc__card{border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 24px;background:#fff}
 .calc__card h4{font-size:18px;margin:0 0 12px}
 .calc__rows{margin:0;display:grid}

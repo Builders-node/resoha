@@ -21,8 +21,8 @@ const asText = (t: Terms) => ({ down: String(t.down), rate: String(t.rate), year
  * Скільки треба грошей, щоб купити, і скільки виходить на місяць у розстрочку.
  * Витрати на угоду — за гайдом roatan-closing-costs, фінансування — звичайний ануїтет.
  */
-export default function PurchaseCalculator({ price, hoa, ownerFinancing }: {
-  price: number; hoa: number; ownerFinancing: boolean;
+export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCosts = true, showFinancing = true }: {
+  price: number; hoa: number; ownerFinancing: boolean; showCosts?: boolean; showFinancing?: boolean;
 }) {
   const t = useT();
   const id = useId();
@@ -51,10 +51,12 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing }: {
 
   return (
     <section className="calc" id="costs">
-      <h3 className="prop__h">{t('Cost to buy and financing')}</h3>
-      <div className="calc__grid">
-        <div className="calc__card">
-          <h4>{t('Purchase costs')}</h4>
+      <h3 className="prop__h">
+        {t(showCosts && showFinancing ? 'Cost to buy and financing' : showCosts ? 'Purchase costs' : 'Financing')}
+      </h3>
+      <div className={`calc__grid ${showCosts && showFinancing ? '' : 'calc__grid--one'}`}>
+        {showCosts && <div className="calc__card">
+          {showFinancing && <h4>{t('Purchase costs')}</h4>}
           <dl className="calc__rows">
             <div><dt>{t('Price')}</dt><dd>{fmtUsd(price)}</dd></div>
             {COST_ITEMS.map((c, i) => (
@@ -94,10 +96,10 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing }: {
             {t('Property tax: up to {price}/yr (0.25% of the cadastral value).', { price: fmtUsd(Math.round(price * PROPERTY_TAX_RATE)) })}{' '}
             <Link className="link-accent" href={CLOSING_GUIDE}>{t('Roatán closing costs guide')} <Icon name="arrowRight" size={14} /></Link>
           </p>
-        </div>
+        </div>}
 
-        <div className="calc__card">
-          <h4>{t('Financing')}</h4>
+        {showFinancing && <div className="calc__card">
+          {showCosts && <h4>{t('Financing')}</h4>}
           <div className="chip-row calc__presets" role="group" aria-label={t('Payment options')}>
             {ownerFinancing && (
               <button type="button" className={`chip-btn ${preset === 'owner' ? 'is-on' : ''}`} onClick={() => pick('owner')}>
@@ -164,7 +166,7 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing }: {
           <p className="tiny muted calc__note">
             {t('An estimate, not an offer. Mortgages for foreign buyers are rare on Roatán; most pay cash or agree terms with the seller.')}
           </p>
-        </div>
+        </div>}
       </div>
     </section>
   );
