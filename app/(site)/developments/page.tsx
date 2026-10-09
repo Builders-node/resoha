@@ -1,4 +1,6 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
+import { getT } from '@/lib/i18n/server';
 import DevelopmentsExplorer, { type DevItem } from '@/components/DevelopmentsExplorer';
 import { listDevelopments, queryListings } from '@/lib/db';
 import { SITE_NAME } from '@/lib/site';
@@ -6,11 +8,13 @@ import { trackPromo } from '@/lib/promo';
 import { fromPrice, salesLabel } from '@/lib/units';
 import { getMoney } from '@/lib/currencyServer';
 
-export const metadata: Metadata = {
-  title: `New developments in Roatán | ${SITE_NAME}`,
-  description: 'Condo towers and new-build projects on Roatán with unit-by-unit prices from the developer.',
-  alternates: { canonical: '/developments' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/developments', {
+    title: `${t('New developments in Roatán')} | ${SITE_NAME}`,
+    description: t('Condo towers and new-build projects on Roatán with unit-by-unit prices from the developer.'),
+  });
+}
 
 export default async function DevelopmentsPage() {
   const devs = await listDevelopments(); // відмічені адміном — першими (див. listDevelopments)

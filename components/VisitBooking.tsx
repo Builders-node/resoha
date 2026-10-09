@@ -1,6 +1,7 @@
 'use client';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import AddToCalendar from './AddToCalendar';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import { useLang, useT } from './LangProvider';
@@ -222,6 +223,8 @@ export default function VisitBooking({ devId, devName, address, schedule, blacko
           <p><b>{fmt(day, { weekday: 'long', month: 'long', day: 'numeric' })} · {time}</b></p>
           {address && <p className="muted">{address}</p>}
           <p className="muted small">{t('The sales office will contact you to confirm the visit.')}</p>
+          <AddToCalendar uid={`visit-${devId}-${officeTimeToDate(day, time).getTime()}@resoha`}
+            visitAt={officeTimeToDate(day, time).toISOString()} place={devName} address={address} />
           <Link className="btn btn--primary btn--lg" href={backHref}>{t('Back to {name}', { name: devName })}</Link>
         </div>
       )}

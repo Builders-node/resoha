@@ -13,6 +13,8 @@ import LangProvider from '@/components/LangProvider';
 import { getLang } from '@/lib/i18n/server';
 import CurrencyProvider from '@/components/CurrencyProvider';
 import { getCurrencyRate } from '@/lib/currencyServer';
+import { makeT } from '@/lib/i18n';
+import { OG_LOCALE } from '@/lib/seoMeta';
 
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
 const inter = Inter({
@@ -22,13 +24,17 @@ const inter = Inter({
   variable: '--font-inter',
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: 'Roatán Real Estate: Homes, Condos & Land for Sale | Resoha',
-  description: 'Every property on Roatán in one checked place: homes, condos, rentals and land from island agencies, with a land passport on every lot and direct WhatsApp contact with agents.',
-  openGraph: { siteName: SITE_NAME, type: 'website', locale: 'en_US' },
-  twitter: { card: 'summary_large_image' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const lang = await getLang();
+  const t = makeT(lang);
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: `${t('Roatán Real Estate: Homes, Condos & Land for Sale')} | Resoha`,
+    description: t('Every property on Roatán in one checked place: homes, condos, rentals and land from island agencies, with a land passport on every lot and direct WhatsApp contact with agents.'),
+    openGraph: { siteName: SITE_NAME, type: 'website', locale: OG_LOCALE[lang] },
+    twitter: { card: 'summary_large_image' },
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const lang = await getLang();

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/BackButton';
@@ -9,7 +10,7 @@ import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db'
 import { trackPromo } from '@/lib/promo';
 import { fmtNumber, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
@@ -21,13 +22,13 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const a = await loadAgency(id);
   if (!a) return { title: `Agency not found — ${SITE_NAME}` };
-  return {
-    title: `${a.name} — real estate agency on Roatán | ${SITE_NAME}`,
-    alternates: { canonical: `/agency/${a.id}` },
-  };
+  return localized(`/agency/${a.id}`, {
+    title: `${a.name} — ${(await getT())('real estate agency on Roatán')} | ${SITE_NAME}`,
+  });
 }
 
 export default async function AgencyPage({ params }: { params: Promise<{ id: string }> }) {
+  const lp = await getLp();
   const { id } = await params;
   const agency = await loadAgency(id);
   if (!agency) notFound();
@@ -86,7 +87,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         <div className="section__head"><h2>{t('The team')}</h2></div>
         <div className="grid grid--4">
           {team.map((m) => (
-            <Link key={m.id} className="person" href={`/agents/${m.id}`}>
+            <Link key={m.id} className="person" href={lp(`/agents/${m.id}`)}>
               <Avatar src={m.avatar} name={m.name} />
               <div>
                 <div className="person__name with-ico">
@@ -104,7 +105,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="section__head">
           <h2>{nListings(listings.length, lang)}</h2>
-          <Link className="btn btn--primary" href={`/listings?agencyId=${agency.id}`}>
+          <Link className="btn btn--primary" href={lp(`/listings?agencyId=${agency.id}`)}>
             {t('Open in search')} <Icon name="arrowRight" size={18} />
           </Link>
         </div>
@@ -120,7 +121,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
       </section>
 
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">{t('Home')}</Link> · <Link href="/listings?deal=sale">{t('Agencies')}</Link> · {agency.name}
+        <Link href={lp('/')}>{t('Home')}</Link> · <Link href={lp('/listings?deal=sale')}>{t('Agencies')}</Link> · {agency.name}
       </div>
     </div>
   );

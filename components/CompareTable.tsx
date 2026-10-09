@@ -10,6 +10,7 @@ import type { Listing } from '@/lib/types';
 import type { Lang, T } from '@/lib/i18n';
 import { useMoney } from './CurrencyProvider';
 import type { Money } from '@/lib/currency';
+import { useLp } from './useLp';
 
 const SQM_PER_ACRE = 4046.86;
 
@@ -33,6 +34,7 @@ const ROWS: [label: string, value: (l: Listing, t: T, lang: Lang, money: Money) 
 ];
 
 export default function CompareTable() {
+  const lp = useLp();
   const t = useT();
   const lang = useLang();
   const money = useMoney();
@@ -56,7 +58,7 @@ export default function CompareTable() {
         <div className="empty">
           <div className="empty__ico"><Icon name="compare" size={40} /></div>
           <p>{t('Nothing to compare yet.')}</p>
-          <Link className="btn btn--primary" href="/listings?deal=sale">{t('Browse the listings')}</Link>
+          <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the listings')}</Link>
         </div>
       ) : loading && items.length === 0 ? (
         <p className="muted">{t('Loading…')}</p>
@@ -74,11 +76,11 @@ export default function CompareTable() {
                 {items.map((l) => (
                   <th key={l.id} scope="col">
                     <div className="cmp-table__card">
-                      <Link href={`/listings/${l.id}`} className="cmp-table__photo"><Photo src={l.photos[0]} alt={l.title} /></Link>
+                      <Link href={lp(`/listings/${l.id}`)} className="cmp-table__photo"><Photo src={l.photos[0]} alt={l.title} /></Link>
                       <button className="cmp-table__rm" onClick={() => remove(l.id)} aria-label={t('Remove from compare')} title={t('Remove from compare')}>
                         <Icon name="close" size={16} />
                       </button>
-                      <Link href={`/listings/${l.id}`} className="cmp-table__title">{l.title}</Link>
+                      <Link href={lp(`/listings/${l.id}`)} className="cmp-table__title">{l.title}</Link>
                     </div>
                   </th>
                 ))}
@@ -100,7 +102,7 @@ export default function CompareTable() {
                 <th scope="row"><span className="sr-only">{t('Open listing')}</span></th>
                 {items.map((l) => (
                   <td key={l.id}>
-                    <Link className="btn btn--primary btn--sm" href={`/listings/${l.id}`}>{t('Open listing')} <Icon name="arrowRight" size={15} /></Link>
+                    <Link className="btn btn--primary btn--sm" href={lp(`/listings/${l.id}`)}>{t('Open listing')} <Icon name="arrowRight" size={15} /></Link>
                   </td>
                 ))}
               </tr>

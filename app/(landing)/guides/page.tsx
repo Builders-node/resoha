@@ -1,21 +1,25 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import JsonLd from '@/components/JsonLd';
 import { GUIDES } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `Roatán property buying guides for foreigners | ${SITE_NAME}`,
-  description: 'Plain-language guides to buying property on Roatán: foreign ownership and the 3,000 m² rule, the buying process, closing costs, title checks, rental income and the best areas.',
-  alternates: { canonical: '/guides' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/guides', {
+    title: `${t('Roatán property buying guides for foreigners')} | ${SITE_NAME}`,
+    description: t('Plain-language guides to buying property on Roatán: foreign ownership and the 3,000 m² rule, the buying process, closing costs, title checks, rental income and the best areas.'),
+  });
+}
 
 export default async function GuidesPage() {
+  const lp = await getLp();
   const lang = await getLang();
   const t = makeT(lang);
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Guides', path: '/guides' }];
@@ -33,7 +37,7 @@ export default async function GuidesPage() {
       </p>
       <div className="guide-list guide-list--wide">
         {GUIDES.map((g) => (
-          <Link key={g.slug} className="guide-card" href={`/guides/${g.slug}`}>
+          <Link key={g.slug} className="guide-card" href={lp(`/guides/${g.slug}`)}>
             <b>{t(g.title)}</b>
             <span className="small muted">{t(g.description)}</span>
             <span className="tiny muted">{t('Updated')} {fmtDate(g.updated, lang)}</span>

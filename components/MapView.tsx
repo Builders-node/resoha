@@ -14,6 +14,7 @@ import type { Lang, T } from '@/lib/i18n';
 import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
 import type { Money } from '@/lib/currency';
+import { localePath } from '@/lib/i18n/paths';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
 export type Pin = {
@@ -342,7 +343,7 @@ export default function MapView({
         const popup = new ml.Popup({
           closeButton: false, closeOnClick: false, offset: 46, maxWidth: '240px', className: 'map-pop-wrap',
         }).setDOMContent(l.card
-          ? buildCardNode(l.card, () => router.push(l.card!.href), t)
+          ? buildCardNode(l.card, () => router.push(localePath(lang, l.card!.href)), t)
           : skeletonNode(l, t, lang, money));
         popups.current[l.id] = popup;
 
@@ -356,7 +357,7 @@ export default function MapView({
             ?? (await fetch(`/api/listings/${l.id}`).then((r) => r.json()).then((d) => d.listing).catch(() => null));
           if (!listing) return;
           cache.current[l.id] = listing;
-          popup.setDOMContent(buildPopupNode(listing, () => router.push(`/listings/${l.id}`), t, lang, money));
+          popup.setDOMContent(buildPopupNode(listing, () => router.push(localePath(lang, `/listings/${l.id}`)), t, lang, money));
         };
         // курсор із цінника переїхав на саму картку — не закриваємо її
         // (контейнер попапа створюється заново при кожному відкритті)

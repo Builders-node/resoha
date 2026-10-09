@@ -9,6 +9,7 @@ import type { CityStat, PriceStats, RoomStat, StatValue } from '@/lib/priceStats
 import type { Deal } from '@/lib/types';
 import type { Money } from '@/lib/currency';
 import { useMoney } from './CurrencyProvider';
+import { useLp } from './useLp';
 
 /** $283K, $1.2M, $1.5K — як «25к грн» у ЛУН; в іншій валюті — «≈ €260K» */
 function fmtCompact(v: number, money: Money) {
@@ -40,6 +41,7 @@ const tone = (s: StatValue) => (s.change === null || Math.round(s.change) === 0 
 export function RoomPriceStats({ deal, stats, onPick }: {
   deal: Deal; stats: RoomStat[]; onPick: (beds: string[]) => void;
 }) {
+  const lp = useLp();
   const t = useT();
   const money = useMoney();
   if (stats.length < 2) return null;
@@ -49,7 +51,7 @@ export function RoomPriceStats({ deal, stats, onPick }: {
     <section className="pstat" aria-label={t('Price statistics')}>
       <div className="pstat__head">
         <h2>{deal === 'rent' ? t('Rent price statistics') : t('Home price statistics')}</h2>
-        <Link className="btn btn--primary pstat__more" href="/market" aria-label={t('Market report')}>
+        <Link className="btn btn--primary pstat__more" href={lp('/market')} aria-label={t('Market report')}>
           <Icon name="arrowRight" size={20} />
         </Link>
       </div>
@@ -86,6 +88,7 @@ function CityRow({ label, stat, since, lead }: { label: string; stat: StatValue;
 
 /** Головна: темні картки міст із медіанною ціною за m² і розбивкою за типом житла */
 export function CityPriceStats({ cities, period }: { cities: CityStat[]; period: PriceStats }) {
+  const lp = useLp();
   const t = useT();
   const lang = useLang();
   if (!cities.length) return null;
@@ -98,7 +101,7 @@ export function CityPriceStats({ cities, period }: { cities: CityStat[]; period:
       <div className="wrap">
         <div className="section__head section__head--start">
           <h2>{t('Resoha statistics')}</h2>
-          <Link className="btn btn--primary" href="/market">{t('Market report')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--primary" href={lp('/market')}>{t('Market report')} <Icon name="arrowRight" size={18} /></Link>
         </div>
         <div className="city-stats">
           {cities.map((c) => (

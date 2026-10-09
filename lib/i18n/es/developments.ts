@@ -14,7 +14,6 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
 
   /* ---------- сторінка ЖК: вкладки й заголовки ---------- */
   'Overview': 'Resumen',
-  'Layouts': 'Distribuciones',
   'Construction': 'Construcción',
   'Video & 360°': 'Video y 360°',
   'Video & 360° tour': 'Video y recorrido 360°',

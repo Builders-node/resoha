@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { fmtNumber } from '@/lib/format';
 import { SQFT_PER_M2, groupUnits, salesLabel, statusLabel, toM2, type SalesStatus } from '@/lib/units';
 import type { Deal, Listing } from '@/lib/types';
-import { getT } from '@/lib/i18n/server';
+import { getLp, getT } from '@/lib/i18n/server';
 import { getMoney } from '@/lib/currencyServer';
 
 const span = (r: [number, number] | null, fmt: (n: number) => string, unit = '') =>
@@ -26,6 +26,7 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
   contactHref: string;
 }) {
   const [t, money] = await Promise.all([getT(), getMoney()]);
+  const lp = await getLp();
   const deals = (['sale', 'rent'] as Deal[]).filter((d) => units.some((u) => u.deal === d));
   /** $107K, $1.2M — у рядках зведення, як «від 2.4 млн» у забудовників */
   const price = (v: number, deal: Deal) => (deal === 'rent' ? `${money.amount(v)}${t('/mo')}` : money.amount(v));
@@ -103,7 +104,7 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
                       <tbody>
                         {g.units.map((u) => (
                           <tr key={u.id} className={u.status === 'sold' || u.status === 'rented' ? 'is-sold' : undefined}>
-                            <td><Link href={`/listings/${u.id}`} className="units__link"><b>{u.unitNo || '—'}</b></Link></td>
+                            <td><Link href={lp(`/listings/${u.id}`)} className="units__link"><b>{u.unitNo || '—'}</b></Link></td>
                             {buildings && <td>{(u.buildingId && buildings[u.buildingId]) || '—'}</td>}
                             <td>{u.floor ?? '—'}</td>
                             <td>
@@ -111,7 +112,7 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
                             </td>
                             {deal === 'sale' && <td className="units__ppm">{u.sqft > 0 ? per(Math.round(u.price / toM2(u.sqft))) : '—'}</td>}
                             <td className="units__num">
-                              <Link href={`/listings/${u.id}`} className="units__link">
+                              <Link href={lp(`/listings/${u.id}`)} className="units__link">
                                 {u.status === 'available' ? <b>{price(u.price, deal)}</b> : <span className="muted">{t(statusLabel(u.status))}</span>}
                               </Link>
                             </td>

@@ -14,6 +14,7 @@ import type { Agent, Building, Development, Listing } from '@/lib/types';
 import type { T } from '@/lib/i18n';
 import { useMoney } from './CurrencyProvider';
 import type { Money } from '@/lib/currency';
+import { useLp } from './useLp';
 
 /** Особливості для чипів фільтра: показуємо лише ті, що є хоч в одному плануванні */
 const FEATURES: [key: string, label: string, test: (u: Listing) => boolean][] = [
@@ -358,6 +359,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
   onClose: () => void; onOpen: (key: string) => void;
 }) {
   const money = useMoney();
+  const lp = useLp();
   const boxRef = useRef<HTMLDivElement>(null);
   const [more, setMore] = useState(4);
   const planFloors = l.floors.filter((f) => levelPlans[f]);
@@ -419,7 +421,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
               <div className="lm__units">
                 <div className="lm__urow is-head"><span>{t('Unit')}</span><span>{t('Floor')}</span><span>{t('Area')}</span><span>{t('Price')}</span><span>{t('Status')}</span></div>
                 {l.units.map((u) => (
-                  <Link key={u.id} href={`/listings/${u.id}`} className={`lm__urow${isOpen(u) ? '' : ' is-off'}`}>
+                  <Link key={u.id} href={lp(`/listings/${u.id}`)} className={`lm__urow${isOpen(u) ? '' : ' is-off'}`}>
                     <b>{u.unitNo || '—'}</b>
                     <span>{u.floor ?? '—'}</span>
                     <span>{m2(u) ? `${m2(u)} m²` : '—'}</span>

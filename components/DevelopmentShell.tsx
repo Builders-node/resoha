@@ -4,7 +4,7 @@ import Icon from './Icon';
 import JsonLd from './JsonLd';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import type { DevContext } from '@/lib/developmentPage';
-import { getT } from '@/lib/i18n/server';
+import { getLp, getT } from '@/lib/i18n/server';
 import { getMoney } from '@/lib/currencyServer';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
@@ -25,6 +25,7 @@ export default async function DevelopmentShell({ ctx, active, title, top, wide, 
   wide?: boolean;
   children: React.ReactNode;
 }) {
+  const lp = await getLp();
   const { dev, agent, me, buildings, tabs, leadUnit, from } = ctx;
   const [t, money] = await Promise.all([getT(), getMoney()]);
   const area = areaForNeighborhood(dev.neighborhood);
@@ -90,8 +91,8 @@ export default async function DevelopmentShell({ ctx, active, title, top, wide, 
 
       {/* «хлібні крихти» — унизу сторінки, щоб зверху були лише назва й вкладки */}
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">{t('Home')}</Link> · <Link href="/developments">{t('Developments')}</Link> · <Link href={areaPath}>{dev.neighborhood}</Link>
-        {' · '}<Link href={`/developments/${dev.slug}`}>{dev.name}</Link>
+        <Link href={lp('/')}>{t('Home')}</Link> · <Link href={lp('/developments')}>{t('Developments')}</Link> · <Link href={lp(areaPath)}>{dev.neighborhood}</Link>
+        {' · '}<Link href={lp(`/developments/${dev.slug}`)}>{dev.name}</Link>
         {active !== 'overview' && <> · <span>{t(tab.label)}</span></>}
       </div>
     </div>

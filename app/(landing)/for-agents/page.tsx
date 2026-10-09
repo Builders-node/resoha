@@ -1,18 +1,21 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import Faq from '@/components/Faq';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { CONTACT_EMAIL, SITE_NAME } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `List your Roatán properties for free | ${SITE_NAME} for agents`,
-  description: 'Island agencies and agents list on Resoha for free. We load your listings for you, enquiries go straight to your WhatsApp, and your agency gets its own page.',
-  alternates: { canonical: '/for-agents' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/for-agents', {
+    title: `${t('List your Roatán properties for free')} | ${SITE_NAME} ${t('for agents')}`,
+    description: t('Island agencies and agents list on Resoha for free. We load your listings for you, enquiries go straight to your WhatsApp, and your agency gets its own page.'),
+  });
+}
 
 const OFFER = [
   { icon: 'plus', title: 'Free for founding partners', text: 'No listing fees and no commission for the first 12 months for agencies that join early.' },
@@ -29,6 +32,7 @@ const FAQ = [
 ];
 
 export default async function ForAgentsPage() {
+  const lp = await getLp();
   const t = await getT();
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'For agents', path: '/for-agents' }];
   return (
@@ -67,7 +71,7 @@ export default async function ForAgentsPage() {
             <p className="muted" style={{ fontSize: 16, margin: '12px 0 20px' }}>
               {t('Answer the eight questions every land buyer asks (title, road, power, water, survey, permit, zone, slope) once, on the listing. Complete lots get a readiness badge, their own filter and a PDF report buyers forward to their lawyers.')}
             </p>
-            <Link className="btn btn--primary" href="/land-passport">{t('How the land passport works')}</Link>
+            <Link className="btn btn--primary" href={lp('/land-passport')}>{t('How the land passport works')}</Link>
           </div>
           <div className="panel">
             <h3>{t('Getting started')}</h3>

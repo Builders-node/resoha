@@ -2361,6 +2361,68 @@ html{scroll-behavior:smooth}
 .vsettings__days .fchip{cursor:default}
 .vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}
 
+/* ---------- календар візиту, підписка гостя на пошук, автозбереження форми оголошення (0058) ---------- */
+.addcal{display:flex;flex-direction:column;align-items:center;gap:8px;margin:4px 0 12px}
+.addcal__btn{display:inline-flex;align-items:center;gap:8px}
+.addcal__link{color:var(--ink-2);text-decoration:underline}
+.visit__done .addcal .btn{margin-top:12px}
+.vmanage .addcal{align-items:stretch;margin:0 0 16px}
+.gsa{display:grid;gap:12px;margin-top:12px}
+.gsa__err{margin:0;color:#b91c1c}
+.gsa__link{background:none;border:0;padding:0;font:inherit;color:inherit;text-decoration:underline;cursor:pointer}
+.lf__restore{align-items:center;flex-wrap:wrap}
+.lf__restore > div:first-of-type{flex:1 1 260px}
+.lf__restore-btns{display:flex;gap:8px}
+.lf__auto{margin:8px 0 0;text-align:right}
+@media (max-width:640px){
+  .lf__restore-btns{width:100%}
+  .lf__restore-btns .btn{flex:1}
+  .lf__auto{text-align:left}
+}
+
+/* ===== Promotion types, Sponsored places, refunds and before/after (0060) ===== */
+/* Платне місце в пошуку: чесний підпис «Sponsored» і тонка рамка */
+.badge--sponsored{background:rgba(15,15,16,.72);color:#fff;letter-spacing:.02em;backdrop-filter:blur(6px)}
+.ov--sponsored{box-shadow:0 0 0 1px rgba(15,15,16,.12)}
+/* «Colour highlight» — кольорова рамка і теплий відтінок знизу картки */
+.ov--promo{box-shadow:0 0 0 3px var(--orange),var(--shadow)}
+.ov--promo::before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;
+  background:linear-gradient(180deg,transparent 55%,rgba(255,72,0,.28))}
+.ov--promo.is-hl{outline-color:var(--orange)}
+/* Premium agent на сторінці оголошення */
+.premium-agent{display:flex;align-items:center;gap:6px;margin-top:12px;padding:8px 12px;border-radius:10px;
+  background:var(--orange-soft);color:var(--ink);font-weight:600}
+.premium-agent svg{color:var(--orange)}
+/* Кабінет: вибір виду просування */
+.promo__products{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:10px;max-width:760px}
+.promo__product{display:flex;flex-direction:column;gap:6px;align-items:flex-start;text-align:left;background:var(--bg-soft);
+  border:2px solid transparent;border-radius:var(--radius);padding:12px 14px;cursor:pointer;font:inherit;color:inherit}
+.promo__product:hover{border-color:var(--line)}
+.promo__product.is-on{border-color:var(--ink);background:var(--bg)}
+/* «До/під час» і повернення */
+.promo-effect{display:flex;flex-direction:column;gap:2px;font-size:13px;white-space:nowrap}
+.promo-effect span{display:inline-flex;align-items:center;gap:4px;color:var(--ink-2)}
+.promo-effect em{font-style:normal;font-weight:600;margin-left:4px}
+.promo-effect .is-up em{color:#15803d}
+.promo-effect .is-down em{color:#b91c1c}
+.promo-refunded{color:#b91c1c}
+@media (max-width:640px){
+  .promo__products{grid-template-columns:1fr}
+}
+
+/* ---------- сторінки каталогу ?page=N: «Показати ще» посиланням і номери сторінок ---------- */
+.cpager{display:grid;justify-items:center;gap:14px;padding:24px 0 6px}
+.cpager__more[aria-disabled=true]{opacity:.6;pointer-events:none}
+.cpager__nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:14px}
+.cpager__num,.cpager__step{min-width:36px;height:36px;padding:0 10px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--chip);color:var(--ink);font-weight:600;text-decoration:none}
+.cpager__num:hover,.cpager__step:hover{background:#e6e6ec}
+.cpager__num.is-on{background:var(--ink);color:#fff}
+.cpager__gap{color:var(--ink-3);padding:0 2px}
+.cpager__back{margin:0 0 12px;color:var(--ink-2)}
+@media (max-width:640px){
+  .cpager__step{padding:0 8px}
+}
+
 /* ===== Валюта (перемикач поруч із мовою), опис іспанською ===== */
 .prefs{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
 .curswitch{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;background:var(--bg);flex:none;position:relative}

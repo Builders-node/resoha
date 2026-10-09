@@ -19,6 +19,8 @@ import { fmtNumber } from '@/lib/format';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { getMoney } from '@/lib/currencyServer';
+import JsonLd from '@/components/JsonLd';
+import { developmentLd, graph } from '@/lib/seo';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -58,6 +60,8 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <Gallery photos={dev.photos} title={dev.name} />
       </div>
     )}>
+      {/* ЖК для пошуковиків: ApartmentComplex і діапазон цін квартир */}
+      <JsonLd data={graph(developmentLd(dev, units))} />
       <div className="specs" style={{ marginTop: 0 }}>
         <div className="spec"><span className="muted small">{t('Units')}</span><b>{units.length || '—'}</b></div>
         <div className="spec"><span className="muted small">{t('Types')}</span><b>{types}</b></div>

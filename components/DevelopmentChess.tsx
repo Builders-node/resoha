@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { statusLabel, toM2 } from '@/lib/units';
 import type { Listing } from '@/lib/types';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { getMoney } from '@/lib/currencyServer';
 
@@ -11,6 +11,7 @@ import { getMoney } from '@/lib/currencyServer';
  * Квартири без поверху сюди не потрапляють — вони є в таблиці вище.
  */
 export default async function DevelopmentChess({ units }: { units: Listing[] }) {
+  const lp = await getLp();
   const placed = units.filter((u) => u.floor !== null);
   if (!placed.length) return null;
   const [lang, money] = await Promise.all([getLang(), getMoney()]);
@@ -33,7 +34,7 @@ export default async function DevelopmentChess({ units }: { units: Listing[] }) 
             <span className="chess__label tiny muted">{f}</span>
             <div className="chess__units">
               {placed.filter((u) => u.floor === f).sort(byNo).map((u) => (
-                <Link key={u.id} href={`/listings/${u.id}`} className={`chess__cell chess__cell--${u.status}`}
+                <Link key={u.id} href={lp(`/listings/${u.id}`)} className={`chess__cell chess__cell--${u.status}`}
                   title={`${t('unit {n}', { n: u.unitNo })} · ${u.beds ? t('{n} bd', { n: u.beds }) : t('Studio')}${u.sqft ? ` · ${toM2(u.sqft)} m² / ${u.sqft} ft²` : ''} · ${t(statusLabel(u.status))}`}>
                   <b>{u.unitNo || '—'}</b>
                   <span>{kind(u.beds)}</span>

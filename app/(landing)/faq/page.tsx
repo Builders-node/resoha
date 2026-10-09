@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
@@ -8,21 +9,24 @@ import { HELP_ITEMS, HELP_SECTIONS, HELP_UPDATED } from '@/lib/content/help';
 import { fmtDate } from '@/lib/format';
 import { localizeContent } from '@/lib/content/localize';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/lib/site';
 
 const TITLE = 'Buying property on Roatán: questions and answers';
 const DESCRIPTION = 'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Resoha works.';
 
-export const metadata: Metadata = {
-  title: `${TITLE} | ${SITE_NAME}`,
-  description: DESCRIPTION,
-  alternates: { canonical: '/faq' },
-  openGraph: { title: TITLE, description: DESCRIPTION, url: '/faq', type: 'website' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/faq', {
+    title: `${t(TITLE)} | ${SITE_NAME}`,
+    description: t(DESCRIPTION),
+    openGraph: { title: t(TITLE), description: t(DESCRIPTION) },
+  });
+}
 
 export default async function FaqLanding() {
+  const lp = await getLp();
   const lang = await getLang();
   const t = makeT(lang);
   const url = `${SITE_URL}/faq`;
@@ -79,7 +83,7 @@ export default async function FaqLanding() {
           <ol>
             {sections.map((s) => <li key={s.id}><a href={`#${s.id}`}>{s.title}</a></li>)}
           </ol>
-          <Link className="btn btn--primary btn--block btn--sm" href="/listings?deal=sale">{t('Browse listings')}</Link>
+          <Link className="btn btn--primary btn--block btn--sm" href={lp('/listings?deal=sale')}>{t('Browse listings')}</Link>
         </aside>
 
         <div className="lp-content">
@@ -131,8 +135,8 @@ export default async function FaqLanding() {
             <p>{t('Ask an island agent directly, or browse what is for sale right now.')}</p>
           </div>
           <div className="lp-cta__btns">
-            <Link className="btn btn--orange btn--lg" href="/listings?deal=sale">{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
-            <Link className="btn btn--lg lp-cta__ghost" href="/agents">{t('Find an agent')}</Link>
+            <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--lg lp-cta__ghost" href={lp('/agents')}>{t('Find an agent')}</Link>
             {CONTACT_EMAIL && <a className="btn btn--lg lp-cta__ghost" href={`mailto:${CONTACT_EMAIL}`}>{t('Write to us')}</a>}
           </div>
         </div>

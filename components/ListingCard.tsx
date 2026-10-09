@@ -10,6 +10,7 @@ import Icon from './Icon';
 import Photo from './Photo';
 import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
+import { useLp } from './useLp';
 
 type Props = {
   listing: Listing;
@@ -25,19 +26,23 @@ type Props = {
 export default function ListingCard({
   listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave,
 }: Props) {
+  const lp = useLp();
   const t = useT();
   const lang = useLang();
   const money = useMoney();
   return (
     <Link
-      href={`/listings/${l.id}`}
-      className={`ov ${ratio === 'tall' ? 'ov--tall' : 'ov--wide'} ${highlighted ? 'is-hl' : ''}`}
+      href={lp(`/listings/${l.id}`)}
+      className={`ov ${ratio === 'tall' ? 'ov--tall' : 'ov--wide'} ${highlighted ? 'is-hl' : ''}${l.promo?.includes('highlight') ? ' ov--promo' : ''}${l.sponsored ? ' ov--sponsored' : ''}`}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
       <Photo src={l.photos[0]} alt={l.title} />
       <div className="card__badges">
-        {l.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
+        {/* платне місце в пошуку підписане чесно — «Sponsored», а не просто Featured */}
+        {l.sponsored
+          ? <span className="badge badge--sponsored" title={t('Paid placement')}>{t('Sponsored')}</span>
+          : l.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
         <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{t(DEAL_LABELS[l.deal])}</span>
         {l.status !== 'available' && <span className="badge">{t(statusLabel(l.status))}</span>}
         {l.oceanfront && <span className="badge">{t('Oceanfront')}</span>}
