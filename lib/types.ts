@@ -1,4 +1,5 @@
 import type { WeekSchedule } from './visits';
+import type { AgencyRole } from './teamRoles';
 import type { ListingDetails } from './details';
 import type { NearbyPlace } from './nearby';
 import type { PhotoRooms } from './rooms';
@@ -45,6 +46,7 @@ export interface Profile {
   /* профіль ріелтора */
   agencyId: string | null;  // null — незалежний ріелтор
   isOwner: boolean;         // власник агенції
+  agencyRole?: AgencyRole | null; // роль в активній команді (0055)
   isAdmin: boolean;         // адміністратор платформи
   agency: string;           // назва агенції для показу ('Independent agent')
   experience: number;
@@ -212,6 +214,8 @@ export interface Development {
   office: string;              // адреса відділу продажів
   hours: string;               // години роботи відділу продажів вільним текстом: примітка до графіка
   schedule: WeekSchedule;      // графік по днях — з нього слоти запису на візит; [] — не задано
+  visitCapacity: number;       // скільки візитів в один слот (0055)
+  blackoutDates: string[];     // «YYYY-MM-DD», коли відділ продажів зачинений: свята
   agentId: string;
   agencyId: string | null;
   active: boolean;
@@ -297,7 +301,9 @@ export interface Lead {
   email: string;
   message: string;
   createdAt: string;
-  status: 'new' | 'done';
+  /** Стадія воронки (lib/leadFunnel.ts); старе «done» мапиться в contacted */
+  status: LeadStatus;
+  lostReason: string;         // чому програно — лише для стадії lost
   channel: 'form' | 'whatsapp' | 'visit';   // форма на сторінці, перехід у WhatsApp чи запис на візит
   visitAt: string | null;     // запис на візит: коли покупець прийде у відділ продажів
   interests: string[];        // теми візиту
@@ -306,6 +312,7 @@ export interface Lead {
   developmentSlug: string;
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
+  source?: string;            // 'widget' — з віджета ЖК на сайті забудовника; '' — з Resoha
 }
 
 export interface SavedSearch {
@@ -326,6 +333,7 @@ export interface Session {
   avatar: string;
   agencyId: string | null;
   isOwner: boolean;         // власник агенції
+  agencyRole?: AgencyRole | null;
   isAdmin: boolean;         // адміністратор платформи
 }
 
@@ -415,3 +423,19 @@ export interface StatRow {
 
 /** Перемикачі сайту з адмінки (міграція 0052). */
 export type SiteSettings = { showPurchaseCosts: boolean; showFinancing: boolean };
+
+/** Воронка заявки (міграція 0053) */
+export type LeadStatus = 'new' | 'contacted' | 'viewing' | 'offer' | 'deal' | 'lost';
+
+/** Подія в історії заявки: зміна стадії, нотатка, перепризначення */
+export interface LeadEvent {
+  id: number;
+  leadId: string;
+  kind: 'status' | 'note' | 'assign';
+  actorId: string | null;
+  actorName: string;
+  from: string;
+  to: string;
+  body: string;
+  createdAt: string;
+}

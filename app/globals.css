@@ -2161,3 +2161,200 @@ html{scroll-behavior:smooth}
 .list-sort .input{width:auto;min-width:0;padding-right:30px}
 .fsel-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px}
 .fsel-row label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);flex:1 1 160px}
+
+/* ===== Віджет ЖК для сайту забудовника (/embed/developments/<slug>) ===== */
+.embed{padding:16px;max-width:1100px;margin:0 auto}
+.embed__empty{padding:24px 16px;text-align:center}
+.embed__head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.embed__title{font-size:var(--fs-h2)}
+.embed__sum{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.embed__sum .dev__status{margin-left:0}
+.embed__foot{margin:16px 0 0;text-align:center}
+.embed__foot a{text-decoration:underline}
+.embedw__bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.embedw__tabs{display:inline-flex;background:var(--chip);border-radius:10px;padding:3px}
+.embedw__tabs button{border:0;background:transparent;padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink-2)}
+.embedw__tabs button.is-on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(15,15,16,.08)}
+.embedw__check{display:inline-flex;align-items:center;gap:6px;margin-left:auto;cursor:pointer}
+.embedw__cell{text-align:left;cursor:pointer;font-family:inherit}
+.embedw__cell:disabled{cursor:default}
+.embedw__cell:disabled:hover{border-color:transparent}
+.embedw__cell.is-picked{border-color:var(--orange);box-shadow:0 0 0 2px var(--orange-soft)}
+.embedw__table tr.is-picked td{background:var(--orange-soft)}
+.embedw__table td .btn{padding:4px 10px}
+.embedw__form{margin-top:20px;border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+.embedw__grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.embedw__grid .full{grid-column:1/-1}
+.embedw__err{color:#b91c1c}
+@media (max-width:560px){
+  .embed{padding:12px}
+  .embed__sum{align-items:flex-start}
+  .embedw__grid{grid-template-columns:1fr}
+  .embedw__check{margin-left:0}
+}
+.embed-snip{display:grid;gap:10px;margin-top:8px}
+.embed-snip__opts{display:flex;flex-wrap:wrap;gap:10px}
+.embed-snip__opts label{display:grid;gap:4px;font-size:13px;color:var(--ink-2);flex:1 1 160px}
+.embed-snip textarea{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;min-height:110px}
+
+/* ---------- кабінет: CRM заявок, повнота оголошень, масові дії (0053) ---------- */
+.pill--ok{background:#dcfce7;color:#15803d}
+.input--sm{padding:7px 10px;font-size:13px;border-radius:10px;width:auto;min-width:0}
+.crm-funnel{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:14px 0 12px}
+.crm-funnel__step{display:grid;gap:2px;justify-items:start;background:var(--bg-soft);border:1px solid transparent;
+  border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
+.crm-funnel__step b{font-size:20px;line-height:1.1}
+.crm-funnel__step span{font-size:12px;color:var(--ink-2)}
+.crm-funnel__step:hover{border-color:var(--line)}
+.crm-funnel__step.is-on{border-color:var(--ink);background:#fff}
+.crm-funnel__step--deal b{color:#15803d}
+.crm-funnel__step--lost b{color:#b45309}
+.crm-lead{display:block}
+.crm-lead__main{display:flex;gap:16px;justify-content:space-between;align-items:flex-start}
+.crm-lead__act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;flex:none}
+.crm-lost{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:10px 12px;
+  background:var(--orange-soft);border-radius:12px}
+.crm-detail{margin-top:12px;padding:14px;background:var(--bg-soft);border-radius:12px;display:grid;gap:12px}
+.crm-detail__side{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.crm-detail__side:empty{display:none}
+.crm-detail__side .field{display:grid;gap:4px;margin:0}
+.crm-note{display:flex;gap:8px;align-items:flex-end}
+.crm-note textarea{flex:1;min-height:44px;resize:vertical;background:#fff}
+.crm-timeline{list-style:none;margin:0;padding:0 0 0 14px;border-left:2px solid var(--line);display:grid;gap:10px}
+.crm-timeline__item{position:relative}
+.crm-timeline__item::before{content:'';position:absolute;left:-20px;top:5px;width:10px;height:10px;border-radius:50%;
+  background:#fff;border:2px solid var(--ink-3)}
+.crm-timeline__item--note::before{border-color:var(--orange)}
+.crm-timeline__item--assign::before{border-color:var(--ink)}
+.q-cell{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.q-cell--hints{position:relative;display:inline-block}
+.q-cell--hints summary{display:inline-flex;align-items:center;gap:8px;cursor:pointer;list-style:none}
+.q-cell--hints summary::-webkit-details-marker{display:none}
+.q-meter{display:inline-block;width:48px;height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.q-meter__fill{display:block;height:100%;border-radius:3px}
+.q-meter__fill--good{background:#16a34a}
+.q-meter__fill--mid{background:#f59e0b}
+.q-meter__fill--low{background:#dc2626}
+.q-txt{font-size:13px}
+.q-txt--good{color:#15803d}
+.q-txt--mid{color:#b45309}
+.q-txt--low{color:#b91c1c}
+.q-pop{position:absolute;z-index:20;right:0;top:calc(100% + 6px);width:280px;background:#fff;border:1px solid var(--line);
+  border-radius:12px;box-shadow:var(--shadow-lg);padding:12px 14px;white-space:normal}
+.q-pop ul{margin:6px 0 8px;padding-left:18px;font-size:13px;color:var(--ink-2);display:grid;gap:4px}
+.table th.td--pick,.table td.td--pick{width:36px;padding-right:0}
+.table td.td--pick input,.table th.td--pick input{width:17px;height:17px;cursor:pointer}
+.table tr.is-picked td{background:var(--orange-soft)}
+.bulk-bar{position:sticky;top:8px;z-index:15;display:grid;gap:8px;background:#fff;border:1px solid var(--ink);
+  border-radius:14px;padding:10px 12px;margin:0 0 10px;box-shadow:var(--shadow)}
+.bulk-bar__row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.bulk-bar .btn.is-on{background:var(--ink);color:#fff}
+@media (max-width:860px){
+  .crm-funnel{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .crm-lead__main{flex-direction:column}
+  .crm-lead__act{justify-content:flex-start}
+  .crm-note{flex-direction:column;align-items:stretch}
+  .table tr{position:relative}
+  .table td.td--pick{position:absolute;top:12px;right:14px;width:auto;padding:0}
+  .table td.td--pick + td::before{display:none}
+  .table td.td--pick + td{padding-top:0;padding-right:28px;margin-bottom:4px}
+  .q-pop{left:0;right:auto;width:min(280px,80vw)}
+
+/* ===== Буклет, «більше недоступний», панель звʼязку на телефоні, друк ===== */
+.ptools{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}
+.ptools__btn{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;
+  background:#fff;color:var(--ink);font-size:13px;font-weight:600;cursor:pointer;transition:background var(--dur) var(--ease)}
+.ptools__btn:hover{background:var(--bg-soft)}
+
+.gone{max-width:720px;margin:0 auto;padding:56px 0 40px;text-align:center}
+.gone__ico{display:flex;justify-content:center;color:var(--ink-3);margin-bottom:12px}
+.gone h1{font-size:var(--fs-h2)}
+.gone__what{margin:12px 0 0;font-size:15px}
+.gone__why{margin:8px 0 22px}
+.gone__acts{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+
+/* панель звʼязку: лише на телефоні, над нижньою навігацією; футер і контент не перекриває */
+.mbar{display:none}
+@media (max-width:860px){
+  .mbar{position:fixed;left:0;right:0;z-index:940;display:flex;gap:8px;padding:8px 12px;
+    bottom:calc(var(--bar-h, 0px) + env(safe-area-inset-bottom,0));
+    background:rgba(255,255,255,.97);backdrop-filter:blur(10px);border-top:1px solid var(--line);
+    box-shadow:0 -6px 18px rgba(15,15,16,.08)}
+  .mbar__btn{flex:1;min-width:0;height:46px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer;white-space:nowrap}
+  .mbar__btn span{overflow:hidden;text-overflow:ellipsis}
+  .mbar__btn--wa{background:#25d366;border-color:#25d366;color:#fff}
+  .mbar__btn--main{background:var(--orange);border-color:var(--orange);color:#fff}
+  .shell:has(.mbar){padding-bottom:calc(var(--bar-h, 0px) + 64px + env(safe-area-inset-bottom,0))}
+}
+
+/* друк сторінки обʼєкта: лише зміст і контакт, без навігації й кнопок */
+@media print{
+  .sidebar,.footer,.mbar,.no-print,.cmp-tray,.back-btn,.prop__acts,.cc__acts,.cc__links,.cc__form,
+  .gallery__all,.gallery__more,#miniMap,.lightbox,.crumbs--foot,.view-toggle{display:none !important}
+  .shell{margin-left:0 !important;padding-bottom:0 !important}
+  body{background:#fff}
+  .prop{display:block;padding:12px 0}
+  .cc-wrap{position:static;margin-top:24px;break-inside:avoid}
+  .cc{box-shadow:none;border:1px solid #ccc}
+  .gallery{grid-template-columns:1fr !important;grid-template-rows:300px !important}
+  .gallery__tile:not(:first-child){display:none}
+  .gallery__tile:first-child{grid-row:auto !important}
+  .pfacts li,.land__row,.land__stat,.spec{break-inside:avoid}
+  .section{display:none}
+  a{color:inherit;text-decoration:none}
+
+/* ---------- імпорт оголошень, прайс забудовника, порядок фото (0054) ---------- */
+.imp-source{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.imp-source .link-btn{display:inline-flex;align-items:center;gap:4px}
+.imp-preview{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.imp-sum{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.imp-table-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius)}
+.imp-table{font-size:14px}
+.imp-table th{position:sticky;top:0;background:#fff;z-index:1}
+.imp-table td{padding:8px 12px;vertical-align:top}
+.imp-title{font-weight:600;max-width:420px;overflow-wrap:anywhere}
+.imp-change{display:inline-block;margin:0 14px 2px 0;white-space:nowrap}
+.imp-change s{color:var(--ink-3)}
+.imp-pill--err{background:#fff1f2;color:#be123c}
+.imp-err{color:#be123c;margin-top:4px}
+.imp-warn{background:#fff4e5;color:#b45309;padding:8px 12px;border-radius:10px;margin:0}
+.imp-errors{margin:0;padding-left:18px;color:#be123c;display:grid;gap:2px;max-height:220px;overflow:auto}
+.imp-check{display:flex;align-items:center;gap:8px;cursor:pointer}
+.imp-bar{height:6px;border-radius:3px;background:var(--bg-soft);overflow:hidden}
+.imp-bar span{display:block;height:100%;background:var(--orange);transition:width .2s}
+.imp-result{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.shot[draggable=true]{cursor:grab}
+.shot.is-dragged{opacity:.4}
+.shot.is-target{outline:2px solid var(--orange);outline-offset:2px}
+@media (max-width:640px){
+  .imp-table td,.imp-table th{padding:8px}
+  .imp-change{white-space:normal}
+}
+
+/* ---------- візити: календар команди, керування записом, ролі й запрошення (0055) ---------- */
+.pill--info{background:#eef2ff;color:#3730a3}
+.vteam__week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:10px}
+.vteam__day{background:var(--bg-soft);border-radius:14px;padding:10px;min-height:120px;display:flex;flex-direction:column;gap:8px}
+.vteam__day h4{margin:0;font-size:13px}
+.vteam__day.is-today{box-shadow:inset 0 0 0 2px var(--ink)}
+.vteam__visit{background:#fff;border:1px solid var(--line);border-radius:12px;padding:8px 10px;display:grid;gap:4px;font-size:13px}
+.vteam__visit.is-cancelled{opacity:.6}
+.vteam__visit.is-cancelled .vteam__time b{text-decoration:line-through}
+.vteam__time{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.vteam__acts{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+.vteam__acts .btn{padding:4px 10px;font-size:12px}
+@media (max-width:1100px){ .vteam__week{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:640px){
+  .vteam__week{grid-template-columns:1fr}
+  .vteam__day.is-empty{min-height:0}
+}
+.vmanage__when{font-weight:700}
+.vmanage__when.is-off{text-decoration:line-through;color:var(--ink-2)}
+.team-invite{display:flex;gap:10px;flex-wrap:wrap}
+.team-invite .input[type=email]{flex:1 1 220px}
+.team-invite select.input{flex:0 1 180px;width:auto}
+.role-select{width:auto;min-width:140px;padding:6px 28px 6px 10px;font-size:13px}
+.vsettings__days{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.vsettings__days .fchip{cursor:default}
+.vsettings__days .fchip button{background:none;border:0;padding:0;cursor:pointer;display:inline-flex;color:var(--ink-2)}

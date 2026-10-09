@@ -8,6 +8,7 @@ import { fmtPerArea, fmtPrice } from '@/lib/format';
 import type { Agency, Agent, Listing } from '@/lib/types';
 import Avatar from './Avatar';
 import ReportListing from './ReportListing';
+import StickyContactBar from './StickyContactBar';
 import { useLang, useT } from './LangProvider';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
@@ -36,7 +37,7 @@ const TelegramMark = () => (
   </svg>
 );
 
-export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me, topic, fromPrice, extra, visitHref }: {
+export default function AgentContact({ agent, agency, listing, listingUrl, isFav = false, me, topic, fromPrice, extra, visitHref, sticky = false }: {
   agent: Agent; listing: Listing;
   /** Про що питають у месенджері, якщо не про сам обʼєкт — напр. про весь ЖК */
   topic?: string;
@@ -52,6 +53,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   extra?: React.ReactNode;
   /** ЖК з графіком відділу продажів: запис на візит на вільний час */
   visitHref?: string;
+  /** Панель WhatsApp / дзвінок / перегляд унизу екрана на телефоні — лише одна на сторінку */
+  sticky?: boolean;
 }) {
   const t = useT();
   const lang = useLang();
@@ -271,6 +274,18 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
       )}
 
       {extra}
+
+      {sticky && (
+        <StickyContactBar waHref={waHref} telHref={agent.phone ? `tel:+${digits(agent.phone)}` : ''} visitHref={visitHref}
+          onWhatsApp={() => { track('whatsapp'); noteWhatsApp(); }}
+          onCall={() => track('phone')}
+          onBook={() => {
+            if (!formOpen) track('form_open');
+            setFormOpen(true);
+            // форма зʼявляється після рендеру — тоді й прокручуємо до неї
+            setTimeout(() => document.getElementById('enquiry')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60);
+          }} />
+      )}
     </aside>
   );
 }

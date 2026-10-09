@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
@@ -7,19 +6,22 @@ import AnalyticsPanel from './AnalyticsPanel';
 import DashboardListings from './DashboardListings';
 import DeveloperPanel from './DeveloperPanel';
 import DevelopmentsPanel from './DevelopmentsPanel';
+import LeadsCrm from './LeadsCrm';
 import Icon from './Icon';
+import ImportPanel from './ImportPanel';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import NotifySettings from './NotifySettings';
 import { renewedUntil } from '@/lib/lifecycle';
 import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
-import { fmtDate, fmtNumber } from '@/lib/format';
-import { contactPrefShort, fmtVisit } from '@/lib/visits';
+import { fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
+import VisitsCalendar from './VisitsCalendar';
+import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
 
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
@@ -36,7 +38,9 @@ function navGroups({ agency, total, newLeads }: { agency: boolean; total: number
     { title: 'Sales', items: [
       { tab: 'listings', icon: 'home', label: 'Listings', count: total },
       { tab: 'developments', icon: 'building', label: 'Developments' },
+      { tab: 'import', icon: 'download', label: 'Import' },
       { tab: 'leads', icon: 'inbox', label: 'Leads', count: newLeads || undefined, alert: true },
+      { tab: 'visits', icon: 'calendar', label: 'Visits' },
     ] },
     { title: 'Growth', items: [
       { tab: 'analytics', icon: 'chart', label: 'Analytics' },
@@ -105,15 +109,6 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
     load();
   }
 
-  async function setLeadStatus(id: string, status: 'new' | 'done') {
-    const res = await fetch(`/api/leads/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    toast(res.ok ? (status === 'done' ? 'Marked as handled' : 'Back in the queue') : 'Not allowed');
-    load();
-  }
-
   async function remove(l: Listing) {
     if (!confirm(`Delete “${l.title}”?`)) return;
     const res = await fetch(`/api/listings/${l.id}`, { method: 'DELETE' });
@@ -139,6 +134,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   if (!agent || !stats) return <div className="wrap" style={{ padding: 60 }}>Loading dashboard…</div>;
 
   const isOwner = agent.isOwner && !!agency;
+  // усі оголошення команди бачать власник, менеджер і редактор (0055); роль — із сесії (публічний профіль її не має)
+  const role = { agencyId: agent.agencyId, isOwner: agent.isOwner, agencyRole: session.agencyRole };
+  const canListings = !!agency && agencyCan(role, 'listings');
 
   return (
     <div className="wrap dash">
@@ -177,7 +175,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                   {teams.map((t) => <option key={t.agency.id} value={t.agency.id}>{t.agency.name}</option>)}
                 </select>
               ) : agency ? agency.name : 'Independent agent'}
-              {isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>Owner</span>}
+              {agency && agencyRoleOf(role) !== 'agent' && <span className="pill pill--on" style={{ marginLeft: 8 }}>{roleLabel(agencyRoleOf(role))}</span>}
               {agent.phone && ` · ${agent.phone}`}
             </div>
           </div>
@@ -201,7 +199,9 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'promote' && <PromotePanel />}
 
-        {tab === 'analytics' && <AnalyticsPanel isOwner={isOwner} agencyName={agency?.name} />}
+        {tab === 'analytics' && <AnalyticsPanel isOwner={canListings} agencyName={agency?.name} />}
+
+        {tab === 'visits' && <VisitsCalendar meId={session.id} />}
 
         {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin} />}
 
@@ -209,7 +209,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div className="panel">
             <div className="fgroup__head">
               <h3>{scope === 'agency' ? `${agency?.name} listings` : 'My listings'}</h3>
-              {isOwner && (
+              {canListings && (
                 <div className="chip-row">
                   <button className={`chip-btn ${scope === 'own' ? 'is-on' : ''}`} onClick={() => setScope('own')}>Mine</button>
                   <button className={`chip-btn ${scope === 'agency' ? 'is-on' : ''}`} onClick={() => setScope('agency')}>Whole agency</button>
@@ -226,6 +226,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                 onDelete={remove}
                 onRenew={(l) => patchListing(l, { expiresAt: renewedUntil() }, 'Renewed for 90 days')}
                 onSubmit={(l) => patchListing(l, { review: 'pending' }, 'Listing published')}
+                onBulkDone={load}
               />
             )}
             {listings.length === 0 && (
@@ -236,51 +237,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         )}
 
         {tab === 'leads' && (
-          <div className="panel">
-            <h3 style={{ marginBottom: 4 }}>Buyer enquiries</h3>
-            <p className="muted small" style={{ marginBottom: 14 }}>
-              {isOwner ? 'Everything that came in for your agency, including your team’s listings.' : 'Enquiries on your own listings.'}
-            </p>
-            {leads.length === 0 ? (
-              <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>No enquiries yet</div>
-            ) : leads.map((l) => (
-              <div key={l.id} className="lead">
-                <div>
-                  <b>{l.name}</b>{l.phone && <span className="muted"> · {l.phone}</span>}
-                  <span className={`pill ${l.status === 'new' ? 'pill--on' : 'pill--off'}`} style={{ marginLeft: 8 }}>
-                    {l.status === 'new' ? 'New' : 'Handled'}
-                  </span>
-                  {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
-                  {l.visitAt && <VisitLine lead={l} />}
-                  {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
-                  <div className="tiny muted" style={{ marginTop: 6 }}>
-                    {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
-                      ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
-                      : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>}
-                    {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
-                    {l.agentId !== agent.id && ` · agent: ${members.find((m) => m.id === l.agentId)?.name ?? l.agentId}`}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn--sm btn--ghost"
-                    onClick={() => setLeadStatus(l.id, l.status === 'new' ? 'done' : 'new')}>
-                    {l.status === 'new' ? 'Mark handled' : 'Reopen'}
-                  </button>
-                  {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
-                  {l.phone && (
-                    <>
-                      <a className="btn btn--sm btn--ghost" href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-                        <Icon name="chat" size={16} /> WhatsApp
-                      </a>
-                      <a className="btn btn--sm btn--primary" href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
-                        <Icon name="phone" size={16} /> Call
-                      </a>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <LeadsCrm leads={leads} meId={agent.id} isOwner={isOwner} agencyId={agency?.id ?? null}
+            members={members} onChanged={load} />
         )}
 
         {tab === 'new' && (
@@ -291,6 +249,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
             onCancel={editing ? () => { setEditing(null); setTab('listings'); } : undefined}
           />
         )}
+
+        {tab === 'import' && <ImportPanel onDone={load} />}
 
         {tab === 'developer' && <DeveloperPanel />}
 
@@ -335,22 +295,6 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'profile' && <NotifySettings agent />}
       </div>
-    </div>
-  );
-}
-
-/** Запис на візит: коли прийде, що цікавить і як зручніше звʼязатись */
-function VisitLine({ lead }: { lead: Lead }) {
-  const past = new Date(lead.visitAt!) < new Date();
-  return (
-    <div className="lead__visit">
-      <span className={`pill ${past ? 'pill--off' : 'pill--on'}`}>
-        <Icon name="calendar" size={14} /> Office visit · {fmtVisit(lead.visitAt!)}
-      </span>
-      {lead.contactVia && <span className="tiny muted">Prefers {contactPrefShort(lead.contactVia)}</span>}
-      {lead.interests.length > 0 && (
-        <div className="lead__tags">{lead.interests.map((x) => <span key={x} className="tag">{x}</span>)}</div>
-      )}
     </div>
   );
 }

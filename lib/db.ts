@@ -7,6 +7,8 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
+import type { ImportedListing } from './listingImport';
+import type { ExistingUnit } from './priceList';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
 
 /**
@@ -53,7 +55,7 @@ export const mapAgent = (r: Row): Agent => ({
   phone: r.phone, whatsapp: r.whatsapp,
   // до міграції 0034 колонок немає — тоді порожньо
   viber: r.viber ?? '', telegram: r.telegram ?? '', createdAt: r.created_at, active: r.active,
-  agencyId: r.agency_id, isOwner: r.is_owner, isAdmin: r.is_admin ?? false,
+  agencyId: r.agency_id, isOwner: r.is_owner, agencyRole: r.agency_role ?? null, isAdmin: r.is_admin ?? false,
   agency: r.agency?.name ?? (r.agency_id ? '' : 'Independent agent'),
   experience: r.experience, rating: Number(r.rating), reviews: r.reviews,
   verified: r.verified, languages: r.languages ?? [], about: r.about,
@@ -108,12 +110,15 @@ const listingCols = (q: ListingQuery, base = '*') =>
 const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
   userId: r.user_id ?? null, name: r.name, phone: r.phone, email: r.email ?? '',
-  message: r.message, createdAt: r.created_at, status: r.status,
+  message: r.message, createdAt: r.created_at,
+  // до міграції 0053 у базі new/done — done показуємо як «Contacted»
+  status: r.status === 'done' ? 'contacted' : r.status, lostReason: r.lost_reason ?? '',
   channel: r.channel === 'whatsapp' || r.channel === 'visit' ? r.channel : 'form',
   // до міграції 0047 колонок немає
   visitAt: r.visit_at ?? null, interests: r.interests ?? [], contactVia: r.contact_via ?? '',
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
   developmentName: r.listing?.development?.name ?? '', developmentSlug: r.listing?.development?.slug ?? '',
+  source: r.source ?? '',   // до міграції 0056 колонки немає
 });
 
 /**
@@ -353,7 +358,7 @@ const missingDetails = (e: { code?: string; message?: string } | null) =>
   Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at/.test(e.message ?? ''));
 const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
 
-export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null }) {
+export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null; externalId?: string }) {
   const client = await db();
   const row: Row = {
     deal: input.deal ?? 'sale',
@@ -394,6 +399,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     status: cleanStatus(input.status),
     // чернетку видно лише автору; інакше статус модерації ставить тригер listings_review
     ...(input.review === 'draft' ? { review: 'draft' } : {}),
+    // код обʼєкта в системі агенції — лише з імпорту (міграція 0054)
+    ...(input.externalId ? { external_id: input.externalId.slice(0, 120) } : {}),
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
   if (missingDetails(res.error)) {
@@ -517,6 +524,8 @@ const mapDevelopment = (r: Row): Development => ({
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
   schedule: cleanSchedule(r.schedule),
+  // до міграції 0055 колонок немає
+  visitCapacity: r.visit_capacity ?? 1, blackoutDates: r.blackout_dates ?? [],
   agentId: r.agent_id, agencyId: r.agency_id, active: r.active, createdAt: r.created_at,
   // до міграції 0044 колонок немає
   featured: r.featured ?? false, featuredRank: r.featured_rank ?? 0,
@@ -926,6 +935,8 @@ export async function createLead(input: {
   visitAt?: string; interests?: string[]; contactVia?: string;
   /** Візит текстом — для бази без міграції 0047, де дату й теми нікуди більше покласти */
   visitSummary?: string;
+  /** 'widget' — заявка з віджета ЖК на чужому сайті (міграція 0056) */
+  source?: string;
 }): Promise<boolean> {
   const client = await db();
   const { data: listing } = await client.from('listings')
@@ -941,7 +952,12 @@ export async function createLead(input: {
   };
   const visit = input.channel === 'visit'
     ? { visit_at: input.visitAt, interests: input.interests ?? [], contact_via: input.contactVia ?? '' } : {};
-  let { error } = await client.from('leads').insert({ ...row, ...visit });
+  let { error } = await client.from('leads').insert({ ...row, ...visit, ...(input.source ? { source: input.source } : {}) });
+  // до міграції 0056 колонки source немає — позначку джерела ставимо першим рядком повідомлення
+  if (error && input.source && (error.code === 'PGRST204' || error.code === '42703' || /source/.test(error.message ?? ''))) {
+    const message = `[${input.source === 'widget' ? 'Website widget' : input.source}]\n${input.message}`.slice(0, 2000);
+    ({ error } = await client.from('leads').insert({ ...row, ...visit, message }));
+  }
   // до міграції 0047 немає ні каналу «visit», ні його колонок — тоді звичайна заявка
   // з датою візиту й темами в тексті повідомлення
   if (error && input.channel === 'visit' && /visit_at|interests|contact_via|channel_check/.test(error.message ?? '')) {
@@ -1580,4 +1596,56 @@ export async function updateSiteSettings(patch: Partial<SiteSettings>): Promise<
   if (error) throw error;
   if (!data) throw new Error('Settings are not set up yet');
   return { showPurchaseCosts: data.show_purchase_costs, showFinancing: data.show_financing };
+}
+
+/* ---------- імпорт оголошень і прайс забудовника (міграція 0054) ---------- */
+
+/** Оголошення ріелтора з кодом зовнішньої системи. null — міграції 0054 ще немає. */
+export async function getImportedListings(agentId: string, externalIds?: string[]): Promise<ImportedListing[] | null> {
+  let sel = (await db()).from('listings')
+    .select('id, external_id, active, review, title, deal, type, price, beds, baths, sqft, lot_acres, year, hoa, neighborhood, address, lat, lng, body, photos, oceanfront, tags, source_url')
+    .eq('agent_id', agentId).neq('external_id', '');
+  sel = externalIds ? sel.in('external_id', externalIds) : sel.limit(5000);
+  const { data, error } = await sel;
+  if (error) {
+    if (error.code === '42703' || error.code === 'PGRST204' || /external_id/.test(error.message)) return null;
+    throw error;
+  }
+  return (data ?? []).map((r: Row): ImportedListing => ({
+    id: r.id, externalId: r.external_id, active: r.active, review: r.review ?? 'approved',
+    title: r.title, deal: r.deal, type: r.type, price: Number(r.price), beds: r.beds, baths: Number(r.baths),
+    sqft: r.sqft, lotAcres: Number(r.lot_acres), year: r.year, hoa: Number(r.hoa), neighborhood: r.neighborhood,
+    address: r.address ?? '', lat: r.lat, lng: r.lng, text: r.body ?? '', photos: r.photos ?? [],
+    oceanfront: r.oceanfront, tags: r.tags ?? [], sourceUrl: r.source_url ?? '',
+  }));
+}
+
+/** Квартири ЖК для порівняння з прайсом */
+export async function getDevelopmentUnits(developmentId: string): Promise<ExistingUnit[]> {
+  const { data, error } = await (await db()).from('listings')
+    .select('id, unit_no, building_id, beds, floor, sqft, price, status, title')
+    .eq('development_id', developmentId).limit(5000);
+  if (error) throw error;
+  return (data ?? []).map((r: Row) => ({
+    id: r.id, unitNo: r.unit_no ?? '', buildingId: r.building_id ?? null, beds: r.beds, floor: r.floor ?? null,
+    sqft: r.sqft, price: Number(r.price), status: cleanStatus(r.status), title: r.title,
+  }));
+}
+
+/**
+ * Прайс однією транзакцією (RPC apply_price_list). null — функції ще немає (міграція 0054),
+ * тоді маршрут зберігає по одній квартирі, як раніше.
+ */
+export async function applyPriceListRpc(input: {
+  developmentId: string; buildingId: string | null; deal: Deal; added: unknown[]; changed: unknown[];
+}): Promise<{ created: number; updated: number } | null> {
+  const { data, error } = await (await db()).rpc('apply_price_list', {
+    p_development: input.developmentId, p_building: input.buildingId, p_deal: input.deal,
+    p_new: input.added, p_changes: input.changed,
+  });
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883') return null;
+    throw error;
+  }
+  return data as { created: number; updated: number };
 }

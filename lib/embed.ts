@@ -30,3 +30,42 @@ export function embedUrl(raw: string): string | null {
   }
   return null;
 }
+
+/* ---------- віджет ЖК для сайту забудовника: /embed/developments/<slug> ---------- */
+
+/** Тип повідомлення, яким віджет передає свою висоту сторінці-господарю */
+export const EMBED_HEIGHT_MESSAGE = 'resoha:embed-height';
+
+export type EmbedView = 'grid' | 'list';
+
+export interface EmbedOptions {
+  view?: EmbedView;
+  lang?: 'en' | 'es';
+  /** false — без форми заявки, лише наявність */
+  form?: boolean;
+}
+
+/** Адреса віджета з параметрами; типові не пишемо, щоб посилання було коротким */
+export function embedPath(slug: string, o: EmbedOptions = {}): string {
+  const q = new URLSearchParams();
+  if (o.view) q.set('view', o.view);
+  if (o.lang && o.lang !== 'en') q.set('lang', o.lang);
+  if (o.form === false) q.set('form', '0');
+  const s = q.toString();
+  return `/embed/developments/${encodeURIComponent(slug)}${s ? `?${s}` : ''}`;
+}
+
+/**
+ * Код для сайту забудовника: <iframe> і крихітний скрипт, що підганяє висоту рамки
+ * під вміст (віджет шле її через postMessage). Скрипт приймає повідомлення лише з нашого
+ * домену й лише від рамки, що їх надіслала, — кілька віджетів на сторінці не заважають.
+ */
+export function embedSnippet(origin: string, slug: string, title: string, o: EmbedOptions = {}): string {
+  const src = `${origin}${embedPath(slug, o)}`.replace(/&/g, '&amp;');
+  const safeTitle = title.replace(/[<>&"]/g, '');
+  return [
+    `<iframe src="${src}" title="${safeTitle}" loading="lazy" style="width:100%;height:720px;border:0;display:block"></iframe>`,
+    `<script>addEventListener("message",function(e){if(e.origin!=="${origin}"||!e.data||e.data.type!=="${EMBED_HEIGHT_MESSAGE}")return;`
+      + `document.querySelectorAll("iframe").forEach(function(f){if(f.contentWindow===e.source)f.style.height=e.data.height+"px"})});</script>`,
+  ].join('\n');
+}

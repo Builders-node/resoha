@@ -2,9 +2,11 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
+import VisitSettings from './VisitSettings';
 import LocationPicker from './LocationPicker';
 import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
+import PriceListImport from './PriceListImport';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { WEEKDAYS } from '@/lib/visits';
@@ -72,6 +74,8 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
               <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>Manage</button>
               <button className="btn btn--ghost btn--sm" onClick={() => setOpen({ dev: d, section: 'news' })}>+ Post news</button>
               <Link className="btn btn--ghost btn--sm" href={`/developments/${d.slug}`} target="_blank">Open page</Link>
+              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/booklet`} target="_blank" rel="noreferrer">Booklet PDF</a>
+              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/price-list`} target="_blank" rel="noreferrer">Price list PDF</a>
             </div>
           </div>
         ))}
@@ -292,7 +296,12 @@ function DevelopmentManager({ initial, section: start, onBack, onDeleted, onUnit
             </>
           )}
           {section === 'details' && <FeaturesSection dev={dev} patch={patch} />}
-          {section === 'location' && <LocationSection dev={dev} patch={patch} />}
+          {section === 'location' && (
+            <>
+              <LocationSection dev={dev} patch={patch} />
+              <VisitSettings dev={dev} onSaved={(visitCapacity, blackoutDates) => setDev({ ...dev, visitCapacity, blackoutDates })} />
+            </>
+          )}
           {section === 'media' && <MediaSection dev={dev} patch={patch} />}
           {section === 'documents' && <DocumentsEditor devId={dev.id} isAdmin={isAdmin} />}
           {section === 'construction' && <ProgressEditor devId={dev.id} buildings={buildings} />}
@@ -496,7 +505,7 @@ function MediaSection({ dev, patch }: { dev: Development; patch: Patch }) {
     <SectionForm title="Photos & video" hint="The first photo is the cover on cards and at the top of the page."
       onSave={(fd) => patch({ ...entries(fd), photos })}>
       <div className="field full"><label>Photos</label>
-        <PhotoUploader value={photos} onChange={setPhotos} max={30} /></div>
+        <PhotoUploader value={photos} onChange={setPhotos} max={30} watermark /></div>
       <div className="field"><label>Video link</label>
         <input className="input" name="video" maxLength={500} defaultValue={dev.video} placeholder="https://youtube.com/watch?v=…" />
         <span className="tiny muted">YouTube or Vimeo — plays right on the page.</span></div>
@@ -504,54 +513,6 @@ function MediaSection({ dev, patch }: { dev: Development; patch: Patch }) {
         <input className="input" name="tour" maxLength={500} defaultValue={dev.tour} placeholder="https://my.matterport.com/show/?m=…" />
         <span className="tiny muted">Matterport, Kuula or a YouTube 360 video.</span></div>
     </SectionForm>
-  );
-}
-
-/** Заливка прайсу: кожен рядок стає окремим оголошенням-квартирою в ЖК */
-function PriceListImport({ dev, buildings, onAdded }: { dev: Development; buildings: Building[]; onAdded: () => void }) {
-  const [paste, setPaste] = useState('');
-  const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
-  const [buildingId, setBuildingId] = useState('');
-  const [saving, setSaving] = useState(false);
-
-  async function addUnits() {
-    setSaving(true);
-    const res = await fetch(`/api/developments/${dev.id}/units`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: paste, deal, buildingId: buildingId || null }),
-    });
-    setSaving(false);
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(data.error ?? 'Something went wrong');
-    toast(`Added ${data.created} units`);
-    setPaste('');
-    onAdded();
-  }
-
-  return (
-    <div className="units-form" style={{ marginTop: 24 }}>
-      <label><b>Add units from a price list</b></label>
-      <span className="tiny muted">
-        Paste rows from the developer&apos;s table: unit, type, floor, m², ft², price — one unit per row.
-        Each row becomes its own listing in {dev.name}, with this development&apos;s photos, address and pin.
-        Edit a single unit (status, photos, price) from the Listings tab.
-      </span>
-      <div className="chip-row">
-        <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => setDeal('sale')}>For sale</button>
-        <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => setDeal('rent')}>For rent</button>
-      </div>
-      {buildings.length > 0 && (
-        <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)} style={{ maxWidth: 320 }}>
-          <option value="">No building</option>
-          {buildings.map((b) => <option key={b.id} value={b.id}>Into {b.name}</option>)}
-        </select>
-      )}
-      <textarea className="input" rows={6} value={paste} onChange={(e) => setPaste(e.target.value)}
-        placeholder={'201\tStudio\t2\t41.6\t448\t$143,368\n507\t2 Bedroom\t5\t65.5\t705\t$239,319'} />
-      <button type="button" className="btn" style={{ alignSelf: 'flex-start' }} disabled={saving || !paste.trim()} onClick={addUnits}>
-        Add units
-      </button>
-    </div>
   );
 }
 
@@ -853,7 +814,7 @@ function ProgressEditor({ devId, buildings }: { devId: string; buildings: Buildi
           <div className="field full"><label>Note</label>
             <input className="input" name="note" maxLength={500} defaultValue={e?.note} placeholder="Frame up to floor 6, windows going in" /></div>
           <div className="field full"><label>Photos</label>
-            <PhotoUploader value={photos} onChange={setPhotos} max={40} /></div>
+            <PhotoUploader value={photos} onChange={setPhotos} max={40} watermark /></div>
           <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
             <button className="btn" disabled={busy}>{e ? 'Save update' : 'Add update'}</button>
             <button type="button" className="btn btn--ghost" onClick={() => setEditing(null)}>Cancel</button>

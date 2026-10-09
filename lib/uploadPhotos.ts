@@ -1,12 +1,19 @@
 import { createClient } from '@supabase/supabase-js';
+import { compressAll } from './compressImage';
 
 const BUCKET = 'listing-photos';
 
 /**
  * Вантажить фото напряму в Supabase Storage за підписаними посиланнями з /api/uploads.
+ * Фото спершу стискаються в браузері (і, якщо треба, отримують знак resoha); PDF — як є.
  * Повертає публічні URL або текст помилки для тосту.
  */
-export async function uploadPhotos(files: File[]): Promise<{ urls: string[] } | { error: string }> {
+export async function uploadPhotos(
+  original: File[],
+  opts: { watermark?: boolean; onProgress?: (stage: 'compress' | 'upload', done: number) => void } = {},
+): Promise<{ urls: string[] } | { error: string }> {
+  const files = await compressAll(original, { watermark: opts.watermark }, (n) => opts.onProgress?.('compress', n));
+  opts.onProgress?.('upload', 0);
   const res = await fetch('/api/uploads', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

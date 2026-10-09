@@ -103,30 +103,37 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
       const subject = visit ? `Your visit is booked: ${fmtVisit(p.visitAt)}`
         : subscribed ? `You’re subscribed to ${c.development || c.title} updates` : `We sent your enquiry: ${c.title}`;
       const contacts: [string, unknown][] = [['Agent', a.name], ['Phone', a.phone], ['WhatsApp', a.whatsapp], ['Visit', visit ? when(p.visitAt) : '']];
+      const manage = visit && p.manageToken ? manageUrl(p.manageToken) : '';
       return {
         subject,
         html: layout(`<p style="margin:0 0 12px">Hi ${esc(p.name)},</p><p style="margin:0 0 12px">`
           + (visit ? 'Your visit to the sales office is booked. The sales team will confirm it with you.'
             : subscribed ? 'The sales team will write to you about price changes, offers and construction progress.'
               : 'Your enquiry went straight to the listing agent. Most agents reply the same day.')
-          + `</p><table style="border-collapse:collapse;font-size:14px">${rows(contacts)}</table>${cardHtml(c, 'View the property')}`, footer('transactional')),
-        text: plain([subject, '', ...contacts.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '', listingUrl(c)]),
+          + `</p><table style="border-collapse:collapse;font-size:14px">${rows(contacts)}</table>`
+          + (manage ? `<p style="margin:16px 0 0">${button(manage, 'Change or cancel the visit')}</p>` : '')
+          + cardHtml(c, 'View the property'), footer('transactional')),
+        text: plain([subject, '', ...contacts.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '',
+          manage && `Change or cancel: ${manage}`, listingUrl(c)]),
         telegram: '',
       };
     }
     case 'visit_reminder_agent':
-    case 'visit_reminder': {
-      const c = p.listing as Card;
-      const agent = kind === 'visit_reminder_agent';
-      const subject = `Reminder: visit tomorrow, ${fmtVisit(p.visitAt)}`;
-      const what = agent ? `${p.name} (${p.phone}) is coming to the sales office ${when(p.visitAt)}.`
-        : `Your visit to ${c.development || c.title} is ${when(p.visitAt)}. If your plans change, reply to the agent so they can free the slot.`;
+    case 'visit_reminder':
+      return visitMessage(kind === 'visit_reminder_agent', p, unsub);
+    case 'agency_invite': {
+      const role = ROLE_NAMES[p.role] ?? 'agent';
+      const url = `${SITE_URL}/invite/${p.token}`;
+      const subject = `${p.inviter || 'A colleague'} invited you to ${p.agency} on ${SITE_NAME}`;
+      const body = `${p.inviter || 'A colleague'} invited you to join ${p.agency} as ${role}. `
+        + 'Accept the invitation with your agent account (or create one with this email) — the link works for 14 days.';
       return {
         subject,
-        html: layout(`<p style="margin:0 0 12px">${esc(what)}</p>${cardHtml(c, agent ? 'Open listing' : 'View the property')}`,
-          footer(agent ? 'agent' : 'transactional', unsub)),
-        text: plain([subject, '', what, listingUrl(c)]),
-        telegram: agent ? plain(['Visit tomorrow', what, listingUrl(c)]) : '',
+        html: layout(`<p style="margin:0 0 12px">${esc(body)}</p><p style="margin:0 0 12px">${button(url, 'Accept the invitation')}</p>`
+          + `<p style="margin:0;color:#777;font-size:13px">If you didn’t expect this, ignore this email.</p>`,
+          esc('You get this because someone invited this email address to their agency on Resoha.')),
+        text: plain([subject, '', body, url]),
+        telegram: '',
       };
     }
     case 'price_drop': {
@@ -210,4 +217,57 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
     default:
       return null;
   }
+}
+
+/* ---------- візити й запрошення (міграція 0055) ---------- */
+
+const manageUrl = (token: string) => `${SITE_URL}/visit/${token}`;
+
+const ROLE_NAMES: Record<string, string> = {
+  owner: 'an owner', manager: 'a manager', editor: 'a listing editor', leads: 'a leads manager', agent: 'an agent',
+};
+
+/**
+ * Нагадування й зміни візиту. event: '24h' (типово, як у 0050), '1h', 'rescheduled', 'cancelled' (скасував покупець),
+ * 'cancelled_by_team'. Покупцю — посилання «змінити чи скасувати», ріелтору — ще й у Telegram.
+ */
+function visitMessage(agent: boolean, p: Payload, unsub?: string | null): Message {
+  const c = p.listing as Card;
+  const event = String(p.event || '24h');
+  const place = c.development || c.title;
+  const manage = !agent && p.manageToken && !/cancel/.test(event) ? manageUrl(p.manageToken) : '';
+  const was = p.oldVisitAt ? when(p.oldVisitAt) : '';
+  const head: Record<string, string> = agent ? {
+    '24h': `Reminder: visit tomorrow, ${fmtVisit(p.visitAt)}`,
+    '1h': `In 1 hour: visit ${fmtVisit(p.visitAt)}`,
+    rescheduled: `Visit moved: ${p.name} · ${fmtVisit(p.visitAt)}`,
+    cancelled: `Visit cancelled: ${p.name} · ${fmtVisit(p.visitAt)}`,
+  } : {
+    '24h': `Reminder: visit tomorrow, ${fmtVisit(p.visitAt)}`,
+    '1h': `Your visit starts in 1 hour: ${fmtVisit(p.visitAt)}`,
+    rescheduled: `Your visit is moved to ${fmtVisit(p.visitAt)}`,
+    cancelled: `Your visit on ${fmtVisit(p.visitAt)} is cancelled`,
+    cancelled_by_team: `The sales office cancelled your visit on ${fmtVisit(p.visitAt)}`,
+  };
+  const what = agent ? ({
+    '24h': `${p.name} (${p.phone}) is coming to the sales office ${when(p.visitAt)}.`,
+    '1h': `${p.name} (${p.phone}) is coming to the sales office in about an hour, ${when(p.visitAt)}.`,
+    rescheduled: `${p.name} (${p.phone}) moved the visit${was ? ` from ${was}` : ''} to ${when(p.visitAt)}.`,
+    cancelled: `${p.name} (${p.phone}) cancelled the visit ${when(p.visitAt)}. The slot is free again.`,
+  } as Record<string, string>)[event] ?? '' : ({
+    '24h': `Your visit to ${place} is ${when(p.visitAt)}.`,
+    '1h': `Your visit to ${place} starts in about an hour, ${when(p.visitAt)}.`,
+    rescheduled: `Your visit to ${place}${was ? ` is moved from ${was}` : ' is moved'} to ${when(p.visitAt)}.`,
+    cancelled: `You cancelled your visit to ${place} on ${when(p.visitAt)}. You can book another time on the property page.`,
+    cancelled_by_team: `The sales office of ${place} cancelled your visit on ${when(p.visitAt)}. They will contact you to agree on another time, or you can book one on the property page.`,
+  } as Record<string, string>)[event] ?? '';
+  const subject = head[event] ?? head['24h'];
+  return {
+    subject,
+    html: layout(`<p style="margin:0 0 12px">${esc(what)}</p>`
+      + (manage ? `<p style="margin:0 0 12px">${button(manage, 'Change or cancel the visit')}</p>` : '')
+      + cardHtml(c, agent ? 'Open listing' : 'View the property'), footer(agent ? 'agent' : 'transactional', unsub)),
+    text: plain([subject, '', what, manage && `Change or cancel: ${manage}`, listingUrl(c)]),
+    telegram: agent ? plain([subject, what, listingUrl(c)]) : '',
+  };
 }

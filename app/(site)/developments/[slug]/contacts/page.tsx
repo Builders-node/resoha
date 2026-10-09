@@ -79,7 +79,7 @@ export default async function ContactsPage({ params }: Props) {
         {canBook && (
           <aside className="dcon__book">
             <h2 className="dcon__h">{t('Book a visit to the sales office')}</h2>
-            <VisitPicker schedule={dev.schedule} href={`${base}/visit`} />
+            <VisitPicker schedule={dev.schedule} href={`${base}/visit`} devId={dev.id} blackout={dev.blackoutDates} />
           </aside>
         )}
       </div>

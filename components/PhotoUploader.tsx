@@ -6,17 +6,21 @@ import { uploadPhotos } from '@/lib/uploadPhotos';
 import { ROOMS, type PhotoRooms, type RoomKey } from '@/lib/rooms';
 
 /**
- * Завантаження фото обʼєкта: файли одразу летять у Storage, у формі лишаються URL.
+ * Завантаження фото обʼєкта: файли стискаються в браузері й одразу летять у Storage, у формі лишаються URL.
  * З rooms — під кожним фото вибір кімнати для фототуру на сторінці оголошення.
+ * watermark — ледь помітний знак resoha на фото обʼєкта (не на лого й планах).
+ * Порядок міняється перетягуванням або стрілками (на телефоні).
  */
 export default function PhotoUploader({
-  value, onChange, max = 12, rooms, onRoomsChange,
+  value, onChange, max = 50, rooms, onRoomsChange, watermark = false,
 }: {
   value: string[]; onChange: (urls: string[]) => void; max?: number;
-  rooms?: PhotoRooms; onRoomsChange?: (rooms: PhotoRooms) => void;
+  rooms?: PhotoRooms; onRoomsChange?: (rooms: PhotoRooms) => void; watermark?: boolean;
 }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState('');
   const [over, setOver] = useState(false);
+  const [dragged, setDragged] = useState<string | null>(null);
+  const [target, setTarget] = useState<string | null>(null);
   const input = useRef<HTMLInputElement>(null);
 
   async function upload(files: FileList | File[]) {
@@ -24,14 +28,26 @@ export default function PhotoUploader({
     if (!list.length) return;
     if (value.length + list.length > max) return toast(`Up to ${max} photos per listing`);
 
-    setBusy(true);
-    const data = await uploadPhotos(list);
-    setBusy(false);
+    setBusy(list.length > 1 ? `Preparing 0 of ${list.length}…` : 'Preparing…');
+    const data = await uploadPhotos(list, {
+      watermark,
+      onProgress: (stage, n) => setBusy(stage === 'upload' ? 'Uploading…' : list.length > 1 ? `Preparing ${n} of ${list.length}…` : 'Preparing…'),
+    });
+    setBusy('');
 
     if ('error' in data) return toast(data.error);
     onChange([...value, ...data.urls]);
     toast(`${data.urls.length} ${data.urls.length === 1 ? 'photo' : 'photos'} uploaded`);
   }
+
+  /** Перетягнуте фото стає на місце того, над яким його відпустили */
+  function dropOn(url: string) {
+    if (!dragged || dragged === url) return;
+    const next = value.filter((u) => u !== dragged);
+    next.splice(next.indexOf(url) + (value.indexOf(dragged) < value.indexOf(url) ? 1 : 0), 0, dragged);
+    onChange(next);
+  }
+  const isPhotoDrag = (e: React.DragEvent) => Boolean(dragged) && !e.dataTransfer.types.includes('Files');
 
   const remove = (url: string) => onChange(value.filter((u) => u !== url));
   const setRoom = (url: string, room: string) => {
@@ -61,8 +77,8 @@ export default function PhotoUploader({
       >
         <Icon name="plus" size={22} />
         <div>
-          <b>{busy ? 'Uploading…' : 'Drop photos here or click to choose'}</b>
-          <div className="tiny muted">JPEG, PNG, WebP or AVIF · up to 8 MB each · first photo is the cover</div>
+          <b>{busy || 'Drop photos here or click to choose'}</b>
+          <div className="tiny muted">JPEG, PNG, WebP or AVIF · resized in your browser before upload · first photo is the cover · drag to reorder</div>
         </div>
         <input
           ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden
@@ -73,8 +89,14 @@ export default function PhotoUploader({
       {value.length > 0 && (
         <div className="shots">
           {value.map((url, i) => (
-            <figure key={url} className="shot">
-              <img src={url} alt="" />
+            <figure key={url} className={`shot ${dragged === url ? 'is-dragged' : ''} ${target === url && dragged !== url ? 'is-target' : ''}`}
+              draggable={value.length > 1}
+              onDragStart={(e) => { setDragged(url); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', url); }}
+              onDragEnd={() => { setDragged(null); setTarget(null); }}
+              onDragOver={(e) => { if (!isPhotoDrag(e)) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setTarget(url); }}
+              onDragLeave={() => setTarget((t) => (t === url ? null : t))}
+              onDrop={(e) => { if (!isPhotoDrag(e)) return; e.preventDefault(); dropOn(url); setDragged(null); setTarget(null); }}>
+              <img src={url} alt="" draggable={false} />
               {i === 0 && <span className="badge badge--brand shot__cover">Cover</span>}
               {rooms && (
                 <select className={`shot__room ${rooms[url] ? 'is-set' : ''}`} value={rooms[url] ?? ''}

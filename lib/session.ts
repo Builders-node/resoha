@@ -26,7 +26,7 @@ export const currentUser = cache(async function currentUser(): Promise<Agent | n
 
 export const toSession = (u: Agent): Session => ({
   id: u.id, role: u.role, name: u.name, avatar: u.avatar,
-  agencyId: u.agencyId, isOwner: u.isOwner, isAdmin: u.isAdmin,
+  agencyId: u.agencyId, isOwner: u.isOwner, agencyRole: u.agencyRole ?? null, isAdmin: u.isAdmin,
 });
 
 export async function getSession(): Promise<Session | null> {

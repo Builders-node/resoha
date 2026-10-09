@@ -127,7 +127,8 @@ export default function AdminPanel({ session }: { session: Session }) {
   }), [users, state, q]);
 
   const filteredLeads = useMemo(() => leads.filter((l) => {
-    if (state !== 'all' && l.status !== state) return false;
+    // «Handled» — будь-яка стадія воронки після new (міграція 0053)
+    if (state === 'done' ? l.status === 'new' : state !== 'all' && l.status !== state) return false;
     return has([l.name, l.phone, l.email, l.listingTitle, l.agentName], q);
   }), [leads, state, q]);
 

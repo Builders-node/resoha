@@ -12,6 +12,17 @@ const nextConfig: NextConfig = {
       { source: '/listings/e645e44f-17e3-45d9-ba19-4c95dee607a0', destination: '/developments/duna-tower', permanent: true },
     ];
   },
+  // Віджети ЖК (/embed/*) вставляють у <iframe> на сайтах забудовників — їм дозволяємо будь-яку
+  // батьківську сторінку. Решту сайту цей блок не чіпає.
+  async headers() {
+    return [
+      {
+        source: '/embed/:path*',
+        // X-Frame-Options тут не ставимо: frame-ancestors його заміняє, а «дозволити всім» він не вміє
+        headers: [{ key: 'Content-Security-Policy', value: 'frame-ancestors *' }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
