@@ -176,7 +176,7 @@ export function buildAnalytics(input: {
     return hrs.length ? Math.round(median(hrs) * 10) / 10 : null;
   };
   const responseHours = responseOf(handledLeads);
-  const handledShare = pct(leads.filter((l) => l.status === 'done').length, leads.length);
+  const handledShare = pct(leads.filter((l) => l.status !== 'new').length, leads.length);
   const openLeads = input.leads.filter((l) => l.status === 'new').length;
 
   // --- ринок: медіана $/ft² за типом і районом (лише продаж)
@@ -266,7 +266,7 @@ export function buildAnalytics(input: {
       views: ev.filter((e) => e.kind === 'view' || e.kind === 'dev_view').length,
       contacts: new Set(ev.filter((e) => isContact(e.kind)).map((e) => `${e.visitor}|${e.listing_id}`)).size,
       leads: ld.length, conversion: pct(ld.length, visitors),
-      responseHours: responseOf(ld), handledShare: pct(ld.filter((l) => l.status === 'done').length, ld.length),
+      responseHours: responseOf(ld), handledShare: pct(ld.filter((l) => l.status !== 'new').length, ld.length),
     };
   }).sort((a, b) => b.leads - a.leads || b.views - a.views);
 

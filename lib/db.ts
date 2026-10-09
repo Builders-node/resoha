@@ -108,7 +108,9 @@ const listingCols = (q: ListingQuery, base = '*') =>
 const mapLead = (r: Row): Lead => ({
   id: r.id, listingId: r.listing_id, agentId: r.agent_id, agencyId: r.agency_id,
   userId: r.user_id ?? null, name: r.name, phone: r.phone, email: r.email ?? '',
-  message: r.message, createdAt: r.created_at, status: r.status,
+  message: r.message, createdAt: r.created_at,
+  // до міграції 0053 у базі new/done — done показуємо як «Contacted»
+  status: r.status === 'done' ? 'contacted' : r.status, lostReason: r.lost_reason ?? '',
   channel: r.channel === 'whatsapp' || r.channel === 'visit' ? r.channel : 'form',
   // до міграції 0047 колонок немає
   visitAt: r.visit_at ?? null, interests: r.interests ?? [], contactVia: r.contact_via ?? '',
