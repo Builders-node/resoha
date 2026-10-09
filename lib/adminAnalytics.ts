@@ -130,7 +130,7 @@ export function buildAdminAnalytics(input: {
         .map((e) => `${e.visitor}|${e.listing_id}`)).size,
       leads: ld.length, conversion: pct(ld.length, visitors),
       responseHours: hrs.length ? Math.round(median(hrs) * 10) / 10 : null,
-      handledShare: pct(ld.filter((l) => l.status === 'done').length, ld.length),
+      handledShare: pct(ld.filter((l) => l.status !== 'new').length, ld.length),
       openLeads: leads.filter((l) => of(l) && l.status === 'new').length,
     };
   }).filter((a) => a.listings > 0 || a.agents > 0 || a.leads > 0)

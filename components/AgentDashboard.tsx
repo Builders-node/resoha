@@ -1,5 +1,4 @@
 'use client';
-import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
@@ -7,6 +6,7 @@ import AnalyticsPanel from './AnalyticsPanel';
 import DashboardListings from './DashboardListings';
 import DeveloperPanel from './DeveloperPanel';
 import DevelopmentsPanel from './DevelopmentsPanel';
+import LeadsCrm from './LeadsCrm';
 import Icon from './Icon';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
@@ -14,8 +14,7 @@ import NotifySettings from './NotifySettings';
 import { renewedUntil } from '@/lib/lifecycle';
 import PromotePanel from './PromotePanel';
 import { toast } from './Toaster';
-import { fmtDate, fmtNumber } from '@/lib/format';
-import { contactPrefShort, fmtVisit } from '@/lib/visits';
+import { fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
@@ -102,15 +101,6 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
     const d = await res.json().catch(() => ({}));
     if (!res.ok) return toast(d.error ?? 'Not allowed');
     toast(d.listing?.review === 'pending' ? 'Sent for review — it goes live once checked' : done);
-    load();
-  }
-
-  async function setLeadStatus(id: string, status: 'new' | 'done') {
-    const res = await fetch(`/api/leads/${id}`, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ status }),
-    });
-    toast(res.ok ? (status === 'done' ? 'Marked as handled' : 'Back in the queue') : 'Not allowed');
     load();
   }
 
@@ -226,6 +216,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                 onDelete={remove}
                 onRenew={(l) => patchListing(l, { expiresAt: renewedUntil() }, 'Renewed for 90 days')}
                 onSubmit={(l) => patchListing(l, { review: 'pending' }, 'Listing published')}
+                onBulkDone={load}
               />
             )}
             {listings.length === 0 && (
@@ -236,52 +227,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         )}
 
         {tab === 'leads' && (
-          <div className="panel">
-            <h3 style={{ marginBottom: 4 }}>Buyer enquiries</h3>
-            <p className="muted small" style={{ marginBottom: 14 }}>
-              {isOwner ? 'Everything that came in for your agency, including your team’s listings.' : 'Enquiries on your own listings.'}
-            </p>
-            {leads.length === 0 ? (
-              <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>No enquiries yet</div>
-            ) : leads.map((l) => (
-              <div key={l.id} className="lead">
-                <div>
-                  <b>{l.name}</b>{l.phone && <span className="muted"> · {l.phone}</span>}
-                  <span className={`pill ${l.status === 'new' ? 'pill--on' : 'pill--off'}`} style={{ marginLeft: 8 }}>
-                    {l.status === 'new' ? 'New' : 'Handled'}
-                  </span>
-                  {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
-                  {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>Website widget</span>}
-                  {l.visitAt && <VisitLine lead={l} />}
-                  {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
-                  <div className="tiny muted" style={{ marginTop: 6 }}>
-                    {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
-                      ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
-                      : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>}
-                    {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
-                    {l.agentId !== agent.id && ` · agent: ${members.find((m) => m.id === l.agentId)?.name ?? l.agentId}`}
-                  </div>
-                </div>
-                <div style={{ display: 'flex', gap: 8 }}>
-                  <button className="btn btn--sm btn--ghost"
-                    onClick={() => setLeadStatus(l.id, l.status === 'new' ? 'done' : 'new')}>
-                    {l.status === 'new' ? 'Mark handled' : 'Reopen'}
-                  </button>
-                  {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
-                  {l.phone && (
-                    <>
-                      <a className="btn btn--sm btn--ghost" href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-                        <Icon name="chat" size={16} /> WhatsApp
-                      </a>
-                      <a className="btn btn--sm btn--primary" href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
-                        <Icon name="phone" size={16} /> Call
-                      </a>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+          <LeadsCrm leads={leads} meId={agent.id} isOwner={isOwner} agencyId={agency?.id ?? null}
+            members={members} onChanged={load} />
         )}
 
         {tab === 'new' && (
@@ -336,22 +283,6 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'profile' && <NotifySettings agent />}
       </div>
-    </div>
-  );
-}
-
-/** Запис на візит: коли прийде, що цікавить і як зручніше звʼязатись */
-function VisitLine({ lead }: { lead: Lead }) {
-  const past = new Date(lead.visitAt!) < new Date();
-  return (
-    <div className="lead__visit">
-      <span className={`pill ${past ? 'pill--off' : 'pill--on'}`}>
-        <Icon name="calendar" size={14} /> Office visit · {fmtVisit(lead.visitAt!)}
-      </span>
-      {lead.contactVia && <span className="tiny muted">Prefers {contactPrefShort(lead.contactVia)}</span>}
-      {lead.interests.length > 0 && (
-        <div className="lead__tags">{lead.interests.map((x) => <span key={x} className="tag">{x}</span>)}</div>
-      )}
     </div>
   );
 }

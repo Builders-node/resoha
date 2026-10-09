@@ -1,10 +1,12 @@
 'use client';
 import Link from 'next/link';
 import { Fragment, useMemo, useRef, useState } from 'react';
+import BulkBar from './BulkBar';
 import Icon from './Icon';
 import Photo from './Photo';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice } from '@/lib/format';
 import { lifecycle } from '@/lib/lifecycle';
+import { listingScore, scoreTone } from '@/lib/listingScore';
 import { UNIT_STATUSES, statusLabel } from '@/lib/units';
 import type { Listing, PropertyType } from '@/lib/types';
 
@@ -22,7 +24,7 @@ const PER_PAGE = 20;
  * Таблиця оголошень у кабінеті: фільтри зверху, квартири згруповані за ЖК.
  * Фільтрує на клієнті — кабінет і так вантажить усі оголошення ріелтора чи агенції.
  */
-export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete, onRenew, onSubmit }: {
+export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete, onRenew, onSubmit, onBulkDone }: {
   listings: Listing[];
   /** Є лише в режимі «вся агенція» — тоді показуємо колонку й фільтр «Agent» */
   agentName?: (id: string) => string;
@@ -33,6 +35,8 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
   onRenew?: (l: Listing) => void;
   /** Чернетку чи відхилене — на публікацію (перевіреному ріелтору) або на перевірку */
   onSubmit?: (l: Listing) => void;
+  /** Є — показуємо галочки й масові дії; викликається після них, щоб перечитати список */
+  onBulkDone?: () => void;
 }) {
   const [q, setQ] = useState('');
   const [dev, setDev] = useState('');
@@ -46,6 +50,9 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
   // сторінка памʼятає, для яких фільтрів її обрали: нові фільтри чи сортування — знову перша
   const [pageAt, setPageAt] = useState({ key: '', page: 1 });
   const top = useRef<HTMLDivElement>(null);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+  // повнота кожного оголошення — для колонки Quality і фільтра «потребує уваги»
+  const scores = useMemo(() => new Map(listings.map((l) => [l.id, listingScore(l)])), [listings]);
 
   const devs = useMemo(() => {
     const m = new Map<string, string>();
@@ -70,7 +77,8 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
       if (status === 'hidden' && l.active) return false;
       if (status === 'review' && !['draft', 'pending', 'rejected'].includes(lc.key)) return false;
       if (status === 'expiring' && !lc.canRenew) return false;
-      if (status && !['live', 'hidden', 'review', 'expiring'].includes(status) && l.status !== status) return false;
+      if (status === 'lowq' && (scores.get(l.id)?.pct ?? 100) >= 70) return false;
+      if (status && !['live', 'hidden', 'review', 'expiring', 'lowq'].includes(status) && l.status !== status) return false;
       if (needle && ![l.title, l.unitNo, l.neighborhood, l.address, l.development?.name ?? '']
         .some((s) => s.toLowerCase().includes(needle))) return false;
       return true;
@@ -84,7 +92,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
       unit: (a, b) => unitNo(a).localeCompare(unitNo(b)),
     };
     return list.sort(by[sort]);
-  }, [listings, q, dev, deal, type, status, agent, sort]);
+  }, [listings, q, dev, deal, type, status, agent, sort, scores]);
 
   const groups = useMemo(() => {
     const m = new Map<string, Group>();
@@ -143,7 +151,17 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
     setQ(''); setDev(''); setDeal(''); setType(''); setStatus(''); setAgent('');
   }
 
-  const cols = agentName ? 6 : 5;
+  const bulk = Boolean(onBulkDone);
+  const cols = (agentName ? 7 : 6) + (bulk ? 1 : 0);
+  // вибір переживає фільтри, але не видалені оголошення
+  const sel = listings.filter((l) => picked.has(l.id));
+  const allShown = shown.length > 0 && shown.every((l) => picked.has(l.id));
+  const toggle = (ids: string[], on: boolean) => setPicked((p) => {
+    const n = new Set(p);
+    ids.forEach((id) => (on ? n.add(id) : n.delete(id)));
+    return n;
+  });
+  const avg = listings.length ? Math.round([...scores.values()].reduce((a, s) => a + s.pct, 0) / listings.length) : 0;
 
   return (
     <>
@@ -177,6 +195,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
           <option value="hidden">Hidden</option>
           <option value="review">Drafts &amp; review</option>
           <option value="expiring">Expiring or expired</option>
+          <option value="lowq">Quality under 70%</option>
           {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
         </select>
         {agentName && agents.length > 1 && (
@@ -197,12 +216,18 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
         {filtering ? `${shown.length} of ${listings.length} listings` : `${listings.length} listings`}
         {groups.length > 1 && ` in ${groups.length} groups`}
         {filtering && <> · <button type="button" className="link-btn" onClick={reset}>Clear filters</button></>}
+        {listings.length > 0 && <> · average quality <b className={`q-txt q-txt--${scoreTone(avg)}`}>{avg}%</b></>}
         {groups.length > 1 && (
           <> · <button type="button" className="link-btn"
             onClick={() => setOpen(Object.fromEntries(groups.map((g) => [g.key, !groups.every(isOpen)])))}>
             {groups.every(isOpen) ? 'Collapse all' : 'Expand all'}</button></>
         )}
       </div>
+
+      {bulk && sel.length > 0 && (
+        <BulkBar listings={sel} onClear={() => setPicked(new Set())}
+          onDone={(keep) => { if (!keep) setPicked(new Set()); onBulkDone!(); }} />
+      )}
 
       {shown.length === 0 ? (
         <div className="empty"><div className="empty__ico"><Icon name="search" size={40} /></div>
@@ -212,9 +237,16 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
           <table className="table">
             <thead>
               <tr>
+                {bulk && (
+                  <th className="td--pick">
+                    <input type="checkbox" checked={allShown} aria-label={`Select all ${shown.length} shown`}
+                      title={`Select all ${shown.length} shown`}
+                      onChange={(e) => toggle(shown.map((l) => l.id), e.target.checked)} />
+                  </th>
+                )}
                 <th>Property</th>
                 {agentName && <th>Agent</th>}
-                <th>Price</th><th>Views</th><th>Status</th><th></th>
+                <th>Price</th><th>Views</th><th>Status</th><th>Quality</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -244,7 +276,13 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                       </tr>
                     ) : null}
                     {expanded && items.map((l) => (
-                      <tr key={l.id}>
+                      <tr key={l.id} className={picked.has(l.id) ? 'is-picked' : undefined}>
+                        {bulk && (
+                          <td className="td--pick">
+                            <input type="checkbox" checked={picked.has(l.id)} aria-label={`Select ${l.title}`}
+                              onChange={(e) => toggle([l.id], e.target.checked)} />
+                          </td>
+                        )}
                         <td data-label="Property">
                           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                             <Photo className="thumb" src={l.photos[0]} label="" />
@@ -261,6 +299,9 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                         <td data-label="Views">{fmtNumber(l.views)}</td>
                         <td data-label="Status">
                           <StatusCell l={l} onRenew={onRenew} onSubmit={onSubmit} />
+                        </td>
+                        <td data-label="Quality">
+                          <QualityCell score={scores.get(l.id)!} onEdit={() => onEdit(l)} />
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
                           <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
@@ -310,6 +351,25 @@ function StatusCell({ l, onRenew, onSubmit }: { l: Listing; onRenew?: (l: Listin
         </button>
       )}
     </div>
+  );
+}
+
+/** Повнота оголошення: відсоток зі смужкою, по кліку — що додати */
+function QualityCell({ score, onEdit }: { score: { pct: number; hints: string[] }; onEdit: () => void }) {
+  const tone = scoreTone(score.pct);
+  const bar = (
+    <span className="q-meter" aria-hidden><span className={`q-meter__fill q-meter__fill--${tone}`} style={{ width: `${score.pct}%` }} /></span>
+  );
+  if (!score.hints.length) return <span className="q-cell">{bar}<b className={`q-txt q-txt--${tone}`}>{score.pct}%</b></span>;
+  return (
+    <details className="q-cell q-cell--hints">
+      <summary title="What to improve">{bar}<b className={`q-txt q-txt--${tone}`}>{score.pct}%</b></summary>
+      <div className="q-pop">
+        <b className="small">To reach 100%</b>
+        <ul>{score.hints.map((h) => <li key={h}>{h}</li>)}</ul>
+        <button type="button" className="link-btn small" onClick={onEdit}>Edit listing</button>
+      </div>
+    </details>
   );
 }
 

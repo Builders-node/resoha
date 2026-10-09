@@ -297,7 +297,9 @@ export interface Lead {
   email: string;
   message: string;
   createdAt: string;
-  status: 'new' | 'done';
+  /** Стадія воронки (lib/leadFunnel.ts); старе «done» мапиться в contacted */
+  status: LeadStatus;
+  lostReason: string;         // чому програно — лише для стадії lost
   channel: 'form' | 'whatsapp' | 'visit';   // форма на сторінці, перехід у WhatsApp чи запис на візит
   visitAt: string | null;     // запис на візит: коли покупець прийде у відділ продажів
   interests: string[];        // теми візиту
@@ -416,3 +418,19 @@ export interface StatRow {
 
 /** Перемикачі сайту з адмінки (міграція 0052). */
 export type SiteSettings = { showPurchaseCosts: boolean; showFinancing: boolean };
+
+/** Воронка заявки (міграція 0053) */
+export type LeadStatus = 'new' | 'contacted' | 'viewing' | 'offer' | 'deal' | 'lost';
+
+/** Подія в історії заявки: зміна стадії, нотатка, перепризначення */
+export interface LeadEvent {
+  id: number;
+  leadId: string;
+  kind: 'status' | 'note' | 'assign';
+  actorId: string | null;
+  actorName: string;
+  from: string;
+  to: string;
+  body: string;
+  createdAt: string;
+}
