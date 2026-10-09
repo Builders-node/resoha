@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import type { Listing } from '@/lib/types';
 import Link from 'next/link';
 import { lifecycle } from '@/lib/lifecycle';
 import { notFound } from 'next/navigation';
@@ -34,6 +35,9 @@ import { DETAIL_FIELDS, IN_UNIT, detailLabel, floorLine } from '@/lib/details';
 import { photoTour } from '@/lib/rooms';
 import { getLang } from '@/lib/i18n/server';
 import { makeT, type T } from '@/lib/i18n';
+import ListingGone from '@/components/ListingGone';
+import ListingTools from '@/components/ListingTools';
+import { getGoneListing, similarActive, type GoneListing } from '@/lib/gone';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -47,7 +51,13 @@ const loadListing = cache(getListing);
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
   const l = await loadListing(id);
-  if (!l) return { title: `Listing not found — ${SITE_NAME}` };
+  if (!l) {
+    // знятий з показу: сторінка «більше недоступний» не індексується, але посилання з неї ведуть далі
+    const g = await getGoneListing(id);
+    return g
+      ? { title: `${g.title} — no longer available | ${SITE_NAME}`, robots: { index: false, follow: true } }
+      : { title: `Listing not found — ${SITE_NAME}` };
+  }
 
   const title = `${l.title} — ${fmtPrice(l.price, l.deal)}`;
   const description = `${specLine(l)} · ${l.neighborhood}, Roatán. ${l.text}`.slice(0, 200);
@@ -56,7 +66,19 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
     description,
     alternates: { canonical: `/listings/${l.id}` },
     openGraph: { title, description, url: `/listings/${l.id}`, type: 'website', siteName: SITE_NAME },
+    ...(soldStandalone(l) ? { robots: { index: false, follow: true } } : {}),
   };
+}
+
+/** Продане чи здане окреме оголошення (квартири ЖК лишаються в шахматці ЖК зі статусом) */
+const soldStandalone = (l: Pick<Listing, 'status' | 'developmentId'>) =>
+  !l.developmentId && (l.status === 'sold' || l.status === 'rented');
+
+/** Сторінка «обʼєкт більше недоступний» із схожими живими обʼєктами в тому ж районі */
+async function GonePage({ id, gone }: { id: string; gone: GoneListing }) {
+  const [similar, lang, me] = await Promise.all([similarActive(gone, id), getLang(), currentUser()]);
+  const favIds = me ? await getFavorites(me.id) : [];
+  return <ListingGone gone={gone} similar={similar} favIds={favIds} t={makeT(lang)} lang={lang} />;
 }
 
 export default async function PropertyPage({ params, searchParams }: {
@@ -64,7 +86,24 @@ export default async function PropertyPage({ params, searchParams }: {
 }) {
   const { id } = await params;
   const listing = await loadListing(id);
-  if (!listing) notFound();
+  if (!listing) {
+    // RLS ховає від гостей прострочене, приховане й неперевірене — але таке оголошення існувало
+    const gone = await getGoneListing(id);
+    if (!gone) notFound();
+    return <GonePage id={id} gone={gone} />;
+  }
+  if (soldStandalone(listing)) {
+    // продане бачать як звичайну сторінку лише автор, власник агенції й адмін
+    const viewer = await currentUser();
+    const manages = viewer && (viewer.id === listing.agentId || viewer.isAdmin
+      || (viewer.isOwner && viewer.agencyId !== null && viewer.agencyId === listing.agencyId));
+    if (!manages) {
+      return <GonePage id={id} gone={{
+        title: listing.title, neighborhood: listing.neighborhood, island: listing.island,
+        type: listing.type, deal: listing.deal, price: listing.price, sold: true,
+      }} />;
+    }
+  }
 
   // перегляд для аналітики (і лічильника views) — запис, і він не має тримати рендер: виконуємо після відповіді
   await trackAfterResponse({ listingId: id }, 'view', { utm: (await searchParams).utm_source });
@@ -210,6 +249,7 @@ export default async function PropertyPage({ params, searchParams }: {
           <p className="prop__updated" title={t('Updated {date}', { date: fmtDate(listing.updatedAt, lang) })}>
             <Icon name="calendar" size={14} /> {t('Updated {ago} · listed {date}', { ago: updatedAgo, date: fmtDate(listing.createdAt, lang) })}
           </p>
+          <ListingTools pdfHref={`/listings/${listing.id}/report`} land={isLand} />
 
           <div className="specs">
             {isLand ? (
@@ -490,7 +530,7 @@ export default async function PropertyPage({ params, searchParams }: {
         </div>
 
         <AgentContact agent={agent} agency={agency} listing={listing} listingUrl={`${SITE_URL}/listings/${listing.id}`}
-          isFav={favIds.includes(listing.id)}
+          isFav={favIds.includes(listing.id)} sticky
           me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
       </div>
 

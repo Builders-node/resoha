@@ -80,6 +80,17 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <p className="tiny muted" style={{ marginTop: 8 }}>
           Prices from the developer&apos;s price list — ask the agent which units are still open.
         </p>
+        {/* PDF для покупця: прайс одним аркушем і повний буклет ЖК */}
+        <div className="ptools">
+          {units.length > 0 && (
+            <a className="ptools__btn" href={`${base}/price-list`} target="_blank" rel="noreferrer">
+              <Icon name="download" size={16} /> Price list (PDF)
+            </a>
+          )}
+          <a className="ptools__btn" href={`${base}/booklet`} target="_blank" rel="noreferrer">
+            <Icon name="download" size={16} /> Booklet (PDF)
+          </a>
+        </div>
       </section>
 
       {buildings.length > 0 && (

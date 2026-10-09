@@ -81,7 +81,7 @@ export default function DevelopmentShell({ ctx, active, title, top, wide, childr
         <div>{children}</div>
         {leadUnit && (
           <AgentContact agent={agent} listing={leadUnit} listingUrl={`${SITE_URL}${tab.href}`} topic={dev.name} fromPrice={from}
-            extra={statusBox} visitHref={dev.schedule.length ? `/developments/${dev.slug}/visit` : undefined} me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
+            extra={statusBox} sticky visitHref={dev.schedule.length ? `/developments/${dev.slug}/visit` : undefined} me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
         )}
       </div>
       )}
