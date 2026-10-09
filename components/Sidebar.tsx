@@ -21,7 +21,8 @@ const NAV: { href: string; ico: string; cap: string; deskOnly?: boolean; match: 
   // deskOnly — пункт лишається у вертикальній рейці, а на телефоні їде в лист «Other»
   { href: '/listings?type=land', ico: 'land', cap: 'Land', deskOnly: true, match: (p, _deal, type) => p === '/listings' && type === 'land' },
   { href: '/developments', ico: 'building', cap: 'New builds', deskOnly: true, match: (p) => p.startsWith('/developments') },
-  { href: '/account', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p) => p === '/account' },
+  // /saved показує збережене гостем у браузері, а залогіненого веде у вкладку кабінету
+  { href: '/saved', ico: 'heart', cap: 'Saved', deskOnly: true, match: (p) => p === '/account' || p === '/saved' },
   { href: '/agents', ico: 'building', cap: 'Agents', deskOnly: true, match: (p) => p.startsWith('/agents') },
 ];
 
@@ -126,7 +127,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
             )}
             {session && <AccountSwitcher onDone={() => setMore(false)} />}
 
-            <Link className="sheet__item" href="/account">
+            <Link className="sheet__item" href="/saved">
               <Icon name="heart" size={19} /> {t('Saved listings')}
             </Link>
 
