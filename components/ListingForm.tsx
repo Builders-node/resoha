@@ -478,7 +478,7 @@ export default function ListingForm({
 
         {/* 4. Фото */}
         <section data-step={3} hidden={show(3)} className="lf__sec">
-          <PhotoUploader value={photos} onChange={setPhotos} rooms={photoRooms} onRoomsChange={setPhotoRooms} />
+          <PhotoUploader value={photos} onChange={setPhotos} rooms={photoRooms} onRoomsChange={setPhotoRooms} watermark />
         </section>
 
         {/* 5. Опис */}

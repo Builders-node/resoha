@@ -7,6 +7,8 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
+import type { ImportedListing } from './listingImport';
+import type { ExistingUnit } from './priceList';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
 
 /**
@@ -356,7 +358,7 @@ const missingDetails = (e: { code?: string; message?: string } | null) =>
   Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at/.test(e.message ?? ''));
 const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
 
-export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null }) {
+export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null; externalId?: string }) {
   const client = await db();
   const row: Row = {
     deal: input.deal ?? 'sale',
@@ -397,6 +399,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     status: cleanStatus(input.status),
     // чернетку видно лише автору; інакше статус модерації ставить тригер listings_review
     ...(input.review === 'draft' ? { review: 'draft' } : {}),
+    // код обʼєкта в системі агенції — лише з імпорту (міграція 0054)
+    ...(input.externalId ? { external_id: input.externalId.slice(0, 120) } : {}),
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
   if (missingDetails(res.error)) {
@@ -1590,4 +1594,56 @@ export async function updateSiteSettings(patch: Partial<SiteSettings>): Promise<
   if (error) throw error;
   if (!data) throw new Error('Settings are not set up yet');
   return { showPurchaseCosts: data.show_purchase_costs, showFinancing: data.show_financing };
+}
+
+/* ---------- імпорт оголошень і прайс забудовника (міграція 0054) ---------- */
+
+/** Оголошення ріелтора з кодом зовнішньої системи. null — міграції 0054 ще немає. */
+export async function getImportedListings(agentId: string, externalIds?: string[]): Promise<ImportedListing[] | null> {
+  let sel = (await db()).from('listings')
+    .select('id, external_id, active, review, title, deal, type, price, beds, baths, sqft, lot_acres, year, hoa, neighborhood, address, lat, lng, body, photos, oceanfront, tags, source_url')
+    .eq('agent_id', agentId).neq('external_id', '');
+  sel = externalIds ? sel.in('external_id', externalIds) : sel.limit(5000);
+  const { data, error } = await sel;
+  if (error) {
+    if (error.code === '42703' || error.code === 'PGRST204' || /external_id/.test(error.message)) return null;
+    throw error;
+  }
+  return (data ?? []).map((r: Row): ImportedListing => ({
+    id: r.id, externalId: r.external_id, active: r.active, review: r.review ?? 'approved',
+    title: r.title, deal: r.deal, type: r.type, price: Number(r.price), beds: r.beds, baths: Number(r.baths),
+    sqft: r.sqft, lotAcres: Number(r.lot_acres), year: r.year, hoa: Number(r.hoa), neighborhood: r.neighborhood,
+    address: r.address ?? '', lat: r.lat, lng: r.lng, text: r.body ?? '', photos: r.photos ?? [],
+    oceanfront: r.oceanfront, tags: r.tags ?? [], sourceUrl: r.source_url ?? '',
+  }));
+}
+
+/** Квартири ЖК для порівняння з прайсом */
+export async function getDevelopmentUnits(developmentId: string): Promise<ExistingUnit[]> {
+  const { data, error } = await (await db()).from('listings')
+    .select('id, unit_no, building_id, beds, floor, sqft, price, status, title')
+    .eq('development_id', developmentId).limit(5000);
+  if (error) throw error;
+  return (data ?? []).map((r: Row) => ({
+    id: r.id, unitNo: r.unit_no ?? '', buildingId: r.building_id ?? null, beds: r.beds, floor: r.floor ?? null,
+    sqft: r.sqft, price: Number(r.price), status: cleanStatus(r.status), title: r.title,
+  }));
+}
+
+/**
+ * Прайс однією транзакцією (RPC apply_price_list). null — функції ще немає (міграція 0054),
+ * тоді маршрут зберігає по одній квартирі, як раніше.
+ */
+export async function applyPriceListRpc(input: {
+  developmentId: string; buildingId: string | null; deal: Deal; added: unknown[]; changed: unknown[];
+}): Promise<{ created: number; updated: number } | null> {
+  const { data, error } = await (await db()).rpc('apply_price_list', {
+    p_development: input.developmentId, p_building: input.buildingId, p_deal: input.deal,
+    p_new: input.added, p_changes: input.changed,
+  });
+  if (error) {
+    if (error.code === 'PGRST202' || error.code === '42883') return null;
+    throw error;
+  }
+  return data as { created: number; updated: number };
 }

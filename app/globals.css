@@ -2303,4 +2303,31 @@ html{scroll-behavior:smooth}
   .pfacts li,.land__row,.land__stat,.spec{break-inside:avoid}
   .section{display:none}
   a{color:inherit;text-decoration:none}
+
+/* ---------- імпорт оголошень, прайс забудовника, порядок фото (0054) ---------- */
+.imp-source{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.imp-source .link-btn{display:inline-flex;align-items:center;gap:4px}
+.imp-preview{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.imp-sum{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.imp-table-wrap{max-height:460px;overflow:auto;border:1px solid var(--line);border-radius:var(--radius)}
+.imp-table{font-size:14px}
+.imp-table th{position:sticky;top:0;background:#fff;z-index:1}
+.imp-table td{padding:8px 12px;vertical-align:top}
+.imp-title{font-weight:600;max-width:420px;overflow-wrap:anywhere}
+.imp-change{display:inline-block;margin:0 14px 2px 0;white-space:nowrap}
+.imp-change s{color:var(--ink-3)}
+.imp-pill--err{background:#fff1f2;color:#be123c}
+.imp-err{color:#be123c;margin-top:4px}
+.imp-warn{background:#fff4e5;color:#b45309;padding:8px 12px;border-radius:10px;margin:0}
+.imp-errors{margin:0;padding-left:18px;color:#be123c;display:grid;gap:2px;max-height:220px;overflow:auto}
+.imp-check{display:flex;align-items:center;gap:8px;cursor:pointer}
+.imp-bar{height:6px;border-radius:3px;background:var(--bg-soft);overflow:hidden}
+.imp-bar span{display:block;height:100%;background:var(--orange);transition:width .2s}
+.imp-result{margin-top:16px;border-top:1px solid var(--line);padding-top:12px}
+.shot[draggable=true]{cursor:grab}
+.shot.is-dragged{opacity:.4}
+.shot.is-target{outline:2px solid var(--orange);outline-offset:2px}
+@media (max-width:640px){
+  .imp-table td,.imp-table th{padding:8px}
+  .imp-change{white-space:normal}
 }

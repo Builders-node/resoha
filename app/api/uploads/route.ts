@@ -9,7 +9,8 @@ import { supabaseServer } from '@/lib/supabase/server';
  * через функцію Vercel вони не пролазять, тіло запиту там обмежене 4,5 МБ.
  */
 const BUCKET = 'listing-photos';
-const MAX_FILES = 12;
+// до 50 фото на оголошення (міграція 0054) — усі можна кинути одним махом
+const MAX_FILES = 50;
 const MAX_BYTES = 8 * 1024 * 1024;
 // PDF — документи ЖК (дозволи, право на землю); скани важчі за фото
 const MAX_PDF_BYTES = 20 * 1024 * 1024;
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
   const files: FileMeta[] = Array.isArray(body?.files) ? body.files : [];
   if (!files.length) return NextResponse.json({ error: 'No files received' }, { status: 400 });
   if (files.length > MAX_FILES) {
-    return NextResponse.json({ error: `Up to ${MAX_FILES} photos at a time` }, { status: 400 });
+    return NextResponse.json({ error: `Up to ${MAX_FILES} files at a time` }, { status: 400 });
   }
 
   const supabase = await supabaseServer();
