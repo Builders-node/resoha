@@ -113,7 +113,7 @@ export default function EmbedWidget({ units, view: initialView, canGrid, form, d
     }).catch(() => null);
     setSending(false);
     if (res?.ok) { setSent(true); return; }
-    setError((await res?.json().catch(() => ({})))?.error ?? t('Something went wrong'));
+    setError(t((await res?.json().catch(() => ({})))?.error ?? 'Something went wrong'));
   }
 
   const statuses = (['available', 'reserved', 'sold', 'rented'] as const).filter((s) => units.some((u) => u.status === s));

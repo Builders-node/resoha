@@ -9,10 +9,14 @@ import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
 import { DETAIL_FIELDS, IN_UNIT } from '@/lib/details';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
+import {
+  clearDraft, draftKey, loadDraft, readFields, saveDraft, sameContent, writeFields, type FieldValues, type ListingDraft,
+} from '@/lib/listingDraft';
 import type { NearbyPlace } from '@/lib/nearby';
 import type { PhotoRooms } from '@/lib/rooms';
 import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
+import DescriptionEs from './DescriptionEs';
 
 /** Кроки форми: одна тема на екран, щоб ріелтор не губився в сорока полях */
 const STEPS = [
@@ -85,6 +89,209 @@ export default function ListingForm({
   const editing = Boolean(listing);
   const last = STEPS.length - 1;
 
+  /*
+   * Автозбереження. Усе, що набрано, за мить після зміни лягає в localStorage (нове оголошення
+   * й правки існуючого); наступного разу форма пропонує відновити. Чернетку на сервері (review = draft)
+   * ще й тихо зберігаємо PATCH-ем за кілька секунд — без поля review, тож нічого не публікується.
+   */
+  const storeKey = draftKey(listing?.id, asAdmin);
+  const serverDraft = Boolean(listing && listing.review === 'draft' && !asAdmin);
+  const [offer, setOffer] = useState<ListingDraft | null>(null);
+  const offerRef = useRef<ListingDraft | null>(null);
+  const [autoNote, setAutoNote] = useState('');
+  // площа живе у стані AreaInput — при відновленні перемонтовуємо його з новим значенням
+  const [areaKey, setAreaKey] = useState(0);
+  const [sqftOverride, setSqftOverride] = useState<number | undefined>(undefined);
+  const [restoreTick, setRestoreTick] = useState(0);
+  const pendingFields = useRef<FieldValues | null>(null);
+  const baseline = useRef('');
+  const ready = useRef(false);
+  const resetBase = useRef(false);
+  const localTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const serverTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const stateSig = JSON.stringify([photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, area, pin]);
+  const lastSig = useRef(stateSig);
+
+  /** Що піде на сервер: поля форми, зібрані в обʼєкти, плюс керовані стани (фото, ЖК, пін…) */
+  function collect(form: HTMLFormElement) {
+    const fd = new FormData(form);
+    const body: Record<string, unknown> = Object.fromEntries(fd.entries());
+    // паспорт ділянки збираємо окремо: поля land_* → обʼєкт land
+    const land: Record<string, string> = {};
+    for (const f of LAND_FIELDS) {
+      const v = fd.get(`land_${f.key}`);
+      if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
+    }
+    // характеристики: поля detail_* і floorsTotal → обʼєкт details
+    const details: Record<string, string | string[]> = {};
+    for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal', 'layout']) {
+      const name = key === 'floorsTotal' || key === 'layout' ? key : `detail_${key}`;
+      const v = fd.get(name);
+      if (typeof v === 'string' && v) details[key] = v;
+      delete body[name];
+    }
+    // «В квартирі є» — галочки inUnit
+    details.inUnit = fd.getAll('inUnit').map(String);
+    delete body.inUnit;
+    return {
+      ...body,
+      land: type === 'land' ? land : undefined,
+      // у землі цих характеристик немає
+      details: type === 'land' ? {} : details,
+      photos,
+      // позначки лише для фото, що лишились у формі
+      photoRooms: Object.fromEntries(Object.entries(photoRooms).filter(([url]) => photos.includes(url))),
+      // рядки без назви — недописані, їх не зберігаємо
+      nearby: nearby.filter((p) => p.name.trim()),
+      developmentId: developmentId || null,
+      // дім має сенс лише разом зі своїм ЖК
+      buildingId: developmentId ? buildingId || null : null,
+      floorplan: developmentId ? floorplan[0] ?? '' : '',
+      oceanfront: fd.get('oceanfront') === 'on',
+      titled: fd.get('titled') === 'on',
+      ownerFinancing: fd.get('ownerFinancing') === 'on',
+      tags: String(body.tags ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+    };
+  }
+
+  function snapshot(): ListingDraft | null {
+    const form = formRef.current;
+    if (!form) return null;
+    const sqft = (form.elements.namedItem('sqft') as HTMLInputElement | null)?.value ?? '';
+    return {
+      v: 1, at: Date.now(), base: listing?.updatedAt ?? '', step, fields: readFields(form),
+      state: { photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, area, pin, sqft },
+    };
+  }
+  const sig = (d: Pick<ListingDraft, 'fields' | 'state'>) => JSON.stringify([d.fields, d.state]);
+  const clock = () => new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  function saveLocal() {
+    localTimer.current = undefined;
+    // поки висить пропозиція відновити — не перезаписуємо збережене
+    if (offerRef.current) return;
+    const d = snapshot();
+    if (!d) return;
+    if (sig(d) === baseline.current) { clearDraft(storeKey); return; }
+    saveDraft(storeKey, d);
+    if (!serverDraft) setAutoNote(`Autosaved on this device · ${clock()}`);
+  }
+
+  async function saveServer() {
+    serverTimer.current = undefined;
+    const form = formRef.current;
+    if (!form || !listing || offerRef.current) return;
+    // без назви й ціни чернетку не зберегти — лишається копія в браузері
+    if (form.querySelector('[data-step="0"] :invalid')) return;
+    const d = snapshot();
+    if (!d || sig(d) === baseline.current) return;
+    setAutoNote('Saving draft…');
+    const res = await fetch(`/api/listings/${listing.id}`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(collect(form)),
+    }).catch(() => null);
+    if (!res?.ok) { setAutoNote('Couldn’t save the draft to the server. Your changes are kept on this device.'); return; }
+    // копію в браузері лишаємо: якщо кабінет покаже старі дані, форма запропонує відновити свіжіші
+    baseline.current = sig(d);
+    setAutoNote(`Draft saved · ${clock()}`);
+  }
+
+  function scheduleSave() {
+    if (!ready.current) return;
+    clearTimeout(localTimer.current);
+    localTimer.current = setTimeout(() => saveLocalRef.current(), 700);
+    if (serverDraft) {
+      clearTimeout(serverTimer.current);
+      serverTimer.current = setTimeout(() => saveServerRef.current(), 5000);
+    }
+  }
+  // таймери живуть довше за рендер — кличемо свіжу версію функції, а не ту, що була при їх запуску
+  const saveLocalRef = useRef(saveLocal);
+  const saveServerRef = useRef(saveServer);
+  useEffect(() => { saveLocalRef.current = saveLocal; saveServerRef.current = saveServer; });
+
+  // при відкритті: базова точка (форма як є) і, якщо є свіжіша копія в браузері, — пропозиція відновити
+  useEffect(() => {
+    const now = snapshot();
+    if (now) baseline.current = sig(now);
+    ready.current = true;
+    const d = loadDraft(storeKey);
+    if (!d) return;
+    // те саме, що вже у формі, — пропонувати нічого
+    if (now && sameContent(d, now)) { clearDraft(storeKey); return; }
+    offerRef.current = d;
+    // показуємо після першого кадру — форма вже на екрані, банер зʼявляється над нею
+    const id = setTimeout(() => setOffer(d), 0);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // закрили форму, поки ще тікав таймер, — дописуємо копію одразу
+  useEffect(() => () => {
+    clearTimeout(serverTimer.current);
+    if (localTimer.current) { clearTimeout(localTimer.current); saveLocalRef.current(); }
+  }, []);
+
+  // зміни стану (фото, тип, пін…) — теж привід зберегти
+  useEffect(() => {
+    if (stateSig === lastSig.current) return;
+    lastSig.current = stateSig;
+    if (resetBase.current) {
+      const d = snapshot();
+      if (d) baseline.current = sig(d);
+      return;
+    }
+    scheduleSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stateSig]);
+
+  function restore() {
+    const d = offer;
+    if (!d) return;
+    const st = d.state as {
+      photos?: string[]; photoRooms?: PhotoRooms; nearby?: NearbyPlace[]; developmentId?: string; buildingId?: string;
+      floorplan?: string[]; type?: Listing['type']; deal?: Listing['deal']; area?: string; pin?: [number, number]; sqft?: string;
+    };
+    if (Array.isArray(st.photos)) setPhotos(st.photos);
+    if (st.photoRooms) setPhotoRooms(st.photoRooms);
+    if (Array.isArray(st.nearby)) setNearby(st.nearby);
+    setDevelopmentId(st.developmentId ?? '');
+    setBuildingId(st.buildingId ?? '');
+    if (Array.isArray(st.floorplan)) setFloorplan(st.floorplan);
+    if (st.type) setType(st.type);
+    if (st.deal) setDeal(st.deal);
+    if (st.area) {
+      const a = st.area;
+      setArea(a);
+      setAreas((list) => (list.includes(a) ? list : [...list, a].sort()));
+    }
+    if (Array.isArray(st.pin) && st.pin.length === 2) setPin(st.pin);
+    setSqftOverride(Number(st.sqft) || undefined);
+    setAreaKey((k) => k + 1);
+    const at = Math.min(Math.max(0, Number(d.step) || 0), last);
+    setStep(at);
+    setSeen((s) => new Set([...s, ...STEPS.map((_, i) => i).filter((i) => i <= at)]));
+    pendingFields.current = d.fields;
+    offerRef.current = null;
+    setOffer(null);
+    setRestoreTick((n) => n + 1);
+  }
+
+  function discard() {
+    clearDraft(storeKey);
+    offerRef.current = null;
+    setOffer(null);
+  }
+
+  // поля без React-стану заповнюємо після рендеру: тоді вже є й ті, що залежать від типу чи ЖК
+  useEffect(() => {
+    const form = formRef.current;
+    if (!restoreTick || !form || !pendingFields.current) return;
+    writeFields(form, pendingFields.current);
+    pendingFields.current = null;
+    scheduleSave();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [restoreTick]);
+
   useEffect(() => {
     fetch('/api/developments?mine=1')
       .then((r) => r.json())
@@ -146,48 +353,16 @@ export default function ListingForm({
     // чернетці досить основного: назви й ціни; решту можна дописати потім
     const scope = asDraft ? form.querySelector('[data-step="0"]') ?? form : form;
     if (!reportInvalid(scope)) return;
-    const fd = new FormData(form);
-    const body = Object.fromEntries(fd.entries());
-    // паспорт ділянки збираємо окремо: поля land_* → обʼєкт land
-    const land: Record<string, string> = {};
-    for (const f of LAND_FIELDS) {
-      const v = fd.get(`land_${f.key}`);
-      if (typeof v === 'string') { land[f.key] = v; delete body[`land_${f.key}`]; }
-    }
-    // характеристики: поля detail_* і floorsTotal → обʼєкт details
-    const details: Record<string, string | string[]> = {};
-    for (const key of [...DETAIL_FIELDS.map((f) => f.key), 'floorsTotal', 'layout']) {
-      const name = key === 'floorsTotal' || key === 'layout' ? key : `detail_${key}`;
-      const v = fd.get(name);
-      if (typeof v === 'string' && v) details[key] = v;
-      delete body[name];
-    }
-    // «В квартирі є» — галочки inUnit
-    details.inUnit = fd.getAll('inUnit').map(String);
-    delete body.inUnit;
+    // ручне збереження — таймери автозбереження більше не потрібні
+    clearTimeout(localTimer.current); localTimer.current = undefined;
+    clearTimeout(serverTimer.current); serverTimer.current = undefined;
     setSaving(true);
 
     const res = await fetch(editing ? `/api/listings/${listing!.id}` : '/api/listings', {
       method: editing ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...body,
-        land: type === 'land' ? land : undefined,
-        // у землі цих характеристик немає
-        details: type === 'land' ? {} : details,
-        photos,
-        // позначки лише для фото, що лишились у формі
-        photoRooms: Object.fromEntries(Object.entries(photoRooms).filter(([url]) => photos.includes(url))),
-        // рядки без назви — недописані, їх не зберігаємо
-        nearby: nearby.filter((p) => p.name.trim()),
-        developmentId: developmentId || null,
-        // дім має сенс лише разом зі своїм ЖК
-        buildingId: developmentId ? buildingId || null : null,
-        floorplan: developmentId ? floorplan[0] ?? '' : '',
-        oceanfront: fd.get('oceanfront') === 'on',
-        titled: fd.get('titled') === 'on',
-        ownerFinancing: fd.get('ownerFinancing') === 'on',
-        tags: String(body.tags ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+        ...collect(form),
         // нове: чернетка або на публікацію; чернетку/відхилене — «Publish» шле на перевірку
         ...(asDraft && !editing ? { review: 'draft' } : {}),
         ...(intent === 'publish' && editing ? { review: 'pending' } : {}),
@@ -197,13 +372,21 @@ export default function ListingForm({
 
     const d = await res.json().catch(() => ({}));
     if (!res.ok) return toast(d.error ?? 'Something went wrong');
+    // збережено на сервері — копія в браузері більше не потрібна
+    clearDraft(storeKey);
+    setAutoNote('');
     const review = d.listing?.review;
     toast(review === 'draft' ? 'Draft saved — only you can see it'
       : review === 'pending' ? 'Saved. Buyers will see it once a moderator checks it'
         : editing ? 'Listing updated' : 'Listing published');
     if (!editing) {
+      // скинута форма — нова точка відліку, а не зміна, яку треба зберігати
+      resetBase.current = true;
       form.reset(); setPhotos([]); setPhotoRooms({}); setNearby([]);
       setStep(0); setSeen(new Set([0]));
+    } else {
+      const now = snapshot();
+      if (now) baseline.current = sig(now);
     }
     onSaved();
   }
@@ -251,6 +434,21 @@ export default function ListingForm({
         </div>
       )}
 
+      {offer && (
+        <div className="lc-banner lf__restore">
+          <Icon name="clock" size={18} />
+          <div>
+            <b>Unsaved changes found.</b> You were {editing ? 'editing this listing' : 'filling in a new listing'} on{' '}
+            {new Date(offer.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.
+            Restore them?
+          </div>
+          <div className="lf__restore-btns">
+            <button type="button" className="btn btn--sm btn--primary" onClick={restore}>Restore</button>
+            <button type="button" className="btn btn--sm btn--ghost" onClick={discard}>Discard</button>
+          </div>
+        </div>
+      )}
+
       {/* Степер: кожен крок клікабельний — при редагуванні можна одразу стрибнути до фото */}
       <ol className="lf__steps" aria-label="Steps">
         {STEPS.map((s, i) => (
@@ -268,7 +466,8 @@ export default function ListingForm({
         ))}
       </ol>
 
-      <form ref={formRef} className="lf__form" onSubmit={submit} noValidate>
+      <form ref={formRef} className="lf__form" onSubmit={submit} noValidate
+        onChange={() => { resetBase.current = false; scheduleSave(); }}>
         <div className="lf__intro">
           <span className="lf__kicker">Step {step + 1} of {STEPS.length}</span>
           <h4>{STEPS[step].title}</h4>
@@ -408,7 +607,7 @@ export default function ListingForm({
             <div className={hideIf(isLand)}><label>Bathrooms</label>
               <input className="input" name="baths" type="number" min={0} step="0.5" defaultValue={v?.baths ?? 2} /></div>
             <div style={{ display: isLand ? 'none' : 'contents' }}>
-              <AreaInput name="sqft" label="Interior" defaultSqft={v?.sqft} />
+              <AreaInput key={areaKey} name="sqft" label="Interior" defaultSqft={sqftOverride ?? v?.sqft} />
             </div>
             <div className={hideIf(type === 'condo')}><label>Lot, acres</label>
               <input className="input" name="lotAcres" type="number" min={0} step="0.01" defaultValue={v?.lotAcres ?? 0} /></div>
@@ -487,6 +686,8 @@ export default function ListingForm({
             <textarea className="input" name="text" rows={7} defaultValue={v?.text}
               placeholder="What makes this property worth the flight…" /></div>
 
+          <DescriptionEs defaultValue={v?.textEs} />
+
           <div className="field"><label>Tags</label>
             <input className="input" name="tags" defaultValue={v?.tags.join(', ')} placeholder="Pool, Turnkey, Rental income" />
             <span className="tiny muted">Separate with commas.</span></div>
@@ -509,6 +710,8 @@ export default function ListingForm({
             </div>
           )}
         </section>
+
+        {autoNote && <p className="lf__auto tiny muted" role="status">{autoNote}</p>}
 
         {/* Панель дій липне до низу: «Далі» і «Зберегти» завжди під рукою */}
         <div className="lf__bar">

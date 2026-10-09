@@ -1,11 +1,13 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { localized } from './seoMeta';
 import { notFound } from 'next/navigation';
 import { getAgent, getDevelopment, listBuildings, listDocuments, listNews, listProgress, queryListings } from './db';
 import { currentUser } from './session';
 import { fromPrice } from './units';
 import type { Listing } from './types';
 import { SITE_NAME } from './site';
+import { getLp, getT } from './i18n/server';
 
 /**
  * Усе, що потрібно кожній сторінці ЖК (огляд і вкладки): сам ЖК, автор, квартири, доми,
@@ -28,7 +30,8 @@ export const developmentContext = cache(async (slug: string) => {
   // Автор може бути прихованим (заблокований акаунт) — тоді й ЖК не показуємо
   if (!agent) notFound();
 
-  const base = `/developments/${dev.slug}`;
+  // на /es/... і вкладки, і внутрішні посилання ЖК лишаються в іспанській версії
+  const base = (await getLp())(`/developments/${dev.slug}`);
   // вкладки, як у LUN; порожні не показуємо
   const tabs = [
     { href: base, key: 'overview', label: 'Overview' },
@@ -61,15 +64,15 @@ export type DevContext = Awaited<ReturnType<typeof developmentContext>>;
 export async function developmentMetadata(slug: string, tab?: { path: string; label: string; about: string }): Promise<Metadata> {
   const d = await loadDevelopment(slug);
   if (!d) return { title: `Development not found — ${SITE_NAME}` };
-  const title = tab ? `${d.name}: ${tab.label.toLowerCase()} — ${d.neighborhood}, Roatán`
-    : `${d.name} — new development in ${d.neighborhood}, Roatán`;
+  const t = await getT();
+  const title = tab ? `${d.name}: ${t(tab.label).toLowerCase()} — ${d.neighborhood}, Roatán`
+    : t('{name} — new development in {area}, Roatán', { name: d.name, area: d.neighborhood });
   const description = (tab ? tab.about
     : d.text || `${d.name}: apartments for sale and rent in ${d.neighborhood}, Roatán.`).slice(0, 200);
   const url = `/developments/${d.slug}${tab ? `/${tab.path}` : ''}`;
-  return {
+  return localized(url, {
     title: `${title} | ${SITE_NAME}`,
     description,
-    alternates: { canonical: url },
     openGraph: { title, description, url, type: 'website', siteName: SITE_NAME, images: d.photos.slice(0, 1) },
-  };
+  });
 }

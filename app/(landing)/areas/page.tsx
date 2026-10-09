@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
@@ -7,17 +8,20 @@ import { AREAS } from '@/lib/content/areas';
 import { queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `Roatán neighbourhoods: where to buy property | ${SITE_NAME}`,
-  description: 'Compare Roatán’s areas from West Bay to Camp Bay: typical prices, who each area suits and the homes, condos and land listed there now.',
-  alternates: { canonical: '/areas' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/areas', {
+    title: `${t('Roatán neighbourhoods: where to buy property')} | ${SITE_NAME}`,
+    description: t('Compare Roatán’s areas from West Bay to Camp Bay: typical prices, who each area suits and the homes, condos and land listed there now.'),
+  });
+}
 
 export default async function AreasPage() {
+  const lp = await getLp();
   const lang = await getLang();
   const t = makeT(lang);
   const all = await queryListings();
@@ -37,7 +41,7 @@ export default async function AreasPage() {
         {AREAS.map((a) => {
           const n = all.filter((l) => a.neighborhoods.includes(l.neighborhood)).length;
           return (
-            <Link key={a.slug} className="area-card" href={`/areas/${a.slug}`}>
+            <Link key={a.slug} className="area-card" href={lp(`/areas/${a.slug}`)}>
               <span className="area-card__top">
                 <b>{t(a.name)}</b>
                 <Icon name="arrowRight" size={18} />
@@ -50,7 +54,7 @@ export default async function AreasPage() {
         })}
       </div>
       <p className="small muted" style={{ marginTop: 24 }}>
-        {t('Not sure yet? Read')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('the best areas to live in Roatán, compared')}</Link>.
+        {t('Not sure yet? Read')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('the best areas to live in Roatán, compared')}</Link>.
       </p>
       <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
     </div>

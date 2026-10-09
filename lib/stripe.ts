@@ -78,3 +78,38 @@ export function verifyWebhook(payload: string, header: string | null, toleranceS
     return got.length === expected.length && timingSafeEqual(got, expected);
   });
 }
+
+/* ---------- повернення й чеки (міграція 0060) ---------- */
+
+export type Refund = { id: string; amount: number; status: string; payment_intent: string | null };
+export type Charge = {
+  id: string; payment_intent: string | null; amount: number; amount_refunded: number;
+  refunded: boolean; receipt_url: string | null;
+};
+
+/**
+ * Повернути платіж повністю. Ключ ідемпотентності — id кампанії: подвійний клік
+ * чи повтор після збою не поверне гроші двічі.
+ */
+export async function createRefund(paymentIntent: string, idempotencyKey: string) {
+  return call<Refund>('/refunds', {
+    method: 'POST',
+    body: new URLSearchParams({
+      payment_intent: paymentIntent, reason: 'requested_by_customer', 'metadata[campaign_id]': idempotencyKey,
+    }),
+    headers: { 'Idempotency-Key': `refund-${idempotencyKey}` },
+  });
+}
+
+/** Платіж разом з останнім списанням — звідти беремо посилання на чек Stripe. */
+export const getPaymentIntent = (id: string) =>
+  call<{ id: string; status: string; latest_charge: Charge | null }>(
+    `/payment_intents/${encodeURIComponent(id)}?expand[]=latest_charge`,
+  );
+
+/** pay_ref кампанії — це payment_intent (pi_…), а зрідка лише сесія Checkout (cs_…). */
+export async function paymentIntentOf(ref: string): Promise<string | null> {
+  if (ref.startsWith('pi_')) return ref;
+  if (ref.startsWith('cs_')) return (await getCheckout(ref)).payment_intent;
+  return null;
+}

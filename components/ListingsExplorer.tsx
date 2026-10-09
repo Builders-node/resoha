@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FilterChips from './FilterChips';
 import FiltersModal from './FiltersModal';
+import GuestSearchAlert from './GuestSearchAlert';
 import Icon from './Icon';
 import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
@@ -13,10 +14,14 @@ import { toast } from './Toaster';
 import {
   SORTS, type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
-import { fmtNumber, fmtUsd, nListings } from '@/lib/format';
+import { fmtNumber, nListings } from '@/lib/format';
 import type { RoomStat } from '@/lib/priceStats';
 import type { Listing } from '@/lib/types';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
+import { useLp } from './useLp';
+import CatalogPager, { catalogHref } from './CatalogPager';
+import Link from 'next/link';
 
 function MapLoading() {
   const t = useT();
@@ -28,24 +33,39 @@ const MapView = dynamic(() => import('./MapView'), {
   loading: () => <MapLoading />,
 });
 
+/** ?page=N (1-based) → індекс сторінки; криве чи відсутнє — перша */
+const pageIndex = (v: string | null) => {
+  const n = Math.floor(Number(v));
+  return Number.isFinite(n) && n > 1 ? n - 1 : 0;
+};
+
 export default function ListingsExplorer({
   initialItems, initialPins, initialTotal, initialHasMore, initialFilters, favIds, authed, roomStats = [],
+  initialPage = 0, pageSize = 24,
 }: {
   initialItems: Listing[]; initialPins: Pin[]; initialTotal: number; initialHasMore: boolean;
   initialFilters: Filters; favIds: string[]; authed: boolean; roomStats?: RoomStat[];
+  /** з якої сторінки (0-based) почався список — ?page=N в адресі */
+  initialPage?: number; pageSize?: number;
 }) {
   const t = useT();
   const lang = useLang();
+  const money = useMoney();
+  const lp = useLp();
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [items, setItems] = useState<Listing[]>(initialItems);
   const [pins, setPins] = useState<Pin[]>(initialPins);
   const [total, setTotal] = useState(initialTotal);
-  const [page, setPage] = useState(0);
+  // first — сторінка, з якої почався список, page — остання завантажена (обидві 0-based)
+  const [first, setFirst] = useState(initialPage);
+  const [page, setPage] = useState(initialPage);
   const [hasMore, setHasMore] = useState(initialHasMore);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [modal, setModal] = useState(false);
+  // підписка гостя на пошук: назва й запит, з якими відкрито вікно
+  const [guestAlert, setGuestAlert] = useState<{ title: string; query: string } | null>(null);
   // межі, куди користувач посунув карту після останнього пошуку — тоді й зʼявляється «Search this area»
   const [movedTo, setMovedTo] = useState<Bbox | null>(null);
   // на вузьких екранах показуємо щось одне: список або карту
@@ -85,22 +105,25 @@ export default function ListingsExplorer({
    * бачить і наш власний replaceState) і на чужу зміну приймаємо те, що для
    * цієї адреси віддав сервер.
    */
-  const urlQs = toQuery(fromParams(Object.fromEntries(useSearchParams().entries())));
+  const sp = useSearchParams();
+  // сторінка теж частина адреси: перехід за посиланням ?page=N — така сама чужа навігація
+  const urlQs = `${toQuery(fromParams(Object.fromEntries(sp.entries())))}|${pageIndex(sp.get('page'))}`;
   // остання адреса, яку записали ми самі — щоб не приймати свій же фільтр за навігацію
-  const ownQs = useRef(toQuery(initialFilters));
+  const ownQs = useRef(`${toQuery(initialFilters)}|${initialPage}`);
 
   useEffect(() => {
     if (urlQs === ownQs.current) return;
 
     const incoming = toQuery(initialFilters);
-    ownQs.current = incoming;
+    ownQs.current = `${incoming}|${initialPage}`;
     fetchedQs.current = incoming;
     setFilters(initialFilters);
     setItems(initialItems);
     setPins(initialPins);
     setTotal(initialTotal);
     setHasMore(initialHasMore);
-    setPage(0);
+    setFirst(initialPage);
+    setPage(initialPage);
     setActiveId(null);
     setMovedTo(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,6 +135,7 @@ export default function ListingsExplorer({
 
     let cancelled = false;
     setLoading(true);
+    setFirst(0);
     setPage(0);
     // нова вибірка переставить карту сама — стара пропозиція шукати тут уже ні до чого
     setMovedTo(null);
@@ -130,10 +154,10 @@ export default function ListingsExplorer({
       })
       .finally(() => { if (!cancelled) setLoading(false); });
 
-    ownQs.current = qs;
-    window.history.replaceState(null, '', `/listings${qs ? `?${qs}` : ''}`);
+    ownQs.current = `${qs}|0`;
+    window.history.replaceState(null, '', lp(catalogHref(qs, 1)));
     return () => { cancelled = true; };
-  }, [qs]);
+  }, [qs, lp]);
 
   async function loadMore() {
     setLoadingMore(true);
@@ -143,6 +167,9 @@ export default function ListingsExplorer({
     setPage(next);
     setHasMore(d.hasMore);
     setLoadingMore(false);
+    // адреса показує, докуди догорнули: оновлення сторінки чи «назад» не скидають на початок
+    ownQs.current = `${qs}|${next}`;
+    window.history.replaceState(null, '', lp(catalogHref(qs, next + 1)));
   }
 
   const set = (patch: Partial<Filters>) => setFilters((f) => ({ ...f, ...patch }));
@@ -170,14 +197,15 @@ export default function ListingsExplorer({
   }, []);
 
   async function saveSearch() {
-    if (!authed) return toast(t('Sign in to save searches'));
     const title = [
       filters.deal === 'rent' ? t('Rentals') : t('For sale'),
       filters.oceanfront && t('oceanfront'),
       filters.beds.length && t('{n} bd', { n: filters.beds.join('/') }),
       filters.neighborhoods[0],
-      filters.priceMax && t('under {price}', { price: fmtUsd(Number(filters.priceMax)) }),
+      filters.priceMax && t('under {price}', { price: money.amount(Number(filters.priceMax)) }),
     ].filter(Boolean).join(', ');
+    // гість підписується лише email-ом, з листом-підтвердженням (0058)
+    if (!authed) return setGuestAlert({ title: title || t('All listings'), query: qs });
     const res = await fetch('/api/saved-searches', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title: title || t('All listings'), query: qs }),
@@ -265,6 +293,13 @@ export default function ListingsExplorer({
             </label>
           </div>
 
+          {first > 0 && !loading && (
+            <p className="cpager__back small">
+              {t('Page {n} of the results.', { n: first + 1 })}{' '}
+              <Link className="link-accent" href={lp(catalogHref(qs, first))} rel="prev">{t('Show earlier listings')}</Link>
+            </p>
+          )}
+
           {(filters.deal === 'sale' || filters.deal === 'rent') && (
             <RoomPriceStats deal={filters.deal} stats={roomStats} onPick={(beds) => set({ beds })} />
           )}
@@ -296,12 +331,9 @@ export default function ListingsExplorer({
             </div>
           )}
 
-          {hasMore && (
-            <div style={{ display: 'grid', placeItems: 'center', padding: '24px 0 6px' }}>
-              <button className="btn btn--ghost btn--lg" onClick={loadMore} disabled={loadingMore}>
-                {loadingMore ? t('Loading…') : t('Show more — {n} left', { n: total - items.length })}
-              </button>
-            </div>
+          {!loading && total > 0 && (
+            <CatalogPager qs={qs} first={first + 1} last={page + 1} pages={Math.ceil(total / pageSize)}
+              left={Math.max(0, total - items.length)} more={hasMore} loading={loadingMore} onMore={loadMore} />
           )}
 
           <RecentlyViewed favIds={favIds} variant="list" />
@@ -333,6 +365,7 @@ export default function ListingsExplorer({
         onClose={() => setModal(false)}
         onApply={(f) => setFilters(f)}
       />
+      {guestAlert && <GuestSearchAlert {...guestAlert} onClose={() => setGuestAlert(null)} />}
     </>
   );
 }

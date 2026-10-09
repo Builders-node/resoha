@@ -1,3 +1,6 @@
+import type { Metadata } from 'next';
+import { SITE_NAME } from '@/lib/site';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import AgencyRow from '@/components/AgencyRow';
 import Avatar from '@/components/Avatar';
@@ -5,13 +8,20 @@ import Icon from '@/components/Icon';
 import { agencyBoard, listAgents, queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
 import { trackPromo } from '@/lib/promo';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 
-export const metadata = { title: 'Agents & agencies — Resoha Roatán' };
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/agents', {
+    title: `${t('Agents & agencies on Roatán')} | ${SITE_NAME}`,
+    description: t('Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.'),
+  });
+}
 
 /** Публічний каталог: раніше пункт меню «Agents» вів у кабінет ріелтора зі стіною входу. */
 export default async function AgentsIndexPage() {
+  const lp = await getLp();
   const [agents, board, listings, lang] = await Promise.all([listAgents(), agencyBoard(), queryListings(), getLang()]);
   const t = makeT(lang);
   await trackPromo('agency', board.map((r) => ({ id: r.agency.id, featured: !!r.agency.featured })), 'impression');
@@ -51,7 +61,7 @@ export default async function AgentsIndexPage() {
         ) : (
           <div className="grid grid--4">
             {sorted.map((a) => (
-              <Link key={a.id} className="person" href={`/agents/${a.id}`}>
+              <Link key={a.id} className="person" href={lp(`/agents/${a.id}`)}>
                 <Avatar src={a.avatar} name={a.name} />
                 <div>
                   <div className="person__name with-ico">
@@ -70,7 +80,7 @@ export default async function AgentsIndexPage() {
         )}
       </section>
 
-      <div className="crumbs crumbs--foot small muted"><Link href="/">{t('Home')}</Link> · {t('Agents & agencies')}</div>
+      <div className="crumbs crumbs--foot small muted"><Link href={lp('/')}>{t('Home')}</Link> · {t('Agents & agencies')}</div>
     </div>
   );
 }
