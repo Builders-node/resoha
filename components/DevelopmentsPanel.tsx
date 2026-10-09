@@ -72,6 +72,8 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
               <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>Manage</button>
               <button className="btn btn--ghost btn--sm" onClick={() => setOpen({ dev: d, section: 'news' })}>+ Post news</button>
               <Link className="btn btn--ghost btn--sm" href={`/developments/${d.slug}`} target="_blank">Open page</Link>
+              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/booklet`} target="_blank" rel="noreferrer">Booklet PDF</a>
+              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/price-list`} target="_blank" rel="noreferrer">Price list PDF</a>
             </div>
           </div>
         ))}
