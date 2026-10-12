@@ -9,6 +9,7 @@ import Icon from './Icon';
 import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
 import RecentlyViewed from './RecentlyViewed';
+import { REGIONS, islandFor, regionByName } from '@/lib/regions';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
@@ -188,7 +189,7 @@ export default function ListingsExplorer({
       filters.deal === 'rent' ? t('Rentals') : t('For sale'),
       filters.oceanfront && t('oceanfront'),
       filters.beds.length && t('{n} bd', { n: filters.beds.join('/') }),
-      filters.neighborhoods[0],
+      filters.neighborhoods[0] || filters.island,
       filters.priceMax && t('under {price}', { price: money.amount(Number(filters.priceMax)) }),
     ].filter(Boolean).join(', ');
     // гість підписується лише email-ом, з листом-підтвердженням (0058)
@@ -219,6 +220,12 @@ export default function ListingsExplorer({
               <input className="input filters__q" type="search" placeholder={t('Search: area, resort, street…')}
                 value={qDraft} onChange={(e) => typeQ(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
+
+              <select className="input filters__type filters__city" value={filters.island} aria-label={t('City')}
+                onChange={(e) => set({ island: e.target.value, neighborhoods: filters.neighborhoods.filter((n) => !e.target.value || islandFor(n) === e.target.value) })}>
+                <option value="">{t('All cities')}</option>
+                {REGIONS.map((r) => <option key={r.slug} value={r.name}>{r.name}</option>)}
+              </select>
 
               <select className="input filters__type" value={filters.type} onChange={(e) => set({ type: e.target.value })}>
                 <option value="">{t('Any type')}</option>
@@ -330,7 +337,7 @@ export default function ListingsExplorer({
 
         <div className="split__map">
           <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId}
-            area={area} onMoved={setMovedTo} />
+            area={area} onMoved={setMovedTo} center={regionByName(filters.island)?.centre} />
           {movedTo && (
             <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>
               <Icon name="search" size={16} /> {t('Search this area')}

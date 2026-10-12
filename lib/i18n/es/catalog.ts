@@ -39,12 +39,14 @@ export const ES_CATALOG: Record<string, string> = {
   'Delivered': 'Entregado',
 
   // --- головна ---
-  'Every property on Roatán, checked before you fly': 'Todas las propiedades de Roatán, verificadas antes de que viaje',
-  'Homes, condos, rentals and land from island agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.':
-    'Casas, condominios, alquileres y terrenos de las agencias de la isla en un solo lugar. Cada anuncio enlaza con la agencia que lo publica, y cada terreno incluye un pasaporte del terreno: título, acceso, electricidad y agua, confirmados o no.',
+  'Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy':
+    'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa, verificadas antes de comprar',
+  'Homes, condos, rentals and land from local agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.':
+    'Casas, condominios, alquileres y terrenos de agencias locales en un solo lugar. Cada anuncio enlaza con la agencia que lo publica, y cada terreno incluye un pasaporte del terreno: título, acceso, electricidad y agua, confirmados o no.',
   'Browse the listings': 'Ver anuncios',
   'How the land passport works': 'Cómo funciona el pasaporte del terreno',
-  'Featured on Roatán': 'Destacados en Roatán',
+  'Featured listings':
+    'Anuncios destacados',
   'Featured buildings': 'Edificios destacados',
   'Featured': 'Destacado',
   '{n} floors': '{n} pisos',
@@ -62,7 +64,8 @@ export const ES_CATALOG: Record<string, string> = {
   '{n} units': '{n} unidades',
   'Real-estate agencies': 'Agencias inmobiliarias',
   'All agents & agencies': 'Todos los agentes y agencias',
-  'Selling on the island?': '¿Vende en la isla?',
+  'Selling property in Honduras?':
+    '¿Vende una propiedad en Honduras?',
   'Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.':
     'Publique anuncios, reciba consultas de compradores que vienen a la isla y siga las visitas desde su propio panel.',
   'List for free': 'Publicar gratis',
@@ -603,4 +606,16 @@ export const ES_CATALOG: Record<string, string> = {
   'Resoha statistics': 'Estadísticas de Resoha',
   'Median price': 'Precio mediano',
   'in a year': 'en un año',
+  'City and area': 'Ciudad y zona',
+  'All of Honduras': 'Todo Honduras',
+  'All cities': 'Todas las ciudades',
+  'City': 'Ciudad',
+  'Coordinates outside our regions': 'Coordenadas fuera de nuestras regiones',
+  'Pin outside our regions': 'Pin fuera de nuestras regiones',
+  'Building permit (ZOLITUR or municipality)': 'Permiso de construcción (ZOLITUR o municipalidad)',
+  'City centre': 'Centro de la ciudad',
+  'Airport (SAP)': 'Aeropuerto (SAP)',
+  'Airport (TGU)': 'Aeropuerto (TGU)',
+  '{what}: {n} listings with photos, prices and a map. Contact local agencies directly on WhatsApp.': '{what}: {n} anuncios con fotos, precios y mapa. Contacte a las agencias locales directamente por WhatsApp.',
+  'By city': 'Por ciudad',
 };

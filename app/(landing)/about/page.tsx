@@ -17,10 +17,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const PRINCIPLES = [
-  { icon: 'link', title: 'Every listing says where it came from', text: 'Each property links back to the island agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.' },
+  { icon: 'link', title: 'Every listing says where it came from', text: 'Each property links back to the agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.' },
   { icon: 'deed', title: 'Land facts, not adjectives', text: 'Land listings carry a land passport: title, road, power, water, survey, permit, zone and slope, marked confirmed or not, with a date.' },
   { icon: 'chat', title: 'Talk to the agent directly', text: 'Enquiries go straight to the listing agent by WhatsApp, phone or email. Resoha is not a broker and takes no commission from buyers.' },
-  { icon: 'map', title: 'The whole island on one map', text: 'From West Bay to Camp Bay, filter by price, title, oceanfront and readiness, then search the area you are looking at.' },
+  { icon: 'map', title: 'Three markets on one map', text: 'From West Bay to Lomas del Guijarro, filter by city, price, title and readiness, then search the area you are looking at.' },
 ];
 
 export default async function AboutPage() {
@@ -38,7 +38,7 @@ export default async function AboutPage() {
 
       <section className="hero hero--dark">
         <span className="hero__eyebrow">{t('About Resoha')}</span>
-        <h1>{t('Every property on Roatán, checked before you fly')}</h1>
+        <h1>{t('Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy')}</h1>
         <p className="hero__sub">
           {t('Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Resoha brings the island’s listings into one place and makes the facts that protect your money visible.')}
         </p>

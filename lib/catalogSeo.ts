@@ -33,11 +33,11 @@ export function catalogPage(sp: SP): number {
 export const loadCatalogPage = cache(async (qs: string, page: number) =>
   searchListings(toListingQuery(new URLSearchParams(qs)), page - 1, PAGE_SIZE));
 
-/** Фільтри, з яких складається індексована сторінка: розділ, тип, район, спальні, біля моря, «готова» земля. */
+/** Фільтри, з яких складається індексована сторінка: розділ, тип, місто, район, спальні, біля моря, «готова» земля. */
 function coreOf(f: Filters): Filters {
   return {
     ...EMPTY_FILTERS,
-    deal: f.deal, type: f.type, neighborhoods: f.neighborhoods, beds: f.beds,
+    deal: f.deal, type: f.type, island: f.island, neighborhoods: f.neighborhoods, beds: f.beds,
     oceanfront: f.oceanfront, ready: f.ready && f.type === 'land',
   };
 }
@@ -60,7 +60,7 @@ export function isIndexable(f: Filters) {
   if (toQuery(f) !== toQuery(core)) return false;
   if (f.deal !== 'sale' && f.deal !== 'rent') return false;
   if (f.neighborhoods.length > 1 || f.beds.length > 1) return false;
-  const facets = [f.type, f.neighborhoods.length, f.beds.length, f.oceanfront, core.ready].filter(Boolean).length;
+  const facets = [f.type, f.island && !f.neighborhoods.length, f.neighborhoods.length, f.beds.length, f.oceanfront, core.ready].filter(Boolean).length;
   return facets <= 3;
 }
 
@@ -81,7 +81,7 @@ export function catalogTitle(f: Filters, lang: Lang) {
   if (f.ready && f.type === 'land') what = t('ready-to-build {what}', { what });
   if (f.deal === 'rent') what = t('{what} for rent', { what });
   else if (f.deal === 'sale') what = t('{what} for sale', { what });
-  const place = f.neighborhoods.length === 1 ? f.neighborhoods[0] : 'Roatán';
+  const place = f.neighborhoods.length === 1 ? f.neighborhoods[0] : f.island || 'Honduras';
   const s = t('{what} in {place}', { what, place });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
@@ -94,7 +94,7 @@ export async function catalogMetadata(sp: SP, lang: Lang): Promise<Metadata> {
   const { total } = await loadCatalogPage(toQuery(f), page);
   const head = catalogTitle(f, lang);
   const title = `${head}${page > 1 ? t(' — page {n}', { n: page }) : ''}`;
-  const description = t('{what}: {n} listings with photos, prices and a map. Contact island agencies directly on WhatsApp.', {
+  const description = t('{what}: {n} listings with photos, prices and a map. Contact local agencies directly on WhatsApp.', {
     what: head, n: fmtNumber(total),
   });
 

@@ -9,6 +9,7 @@ import { getMoney } from '@/lib/currencyServer';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
 import { BUILDING_STAGES, salesLabel, stageLabel } from '@/lib/units';
+import { departmentLabel } from '@/lib/regions';
 
 /**
  * Каркас усіх сторінок ЖК, як у LUN: назва й адреса, вкладки (окремі сторінки),
@@ -64,7 +65,7 @@ export default async function DevelopmentShell({ ctx, active, title, top, wide, 
           <span className="dev__kicker">{t('New development')}</span>
           <h1 className="dhead__title">{dev.name}{title && <span className="dhead__sub"> · {t(title)}</span>}</h1>
           <p className="muted" style={{ margin: '6px 0 0' }}>
-            {dev.address && <>{dev.address} · </>}{dev.neighborhood}, {dev.island}, {t('Bay Islands')}
+            {dev.address && <>{dev.address} · </>}{dev.neighborhood}, {dev.island}, {t(departmentLabel(dev.island))}
           </p>
         </div>
         {from !== null && <div className="dhead__price"><span className="muted small">{t('From')} </span>{money.amount(from)}</div>}

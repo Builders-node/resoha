@@ -1,4 +1,5 @@
 import { SOURCES, type Source } from './sources';
+import { REGIONS } from '../regions';
 
 /**
  * Сторінки районів. `neighborhoods` — назви з AREA_CENTRES (lib/format.ts), за якими
@@ -7,6 +8,10 @@ import { SOURCES, type Source } from './sources';
 export type Area = {
   slug: string;
   name: string;
+  /** місто чи острів (REGIONS.name); без нього — Роатан */
+  region?: string;
+  /** що писати замість діапазону цін, коли джерела немає */
+  priceNote?: string;
   neighborhoods: string[];
   /** одне речення-відповідь: що це за район і кому він підходить */
   summary: string;
@@ -209,9 +214,72 @@ export const AREAS: Area[] = [
       { q: 'What is Punta Gorda, Roatán known for?', a: 'Punta Gorda is the oldest Garifuna community in Honduras, founded in 1797 on Roatán’s north coast.' },
     ],
   },
+  {
+    slug: 'san-pedro-sula',
+    name: 'San Pedro Sula',
+    region: 'San Pedro Sula',
+    neighborhoods: Object.keys(REGIONS.find((r) => r.name === 'San Pedro Sula')!.areas),
+    summary: 'San Pedro Sula is the industrial and business capital of Honduras, in the Sula Valley: gated colonias, apartment towers and commercial property close to the country’s busiest international airport.',
+    priceRange: null,
+    priceSource: null,
+    priceNote: 'No published benchmark yet',
+    bestFor: 'Business owners, Honduran families, buyers of city apartments and commercial space',
+    intro: [
+      'San Pedro Sula sits in the Sula Valley in the department of Cortés, at the foot of the Merendón mountains. It is the country’s main industrial and commercial centre, about an hour by road from Puerto Cortés, and Ramón Villeda Morales International Airport (SAP) is the busiest in Honduras.',
+      'The market is mostly houses in gated colonias, newer apartment towers to the north and west, and commercial property along the main boulevards. Older central barrios such as Río de Piedras and Guamilito mix homes with offices and shops, while the colonias on the slopes of the Merendón are greener and cooler.',
+    ],
+    highlights: [
+      'The busiest international airport in Honduras, with direct flights to the United States.',
+      'Steady demand from businesses and professionals for apartments and offices.',
+      'Shopping centres, private hospitals and international schools within the city.',
+      'Flat valley land makes access and building simpler than on the islands.',
+    ],
+    considerations: [
+      'Safety differs from one colonia to the next. Visit at different times of day and ask how access to the colonia is controlled.',
+      'Parts of the Sula Valley flood in heavy rain. Ask how the property came through the 2020 storms Eta and Iota.',
+      'Have a Honduran attorney check the title at the Instituto de la Propiedad before you pay a deposit.',
+    ],
+    faq: [
+      { q: 'Can foreigners buy property in San Pedro Sula?', a: 'Generally yes. The constitution limits foreign ownership of land within 40 km of the coasts and borders, with exceptions for homes and tourism under Decree 90-90. Most of San Pedro Sula lies outside that strip, but have a Honduran attorney confirm it for the specific property before you pay.' },
+      { q: 'How do I find property in San Pedro Sula on Resoha?', a: 'Choose San Pedro Sula in the city filter on the listings map, or use the links on this page. Every listing links back to the agency that holds it.' },
+    ],
+  },
+  {
+    slug: 'tegucigalpa',
+    name: 'Tegucigalpa',
+    region: 'Tegucigalpa',
+    neighborhoods: Object.keys(REGIONS.find((r) => r.name === 'Tegucigalpa')!.areas),
+    summary: 'Tegucigalpa is the capital of Honduras, a hillside city in Francisco Morazán where government, embassies and many employers are based; most buyers look in the south-east colonias such as Lomas del Guijarro and Los Próceres.',
+    priceRange: null,
+    priceSource: null,
+    priceNote: 'No published benchmark yet',
+    bestFor: 'Professionals, diplomats and NGO staff, Honduran families, long-term renters',
+    intro: [
+      'Tegucigalpa lies in a mountain valley at about 1,000 m, which gives it a milder climate than the coast. With Comayagüela across the Choluteca River it forms the Distrito Central, the seat of government. Most international flights use Palmerola (XPL) near Comayagua, about an hour away; Toncontín (TGU) in the city handles mainly domestic and regional flights.',
+      'Demand concentrates in the south-east: Lomas del Guijarro, Lomas del Mayab, Los Próceres and Palmira have apartment towers, embassies, offices and restaurants. Families who want more space and cooler air look to the hills of El Hatillo and to Santa Lucía and Valle de Ángeles on the road east.',
+    ],
+    highlights: [
+      'The seat of government, embassies and international organisations, with steady rental demand from their staff.',
+      'A mild mountain climate all year.',
+      'Newer apartment towers with security and amenities in the south-east colonias.',
+      'Colonial hill towns such as Santa Lucía and Valle de Ángeles within about half an hour.',
+    ],
+    considerations: [
+      'Streets are steep and rush-hour traffic is heavy; check the commute to work and school.',
+      'Some hillsides have a history of landslides in the rainy season. Ask about the ground and drainage.',
+      'Mains water is irregular in parts of the city. Ask whether the property has a cistern or a well.',
+      'Have a Honduran attorney check the title at the Instituto de la Propiedad before you pay a deposit.',
+    ],
+    faq: [
+      { q: 'Can foreigners buy property in Tegucigalpa?', a: 'Yes. Tegucigalpa is outside the coastal and border strip where the constitution limits foreign ownership, so foreigners can generally buy in their own name. Have a Honduran attorney check the title before you pay a deposit.' },
+      { q: 'Which airport serves Tegucigalpa?', a: 'Most international flights use Palmerola International Airport (XPL) near Comayagua, about an hour by road. Toncontín (TGU) in the city handles mainly domestic and regional flights.' },
+    ],
+  },
 ];
 
 export const areaBySlug = (slug: string) => AREAS.find((a) => a.slug === slug);
 
 /** Назва району з бази → сторінка району, щоб картки на головній вели на контент, а не лише на фільтр. */
 export const areaForNeighborhood = (name: string) => AREAS.find((a) => a.neighborhoods.includes(name));
+
+export const areaRegion = (a: Area) => a.region ?? 'Roatán';

@@ -7,6 +7,7 @@ import NearbyEditor from './NearbyEditor';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
+import { REGIONS, islandFor, regionByName } from '@/lib/regions';
 import { DETAIL_FIELDS, IN_UNIT } from '@/lib/details';
 import { EMPTY_LAND, LAND_FIELDS } from '@/lib/land';
 import {
@@ -77,14 +78,25 @@ export default function ListingForm({
     listing ? [listing.lat, listing.lng] : AREA_CENTRES['West Bay'],
   );
 
+  // місто/острів: від нього залежить список районів; у базу island пише сервер з району
+  const [city, setCity] = useState(() => islandFor(listing?.neighborhood, listing?.island));
+
   function pickArea(next: string) {
     setArea(next);
     const centre = AREA_CENTRES[next];
     if (centre) setPin(centre);
   }
 
+  function pickCity(next: string) {
+    setCity(next);
+    const region = regionByName(next);
+    const first = region && Object.keys(region.areas)[0];
+    if (first && islandFor(area) !== next) pickArea(first);
+  }
+
   // Райони беремо з бази, а не з константи: інакше форма не побачить нові
-  const [areas, setAreas] = useState<string[]>(NEIGHBORHOODS);
+  const [areas, setAreas] = useState<{ name: string; island: string }[]>(
+    NEIGHBORHOODS.map((name) => ({ name, island: islandFor(name) })));
   const [saving, setSaving] = useState(false);
   const editing = Boolean(listing);
   const last = STEPS.length - 1;
@@ -109,7 +121,7 @@ export default function ListingForm({
   const resetBase = useRef(false);
   const localTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const serverTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
-  const stateSig = JSON.stringify([photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, area, pin]);
+  const stateSig = JSON.stringify([photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, city, area, pin]);
   const lastSig = useRef(stateSig);
 
   /** Що піде на сервер: поля форми, зібрані в обʼєкти, плюс керовані стани (фото, ЖК, пін…) */
@@ -160,7 +172,7 @@ export default function ListingForm({
     const sqft = (form.elements.namedItem('sqft') as HTMLInputElement | null)?.value ?? '';
     return {
       v: 1, at: Date.now(), base: listing?.updatedAt ?? '', step, fields: readFields(form),
-      state: { photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, area, pin, sqft },
+      state: { photos, photoRooms, nearby, developmentId, buildingId, floorplan, type, deal, city, area, pin, sqft },
     };
   }
   const sig = (d: Pick<ListingDraft, 'fields' | 'state'>) => JSON.stringify([d.fields, d.state]);
@@ -249,7 +261,7 @@ export default function ListingForm({
     if (!d) return;
     const st = d.state as {
       photos?: string[]; photoRooms?: PhotoRooms; nearby?: NearbyPlace[]; developmentId?: string; buildingId?: string;
-      floorplan?: string[]; type?: Listing['type']; deal?: Listing['deal']; area?: string; pin?: [number, number]; sqft?: string;
+      floorplan?: string[]; type?: Listing['type']; deal?: Listing['deal']; area?: string; city?: string; pin?: [number, number]; sqft?: string;
     };
     if (Array.isArray(st.photos)) setPhotos(st.photos);
     if (st.photoRooms) setPhotoRooms(st.photoRooms);
@@ -262,7 +274,8 @@ export default function ListingForm({
     if (st.area) {
       const a = st.area;
       setArea(a);
-      setAreas((list) => (list.includes(a) ? list : [...list, a].sort()));
+      setCity(islandFor(a, st.city));
+      setAreas((list) => (list.some((x) => x.name === a) ? list : [...list, { name: a, island: islandFor(a, st.city) }]));
     }
     if (Array.isArray(st.pin) && st.pin.length === 2) setPin(st.pin);
     setSqftOverride(Number(st.sqft) || undefined);
@@ -310,10 +323,15 @@ export default function ListingForm({
   useEffect(() => {
     fetch('/api/facets')
       .then((r) => r.json())
-      .then((d: { areas?: { name: string }[] }) => {
-        const fromDb = (d.areas ?? []).map((a) => a.name);
+      .then((d: { areas?: { name: string; island?: string }[] }) => {
         // об'єднуємо з довідником і поточним значенням, щоб нічого не загубити
-        setAreas([...new Set([...fromDb, ...NEIGHBORHOODS, listing?.neighborhood].filter(Boolean) as string[])].sort());
+        const all = new Map<string, string>();
+        for (const n of NEIGHBORHOODS) all.set(n, islandFor(n));
+        for (const a of d.areas ?? []) if (!all.has(a.name)) all.set(a.name, islandFor(a.name, a.island));
+        if (listing?.neighborhood && !all.has(listing.neighborhood)) {
+          all.set(listing.neighborhood, islandFor(listing.neighborhood, listing.island));
+        }
+        setAreas([...all].map(([name, island]) => ({ name, island })).sort((a, b) => a.name.localeCompare(b.name)));
       })
       .catch(() => {});
   }, [listing?.neighborhood]);
@@ -530,12 +548,16 @@ export default function ListingForm({
         {/* 2. Де */}
         <section data-step={1} hidden={show(1)} className="lf__sec">
           <div className="lf__row">
+            <div className="field"><label>City</label>
+              <select className="input" name="island" value={city} onChange={(e) => pickCity(e.target.value)}>
+                {REGIONS.map((r) => <option key={r.slug} value={r.name}>{r.name}</option>)}
+              </select></div>
             <div className="field"><label>Area</label>
               <select className="input" name="neighborhood" value={area} onChange={(e) => pickArea(e.target.value)}>
-                {areas.map((n) => <option key={n} value={n}>{n}</option>)}
+                {areas.filter((a) => a.island === city || a.name === area).map((a) => <option key={a.name} value={a.name}>{a.name}</option>)}
               </select></div>
             <div className="field"><label>Address</label>
-              <input className="input" name="address" defaultValue={v?.address} placeholder="West Bay Beach Rd" /></div>
+              <input className="input" name="address" defaultValue={v?.address} placeholder={city === 'Roatán' ? 'West Bay Beach Rd' : 'Blvd. Morazán'} /></div>
           </div>
 
           <div className="field"><label>Pin on the map</label>

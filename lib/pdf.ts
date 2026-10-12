@@ -55,7 +55,7 @@ export class Booklet {
   addPage() {
     this.page = this.pdf.addPage([W, H]);
     this.page.drawRectangle({ x: 0, y: H - HEAD, width: W, height: HEAD, color: INK });
-    this.page.drawText('RESOHA ROATAN', { x: M, y: H - 40, size: 14, font: this.bold, color: rgb(1, 1, 1) });
+    this.page.drawText('RESOHA', { x: M, y: H - 40, size: 14, font: this.bold, color: rgb(1, 1, 1) });
     const k = this.safe(this.kicker.toUpperCase());
     this.page.drawText(k, { x: W - M - this.bold.widthOfTextAtSize(k, 11), y: H - 40, size: 11, font: this.bold, color: ORANGE });
     this.y = H - HEAD - 36;

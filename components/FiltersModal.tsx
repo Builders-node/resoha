@@ -4,6 +4,7 @@ import Icon from './Icon';
 import RangeSlider from './RangeSlider';
 import { AMENITIES, EMPTY_FILTERS, type Filters, SORTS, toQuery } from '@/lib/filters';
 import { fmtNumber, nListings, sqftToM2 } from '@/lib/format';
+import { REGIONS, islandFor } from '@/lib/regions';
 import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
 import CurrencySwitch from './CurrencySwitch';
@@ -14,7 +15,8 @@ type Facets = {
   sqft: { min: number; max: number };
   lot: { min: number; max: number };
   tags: { name: string; count: number }[];
-  areas: { name: string; count: number }[];
+  areas: { name: string; count: number; island?: string }[];
+  islands?: { name: string; count: number }[];
   oceanfront: number; titled: number; ownerFinancing: number; noHoa: number;
 };
 
@@ -357,11 +359,24 @@ export default function FiltersModal({
             </div>
           </section>
 
-          {/* ——— Areas ——— */}
+          {/* ——— City and areas ——— */}
           <section className="fsec">
-            <div className="fsec__head"><span className="fsec__ico"><Icon name="pin" size={19} /></span><h4>{t('Areas of Roatán')}</h4></div>
+            <div className="fsec__head"><span className="fsec__ico"><Icon name="pin" size={19} /></span><h4>{t('City and area')}</h4></div>
+            <div className="chip-row" style={{ marginBottom: 12 }}>
+              <button className={`chip-btn ${!draft.island ? 'is-on' : ''}`} onClick={() => set({ island: '' })}>{t('All of Honduras')}</button>
+              {REGIONS.map((r) => (
+                <button key={r.slug} className={`chip-btn ${draft.island === r.name ? 'is-on' : ''}`}
+                  onClick={() => set({
+                    island: r.name,
+                    // районів іншого міста в новому місті не буває — прибираємо, щоб не отримати нуль результатів
+                    neighborhoods: draft.neighborhoods.filter((n) => islandFor(n) === r.name),
+                  })}>
+                  {r.name} <span className="muted" style={{ marginLeft: 4 }}>{facets?.islands?.find((i) => i.name === r.name)?.count ?? 0}</span>
+                </button>
+              ))}
+            </div>
             <div className="chip-row">
-              {(facets?.areas ?? []).map((a) => (
+              {(facets?.areas ?? []).filter((a) => !draft.island || (a.island ?? islandFor(a.name)) === draft.island).map((a) => (
                 <button key={a.name} className={`chip-btn ${draft.neighborhoods.includes(a.name) ? 'is-on' : ''}`}
                   onClick={() => set({ neighborhoods: toggleIn(draft.neighborhoods, a.name) })}>
                   {a.name} <span className="muted" style={{ marginLeft: 4 }}>{a.count}</span>

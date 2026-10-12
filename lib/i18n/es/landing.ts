@@ -34,22 +34,24 @@ export const ES_LANDING: Record<string, string> = {
 
   // Про нас
   'About Resoha': 'Acerca de Resoha',
-  'Every property on Roatán, checked before you fly': 'Todas las propiedades de Roatán, verificadas antes de que viaje',
+  'Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy':
+    'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa, verificadas antes de comprar',
   'Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Resoha brings the island’s listings into one place and makes the facts that protect your money visible.':
     'Roatán no tiene MLS. Los anuncios están dispersos en decenas de sitios de agencias y grupos de Facebook, los precios no coinciden, las casas vendidas siguen publicadas y los agentes no necesitan licencia. Los compradores que viven a miles de kilómetros tienen que armar el rompecabezas por su cuenta. Resoha reúne los anuncios de la isla en un solo lugar y deja a la vista los datos que protegen su dinero.',
   'What we stand for': 'Lo que defendemos',
   'Every listing says where it came from': 'Cada anuncio indica de dónde viene',
-  'Each property links back to the island agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.':
-    'Cada propiedad enlaza a la agencia o al agente de la isla que la tiene. Sin duplicados copiados, sin fotos de archivo, sin anuncios que se vendieron el año pasado.',
+  'Each property links back to the agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.':
+    'Cada propiedad enlaza a la agencia o al agente que la tiene. Sin duplicados copiados, sin fotos de archivo, sin anuncios que se vendieron el año pasado.',
   'Land facts, not adjectives': 'Datos del terreno, no adjetivos',
   'Land listings carry a land passport: title, road, power, water, survey, permit, zone and slope, marked confirmed or not, with a date.':
     'Los anuncios de terrenos incluyen un pasaporte del terreno: título, acceso, electricidad, agua, levantamiento, permiso, zona y pendiente, marcados como confirmados o no, con fecha.',
   'Talk to the agent directly': 'Hable directamente con el agente',
   'Enquiries go straight to the listing agent by WhatsApp, phone or email. Resoha is not a broker and takes no commission from buyers.':
     'Las consultas llegan directamente al agente del anuncio por WhatsApp, teléfono o correo. Resoha no es un corredor y no cobra comisión a los compradores.',
-  'The whole island on one map': 'Toda la isla en un solo mapa',
-  'From West Bay to Camp Bay, filter by price, title, oceanfront and readiness, then search the area you are looking at.':
-    'De West Bay a Camp Bay, filtre por precio, título, frente al mar y preparación, y luego busque en la zona que está mirando.',
+  'Three markets on one map':
+    'Tres mercados en un solo mapa',
+  'From West Bay to Lomas del Guijarro, filter by city, price, title and readiness, then search the area you are looking at.':
+    'De West Bay a Lomas del Guijarro, filtre por ciudad, precio, título y disponibilidad, y luego busque en la zona que está mirando.',
   'Who Resoha is for': 'Para quién es Resoha',
   'Retirees and future residents': 'Jubilados y futuros residentes',
   'from the US and Canada who want a home on the island and cannot afford a mistake.': 'de EE. UU. y Canadá que quieren un hogar en la isla y no pueden permitirse un error.',
@@ -182,7 +184,8 @@ export const ES_LANDING: Record<string, string> = {
   'Journalists and researchers are welcome to cite this page. Please link to {url}.': 'Periodistas e investigadores pueden citar esta página. Por favor enlacen a {url}.',
 
   // Райони
-  'Areas of Roatán: where to buy': 'Zonas de Roatán: dónde comprar',
+  'Areas of Roatán, San Pedro Sula and Tegucigalpa: where to buy':
+    'Zonas de Roatán, San Pedro Sula y Tegucigalpa: dónde comprar',
   'Roatán is about 77 km (48 miles) long and less than 8 km wide, and prices fall from the beaches of the west to the quiet, land-rich east. Pick an area to see typical prices, what it is like to live there and what is listed now.':
     'Roatán mide unos 77 km (48 millas) de largo y menos de 8 km de ancho, y los precios bajan desde las playas del oeste hacia el este tranquilo y con mucho terreno. Elija una zona para ver precios típicos, cómo es vivir allí y qué está publicado ahora.',
   'Prices below the west': 'Precios por debajo del oeste',
@@ -199,7 +202,8 @@ export const ES_LANDING: Record<string, string> = {
   'Year-round residents, boat owners, buyers who want value': 'Residentes todo el año, dueños de botes, compradores que buscan buen valor',
   'Buyers seeking quiet, waterfront living and an authentic island town': 'Compradores que buscan tranquilidad, vida frente al agua y un auténtico pueblo isleño',
   'Land buyers, off-grid builders, people seeking privacy': 'Compradores de terrenos, constructores fuera de la red, personas que buscan privacidad',
-  '{area}, Roatán: property and area guide': '{area}, Roatán: guía de propiedades y de la zona',
+  '{area}, {region}: property and area guide':
+    '{area}, {region}: guía de propiedades y de la zona',
   'In short': 'En resumen',
   'Typical prices': 'Precios típicos',
   'Too few sales': 'Muy pocas ventas',
@@ -211,7 +215,8 @@ export const ES_LANDING: Record<string, string> = {
   'Why buyers choose {area}': 'Por qué los compradores eligen {area}',
   'What to check before buying': 'Qué revisar antes de comprar',
   'Search {area}': 'Buscar en {area}',
-  'Every listing on Resoha links back to the island agency that holds it.': 'Cada anuncio en Resoha enlaza a la agencia de la isla que lo tiene.',
+  'Every listing on Resoha links back to the agency that holds it.':
+    'Cada anuncio en Resoha enlaza a la agencia que lo tiene.',
   'Homes for sale': 'Casas en venta',
   'Rentals': 'Alquileres',
   'Land & lots': 'Terrenos y lotes',
@@ -219,11 +224,12 @@ export const ES_LANDING: Record<string, string> = {
   'all areas compared': 'todas las zonas comparadas',
   'Listed in {area}': 'Publicado en {area}',
   'See all on the map': 'Ver todo en el mapa',
-  'No listings in {area} yet. We are adding island agencies every week.': 'Aún no hay anuncios en {area}. Sumamos agencias de la isla cada semana.',
-  'Browse the whole island': 'Ver toda la isla',
+  'No listings in {area} yet. We are adding agencies every week.':
+    'Aún no hay anuncios en {area}. Sumamos agencias cada semana.',
   '{area}: frequently asked questions': '{area}: preguntas frecuentes',
   'Area information checked {date}. Listing counts update live.': 'Información de la zona verificada el {date}. Los conteos de anuncios se actualizan en vivo.',
-  'Other areas of Roatán': 'Otras zonas de Roatán',
+  'Other areas and cities':
+    'Otras zonas y ciudades',
 
   // Гайди
   'Buying property on Roatán: guides': 'Comprar propiedad en Roatán: guías',
@@ -262,10 +268,12 @@ export const ES_LANDING: Record<string, string> = {
   'Slope': 'Pendiente',
   'Registered, free-and-clear title at the Instituto de la Propiedad is the single most important fact about a lot.': 'Un título inscrito y libre de gravámenes en el Instituto de la Propiedad es el dato más importante de un lote.',
   'A lot without legal road access may be impossible to build on or to resell.': 'Un lote sin acceso legal por carretera puede ser imposible de construir o de revender.',
-  'Bringing a RECO line from far away can cost more than the lot itself.': 'Traer una línea de RECO desde lejos puede costar más que el propio lote.',
+  'Bringing a power line from far away (RECO on Roatán, ENEE on the mainland) can cost more than the lot itself.':
+    'Traer una línea eléctrica desde lejos (RECO en Roatán, ENEE en tierra firme) puede costar más que el propio terreno.',
   'Wells, cisterns and municipal supply each change the cost of building and living.': 'Pozos, cisternas y suministro municipal cambian el costo de construir y de vivir.',
   'A topographic survey on file confirms boundaries and size, including the 3,000 m² limit for foreign individuals.': 'Un levantamiento topográfico registrado confirma los linderos y el tamaño, incluido el límite de 3,000 m² para personas extranjeras.',
-  'ZOLITUR, the Bay Islands tourism free zone authority, issues building permits on the islands.': 'ZOLITUR, la autoridad de la zona libre turística de las Islas de la Bahía, emite los permisos de construcción en las islas.',
+  'On the Bay Islands, ZOLITUR, the tourism free zone authority, issues building permits; in San Pedro Sula and Tegucigalpa the municipality does.':
+    'En las Islas de la Bahía, ZOLITUR, la autoridad de la zona libre turística, emite los permisos de construcción; en San Pedro Sula y Tegucigalpa lo hace la municipalidad.',
   'Protected areas, mangroves and coastal setbacks limit what you can build.': 'Las áreas protegidas, los manglares y los retiros costeros limitan lo que se puede construir.',
   'Steep lots have views, and higher foundation and access costs.': 'Los lotes empinados tienen vistas, pero costos más altos de cimentación y acceso.',
   'Ready to build': 'Listo para construir',
@@ -305,4 +313,11 @@ export const ES_LANDING: Record<string, string> = {
   'use the enquiry form on any listing and mention “Resoha support” — it reaches the platform team.': 'use el formulario de consulta de cualquier anuncio y mencione “Soporte de Resoha”; llega al equipo de la plataforma.',
   'See also:': 'Vea también:',
   '2 October 2026': '2 de octubre de 2026',
+  '{area}: homes, condos & land for sale': '{area}: casas, condominios y terrenos en venta',
+  '{area}: property and city guide': '{area}: guía de propiedades y de la ciudad',
+  'Browse all of {region}': 'Ver todo {region}',
+  'No published benchmark yet': 'Aún no hay una referencia publicada',
+  'Palmerola Airport (XPL)': 'Aeropuerto de Palmerola (XPL)',
+  'The business capital of Honduras, in the Sula Valley: gated colonias, apartment towers and commercial property near the busiest airport in the country.': 'La capital de negocios de Honduras, en el valle de Sula: colonias cerradas, torres de apartamentos y locales comerciales cerca del aeropuerto con más tráfico del país.',
+  'The capital, in a cool mountain valley: apartment towers in the south-east colonias, family homes in the hills and colonial towns on the road east.': 'La capital, en un valle de montaña de clima fresco: torres de apartamentos en las colonias del sureste, casas familiares en las colinas y pueblos coloniales camino al oriente.',
 };

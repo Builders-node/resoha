@@ -30,8 +30,8 @@ export const ES_SHELL: Record<string, string> = {
   'Close': 'Cerrar',
 
   // футер
-  'Property on Roatán and the Bay Islands. Every listing links back to the island agency that holds it.':
-    'Propiedades en Roatán y las Islas de la Bahía. Cada anuncio enlaza con la agencia de la isla que lo publica.',
+  'Property in Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Every listing links back to the agency that holds it.':
+    'Propiedades en Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Cada anuncio enlaza con la agencia que lo publica.',
   'Property': 'Propiedades',
   'Homes & condos for sale': 'Casas y condominios en venta',
   'Long-term rentals': 'Alquileres a largo plazo',
@@ -50,4 +50,5 @@ export const ES_SHELL: Record<string, string> = {
   'Terms of use': 'Términos de uso',
   'Resoha is a listing platform, not a broker — listing details are as published by the agency holding each property.':
     'Resoha es una plataforma de anuncios, no un corredor: los datos de cada anuncio son los que publica la agencia que tiene la propiedad.',
+  'Areas and cities': 'Zonas y ciudades',
 };

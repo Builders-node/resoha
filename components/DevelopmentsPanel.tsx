@@ -10,7 +10,8 @@ import PriceListImport from './PriceListImport';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { WEEKDAYS } from '@/lib/visits';
-import { AREA_CENTRES, NEIGHBORHOODS } from '@/lib/format';
+import { AREA_CENTRES } from '@/lib/format';
+import { REGIONS, regionOfArea } from '@/lib/regions';
 import { BUILDING_STAGES, DOC_KINDS, RENTAL_RULES, fmtDay, fmtMonth, SALES_STATUSES, salesLabel, stageLabel } from '@/lib/units';
 import type { Building, Developer, Development, DevelopmentDocument, DevelopmentNews, Listing, ProgressEntry } from '@/lib/types';
 
@@ -194,7 +195,7 @@ function NewDevelopment({ onCancel, onCreated }: { onCancel: () => void; onCreat
         {picker.field}
         <div className="field"><label>Area</label>
           <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
-            {NEIGHBORHOODS.map((n) => <option key={n} value={n}>{n}</option>)}
+            <AreaOptions current={area} />
           </select></div>
         <div className="field"><label>Sales</label>
           <select className="input" name="sales" defaultValue="open">
@@ -438,6 +439,20 @@ function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
   );
 }
 
+/** Райони, згруповані за містом; район не з довідника лишаємо, щоб не загубити */
+function AreaOptions({ current }: { current: string }) {
+  return (
+    <>
+      {current && !regionOfArea(current) && <option value={current}>{current}</option>}
+      {REGIONS.map((r) => (
+        <optgroup key={r.slug} label={r.name}>
+          {Object.keys(r.areas).map((n) => <option key={n} value={n}>{n}</option>)}
+        </optgroup>
+      ))}
+    </>
+  );
+}
+
 /** Рядок графіка в редакторі: вихідний день теж тримає години, щоб галочка повертала їх назад */
 type DayRow = { on: boolean; open: string; close: string };
 const TYPICAL_WEEK: DayRow[] = WEEKDAYS.map((_, i) => ({ on: i < 6, open: '09:00', close: i < 5 ? '17:00' : '13:00' }));
@@ -466,7 +481,7 @@ function LocationSection({ dev, patch }: { dev: Development; patch: Patch }) {
           setArea(e.target.value);
           if (AREA_CENTRES[e.target.value]) setPin(AREA_CENTRES[e.target.value]);
         }}>
-          {[...new Set([...NEIGHBORHOODS, area])].map((n) => <option key={n} value={n}>{n}</option>)}
+          <AreaOptions current={area} />
         </select></div>
       <div className="field"><label>Address</label>
         <input className="input" name="address" maxLength={120} defaultValue={dev.address} /></div>

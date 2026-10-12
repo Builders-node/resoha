@@ -1,9 +1,12 @@
 import type { Deal, ListingQuery, PropertyType, SortKey } from './types';
+import { regionByName } from './regions';
 
 /** Єдина модель фільтрів для панелі, модалки та URL. */
 export type Filters = {
   deal: string;
   type: string;
+  /** місто або острів (колонка `island`): '' — усі */
+  island: string;
   neighborhoods: string[];
   beds: string[];
   bathsMin: string;
@@ -40,7 +43,7 @@ export type Filters = {
 };
 
 export const EMPTY_FILTERS: Filters = {
-  deal: '', type: '', neighborhoods: [], beds: [], bathsMin: '',
+  deal: '', type: '', island: '', neighborhoods: [], beds: [], bathsMin: '',
   priceMin: '', priceMax: '', sqftMin: '', sqftMax: '', lotMin: '', lotMax: '',
   hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false, ready: false,
   furnished: false, pets: false, parking: false, ac: false, build: '', reduced: false, days: '',
@@ -57,6 +60,7 @@ export function toQuery(f: Filters): string {
 
   put('deal', f.deal);
   put('type', f.type);
+  put('island', f.island);
   put('neighborhoods', f.neighborhoods.join(','));
   put('beds', f.beds.join(','));
   put('bathsMin', f.bathsMin);
@@ -100,6 +104,7 @@ export function fromParams(bag: ParamBag): Filters {
 
   return {
     deal: get('deal'), type: get('type'),
+    island: regionByName(get('island'))?.name ?? '',
     neighborhoods: arr('neighborhoods'), beds: arr('beds'), bathsMin: get('bathsMin'),
     priceMin: get('priceMin'), priceMax: get('priceMax'),
     sqftMin: get('sqftMin'), sqftMax: get('sqftMax'),
@@ -123,6 +128,7 @@ export function fromParams(bag: ParamBag): Filters {
 export function countActive(f: Filters): number {
   let n = 0;
   if (f.type) n++;
+  if (f.island) n++;
   if (f.neighborhoods.length) n++;
   if (f.beds.length) n++;
   if (f.bathsMin) n++;
@@ -189,7 +195,7 @@ export function toListingQuery(sp: URLSearchParams): ListingQuery {
   return {
     deal: (sp.get('deal') as Deal) || undefined,
     type: (sp.get('type') as PropertyType) || undefined,
-    island: sp.get('island') || undefined,
+    island: regionByName(sp.get('island'))?.name ?? (sp.get('island') || undefined),
     neighborhoods: list('neighborhoods'),
     beds: list('beds')?.map(Number).filter(Number.isFinite),
     bathsMin: num('bathsMin'),

@@ -16,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      lead={`${SITE_NAME} is a property marketplace for Roatán and the Bay Islands, operated by ${OPERATOR} (“Resoha”, “we”). This policy explains what we collect, why, who can see it and how to have it removed. It is written in plain language on purpose.`}
+      lead={`${SITE_NAME} is a property marketplace for Honduras (Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa), operated by ${OPERATOR} (“Resoha”, “we”). This policy explains what we collect, why, who can see it and how to have it removed. It is written in plain language on purpose.`}
     >
       <section>
         <h2>1. What we collect</h2>

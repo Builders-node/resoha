@@ -1,5 +1,6 @@
 import type { LandFacts } from './types';
 import { PROPERTY_TAX_RATE, TYPICAL_CLOSING } from './purchaseCosts';
+import { islandFor } from './regions';
 
 /**
  * «Паспорт ділянки»: єдине місце, де описано, що ми питаємо про землю і як
@@ -37,7 +38,7 @@ export const LAND_FIELDS: LandField[] = [
   { key: 'survey', label: 'Survey', options: [
     ['yes', 'Topographic survey on file'], ['no', 'No survey'], ['unknown', 'Not confirmed'],
   ] },
-  { key: 'zolitur', label: 'ZOLITUR building permit', options: [
+  { key: 'zolitur', label: 'Building permit (ZOLITUR or municipality)', options: [
     ['yes', 'Granted'], ['no', 'Not applied for'], ['unknown', 'Not confirmed'],
   ] },
   { key: 'zone', label: 'Zone', options: [
@@ -98,13 +99,26 @@ const SQFT_PER_ACRE = 43560;
 /** Decree 90-90: іноземець на себе — до 3 000 м² (див. гайд can-foreigners-buy-property-in-roatan) */
 export const FOREIGN_LIMIT_SQM = 3000;
 
-/** Орієнтири для відстаней. Аеропорт RTB — за його координатами, решта — центри районів з AREA_CENTRES. */
-const PLACES: { name: string; at: [number, number] }[] = [
-  { name: 'Airport (RTB)', at: [16.3168, -86.523] },
-  { name: 'Coxen Hole', at: [16.3211, -86.5383] },
-  { name: 'West End', at: [16.3047, -86.5929] },
-  { name: 'French Harbour', at: [16.3518, -86.4570] },
-];
+/** Орієнтири для відстаней за регіоном. Аеропорти — за їхніми координатами, решта — центри районів з AREA_CENTRES. */
+const PLACES: Record<string, { name: string; at: [number, number] }[]> = {
+  'Roatán': [
+    { name: 'Airport (RTB)', at: [16.3168, -86.523] },
+    { name: 'Coxen Hole', at: [16.3211, -86.5383] },
+    { name: 'West End', at: [16.3047, -86.5929] },
+    { name: 'French Harbour', at: [16.3518, -86.4570] },
+  ],
+  'San Pedro Sula': [
+    { name: 'Airport (SAP)', at: [15.4526, -87.9236] },
+    { name: 'City centre', at: [15.5047, -88.0253] },
+    { name: 'Colonia Jardines del Valle', at: [15.5520, -88.0100] },
+  ],
+  'Tegucigalpa': [
+    { name: 'Airport (TGU)', at: [14.0609, -87.2172] },
+    { name: 'Palmerola Airport (XPL)', at: [14.3824, -87.6212] },
+    { name: 'City centre', at: [14.1058, -87.2040] },
+    { name: 'Lomas del Guijarro', at: [14.0960, -87.1830] },
+  ],
+};
 
 const km = ([lat1, lng1]: [number, number], [lat2, lng2]: [number, number]) => {
   const rad = Math.PI / 180, dLat = (lat2 - lat1) * rad, dLng = (lng2 - lng1) * rad;
@@ -117,7 +131,7 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 
-type Lot = { id: string; price: number; lotAcres: number; neighborhood: string; lat: number; lng: number; deal: string };
+type Lot = { id: string; price: number; lotAcres: number; neighborhood: string; island?: string; lat: number; lng: number; deal: string };
 
 /**
  * Усе, що з паспорта виходить арифметикою. peers — інша земля на продаж (для медіани $/акр);
@@ -130,13 +144,16 @@ export function landNumbers(lot: Lot, peers: Lot[]) {
   const perAcre = sale && acres ? lot.price / acres : 0;
 
   const rate = (l: Lot) => l.price / l.lotAcres;
-  const priced = peers.filter((l) => l.id !== lot.id && l.deal === 'sale' && l.price > 0 && l.lotAcres > 0);
+  const region = islandFor(lot.neighborhood, lot.island);
+  // медіану рахуємо в межах свого міста чи острова: земля в Тегусігальпі й на Роатані — різні ринки
+  const priced = peers.filter((l) => l.id !== lot.id && l.deal === 'sale' && l.price > 0 && l.lotAcres > 0
+    && islandFor(l.neighborhood, l.island) === region);
   const near = priced.filter((l) => l.neighborhood === lot.neighborhood);
-  // медіана з 1–2 ділянок — шум, тому від трьох; інакше по всьому острову
+  // медіана з 1–2 ділянок — шум, тому від трьох; інакше по всьому місту чи острову
   const pool = near.length >= 3 ? near : priced.length >= 3 ? priced : [];
   const benchmark = pool.length ? {
     perAcre: median(pool.map(rate)),
-    where: pool === near ? lot.neighborhood : 'Roatán',
+    where: pool === near ? lot.neighborhood : region,
     count: pool.length,
   } : null;
 
@@ -149,7 +166,8 @@ export function landNumbers(lot: Lot, peers: Lot[]) {
     closing: sale ? { low: lot.price * TYPICAL_CLOSING.low, high: lot.price * TYPICAL_CLOSING.high } : null,
     /** 0.25% від кадастрової вартості; вона зазвичай нижча за ціну, тож це верхня межа */
     taxMax: sale ? lot.price * PROPERTY_TAX_RATE : 0,
-    foreign: sqm ? (sqm <= FOREIGN_LIMIT_SQM ? 'personal' as const : 'company' as const) : null,
-    distances: PLACES.map((p) => ({ name: p.name, km: km([lot.lat, lot.lng], p.at) })),
+    // межа 3 000 м² діє в прибережній смузі й на островах; у Сан-Педро-Сулі й Тегусігальпі її немає
+    foreign: sqm && region === 'Roatán' ? (sqm <= FOREIGN_LIMIT_SQM ? 'personal' as const : 'company' as const) : null,
+    distances: (PLACES[region] ?? PLACES['Roatán']).map((p) => ({ name: p.name, km: km([lot.lat, lot.lng], p.at) })),
   };
 }

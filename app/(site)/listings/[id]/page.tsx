@@ -42,6 +42,7 @@ import { getGoneListing, similarActive, type GoneListing } from '@/lib/gone';
 import { getMoney } from '@/lib/currencyServer';
 import ListingDescription from '@/components/ListingDescription';
 import { rankSimilar } from '@/lib/similar';
+import { departmentLabel } from '@/lib/regions';
 
 const MapView = dynamic(() => import('@/components/MapView'));
 
@@ -230,7 +231,7 @@ export default async function PropertyPage({ params, searchParams }: {
             <div>
               <h1>{listing.title}</h1>
               <p className="muted" style={{ margin: '8px 0 0' }}>
-                {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, {t('Bay Islands')}
+                {listing.address && <>{listing.address} · </>}{listing.neighborhood}, {listing.island}, {t(departmentLabel(listing.island))}
               </p>
               {listing.development && (
                 <Link href={lp(`/developments/${listing.development.slug}`)} className="in-dev">

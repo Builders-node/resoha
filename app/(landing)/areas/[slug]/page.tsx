@@ -9,7 +9,8 @@ import JsonLd from '@/components/JsonLd';
 import ListingCard from '@/components/ListingCard';
 import Rich from '@/components/Rich';
 import SourceList from '@/components/SourceList';
-import { AREAS, areaBySlug } from '@/lib/content/areas';
+import { AREAS, areaBySlug, areaRegion } from '@/lib/content/areas';
+import { regionByName } from '@/lib/regions';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
 import { AREA_CENTRES, fmtDate, nListings } from '@/lib/format';
@@ -26,7 +27,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const a = areaBySlug((await params).slug);
   if (!a) return {};
   const t = await getT();
-  const title = t('{area}, Roatán: homes, condos & land for sale', { area: t(a.name) });
+  const region = areaRegion(a);
+  const title = a.name === region
+    ? t('{area}: homes, condos & land for sale', { area: t(a.name) })
+    : t('{area}, {region}: homes, condos & land for sale', { area: t(a.name), region });
   const description = `${a.summary}${a.priceRange ? ` Typical prices: ${a.priceRange}.` : ''}`.slice(0, 300);
   return localized(`/areas/${a.slug}`, {
     title: `${title} | ${SITE_NAME}`,
@@ -47,31 +51,38 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
   const listings = await queryListings({ neighborhoods: a.neighborhoods });
   const sale = listings.filter((l) => l.deal === 'sale');
   const from = sale.length ? Math.min(...sale.map((l) => l.price)) : null;
-  const centre = AREA_CENTRES[a.neighborhoods[0]];
+  const region = areaRegion(a);
+  const isCity = a.name === region;
+  const department = regionByName(region)?.department ?? 'Islas de la Bahía';
+  const centre = isCity ? regionByName(region)?.centre : AREA_CENTRES[a.neighborhoods[0]];
   const filterHref = `/listings?neighborhoods=${encodeURIComponent(a.neighborhoods.join(','))}`;
 
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Areas', path: '/areas' }, { name: a.name, path: `/areas/${a.slug}` }];
   const place = {
     '@type': 'Place',
     '@id': `${SITE_URL}/areas/${a.slug}#place`,
-    name: `${a.name}, Roatán`,
+    name: isCity ? a.name : `${a.name}, ${region}`,
     description: a.summary,
-    containedInPlace: { '@type': 'Place', name: 'Roatán, Islas de la Bahía, Honduras' },
+    containedInPlace: { '@type': 'Place', name: isCity ? `${department}, Honduras` : `${region}, ${department}, Honduras` },
     ...(centre ? { geo: { '@type': 'GeoCoordinates', latitude: centre[0], longitude: centre[1] } } : {}),
   };
   const list = {
     '@type': 'ItemList',
-    name: `Property listed in ${a.name}, Roatán`,
+    name: `Property listed in ${isCity ? a.name : `${a.name}, ${region}`}`,
     numberOfItems: listings.length,
     itemListElement: listings.slice(0, 12).map((l, i) => ({ '@type': 'ListItem', position: i + 1, url: `${SITE_URL}/listings/${l.id}`, name: l.title })),
   };
-  const others = AREAS.filter((x) => x.slug !== a.slug);
+  // спершу райони того самого міста чи острова, потім інші міста
+  const others = AREAS.filter((x) => x.slug !== a.slug)
+    .sort((x, y) => Number(areaRegion(y) === region) - Number(areaRegion(x) === region));
 
   return (
     <div className="wrap page">
       <JsonLd data={graph(place, list, faqLd(a.faq), breadcrumbLd(crumbs))} />
 
-      <h1>{t('{area}, Roatán: property and area guide', { area: name })}</h1>
+      <h1>{isCity
+        ? t('{area}: property and city guide', { area: name })
+        : t('{area}, {region}: property and area guide', { area: name, region })}</h1>
       <section className="answer" aria-label={t('Summary')}>
         <span className="answer__k">{t('In short')}</span>
         <p>{t(a.summary)}</p>
@@ -80,7 +91,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <div className="stats area-stats">
         <div className="stat">
           <span className="muted small">{t('Typical prices')}</span>
-          <b>{a.priceRange ?? t('Too few sales')}</b>
+          <b>{a.priceRange ?? t(a.priceNote ?? 'Too few sales')}</b>
           {a.priceSource && <span className="tiny muted">{t('Source:')} {a.priceSource.name}</span>}
         </div>
         <div className="stat">
@@ -109,16 +120,18 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         <aside className="panel page__aside">
           <h3>{t('Search {area}', { area: name })}</h3>
           <p className="small muted" style={{ margin: '6px 0 14px' }}>
-            {t('Every listing on Resoha links back to the island agency that holds it.')}
+            {t('Every listing on Resoha links back to the agency that holds it.')}
           </p>
           <div className="page__aside-btns">
             <Link className="btn btn--orange btn--block" href={`${filterHref}&deal=sale`}>{t('Homes for sale')}</Link>
             <Link className="btn btn--ghost btn--block" href={`${filterHref}&deal=rent`}>{t('Rentals')}</Link>
             <Link className="btn btn--ghost btn--block" href={`${filterHref}&type=land`}>{t('Land & lots')}</Link>
           </div>
-          <p className="tiny muted" style={{ marginTop: 14 }}>
-            {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
-          </p>
+          {region === 'Roatán' && (
+            <p className="tiny muted" style={{ marginTop: 14 }}>
+              {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
+            </p>
+          )}
         </aside>
       </div>
 
@@ -133,8 +146,8 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           </div>
         ) : (
           <div className="panel empty">
-            <p>{t('No listings in {area} yet. We are adding island agencies every week.', { area: name })}</p>
-            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the whole island')}</Link>
+            <p>{t('No listings in {area} yet. We are adding agencies every week.', { area: name })}</p>
+            <Link className="btn btn--primary" href={lp(`/listings?deal=sale&island=${encodeURIComponent(region)}`)}>{t('Browse all of {region}', { region })}</Link>
           </div>
         )}
       </section>
@@ -152,7 +165,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       </section>
 
       <section className="section">
-        <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Other areas of Roatán')}</h2>
+        <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Other areas and cities')}</h2>
         <div className="chip-row">
           {others.map((o) => <Link key={o.slug} className="chip-btn" href={lp(`/areas/${o.slug}`)}>{t(o.name)}</Link>)}
         </div>
