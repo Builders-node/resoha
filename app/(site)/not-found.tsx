@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import Icon from '@/components/Icon';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 
 export default async function NotFound() {
+  const lp = await getLp();
   const t = await getT();
   return (
     <div className="wrap" style={{ padding: '92px 0', textAlign: 'center' }}>
@@ -11,7 +12,7 @@ export default async function NotFound() {
       <p className="muted" style={{ margin: '10px 0 24px' }}>
         {t('This address does not exist any more — a listing may have been sold or taken down, or the link is simply wrong.')}
       </p>
-      <Link className="btn btn--primary btn--lg" href="/listings">{t('Browse listings')}</Link>
+      <Link className="btn btn--primary btn--lg" href={lp('/listings')}>{t('Browse listings')}</Link>
     </div>
   );
 }

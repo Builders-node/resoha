@@ -1,3 +1,4 @@
+import { buildIcs, seqNow, visitEvent, visitUid } from '../ics';
 import { SITE_NAME, SITE_URL } from '../site';
 import { fmtVisit } from '../visits';
 
@@ -12,7 +13,8 @@ export type Card = {
 };
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Payload = Record<string, any>;
-export type Message = { subject: string; html: string; text: string; telegram: string };
+/** ics — календарний файл, який іде вкладенням у лист (візит у відділ продажів) */
+export type Message = { subject: string; html: string; text: string; telegram: string; ics?: string };
 
 const usd = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 });
 const price = (c: Card) => `${usd.format(Number(c.price) || 0)}${c.deal === 'rent' ? '/mo' : ''}`;
@@ -71,6 +73,10 @@ function footer(kind: 'agent' | 'alerts' | 'transactional', unsub?: string | nul
   return esc(base) + link;
 }
 
+/** Підвал добірки для гостя без акаунта: відписка саме від цього пошуку (0058) */
+const guestFooter = (token: string) => esc('You get this because you subscribed to this search on Resoha.')
+  + ` <a href="${esc(`${SITE_URL}/search-alert?a=stop&t=${encodeURIComponent(token)}`)}" style="color:#999">Unsubscribe</a>`;
+
 const plain = (lines: (string | false | undefined | null)[]) => lines.filter(Boolean).join('\n');
 
 export function render(kind: string, p: Payload, unsub?: string | null): Message | null {
@@ -116,6 +122,7 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         text: plain([subject, '', ...contacts.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '',
           manage && `Change or cancel: ${manage}`, listingUrl(c)]),
         telegram: '',
+        ics: visit ? visitIcs(p, 0) : undefined,
       };
     }
     case 'visit_reminder_agent':
@@ -158,8 +165,26 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         subject,
         html: layout(`<p style="margin:0 0 12px">New on Resoha for your saved search <b>${esc(p.title)}</b>:</p>`
           + items.map((c) => cardHtml(c)).join('')
-          + (more ? `<p style="margin:0 0 12px">and ${more} more.</p>` : '') + button(url, 'See all results'), footer('alerts', unsub)),
-        text: plain([subject, '', ...items.map((c) => `${c.title} · ${price(c)}\n${listingUrl(c)}`), '', url]),
+          + (more ? `<p style="margin:0 0 12px">and ${more} more.</p>` : '') + button(url, 'See all results'),
+          p.searchUnsub ? guestFooter(p.searchUnsub) : footer('alerts', unsub)),
+        text: plain([subject, '', ...items.map((c) => `${c.title} · ${price(c)}\n${listingUrl(c)}`), '', url,
+          p.searchUnsub && `Unsubscribe: ${SITE_URL}/search-alert?a=stop&t=${encodeURIComponent(p.searchUnsub)}`]),
+        telegram: '',
+      };
+    }
+    case 'search_confirm': {
+      // подвійне підтвердження підписки гостя (міграція 0058)
+      const confirm = `${SITE_URL}/search-alert?a=confirm&t=${encodeURIComponent(String(p.token ?? ''))}`;
+      const results = `${SITE_URL}/listings${p.query ? `?${p.query}` : ''}`;
+      const subject = `Confirm your search alert: ${p.title}`;
+      const body = `Confirm that you want an email when new properties match “${p.title}” on ${SITE_NAME}. `
+        + 'We send at most one email a day, and only when something new appears.';
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px">${esc(body)}</p><p style="margin:0 0 12px">${button(confirm, 'Confirm the alert')}</p>`
+          + `<p style="margin:0;color:#777;font-size:13px">The link works for 7 days. <a href="${esc(results)}" style="color:#777">See the current results</a>.</p>`,
+          esc('You get this because someone entered this email address to follow a search on Resoha. If it wasn’t you, ignore this email: nothing will be sent without confirmation.')),
+        text: plain([subject, '', body, `Confirm: ${confirm}`, '', `Current results: ${results}`]),
         telegram: '',
       };
     }
@@ -269,5 +294,24 @@ function visitMessage(agent: boolean, p: Payload, unsub?: string | null): Messag
       + cardHtml(c, agent ? 'Open listing' : 'View the property'), footer(agent ? 'agent' : 'transactional', unsub)),
     text: plain([subject, '', what, manage && `Change or cancel: ${manage}`, listingUrl(c)]),
     telegram: agent ? plain([subject, what, listingUrl(c)]) : '',
+    // перенесений візит — оновлений файл з тим самим UID: календар пересуне подію, а не додасть другу
+    ics: !agent && event === 'rescheduled' && p.leadId ? visitIcs(p, seqNow()) : undefined,
   };
+}
+
+/**
+ * .ics для листа покупцю. UID — за id заявки (як і файл на /visit/<token>), адреса офісу —
+ * з visit_lookup (дописує processOutbox), інакше назва ЖК і район.
+ */
+function visitIcs(p: Payload, sequence: number) {
+  const c = p.listing as Card;
+  const leadId = String(p.leadId || p.id || '');
+  if (!leadId || !p.visitAt || Number.isNaN(Date.parse(p.visitAt))) return undefined;
+  const place = c?.development || c?.title || SITE_NAME;
+  return buildIcs(visitEvent({
+    uid: visitUid(leadId), visitAt: p.visitAt, place,
+    address: p.location || [c?.development, c?.neighborhood].filter(Boolean).join(', '),
+    manageUrl: p.manageToken ? manageUrl(p.manageToken) : undefined,
+    agent: p.agent ?? null, sequence,
+  }));
 }

@@ -5,6 +5,8 @@ import RangeSlider from './RangeSlider';
 import { AMENITIES, EMPTY_FILTERS, type Filters, SORTS, toQuery } from '@/lib/filters';
 import { fmtNumber, nListings, sqftToM2 } from '@/lib/format';
 import { useLang, useT } from './LangProvider';
+import { useMoney } from './CurrencyProvider';
+import CurrencySwitch from './CurrencySwitch';
 
 type Facets = {
   total: number;
@@ -46,7 +48,6 @@ const ADDED = [
   { v: '7', label: 'This week' },
   { v: '30', label: 'This month' },
 ];
-const HNL_RATE = 26.2;
 
 export default function FiltersModal({
   open, filters, onClose, onApply,
@@ -56,7 +57,8 @@ export default function FiltersModal({
   const [draft, setDraft] = useState<Filters>(filters);
   const [facets, setFacets] = useState<Facets | null>(null);
   const [count, setCount] = useState<number | null>(null);
-  const [cur, setCur] = useState<'USD' | 'HNL'>('USD');
+  // ціни у фільтрі — в обраній на сайті валюті; у запит ідуть долари
+  const money = useMoney();
 
   useEffect(() => { if (open) setDraft(filters); }, [open, filters]);
 
@@ -99,12 +101,11 @@ export default function FiltersModal({
   const lotLo = Number(draft.lotMin) || lot.min;
   const lotHi = Number(draft.lotMax) || lot.max;
 
-  const showPrice = (v: number) =>
-    cur === 'USD' ? `$${fmtNumber(Math.round(v))}` : `L ${fmtNumber(Math.round(v * HNL_RATE))}`;
+  const showPrice = (v: number) => `${money.symbol}${fmtNumber(Math.round(money.fromUsd(v)))}`;
   const parsePrice = (raw: string) => {
     const n = Number(raw.replace(/[^\d.]/g, ''));
     if (!n) return '';
-    return String(Math.round(cur === 'USD' ? n : n / HNL_RATE));
+    return String(Math.round(money.toUsd(n)));
   };
 
   return (
@@ -145,10 +146,8 @@ export default function FiltersModal({
               <div className="fgroup__head">
                 <h5>{t('Price')}</h5>
                 <div className="cur-toggle">
-                  <span style={{ color: cur === 'USD' ? 'var(--ink)' : undefined }}>USD</span>
-                  <button className={`switch ${cur === 'HNL' ? 'is-on' : ''}`}
-                    onClick={() => setCur(cur === 'USD' ? 'HNL' : 'USD')} aria-label={t('Currency')} />
-                  <span style={{ color: cur === 'HNL' ? 'var(--ink)' : undefined }}>HNL</span>
+                  {money.converted && <span className="tiny muted">{t('≈ daily rate')}</span>}
+                  <CurrencySwitch />
                 </div>
               </div>
               <div className="range-inputs">
@@ -341,7 +340,8 @@ export default function FiltersModal({
               <div className="chip-row">
                 {HOA.map((h) => (
                   <button key={h.v || 'any'} className={`chip-btn ${draft.hoaMax === h.v ? 'is-on' : ''}`}
-                    onClick={() => set({ hoaMax: h.v })}>{t(h.label)}</button>
+                    onClick={() => set({ hoaMax: h.v })}>
+                    {Number(h.v) > 0 ? t('under {price}', { price: money.amount(Number(h.v)) }) : t(h.label)}</button>
                 ))}
               </div>
             </div>

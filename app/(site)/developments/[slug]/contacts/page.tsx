@@ -8,7 +8,7 @@ import DevelopmentUpdates from '@/components/DevelopmentUpdates';
 import Icon from '@/components/Icon';
 import { VisitPicker } from '@/components/VisitBooking';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 import { SALES_OFFERS } from '@/lib/visits';
 
 const MapView = dynamic(() => import('@/components/MapView'));
@@ -27,6 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
  * і банер підписки на оновлення ЖК.
  */
 export default async function ContactsPage({ params }: Props) {
+  const lp = await getLp();
   const ctx = await developmentContext((await params).slug);
   const { dev, agent, me, from, base, leadUnit } = ctx;
   const t = await getT();
@@ -55,7 +56,7 @@ export default async function ContactsPage({ params }: Props) {
                 <Icon name="building" size={22} />
                 <div><span className="small muted">{t('Developer')}</span>
                   {dev.developerId
-                    ? <Link href={`/developers/${dev.developerId}`}><b>{dev.developer}</b></Link>
+                    ? <Link href={lp(`/developers/${dev.developerId}`)}><b>{dev.developer}</b></Link>
                     : <b>{dev.developer}</b>}</div>
               </li>
             )}
@@ -70,7 +71,7 @@ export default async function ContactsPage({ params }: Props) {
             <li>
               <Avatar src={agent.avatar} name={agent.name} />
               <div><span className="small muted">{t('Sales agent')}</span>
-                <Link href={`/agents/${agent.id}`}><b>{agent.name}</b></Link>
+                <Link href={lp(`/agents/${agent.id}`)}><b>{agent.name}</b></Link>
                 {agent.agency && <span className="small muted">{agent.agency}</span>}</div>
             </li>
           </ul>

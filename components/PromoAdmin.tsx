@@ -5,7 +5,11 @@ import Icon from './Icon';
 import { StatusPill, ctr, targetHref } from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
-import { KIND_LABEL, PROMO_KINDS, fmtMoney, isLive, type PromoCampaign, type PromoKind, type PromoPackage } from '@/lib/promoShared';
+import {
+  KIND_LABEL, PROMO_KINDS, PROMO_PRODUCTS, PROMO_PRODUCT_KEYS, fmtMoney, isLive,
+  type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct,
+} from '@/lib/promoShared';
+import { EffectCell } from './PromoExtras';
 
 type Filter = 'all' | 'pending' | 'live' | 'ended' | 'cancelled';
 const FILTERS: { v: Filter; label: string }[] = [
@@ -22,6 +26,7 @@ const PAYMENTS: Record<string, string> = {
 export default function PromoAdmin() {
   const [campaigns, setCampaigns] = useState<PromoCampaign[]>([]);
   const [packages, setPackages] = useState<PromoPackage[]>([]);
+  const [effects, setEffects] = useState<Record<string, PromoEffect>>({});
   const [payments, setPayments] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(true);
@@ -34,7 +39,7 @@ export default function PromoAdmin() {
     const d = await res.json().catch(() => ({}));
     setBusy(false);
     if (!res.ok) { setError(d.unavailable ? 'Run migration 0046 to turn on promotions.' : d.error ?? 'Could not load'); return; }
-    setCampaigns(d.campaigns ?? []); setPackages(d.packages ?? []); setPayments(d.payments ?? '');
+    setCampaigns(d.campaigns ?? []); setPackages(d.packages ?? []); setPayments(d.payments ?? ''); setEffects(d.effects ?? {});
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -50,10 +55,12 @@ export default function PromoAdmin() {
 
   const stats = useMemo(() => {
     const month = now - 30 * 86400000;
-    const paid = campaigns.filter((c) => c.status === 'active' || c.status === 'ended');
+    // виручка — за вирахуванням повернень
+    const paid = campaigns.filter((c) => c.paidAt);
+    const net = (c: PromoCampaign) => c.priceCents - (c.refundedAt ? c.refundCents || c.priceCents : 0);
     return {
-      revenue: paid.reduce((s, c) => s + c.priceCents, 0),
-      month: paid.filter((c) => c.paidAt && new Date(c.paidAt).getTime() >= month).reduce((s, c) => s + c.priceCents, 0),
+      revenue: paid.reduce((s, c) => s + net(c), 0),
+      month: paid.filter((c) => c.paidAt && new Date(c.paidAt).getTime() >= month).reduce((s, c) => s + net(c), 0),
       live: campaigns.filter((c) => isLive(c)).length,
       pending: campaigns.filter((c) => c.status === 'pending').length,
     };
@@ -94,14 +101,16 @@ export default function PromoAdmin() {
         ) : (
           <div className="promo__table">
             <table className="table">
-              <thead><tr><th>Item</th><th>Owner</th><th>Period</th><th>Status</th><th>Impr.</th><th>Visits</th><th>CTR</th><th>Price</th><th></th></tr></thead>
+              <thead><tr><th>Item</th><th>Owner</th><th>Period</th><th>Status</th><th>Impr.</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th></th></tr></thead>
               <tbody>
                 {shown.map((c) => {
                   const href = targetHref(c.kind, c.targetId);
                   return (
                     <tr key={c.id}>
                       <td>
-                        <div className="tiny muted">{KIND_LABEL[c.kind]} · {c.days} days</div>
+                        <div className="tiny muted">
+                          {PROMO_PRODUCTS[c.product].label} · {KIND_LABEL[c.kind]}{PROMO_PRODUCTS[c.product].once ? '' : ` · ${c.days} days`}
+                        </div>
                         {href ? <Link href={href}>{c.targetName || '—'}</Link> : c.targetName || '—'}
                       </td>
                       <td className="small" data-label="Owner">{c.ownerName ?? '—'}</td>
@@ -112,7 +121,11 @@ export default function PromoAdmin() {
                       <td data-label="Impressions">{fmtNumber(c.impressions)}</td>
                       <td data-label="Visits">{fmtNumber(c.clicks)}</td>
                       <td data-label="CTR">{ctr(c)}</td>
-                      <td data-label="Price">{fmtMoney(c.priceCents, c.currency)}</td>
+                      <td data-label="Before → during"><EffectCell e={effects[c.id]} /></td>
+                      <td data-label="Price">
+                        {fmtMoney(c.priceCents, c.currency)}
+                        {c.refundedAt && <div className="tiny promo-refunded">−{fmtMoney(c.refundCents || c.priceCents, c.currency)}</div>}
+                      </td>
                       <td style={{ whiteSpace: 'nowrap' }}>
                         {c.status === 'pending' && (
                           <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Mark paid and start"
@@ -122,11 +135,21 @@ export default function PromoAdmin() {
                             <Icon name="check" size={16} />
                           </button>
                         )}
+                        {c.paidAt && !c.refundedAt && (c.status === 'active' || c.status === 'ended') && (
+                          <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Refund and stop"
+                            aria-label={`Refund: ${c.targetName}`}
+                            onClick={() => confirm(c.payMethod === 'stripe'
+                              ? `Refund ${fmtMoney(c.priceCents, c.currency)} to the card through Stripe and stop “${c.targetName}”?`
+                              : `Mark ${fmtMoney(c.priceCents, c.currency)} as refunded and stop “${c.targetName}”? Return the money the way it was paid.`)
+                              && post({ action: 'refund', id: c.id }, 'Refunded — the campaign is stopped')}>
+                            <Icon name="wallet" size={16} />
+                          </button>
+                        )}
                         {(c.status === 'pending' || c.status === 'active') && (
                           <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Cancel campaign"
                             aria-label={`Cancel: ${c.targetName}`}
                             onClick={() => confirm(c.status === 'active'
-                              ? `Stop “${c.targetName}” now? Refund the payment in Stripe separately if needed.`
+                              ? `Stop “${c.targetName}” now without a refund?`
                               : `Cancel the request for “${c.targetName}”?`)
                               && post({ action: 'cancel', id: c.id }, 'Campaign cancelled')}>
                             <Icon name="trash" size={16} />
@@ -148,28 +171,30 @@ export default function PromoAdmin() {
           What agents see on the Promote tab. Changes apply to new purchases only.
         </p>
         <div className="promo__prices">
-          {PROMO_KINDS.map((k) => (
-            <PriceGroup key={k} kind={k} packages={packages.filter((p) => p.kind === k)}
+          {PROMO_KINDS.flatMap((k) => PROMO_PRODUCT_KEYS.filter((pr) => PROMO_PRODUCTS[pr].kinds.includes(k)).map((pr) => (
+            <PriceGroup key={`${k}:${pr}`} kind={k} product={pr} packages={packages.filter((p) => p.kind === k && p.product === pr)}
               onSave={(body) => post({ action: 'package', ...body }, 'Price saved')} />
-          ))}
+          )))}
         </div>
       </div>
     </>
   );
 }
 
-type PkgInput = { id?: string; kind: PromoKind; days: number; priceCents: number; active: boolean };
+type PkgInput = { id?: string; kind: PromoKind; product: PromoProduct; days: number; priceCents: number; active: boolean };
 
-function PriceGroup({ kind, packages, onSave }: { kind: PromoKind; packages: PromoPackage[]; onSave: (b: PkgInput) => Promise<boolean> }) {
+function PriceGroup({ kind, product, packages, onSave }: {
+  kind: PromoKind; product: PromoProduct; packages: PromoPackage[]; onSave: (b: PkgInput) => Promise<boolean>;
+}) {
   const [days, setDays] = useState('');
   const [price, setPrice] = useState('');
   return (
     <div className="promo__group">
-      <b>{KIND_LABEL[kind]}</b>
+      <b>{KIND_LABEL[kind]} · {PROMO_PRODUCTS[product].label}</b>
       {packages.map((p) => <PriceRow key={`${p.id}:${p.priceCents}:${p.active}`} p={p} onSave={onSave} />)}
       <form className="promo__row" onSubmit={async (e) => {
         e.preventDefault();
-        if (await onSave({ kind, days: Number(days), priceCents: Math.round(Number(price) * 100), active: true })) {
+        if (await onSave({ kind, product, days: Number(days), priceCents: Math.round(Number(price) * 100), active: true })) {
           setDays(''); setPrice('');
         }
       }}>
@@ -193,7 +218,7 @@ function PriceRow({ p, onSave }: { p: PromoPackage; onSave: (b: PkgInput) => Pro
         aria-label={`${p.days} days price`} />
       <button type="button" className="btn btn--sm btn--ghost btn--icon" title={changed ? 'Save price' : p.active ? 'Hide package' : 'Show package'}
         aria-label={changed ? 'Save price' : p.active ? 'Hide package' : 'Show package'}
-        onClick={() => onSave({ id: p.id, kind: p.kind, days: p.days, priceCents: Math.round(Number(price) * 100), active: changed ? p.active : !p.active })}>
+        onClick={() => onSave({ id: p.id, kind: p.kind, product: p.product, days: p.days, priceCents: Math.round(Number(price) * 100), active: changed ? p.active : !p.active })}>
         <Icon name={changed ? 'check' : p.active ? 'close' : 'plus'} size={16} />
       </button>
     </div>

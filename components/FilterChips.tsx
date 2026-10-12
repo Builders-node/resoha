@@ -2,10 +2,11 @@
 import Icon from './Icon';
 import { useT } from './LangProvider';
 import type { Filters } from '@/lib/filters';
-import { fmtNumber, fmtUsd } from '@/lib/format';
+import { fmtNumber } from '@/lib/format';
+import { useMoney } from './CurrencyProvider';
 
 const TYPE: Record<string, string> = { condo: 'Condos', house: 'Houses & villas', land: 'Land', commercial: 'Commercial' };
-const HOA: Record<string, string> = { '0': 'No HOA', '300': 'HOA under $300', '600': 'HOA under $600' };
+const HOA: Record<string, string> = { '0': 'No HOA' };
 const DAYS: Record<string, string> = { '1': 'Added today', '7': 'Added this week', '30': 'Added this month' };
 
 type Chip = { key: string; label: string; clear: Partial<Filters> };
@@ -15,6 +16,7 @@ export default function FilterChips({ filters: f, onChange, onReset }: {
   filters: Filters; onChange: (patch: Partial<Filters>) => void; onReset: () => void;
 }) {
   const t = useT();
+  const money = useMoney();
   const chips: Chip[] = [];
   const add = (key: string, label: string, clear: Partial<Filters>) => chips.push({ key, label, clear });
   const range = (lo: string, hi: string, fmt: (v: number) => string) =>
@@ -23,12 +25,12 @@ export default function FilterChips({ filters: f, onChange, onReset }: {
   if (f.q) add('q', `“${f.q}”`, { q: '' });
   if (f.type) add('type', t(TYPE[f.type] ?? f.type), { type: '', ready: false });
   for (const n of f.neighborhoods) add(`n-${n}`, n, { neighborhoods: f.neighborhoods.filter((x) => x !== n) });
-  if (f.priceMin || f.priceMax) add('price', range(f.priceMin, f.priceMax, fmtUsd), { priceMin: '', priceMax: '' });
+  if (f.priceMin || f.priceMax) add('price', range(f.priceMin, f.priceMax, money.amount), { priceMin: '', priceMax: '' });
   if (f.beds.length) add('beds', t('{n} bd', { n: f.beds.map((b) => (b === '4' ? '4+' : b)).join(', ') }), { beds: [] });
   if (f.bathsMin) add('baths', t('{n}+ baths', { n: f.bathsMin }), { bathsMin: '' });
   if (f.sqftMin || f.sqftMax) add('sqft', `${range(f.sqftMin, f.sqftMax, fmtNumber)} ft²`, { sqftMin: '', sqftMax: '' });
   if (f.lotMin || f.lotMax) add('lot', t('{range} ac', { range: range(f.lotMin, f.lotMax, (v) => String(v)) }), { lotMin: '', lotMax: '' });
-  if (f.hoaMax !== '') add('hoa', t(HOA[f.hoaMax] ?? 'HOA under {v}', { v: fmtUsd(Number(f.hoaMax)) }), { hoaMax: '' });
+  if (f.hoaMax !== '') add('hoa', t(HOA[f.hoaMax] ?? 'HOA under {v}', { v: money.amount(Number(f.hoaMax)) }), { hoaMax: '' });
   if (f.yearMin) add('year', t('Built {year}+', { year: f.yearMin }), { yearMin: '' });
   if (f.build) add('build', t(f.build === 'new' ? 'New build' : 'Resale'), { build: '' });
   if (f.reduced) add('reduced', t('Price reduced'), { reduced: false });

@@ -5,12 +5,16 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
 import {
-  KIND_LABEL, PROMO_KINDS, fmtMoney, isLive,
-  type PromoCampaign, type PromoKind, type PromoPackage, type PromoTarget,
+  KIND_LABEL, PROMO_KINDS, PROMO_PRODUCTS, PROMO_PRODUCT_KEYS, fmtMoney, isLive,
+  type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget,
 } from '@/lib/promoShared';
+import { EffectCell, PaymentHistory } from './PromoExtras';
 
 type Payments = 'stripe' | 'stripe-test' | 'manual';
-type Data = { packages: PromoPackage[]; campaigns: PromoCampaign[]; targets: PromoTarget[]; payments: Payments };
+type Data = {
+  packages: PromoPackage[]; campaigns: PromoCampaign[]; targets: PromoTarget[]; payments: Payments;
+  effects?: Record<string, PromoEffect>;
+};
 
 const KIND_ICON: Record<PromoKind, string> = { listing: 'home', development: 'building', building: 'layers', agency: 'briefcase' };
 
@@ -22,6 +26,7 @@ export function targetHref(kind: PromoKind, id: string) {
 }
 
 export function StatusPill({ c }: { c: PromoCampaign }) {
+  if (c.refundedAt) return <span className="pill pill--off">Refunded</span>;
   if (c.status === 'pending') return <span className="badge badge--warn">Awaiting payment</span>;
   if (c.status === 'cancelled') return <span className="pill pill--off">Cancelled</span>;
   if (c.status === 'ended') return <span className="pill pill--off">Ended</span>;
@@ -41,6 +46,7 @@ export default function PromotePanel() {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState('');
   const [kind, setKind] = useState<PromoKind>('listing');
+  const [pickedProduct, setProduct] = useState<PromoProduct>('featured');
   const [targetId, setTargetId] = useState('');
   const [packageId, setPackageId] = useState('');
   const [busy, setBusy] = useState(false);
@@ -76,7 +82,12 @@ export default function PromotePanel() {
   }, [data, kinds, kind]);
 
   const targets = useMemo(() => (data?.targets ?? []).filter((t) => t.kind === kind), [data, kind]);
-  const packages = useMemo(() => (data?.packages ?? []).filter((p) => p.kind === kind), [data, kind]);
+  // види, для яких є пакети цього типу обʼєкта (до міграції 0060 — лише Featured)
+  const products = useMemo(() => PROMO_PRODUCT_KEYS.filter((p) => PROMO_PRODUCTS[p].kinds.includes(kind)
+    && (data?.packages ?? []).some((pk) => pk.kind === kind && pk.product === p)), [data, kind]);
+  // обраний вид недоступний для цього типу — беремо перший наявний
+  const product = products.includes(pickedProduct) ? pickedProduct : products[0] ?? 'featured';
+  const packages = useMemo(() => (data?.packages ?? []).filter((p) => p.kind === kind && p.product === product), [data, kind, product]);
   const target = targets.find((t) => t.id === targetId) ?? null;
   const pkg = packages.find((p) => p.id === packageId) ?? null;
 
@@ -117,9 +128,11 @@ export default function PromotePanel() {
   const paid = campaigns.filter((c) => c.status === 'active' || c.status === 'ended');
   const totals = paid.reduce((s, c) => ({
     impressions: s.impressions + c.impressions, clicks: s.clicks + c.clicks,
-    spent: s.spent + c.priceCents,
+    spent: s.spent + c.priceCents - (c.refundedAt ? c.refundCents : 0),
   }), { impressions: 0, clicks: 0, spent: 0 });
-  const liveForTarget = target ? campaigns.filter((c) => c.kind === kind && c.targetId === target.id && c.status === 'active') : [];
+  const liveForTarget = target && !PROMO_PRODUCTS[product].once
+    ? campaigns.filter((c) => c.kind === kind && c.product === product && c.targetId === target.id && c.status === 'active') : [];
+  const effects = data.effects ?? {};
   const until = liveForTarget.reduce<string | null>((m, c) => (!m || (c.endsAt && c.endsAt > m) ? c.endsAt : m), null);
 
   return (
@@ -129,7 +142,8 @@ export default function PromotePanel() {
           <div>
             <h3 className="with-ico"><Icon name="sparkle" size={20} /> Promote on Resoha</h3>
             <p className="muted small" style={{ marginTop: 4 }}>
-              Featured items go first in search and catalogs, get a spot on the home page and carry a Featured badge.
+              Pick what to promote and how: a Featured badge, a Sponsored place above search results,
+              a coloured card, a home page spot, a one-time bump or Premium agent on the listing page.
             </p>
           </div>
         </div>
@@ -170,7 +184,23 @@ export default function PromotePanel() {
             <div className="promo__step">
               <span className="promo__num">2</span>
               <div className="promo__body">
-                <b>How long</b>
+                <b>How to promote</b>
+                <div className="promo__products">
+                  {products.map((p) => (
+                    <button key={p} type="button" className={`promo__product ${p === product ? 'is-on' : ''}`}
+                      aria-pressed={p === product} onClick={() => setProduct(p)}>
+                      <span className="with-ico"><Icon name={PROMO_PRODUCTS[p].icon} size={16} /> <b>{PROMO_PRODUCTS[p].label}</b></span>
+                      <span className="tiny muted">{PROMO_PRODUCTS[p].blurb}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="promo__step">
+              <span className="promo__num">3</span>
+              <div className="promo__body">
+                <b>{PROMO_PRODUCTS[product].once ? 'Price' : 'How long'}</b>
                 {packages.length === 0 ? (
                   <p className="muted small" style={{ marginTop: 8 }}>No packages for this type yet.</p>
                 ) : (
@@ -178,9 +208,11 @@ export default function PromotePanel() {
                     {packages.map((p) => (
                       <button key={p.id} type="button" className={`promo__pkg ${p.id === packageId ? 'is-on' : ''}`}
                         aria-pressed={p.id === packageId} onClick={() => setPackageId(p.id)}>
-                        <span className="promo__days">{p.days} days</span>
+                        <span className="promo__days">{PROMO_PRODUCTS[p.product].once ? 'One time' : `${p.days} days`}</span>
                         <span className="promo__price">{fmtMoney(p.priceCents, p.currency)}</span>
-                        <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / day</span>
+                        {!PROMO_PRODUCTS[p.product].once && (
+                          <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / day</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -189,7 +221,7 @@ export default function PromotePanel() {
             </div>
 
             <div className="promo__step">
-              <span className="promo__num">3</span>
+              <span className="promo__num">4</span>
               <div className="promo__body">
                 <b>{payments === 'manual' ? 'Send the request' : 'Pay'}</b>
                 <div className="promo__pay">
@@ -229,14 +261,14 @@ export default function PromotePanel() {
             </div>
             <div className="promo__table">
               <table className="table">
-                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Price</th><th></th></tr></thead>
+                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th></th></tr></thead>
                 <tbody>
                   {campaigns.map((c) => {
                     const href = targetHref(c.kind, c.targetId);
                     return (
                       <tr key={c.id}>
                         <td>
-                          <div className="tiny muted">{KIND_LABEL[c.kind]}</div>
+                          <div className="tiny muted">{PROMO_PRODUCTS[c.product].label} · {KIND_LABEL[c.kind]}</div>
                           {href ? <Link href={href}>{c.targetName || '—'}</Link> : c.targetName || '—'}
                         </td>
                         <td className="small" data-label="Period">
@@ -246,6 +278,7 @@ export default function PromotePanel() {
                         <td data-label="Impressions">{fmtNumber(c.impressions)}</td>
                         <td data-label="Visits">{fmtNumber(c.clicks)}</td>
                         <td data-label="CTR">{ctr(c)}</td>
+                        <td data-label="Before → during"><EffectCell e={effects[c.id]} /></td>
                         <td data-label="Price">{fmtMoney(c.priceCents, c.currency)}</td>
                         <td>
                           {c.status === 'pending' && (
@@ -263,10 +296,13 @@ export default function PromotePanel() {
             </div>
             <p className="tiny muted" style={{ marginTop: 10 }}>
               Impressions — how many times the item was shown in lists while promoted. Visits — opens of its page during the campaign.
+              Before → during — page views and leads during the campaign against the same number of days right before it.
             </p>
           </>
         )}
       </div>
+
+      <PaymentHistory campaigns={campaigns} />
     </>
   );
 }
