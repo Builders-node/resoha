@@ -120,3 +120,6 @@ export const departmentLabel = (island: string | null | undefined) => {
 function fold(s: string) {
   return s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 }
+
+/** Cookie з обраним на головній містом (slug); порожнє — усі міста */
+export const CITY_COOKIE = 'city';

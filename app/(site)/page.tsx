@@ -1,8 +1,8 @@
-import { REGIONS } from '@/lib/regions';
 import type { Metadata } from 'next';
 import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import HomeTiles from '@/components/HomeTiles';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
@@ -18,6 +18,8 @@ import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
 import { getLang, getLp } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { getMoney } from '@/lib/currencyServer';
+import { cookies } from 'next/headers';
+import { CITY_COOKIE, islandFor, regionBySlug } from '@/lib/regions';
 
 export async function generateMetadata(): Promise<Metadata> {
   return localized('/');
@@ -29,24 +31,19 @@ function areaHref(name: string) {
   return area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(name)}`;
 }
 
-const SALE_TILES = [
-  { label: 'Condos', href: '/listings?deal=sale&type=condo', icon: 'building' },
-  { label: 'Houses & villas', href: '/listings?deal=sale&type=house', icon: 'home' },
-  { label: 'Land', href: '/listings?deal=sale&type=land', icon: 'land' },
-  { label: 'Commercial', href: '/listings?deal=sale&type=commercial', icon: 'briefcase' },
-];
-const RENT_TILES = [
-  { label: 'Condos', href: '/listings?deal=rent&type=condo', icon: 'building' },
-  { label: 'Houses', href: '/listings?deal=rent&type=house', icon: 'key' },
-];
-
-export default async function HomePage() {
+export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const lp = await getLp();
+  // місто з адреси (?city=slug, ?city=all), інакше — останній вибір з cookie
+  const sp = await searchParams;
+  const asked = Array.isArray(sp.city) ? sp.city[0] : sp.city;
+  const city = regionBySlug(asked ?? (await cookies()).get(CITY_COOKIE)?.value ?? '');
+  const inCity = (neighborhood: string, island?: string) => !city || islandFor(neighborhood, island) === city.name;
+  const cityQ = city ? `&island=${encodeURIComponent(city.name)}` : '';
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
-  const [session, all, newest, board, devs, featuredBuildings, lang, statRows] = await Promise.all([
+  const [session, all, newest, board, allDevs, allBuildings, lang, allStatRows] = await Promise.all([
     getSession(),
-    queryListings(),
-    queryListings({ sort: 'new' }),
+    queryListings(city ? { island: city.name } : {}),
+    queryListings({ sort: 'new', ...(city ? { island: city.name } : {}) }),
     agencyBoard(),
     listDevelopments(),
     listFeaturedBuildings(),
@@ -56,6 +53,11 @@ export default async function HomePage() {
   ]);
   const t = makeT(lang);
   const money = await getMoney();
+  // усе наповнення головної — лише з обраного міста
+  const devs = allDevs.filter((d) => inCity(d.neighborhood, d.island));
+  const featuredBuildings = allBuildings.filter((b) => inCity(b.development.neighborhood));
+  const statRows = allStatRows.filter((r) => inCity(r.neighborhood));
+  const cityAgencies = new Set(all.map((l) => l.agencyId).filter(Boolean));
   const favIds = session ? await getFavorites(session.id) : [];
 
   // відмічені адміном ідуть першими, у порядку з вкладки Featured; решта — як прийшли (найновіші)
@@ -88,7 +90,7 @@ export default async function HomePage() {
     return { d, count: units.length, from: fromPrice(units.filter((u) => u.deal === 'sale')) };
   });
 
-  const agencies = board.slice(0, 5);
+  const agencies = (city ? board.filter((b) => cityAgencies.has(b.agency.id)) : board).slice(0, 5);
 
   // покази платних кампаній: база рахує лише ті обʼєкти, що просуваються зараз
   await Promise.all([
@@ -102,37 +104,7 @@ export default async function HomePage() {
   return (
     <>
       <section className="wrap home-top">
-        <div className="tiles-block">
-          <h3>{t('For sale')}</h3>
-          <div className="tiles">
-            {SALE_TILES.map((tile) => (
-              <Link key={tile.label} className="tile" href={tile.href}>
-                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
-                <span>{t(tile.label)}</span>
-              </Link>
-            ))}
-          </div>
-
-          <h3>{t('For rent')}</h3>
-          <div className="tiles">
-            {RENT_TILES.map((tile) => (
-              <Link key={tile.label} className="tile tile--wide" href={tile.href}>
-                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
-                <span>{t(tile.label)}</span>
-              </Link>
-            ))}
-          </div>
-
-          <h3>{t('By city')}</h3>
-          <div className="tiles">
-            {REGIONS.map((r) => (
-              <Link key={r.slug} className="tile" href={lp(`/listings?deal=sale&island=${encodeURIComponent(r.name)}`)}>
-                <span className="tile__ico"><Icon name={r.slug === 'roatan' ? 'island' : 'building'} size={26} /></span>
-                <span>{r.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
+        <HomeTiles city={city?.name ?? ''} />
 
         <aside className="promo">
           {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}
@@ -141,7 +113,7 @@ export default async function HomePage() {
             {t('Homes, condos, rentals and land from local agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
           </p>
           <div className="promo__btns">
-            <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--orange btn--lg" href={lp(`/listings?deal=sale${cityQ}`)}>{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
             <Link className="btn btn--lg promo__ghost" href={lp('/land-passport')}>{t('How the land passport works')}</Link>
           </div>
         </aside>
@@ -154,7 +126,7 @@ export default async function HomePage() {
         <div className="wrap">
           <div className="section__head">
             <h2>{t('Featured listings')}</h2>
-            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--primary" href={lp(`/listings?deal=sale${cityQ}`)}>{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
             {featured.map((l) => (

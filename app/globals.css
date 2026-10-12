@@ -116,6 +116,8 @@ textarea.input{resize:vertical;min-height:96px}
 .home-top{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:24px;padding-top:28px;padding-bottom:10px}
 .tiles-block h3{font-size:20px;margin:20px 0 10px}
 .tiles-block h3:first-child{margin-top:0}
+/* вибір міста над категоріями, як у ЛУН */
+.tiles-city{font-size:18px;padding:14px 16px;margin-bottom:4px;cursor:pointer}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .tile{position:relative;background:var(--bg-soft);border-radius:var(--radius);overflow:hidden;
   min-height:132px;display:flex;align-items:flex-end;padding:12px;font-weight:700;transition:all var(--dur) var(--ease)}
