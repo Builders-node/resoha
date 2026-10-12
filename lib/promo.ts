@@ -73,9 +73,9 @@ export async function promoTargets(user: Agent): Promise<PromoTarget[]> {
   const mine = agencyIds.length ? `agent_id.eq.${user.id},agency_id.in.(${agencyIds.join(',')})` : `agent_id.eq.${user.id}`;
 
   const [listings, devs, agencies] = await Promise.all([
-    client.from('listings').select('id, title, neighborhood, active, featured, unit_no').or(mine)
+    client.from('listings').select('id, title, neighborhood, active, featured, unit_no, photos').or(mine)
       .order('created_at', { ascending: false }).limit(500),
-    client.from('developments').select('id, name, neighborhood, active, featured').or(mine).order('name'),
+    client.from('developments').select('id, name, neighborhood, active, featured, photos').or(mine).order('name'),
     agencyIds.length
       ? client.from('agencies').select('id, name, featured').in('id', agencyIds)
       : Promise.resolve({ data: [] as Row[] }),
@@ -86,20 +86,23 @@ export async function promoTargets(user: Agent): Promise<PromoTarget[]> {
       .in('development_id', devRows.map((d: Row) => d.id)).order('sort')
     : { data: [] as Row[] };
   const devName = new Map(devRows.map((d: Row) => [d.id, d.name]));
+  const devPhoto = new Map(devRows.map((d: Row) => [d.id, (d.photos?.[0] as string) ?? '']));
 
   return [
     ...(listings.data ?? []).map((r: Row): PromoTarget => ({
       kind: 'listing', id: r.id, name: r.title, sub: [r.unit_no && `Unit ${r.unit_no}`, r.neighborhood].filter(Boolean).join(' · '),
-      featured: !!r.featured, active: !!r.active,
+      featured: !!r.featured, active: !!r.active, photo: r.photos?.[0] ?? '',
     })),
     ...devRows.map((r: Row): PromoTarget => ({
       kind: 'development', id: r.id, name: r.name, sub: r.neighborhood ?? '', featured: !!r.featured, active: !!r.active,
+      photo: r.photos?.[0] ?? '',
     })),
     ...(buildings ?? []).map((r: Row): PromoTarget => ({
       kind: 'building', id: r.id, name: r.name, sub: devName.get(r.development_id) ?? '', featured: !!r.featured, active: true,
+      photo: devPhoto.get(r.development_id) ?? '',
     })),
     ...(agencies.data ?? []).map((r: Row): PromoTarget => ({
-      kind: 'agency', id: r.id, name: r.name, sub: 'Agency', featured: !!r.featured, active: true,
+      kind: 'agency', id: r.id, name: r.name, sub: 'Agency', featured: !!r.featured, active: true, photo: '',
     })),
   ];
 }

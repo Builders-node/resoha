@@ -18,7 +18,11 @@ import type { Building, Developer, Development, DevelopmentDocument, Development
  * Вкладка «Developments» у кабінеті: список ЖК ріелтора, а кожен ЖК — своя сторінка
  * керування з розділами. Кожен розділ зберігається окремо, тож не треба гортати всі поля.
  */
-export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { onUnitsAdded: () => void; isAdmin?: boolean }) {
+export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false, onPromote }: {
+  onUnitsAdded: () => void; isAdmin?: boolean;
+  /** Відкрити вкладку Promote з цим ЖК */
+  onPromote?: (id: string) => void;
+}) {
   const [items, setItems] = useState<Development[] | null>(null);
   const [open, setOpen] = useState<{ dev: Development; section: Section } | 'new' | null>(null);
 
@@ -73,6 +77,9 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false }: { o
             <div className="chip-row">
               <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>Manage</button>
               <button className="btn btn--ghost btn--sm" onClick={() => setOpen({ dev: d, section: 'news' })}>+ Post news</button>
+              {onPromote && d.active && (
+                <button className="btn btn--ghost btn--sm with-ico" onClick={() => onPromote(d.id)}><Icon name="sparkle" size={14} /> Promote</button>
+              )}
               <Link className="btn btn--ghost btn--sm" href={`/developments/${d.slug}`} target="_blank">Open page</Link>
               <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/booklet`} target="_blank" rel="noreferrer">Booklet PDF</a>
               <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/price-list`} target="_blank" rel="noreferrer">Price list PDF</a>

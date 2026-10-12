@@ -24,7 +24,7 @@ const PER_PAGE = 20;
  * Таблиця оголошень у кабінеті: фільтри зверху, квартири згруповані за ЖК.
  * Фільтрує на клієнті — кабінет і так вантажить усі оголошення ріелтора чи агенції.
  */
-export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete, onRenew, onSubmit, onBulkDone }: {
+export default function DashboardListings({ listings, agentName, onEdit, onToggle, onDelete, onRenew, onSubmit, onBulkDone, onPromote }: {
   listings: Listing[];
   /** Є лише в режимі «вся агенція» — тоді показуємо колонку й фільтр «Agent» */
   agentName?: (id: string) => string;
@@ -37,6 +37,8 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
   onSubmit?: (l: Listing) => void;
   /** Є — показуємо галочки й масові дії; викликається після них, щоб перечитати список */
   onBulkDone?: () => void;
+  /** Відкрити вкладку Promote з цим оголошенням */
+  onPromote?: (l: Listing) => void;
 }) {
   const [q, setQ] = useState('');
   const [dev, setDev] = useState('');
@@ -305,6 +307,12 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
                           <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
+                          {/* просувати можна лише те, що бачать покупці */}
+                          {onPromote && l.active && l.review === 'approved' && (
+                            <><button className={`btn btn--sm btn--ghost btn--icon ${l.featured ? 'is-promoted' : ''}`}
+                              title={l.featured ? 'Promoted — extend or add more' : 'Promote'} aria-label={`Promote ${l.title}`}
+                              onClick={() => onPromote(l)}><Icon name="sparkle" size={16} /></button>{' '}</>
+                          )}
                           {/* чернетку й те, що на перевірці, публікує «Publish» у колонці статусу */}
                           {!['draft', 'pending', 'rejected'].includes(l.review) && (
                             <><button className="btn btn--sm btn--ghost" onClick={() => onToggle(l)}>
