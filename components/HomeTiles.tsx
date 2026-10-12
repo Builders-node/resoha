@@ -1,9 +1,11 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useTransition } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import Icon from './Icon';
 import { useT } from './LangProvider';
-import { REGIONS } from '@/lib/regions';
+import { useLp } from './useLp';
+import { CITY_COOKIE, REGIONS } from '@/lib/regions';
 
 const SALE_TILES = [
   { label: 'Condos', href: '/listings?deal=sale&type=condo', icon: 'building' },
@@ -16,34 +18,28 @@ const RENT_TILES = [
   { label: 'Houses', href: '/listings?deal=rent&type=house', icon: 'key' },
 ];
 
-const KEY = 'home-city';
-
 /**
- * Плитки категорій на головній з вибором міста зверху, як у ЛУН: обране місто
- * додається до кожного посилання (?island=). Вибір памʼятаємо в браузері.
+ * Плитки категорій на головній з вибором міста зверху, як у ЛУН. Місто перемикає всю
+ * головну: сторінка перечитується з ?city=, а вибір лишається в cookie для наступних візитів.
  */
-export default function HomeTiles() {
+export default function HomeTiles({ city }: { city: string }) {
   const t = useT();
-  const [city, setCity] = useState('');
+  const lp = useLp();
+  const router = useRouter();
+  const [pending, start] = useTransition();
 
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(KEY) ?? '';
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- localStorage є лише після гідратації
-      if (REGIONS.some((r) => r.name === saved)) setCity(saved);
-    } catch { /* приватний режим — лишаємо «усі міста» */ }
-  }, []);
-
-  function pick(v: string) {
-    setCity(v);
-    try { localStorage.setItem(KEY, v); } catch { /* не критично */ }
+  function pick(name: string) {
+    const slug = REGIONS.find((r) => r.name === name)?.slug ?? 'all';
+    document.cookie = `${CITY_COOKIE}=${slug === 'all' ? '' : slug}; path=/; max-age=31536000; samesite=lax`;
+    start(() => router.push(lp(`/?city=${slug}`), { scroll: false }));
   }
 
   const withCity = (href: string) => (city ? `${href}&island=${encodeURIComponent(city)}` : href);
 
   return (
     <div className="tiles-block">
-      <select className="input tiles-city" value={city} onChange={(e) => pick(e.target.value)} aria-label={t('City')}>
+      <select className="input tiles-city" value={city} onChange={(e) => pick(e.target.value)} aria-label={t('City')}
+        disabled={pending} aria-busy={pending}>
         <option value="">{t('All cities')}</option>
         {REGIONS.map((r) => <option key={r.slug} value={r.name}>{r.name}</option>)}
       </select>
