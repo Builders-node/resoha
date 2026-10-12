@@ -16,6 +16,7 @@ import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
 import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
+import { SkPanel } from './Skeleton';
 
 type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
@@ -270,7 +271,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
               <SiteSettingsAdmin />
             </>
-          ) : <div className="panel">Loading…</div>
+          ) : <SkPanel n={6} />
         )}
 
         {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}

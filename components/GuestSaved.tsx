@@ -6,6 +6,7 @@ import ListingCard from './ListingCard';
 import { useT } from './LangProvider';
 import { FAV_KEY, useIds, writeIds } from '@/lib/localLists';
 import { useListingsByIds } from '@/lib/useListingsByIds';
+import { SkCards } from './Skeleton';
 
 /** Збережене гостем: id з localStorage → картки. Вхід переносить їх в акаунт (GuestFavSync). */
 export default function GuestSaved() {
@@ -32,7 +33,7 @@ export default function GuestSaved() {
           <Link className="btn btn--primary" href="/listings?deal=sale">{t('Browse the listings')}</Link>
         </div>
       ) : loading && items.length === 0 ? (
-        <p className="muted">{t('Loading…')}</p>
+        <SkCards n={Math.min(ids.length, 4)} />
       ) : items.length === 0 ? (
         <div className="empty">
           <p>{t('These listings are no longer on the market.')}</p>

@@ -8,6 +8,7 @@ import type { Agency, Agent } from '@/lib/types';
 import Avatar from './Avatar';
 import TeamInvites from './TeamInvites';
 import { AGENCY_ROLES, agencyRoleOf, roleLabel, type AgencyRole } from '@/lib/teamRoles';
+import { SkPanel } from './Skeleton';
 
 type Member = Agent & { listings?: number };
 type Team = { agency: Agency; isOwner: boolean; active: boolean };
@@ -167,7 +168,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
     changed();
   }
 
-  if (loading) return <div className="panel">Loading agency…</div>;
+  if (loading) return <SkPanel />;
 
   const createForm = (
     <form className="form-grid" onSubmit={openAgency}>

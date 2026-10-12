@@ -14,6 +14,7 @@ import type { Lead, Listing, SavedSearch, Session } from '@/lib/types';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 import { useLang, useT } from './LangProvider';
+import { SkCards } from './Skeleton';
 
 type Tab = 'fav' | 'searches' | 'enquiries' | 'profile';
 
@@ -85,7 +86,7 @@ export default function UserAccount({ session, user }: {
         </div>
 
         {tab === 'fav' && (
-          loading ? <div className="empty">{t('Loading…')}</div> :
+          loading ? <SkCards n={3} cols={3} /> :
           favs.length === 0 ? (
             <div className="panel"><div className="empty"><div className="empty__ico"><HeartIcon size={40} /></div>
               {t('No saved properties yet.')}<br />

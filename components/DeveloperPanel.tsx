@@ -7,6 +7,7 @@ import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import EmbedSnippets from './EmbedSnippets';
 import type { Developer } from '@/lib/types';
+import { SkPanel } from './Skeleton';
 
 /**
  * Профіль забудовника, який веде сам акаунт: назва, лого, контакти, опис.
@@ -22,7 +23,7 @@ export default function DeveloperPanel() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  if (items === null) return <div className="panel muted">Loading…</div>;
+  if (items === null) return <SkPanel n={3} />;
 
   if (editing || !items.length) {
     return (
