@@ -1,6 +1,7 @@
 import { buildIcs, seqNow, visitEvent, visitUid } from '../ics';
 import { SITE_NAME, SITE_URL } from '../site';
 import { fmtVisit } from '../visits';
+import { KIND_LABEL, PROMO_PRODUCTS, isPromoProduct, type PromoKind } from '../promoShared';
 
 /**
  * Тексти сповіщень. Один шаблон дає і лист (HTML + текст), і коротке повідомлення в Telegram.
@@ -239,9 +240,40 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         telegram: plain(['Listing expires soon', c.title, `Renew it: ${dashboard}`]),
       };
     }
+    case 'promo_ending':
+    case 'promo_ended':
+      return promoMessage(kind === 'promo_ended', p, unsub);
     default:
       return null;
   }
+}
+
+/* ---------- кінець просування (міграція 0061) ---------- */
+
+/** «Закінчується за 3 дні» / «скінчилось»: результати кампанії й кнопка «продовжити» в кабінеті. */
+function promoMessage(ended: boolean, p: Payload, unsub?: string | null): Message {
+  const product = isPromoProduct(p.product) ? PROMO_PRODUCTS[p.product].label : 'Promotion';
+  const what = `${product} · ${(KIND_LABEL[p.kind as PromoKind] ?? 'item').toLowerCase()}`;
+  const name = String(p.targetName || 'your item');
+  const renewUrl = `${SITE_URL}/agent?tab=promote&renew=${encodeURIComponent(String(p.campaignId ?? ''))}`;
+  const subject = ended
+    ? `Promotion ended: ${name}`
+    : `Promotion ends ${dateOnly(p.endsAt)}: ${name}`;
+  const lead = ended
+    ? `The ${product} promotion for “${name}” ended on ${dateOnly(p.endsAt)}. It no longer gets the extra placement.`
+    : `The ${product} promotion for “${name}” ends on ${dateOnly(p.endsAt)}. Extend it now so it keeps its place without a gap.`;
+  const results: [string, unknown][] = [
+    ['Promotion', what], ['Impressions', Number(p.impressions) || 0], ['Page visits', Number(p.clicks) || 0],
+  ];
+  const cta = ended ? 'Promote again' : 'Extend promotion';
+  return {
+    subject,
+    html: layout(`<p style="margin:0 0 12px">${esc(lead)}</p>`
+      + `<table style="border-collapse:collapse;font-size:14px;margin:0 0 16px">${rows(results)}</table>`
+      + button(renewUrl, cta), footer('agent', unsub)),
+    text: plain([subject, '', lead, ...results.map(([k, v]) => `${k}: ${v}`), '', `${cta}: ${renewUrl}`]),
+    telegram: plain([ended ? 'Promotion ended' : 'Promotion ends soon', name, `${cta}: ${renewUrl}`]),
+  };
 }
 
 /* ---------- візити й запрошення (міграція 0055) ---------- */

@@ -22,7 +22,11 @@ export type PromoCampaign = {
   refundedAt: string | null; refundCents: number; refundRef: string;
 };
 
-export type PromoTarget = { kind: PromoKind; id: string; name: string; sub: string; featured: boolean; active: boolean };
+export type PromoTarget = {
+  kind: PromoKind; id: string; name: string; sub: string; featured: boolean; active: boolean;
+  /** перше фото обʼєкта чи ЖК — для вибору з картинками (в агенції порожньо) */
+  photo: string;
+};
 
 /** Кампанія, що йде зараз (а не оплачена наперед і чекає своєї черги). */
 export const isLive = (c: PromoCampaign, now = Date.now()) =>

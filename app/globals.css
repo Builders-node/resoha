@@ -2419,6 +2419,23 @@ html{scroll-behavior:smooth}
 @media (max-width:640px){
   .promo__products{grid-template-columns:1fr}
 }
+/* Кабінет: вибір обʼєкта для просування — пошук і список із фото */
+.promo-pick{max-width:640px;margin-top:4px}
+.promo-pick__search{position:relative;margin-bottom:8px}
+.promo-pick__search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--ink-3)}
+.promo-pick__search .input{width:100%;padding-left:36px}
+.promo-pick__list{display:grid;gap:6px;max-height:304px;overflow-y:auto;padding:2px}
+.promo-pick__item{display:flex;gap:12px;align-items:center;text-align:left;background:var(--bg-soft);border:2px solid transparent;
+  border-radius:var(--radius);padding:8px 12px 8px 8px;cursor:pointer;font:inherit;color:inherit}
+.promo-pick__item:hover{border-color:var(--line)}
+.promo-pick__item.is-on{border-color:var(--ink);background:var(--bg)}
+.promo-pick__item:disabled{opacity:.55;cursor:not-allowed}
+.promo-pick__item .thumb{flex:0 0 auto}
+.promo-pick__text{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.promo-pick__text b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:560px){
+  .promo-pick__item .badge,.promo-pick__item .pill{display:none}
+}
 
 /* ---------- сторінки каталогу ?page=N: «Показати ще» посиланням і номери сторінок ---------- */
 .cpager{display:grid;justify-items:center;gap:14px;padding:24px 0 6px}
@@ -2448,3 +2465,5 @@ html{scroll-behavior:smooth}
 .ldesc__note{margin:6px 0 0}
 .ldesc__note a{text-decoration:underline}
 .desc-es__head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+/* Кабінет: кнопка «Promote» біля оголошення, що вже просувається */
+.btn--icon.is-promoted{color:var(--orange)}
