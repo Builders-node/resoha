@@ -1,21 +1,27 @@
 'use client';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
 import Photo from './Photo';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
 import {
-  KIND_LABEL, PROMO_KINDS, PROMO_PRODUCTS, PROMO_PRODUCT_KEYS, fmtMoney, isLive,
-  type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget,
+  KIND_LABEL, PROMO_KINDS, PROMO_PRODUCTS, PROMO_PRODUCT_KEYS, dayRange, fmtMoney, isLive, roatanToday,
+  type PromoCampaign, type PromoDay, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget,
 } from '@/lib/promoShared';
-import { EffectCell, PaymentHistory } from './PromoExtras';
+import { DailyBars, EffectCell, PaymentHistory } from './PromoExtras';
+import PromoPreview from './PromoPreview';
 
 type Payments = 'stripe' | 'stripe-test' | 'manual';
 type Data = {
   packages: PromoPackage[]; campaigns: PromoCampaign[]; targets: PromoTarget[]; payments: Payments;
   effects?: Record<string, PromoEffect>;
+  /** покази й переходи по днях (міграція 0062) */
+  daily?: Record<string, PromoDay[]>;
 };
+
+/** Вартість одного переходу: для порівняння кампаній між собою */
+const perVisit = (c: PromoCampaign) => (c.clicks ? fmtMoney(Math.round(c.priceCents / c.clicks), c.currency) : '—');
 
 const KIND_ICON: Record<PromoKind, string> = { listing: 'home', development: 'building', building: 'layers', agency: 'briefcase' };
 
@@ -54,6 +60,8 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   const [targetId, setTargetId] = useState(pick?.id ?? '');
   const [packageId, setPackageId] = useState('');
   const [busy, setBusy] = useState(false);
+  // кампанія, чий графік по днях розгорнуто в таблиці
+  const [openStats, setOpenStats] = useState('');
   const buyRef = useRef<HTMLDivElement>(null);
   // «Продовжити» з листа-нагадування: ?renew=<кампанія>, спрацьовує, коли дані прийшли
   const renewId = useRef('');
@@ -171,6 +179,18 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   const canRenew = (c: PromoCampaign) => (c.status === 'active' || c.status === 'ended') && !c.refundedAt
     && !PROMO_PRODUCTS[c.product].once && data.targets.some((t) => t.kind === c.kind && t.id === c.targetId)
     && data.packages.some((p) => p.kind === c.kind && p.product === c.product);
+  const daily = data.daily ?? {};
+  // останні 30 днів по всіх кампаніях — сумою
+  const today = roatanToday();
+  const last30 = dayRange(new Date(Date.parse(`${today}T00:00:00Z`) - 29 * 86400_000).toISOString().slice(0, 10), today);
+  const sum30 = new Map<string, PromoDay>();
+  for (const rows of Object.values(daily)) {
+    for (const r of rows) {
+      const s = sum30.get(r.day) ?? { day: r.day, impressions: 0, clicks: 0 };
+      sum30.set(r.day, { day: r.day, impressions: s.impressions + r.impressions, clicks: s.clicks + r.clicks });
+    }
+  }
+  const hasDaily = Object.keys(daily).length > 0;
   const until = liveForTarget.reduce<string | null>((m, c) => (!m || (c.endsAt && c.endsAt > m) ? c.endsAt : m), null);
 
   return (
@@ -227,6 +247,7 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
                     </button>
                   ))}
                 </div>
+                {target && <PromoPreview kind={kind} targetId={target.id} product={product} />}
               </div>
             </div>
 
@@ -292,14 +313,29 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
               <div className="stat"><span className="muted small">Page visits</span><b>{fmtNumber(totals.clicks)}</b></div>
               <div className="stat"><span className="muted small">Spent</span><b>{fmtMoney(totals.spent)}</b></div>
             </div>
+            {hasDaily && (
+              <div className="pchart-row">
+                <DailyBars title="Impressions · last 30 days" unit="impressions" days={last30}
+                  values={last30.map((d) => sum30.get(d)?.impressions ?? 0)} />
+                <DailyBars title="Page visits · last 30 days" unit="visits" days={last30}
+                  values={last30.map((d) => sum30.get(d)?.clicks ?? 0)} />
+              </div>
+            )}
             <div className="promo__table">
               <table className="table">
-                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th></th></tr></thead>
+                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th>Per visit</th><th></th></tr></thead>
                 <tbody>
                   {campaigns.map((c) => {
                     const href = targetHref(c.kind, c.targetId);
+                    const rows = daily[c.id];
+                    const isOpen = openStats === c.id && !!rows && !!c.startsAt;
+                    const span = isOpen
+                      ? dayRange(roatanToday(Date.parse(c.startsAt!)), roatanToday(Math.min(Date.now(), Date.parse(c.endsAt ?? c.startsAt!))))
+                      : [];
+                    const byDay = new Map((rows ?? []).map((r) => [r.day, r]));
                     return (
-                      <tr key={c.id}>
+                      <Fragment key={c.id}>
+                      <tr>
                         <td>
                           <div className="tiny muted">{PROMO_PRODUCTS[c.product].label} · {KIND_LABEL[c.kind]}</div>
                           {href ? <Link href={href}>{c.targetName || '—'}</Link> : c.targetName || '—'}
@@ -313,7 +349,15 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
                         <td data-label="CTR">{ctr(c)}</td>
                         <td data-label="Before → during"><EffectCell e={effects[c.id]} /></td>
                         <td data-label="Price">{fmtMoney(c.priceCents, c.currency)}</td>
-                        <td>
+                        <td data-label="Per visit">{c.status === 'pending' ? '—' : perVisit(c)}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>
+                          {rows && (
+                            <button type="button" className={`btn btn--sm btn--ghost btn--icon ${isOpen ? 'is-on' : ''}`}
+                              title="Stats by day" aria-label={`Stats by day: ${c.targetName}`} aria-expanded={isOpen}
+                              onClick={() => setOpenStats(isOpen ? '' : c.id)}>
+                              <Icon name="chart" size={16} />
+                            </button>
+                          )}
                           {canRenew(c) && (
                             <button type="button" className="btn btn--sm btn--ghost" title="Buy the same promotion again"
                               onClick={() => renew(c)}>
@@ -328,6 +372,19 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
                           )}
                         </td>
                       </tr>
+                      {isOpen && (
+                        <tr className="promo__statsrow">
+                          <td colSpan={10}>
+                            <div className="pchart-row">
+                              <DailyBars title="Impressions by day" unit="impressions" days={span}
+                                values={span.map((d) => byDay.get(d)?.impressions ?? 0)} />
+                              <DailyBars title="Page visits by day" unit="visits" days={span}
+                                values={span.map((d) => byDay.get(d)?.clicks ?? 0)} />
+                            </div>
+                          </td>
+                        </tr>
+                      )}
+                      </Fragment>
                     );
                   })}
                 </tbody>
@@ -336,6 +393,7 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
             <p className="tiny muted" style={{ marginTop: 10 }}>
               Impressions — how many times the item was shown in lists while promoted. Visits — opens of its page during the campaign.
               Before → during — page views and leads during the campaign against the same number of days right before it.
+              Per visit — price divided by visits, to compare campaigns with each other.
             </p>
           </>
         )}

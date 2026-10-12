@@ -2467,3 +2467,30 @@ html{scroll-behavior:smooth}
 .desc-es__head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 /* Кабінет: кнопка «Promote» біля оголошення, що вже просувається */
 .btn--icon.is-promoted{color:var(--orange)}
+/* Кабінет: покази й переходи по днях (0062) — один ряд стовпчиків на графік */
+.pchart-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin:16px 0}
+.pchart{margin:0;background:var(--bg-soft);border-radius:var(--radius);padding:14px 16px}
+.pchart__head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:10px}
+.pchart__head b{font-size:20px;letter-spacing:-.02em}
+.pchart__bars{display:flex;align-items:flex-end;gap:2px;height:84px;border-bottom:1px solid var(--line)}
+.pchart__col{flex:1;height:100%;display:flex;align-items:flex-end;position:relative;cursor:default;outline:none}
+.pchart__col i{display:block;width:100%;background:var(--orange);border-radius:4px 4px 0 0;min-height:0}
+.pchart__col:hover i,.pchart__col:focus-visible i{filter:brightness(.85)}
+.pchart__col:hover::after,.pchart__col:focus-visible::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 6px);left:50%;
+  transform:translateX(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;padding:4px 8px;border-radius:6px;z-index:2;pointer-events:none}
+.pchart__col:first-child:hover::after,.pchart__col:first-child:focus-visible::after{left:0;transform:none}
+.pchart__col:last-child:hover::after,.pchart__col:last-child:focus-visible::after{left:auto;right:0;transform:none}
+.pchart__axis{display:flex;justify-content:space-between;margin-top:4px}
+.pchart__table{margin-top:6px}
+.pchart__table summary{cursor:pointer}
+.pchart__table .table{margin-top:6px;max-width:240px}
+.promo__statsrow td{background:var(--bg)}
+.btn--icon.is-on{background:var(--bg-soft)}
+/* Кабінет: прев'ю картки з обраним видом просування перед оплатою */
+.promo-preview{display:flex;gap:16px;align-items:center;margin-top:14px;max-width:760px}
+.promo-preview__card{flex:0 0 260px;pointer-events:none}
+.promo-preview p{margin:0}
+@media (max-width:640px){
+  .promo-preview{flex-direction:column;align-items:stretch}
+  .promo-preview__card{flex-basis:auto}
+}

@@ -74,3 +74,43 @@ export function PaymentHistory({ campaigns }: { campaigns: PromoCampaign[] }) {
     </div>
   );
 }
+
+/**
+ * Покази або переходи по днях — один ряд стовпчиків, без другої осі.
+ * Дні без даних — нульові стовпчики, щоб видно було паузи. Наведення показує день і число,
+ * а таблиця під «Show numbers» — те саме для екранних читалок.
+ */
+export function DailyBars({ title, days, values, unit }: {
+  title: string; days: string[]; values: number[]; unit: string;
+}) {
+  const max = Math.max(1, ...values);
+  const total = values.reduce((s, v) => s + v, 0);
+  const label = (d: string) => new Date(`${d}T12:00:00Z`).toLocaleDateString('en-US', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return (
+    <figure className="pchart">
+      <figcaption className="pchart__head">
+        <span className="small muted">{title}</span>
+        <b>{fmtNumber(total)}</b>
+      </figcaption>
+      <div className="pchart__bars" role="img" aria-label={`${title}: ${fmtNumber(total)} over ${days.length} days`}>
+        {days.map((d, i) => (
+          <span key={d} className="pchart__col" tabIndex={0} data-tip={`${label(d)} · ${fmtNumber(values[i])} ${unit}`}>
+            <i style={{ height: values[i] ? `${Math.max(4, (values[i] / max) * 100)}%` : 0 }} />
+          </span>
+        ))}
+      </div>
+      <div className="pchart__axis tiny muted">
+        <span>{days.length ? label(days[0]) : ''}</span>
+        <span>{days.length > 1 ? label(days[days.length - 1]) : ''}</span>
+      </div>
+      <details className="pchart__table tiny">
+        <summary className="muted">Show numbers</summary>
+        <table className="table">
+          <tbody>
+            {days.map((d, i) => <tr key={d}><td>{label(d)}</td><td>{fmtNumber(values[i])}</td></tr>)}
+          </tbody>
+        </table>
+      </details>
+    </figure>
+  );
+}
