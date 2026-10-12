@@ -1,8 +1,8 @@
-import { REGIONS } from '@/lib/regions';
 import type { Metadata } from 'next';
 import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Icon from '@/components/Icon';
+import HomeTiles from '@/components/HomeTiles';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
@@ -28,17 +28,6 @@ function areaHref(name: string) {
   const area = areaForNeighborhood(name);
   return area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(name)}`;
 }
-
-const SALE_TILES = [
-  { label: 'Condos', href: '/listings?deal=sale&type=condo', icon: 'building' },
-  { label: 'Houses & villas', href: '/listings?deal=sale&type=house', icon: 'home' },
-  { label: 'Land', href: '/listings?deal=sale&type=land', icon: 'land' },
-  { label: 'Commercial', href: '/listings?deal=sale&type=commercial', icon: 'briefcase' },
-];
-const RENT_TILES = [
-  { label: 'Condos', href: '/listings?deal=rent&type=condo', icon: 'building' },
-  { label: 'Houses', href: '/listings?deal=rent&type=house', icon: 'key' },
-];
 
 export default async function HomePage() {
   const lp = await getLp();
@@ -102,37 +91,7 @@ export default async function HomePage() {
   return (
     <>
       <section className="wrap home-top">
-        <div className="tiles-block">
-          <h3>{t('For sale')}</h3>
-          <div className="tiles">
-            {SALE_TILES.map((tile) => (
-              <Link key={tile.label} className="tile" href={tile.href}>
-                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
-                <span>{t(tile.label)}</span>
-              </Link>
-            ))}
-          </div>
-
-          <h3>{t('For rent')}</h3>
-          <div className="tiles">
-            {RENT_TILES.map((tile) => (
-              <Link key={tile.label} className="tile tile--wide" href={tile.href}>
-                <span className="tile__ico"><Icon name={tile.icon} size={26} /></span>
-                <span>{t(tile.label)}</span>
-              </Link>
-            ))}
-          </div>
-
-          <h3>{t('By city')}</h3>
-          <div className="tiles">
-            {REGIONS.map((r) => (
-              <Link key={r.slug} className="tile" href={lp(`/listings?deal=sale&island=${encodeURIComponent(r.name)}`)}>
-                <span className="tile__ico"><Icon name={r.slug === 'roatan' ? 'island' : 'building'} size={26} /></span>
-                <span>{r.name}</span>
-              </Link>
-            ))}
-          </div>
-        </div>
+        <HomeTiles />
 
         <aside className="promo">
           {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}

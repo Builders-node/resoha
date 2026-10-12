@@ -617,5 +617,4 @@ export const ES_CATALOG: Record<string, string> = {
   'Airport (SAP)': 'Aeropuerto (SAP)',
   'Airport (TGU)': 'Aeropuerto (TGU)',
   '{what}: {n} listings with photos, prices and a map. Contact local agencies directly on WhatsApp.': '{what}: {n} anuncios con fotos, precios y mapa. Contacte a las agencias locales directamente por WhatsApp.',
-  'By city': 'Por ciudad',
 };
