@@ -3,7 +3,7 @@ import { Sk } from '@/components/Skeleton';
 /** Новобудови: картки ЖК ліворуч, карта праворуч — та сама сітка, що й у пошуку. */
 export default function DevelopmentsLoading() {
   return (
-    <div className="split split--list" style={{ '--filters-h': '0px' } as React.CSSProperties}>
+    <div className="split split--list">
       <div className="split__list">
         <div className="list-head"><Sk className="sk--h1" /></div>
         <div className="grid grid--list">

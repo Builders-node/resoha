@@ -1,20 +1,19 @@
 import { Sk } from '@/components/Skeleton';
 
-/** Пошук: панель фільтрів, список ліворуч, карта праворуч — та сама сітка. */
+/** Пошук: фільтри і список ліворуч, карта праворуч на всю висоту — та сама сітка. */
 export default function ListingsLoading() {
   return (
     <>
-      <div className="filters">
-        <div className="wrap filters__in">
-          <Sk className="sk--pill filters__q" style={{ minWidth: 240 }} />
-          <Sk className="sk--pill" style={{ width: 150 }} />
-          <Sk className="sk--pill" style={{ width: 130 }} />
-          <Sk className="sk--pill" style={{ width: 96 }} />
-        </div>
-      </div>
-
       <div className="split split--list">
         <div className="split__list">
+          <div className="filters">
+            <div className="filters__in">
+              <Sk className="sk--pill filters__q" style={{ minWidth: 240 }} />
+              <Sk className="sk--pill" style={{ width: 150 }} />
+              <Sk className="sk--pill" style={{ width: 130 }} />
+              <Sk className="sk--pill" style={{ width: 96 }} />
+            </div>
+          </div>
           <div className="list-head"><Sk className="sk--h1" /></div>
           <div className="grid grid--list">
             {Array.from({ length: 6 }, (_, i) => (
