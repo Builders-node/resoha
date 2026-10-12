@@ -7,6 +7,7 @@ import { cleanNearby } from './nearby';
 import { cleanPhotoRooms } from './rooms';
 import { OPEN_STATUSES, cleanDocKind, cleanRentals, cleanStage, cleanSales, cleanStatus, slugify, splitList } from './units';
 import { cleanSchedule } from './visits';
+import { islandFor } from './regions';
 import type { ImportedListing } from './listingImport';
 import type { ExistingUnit } from './priceList';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
@@ -383,7 +384,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     deal: input.deal ?? 'sale',
     type: input.type ?? 'condo',
     title: input.title,
-    island: input.island ?? 'Roatán',
+    // місто/острів виводимо з району: так форма й імпорт не можуть їх розсинхронізувати
+    island: islandFor(input.neighborhood, input.island),
     neighborhood: input.neighborhood ?? 'West Bay',
     address: input.address ?? '',
     price: Number(input.price) || 0,
@@ -487,6 +489,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
       : NUMERIC.has(key) ? Number(value) || 0
         : BOOLEAN.has(key) ? Boolean(value) : value;
   }
+  if (typeof patch.neighborhood === 'string') row.island = islandFor(patch.neighborhood, patch.island);
   if (!Object.keys(row).length) return getListing(id);
 
   const client = await db();
@@ -591,6 +594,7 @@ const DEVELOPMENT_SPECS = [
 function developmentRow(input: Record<string, unknown>): Row {
   const row: Row = {};
   for (const k of DEVELOPMENT_TEXT) if (typeof input[k] === 'string') row[k] = (input[k] as string).trim().slice(0, 120);
+  if (typeof row.neighborhood === 'string') row.island = islandFor(row.neighborhood, row.island as string | undefined);
   if (input.text !== undefined) row.body = String(input.text).slice(0, 8000);
   if (input.website !== undefined) {
     const w = String(input.website).trim();
@@ -1378,7 +1382,7 @@ export async function agentStats(agentId: string, agencyId: string | null, scope
 /* ---------- facets ---------- */
 export async function facets(q: { deal?: Deal; type?: string } = {}) {
   let sel = (await db()).from('listings')
-    .select('price, sqft, lot_acres, tags, neighborhood, oceanfront, titled, owner_financing, hoa')
+    .select('price, sqft, lot_acres, tags, neighborhood, island, oceanfront, titled, owner_financing, hoa')
     .eq('active', true);
   if (q.deal) sel = sel.eq('deal', q.deal);
   if (q.type) sel = sel.eq('type', q.type);
@@ -1399,7 +1403,13 @@ export async function facets(q: { deal?: Deal; type?: string } = {}) {
   const tagCounts: Record<string, number> = {};
   rows.forEach((r) => (r.tags ?? []).forEach((t: string) => { tagCounts[t] = (tagCounts[t] ?? 0) + 1; }));
   const areaCounts: Record<string, number> = {};
-  rows.forEach((r) => { areaCounts[r.neighborhood] = (areaCounts[r.neighborhood] ?? 0) + 1; });
+  const areaIsland: Record<string, string> = {};
+  const islandCounts: Record<string, number> = {};
+  rows.forEach((r) => {
+    areaCounts[r.neighborhood] = (areaCounts[r.neighborhood] ?? 0) + 1;
+    areaIsland[r.neighborhood] ??= islandFor(r.neighborhood, r.island);
+    islandCounts[areaIsland[r.neighborhood]] = (islandCounts[areaIsland[r.neighborhood]] ?? 0) + 1;
+  });
 
   return {
     total: rows.length,
@@ -1407,7 +1417,8 @@ export async function facets(q: { deal?: Deal; type?: string } = {}) {
     sqft: { min: Math.min(...sqfts, 0), max: Math.max(...sqfts, 0) },
     lot: { min: lots.length ? Math.min(...lots) : 0, max: lots.length ? Math.max(...lots) : 0 },
     tags: Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })),
-    areas: Object.entries(areaCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })),
+    areas: Object.entries(areaCounts).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count, island: areaIsland[name] })),
+    islands: Object.entries(islandCounts).map(([name, count]) => ({ name, count })),
     oceanfront: rows.filter((r) => r.oceanfront).length,
     titled: rows.filter((r) => r.titled).length,
     ownerFinancing: rows.filter((r) => r.owner_financing).length,

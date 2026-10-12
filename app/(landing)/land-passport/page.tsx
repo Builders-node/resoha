@@ -22,10 +22,10 @@ export async function generateMetadata(): Promise<Metadata> {
 const WHY: Record<string, string> = {
   titleStatus: 'Registered, free-and-clear title at the Instituto de la Propiedad is the single most important fact about a lot.',
   roadAccess: 'A lot without legal road access may be impossible to build on or to resell.',
-  power: 'Bringing a RECO line from far away can cost more than the lot itself.',
+  power: 'Bringing a power line from far away (RECO on Roatán, ENEE on the mainland) can cost more than the lot itself.',
   water: 'Wells, cisterns and municipal supply each change the cost of building and living.',
   survey: 'A topographic survey on file confirms boundaries and size, including the 3,000 m² limit for foreign individuals.',
-  zolitur: 'ZOLITUR, the Bay Islands tourism free zone authority, issues building permits on the islands.',
+  zolitur: 'On the Bay Islands, ZOLITUR, the tourism free zone authority, issues building permits; in San Pedro Sula and Tegucigalpa the municipality does.',
   zone: 'Protected areas, mangroves and coastal setbacks limit what you can build.',
   slope: 'Steep lots have views, and higher foundation and access costs.',
 };

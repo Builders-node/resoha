@@ -5,6 +5,7 @@ import type { Guide } from './content/guides';
 import { plain } from '@/components/Rich';
 import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from './site';
 import { TYPE_LABELS } from './format';
+import { REGIONS, regionByName } from './regions';
 
 /**
  * schema.org-обʼєкти для JSON-LD. Пошуковики й AI-асистенти читають їх як довідку
@@ -13,7 +14,7 @@ import { TYPE_LABELS } from './format';
 const ORG_ID = `${SITE_URL}/#organization`;
 const abs = (path: string) => (path.startsWith('http') ? path : `${SITE_URL}${path}`);
 
-export const ORG_DESCRIPTION = 'Resoha is a property marketplace for Roatán and the Bay Islands, Honduras: homes, condos, rentals and land from island agencies in one searchable map, with a land passport on every lot.';
+export const ORG_DESCRIPTION = 'Resoha is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.';
 
 export function organizationLd() {
   return {
@@ -24,8 +25,8 @@ export function organizationLd() {
     url: SITE_URL,
     logo: abs('/icon.svg'),
     description: ORG_DESCRIPTION,
-    areaServed: { '@type': 'Place', name: 'Roatán, Bay Islands, Honduras' },
-    knowsAbout: ['Roatán real estate', 'Bay Islands property', 'Honduras land title', 'buying property in Honduras as a foreigner'],
+    areaServed: REGIONS.map((r) => ({ '@type': 'Place', name: `${r.name}, ${r.department}, Honduras` })),
+    knowsAbout: [...REGIONS.map((r) => `${r.name} real estate`), 'Bay Islands property', 'Honduras land title', 'buying property in Honduras as a foreigner'],
     ...(CONTACT_EMAIL ? { email: CONTACT_EMAIL } : {}),
   };
 }
@@ -101,7 +102,7 @@ export function listingLd(l: Listing, agentName?: string) {
       '@type': 'PostalAddress',
       streetAddress: l.address || undefined,
       addressLocality: l.neighborhood,
-      addressRegion: 'Islas de la Bahía',
+      addressRegion: (regionByName(l.island) ?? REGIONS[0]).department,
       addressCountry: 'HN',
     },
     geo: l.lat && l.lng ? { '@type': 'GeoCoordinates', latitude: l.lat, longitude: l.lng } : undefined,
@@ -157,7 +158,7 @@ export function developmentLd(d: Development, units: Listing[]) {
       '@type': 'PostalAddress',
       streetAddress: d.address || undefined,
       addressLocality: d.neighborhood,
-      addressRegion: 'Islas de la Bahía',
+      addressRegion: (regionByName(d.island) ?? REGIONS[0]).department,
       addressCountry: 'HN',
     },
     geo: d.lat && d.lng ? { '@type': 'GeoCoordinates', latitude: d.lat, longitude: d.lng } : undefined,

@@ -72,14 +72,14 @@ const strOrUndef = (v: unknown, max: number) => {
 const boolOf = (v: unknown) => /^(1|yes|y|true|si|sí|x)$/i.test(String(v ?? '').trim());
 const fold = (s: string) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/harbor\b/, 'harbour').replace(/\s+/g, ' ').trim();
 
-/** «french harbor» → «French Harbour». Невідомий район лишаємо як є; назва острова районом не вважається. */
+/** «french harbor» → «French Harbour». Невідомий район лишаємо як є; назва острова чи міста районом не вважається. */
 export function matchArea(...candidates: (string | undefined)[]): string | undefined {
   for (const c of candidates) {
     if (!c) continue;
     const hit = NEIGHBORHOODS.find((n) => fold(n) === fold(c));
     if (hit) return hit;
   }
-  return candidates.map((c) => c?.trim()).find((c) => c && !/^(roatan|isla de roatan|islas de la bahia|bay islands|honduras)$/.test(fold(c)));
+  return candidates.map((c) => c?.trim()).find((c) => c && !/^(roatan|isla de roatan|islas de la bahia|bay islands|honduras|san pedro sula|sps|cortes|tegucigalpa|tegucigalpa m\.?d\.?c\.?|distrito central|francisco morazan)$/.test(fold(c)));
 }
 
 export function dealOf(v: unknown): Deal | undefined {

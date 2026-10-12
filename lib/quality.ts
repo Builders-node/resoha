@@ -1,4 +1,5 @@
 import type { Listing } from './types';
+import { inAnyRegion } from './regions';
 
 /**
  * Перевірки якості оголошень. Один список і для лічильників на Overview,
@@ -18,8 +19,9 @@ export const QUALITY_CHECKS = [
     test: (l: Checked) => l.text.length < 40 },
   { key: 'landUnchecked', filter: 'landunchecked', label: 'Land without a land check', option: 'Land not checked',
     test: (l: Checked) => l.type === 'land' && !l.land?.checkedAt },
-  { key: 'offIsland', filter: 'offisland', label: 'Coordinates outside Roatán', option: 'Pin outside Roatán',
-    test: (l: Checked) => l.lat < 16.2 || l.lat > 16.6 || l.lng < -86.7 || l.lng > -86.2 },
+  // поза Роатаном, Сан-Педро-Сулою й Тегусігальпою (lib/regions.ts)
+  { key: 'offIsland', filter: 'offisland', label: 'Coordinates outside our regions', option: 'Pin outside our regions',
+    test: (l: Checked) => !inAnyRegion(l.lat, l.lng) },
 ] as const;
 
 export type QualityKey = typeof QUALITY_CHECKS[number]['key'];

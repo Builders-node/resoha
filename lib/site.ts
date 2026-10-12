@@ -15,7 +15,7 @@ export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
 export const OPERATOR = process.env.NEXT_PUBLIC_OPERATOR ?? 'Resoha Roatán';
 export const LEGAL_UPDATED = '2 October 2026';
 
-export const SITE_NAME = 'Resoha Roatán';
+export const SITE_NAME = 'Resoha';
 
 /** Шлях для редиректу після входу: лише всередині сайту, щоб ?next= не вів на чужий домен. */
 export function safePath(v: string | null | undefined, fallback = '/') {

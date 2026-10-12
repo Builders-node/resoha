@@ -26,7 +26,7 @@ export async function landReport(listing: Listing, agent: Agent | null, peers: L
   const { M, W } = b;
 
   for (const l of b.wrap(listing.title, 20, b.inner, b.bold)) { b.text(l, M, 20, b.bold); b.y -= 26; }
-  b.text(`${fmtPrice(listing.price, listing.deal)}   ·   ${listing.lotAcres} acres   ·   ${listing.neighborhood}, Roatan`, M, 12, b.reg, MUTED);
+  b.text(`${fmtPrice(listing.price, listing.deal)}   ·   ${listing.lotAcres} acres   ·   ${listing.neighborhood}, ${listing.island}`, M, 12, b.reg, MUTED);
   b.y -= 22;
   await b.hero(listing.photos[0], 120);
 
@@ -63,7 +63,7 @@ export async function landReport(listing: Listing, agent: Agent | null, peers: L
   if (n.closing) b.row('Cost to buy (4-5.5%)', `${fmtUsd(Math.round(n.closing.low))} - ${fmtUsd(Math.round(n.closing.high))}`, { size: 10 });
   if (n.taxMax) b.row('Property tax', `up to ${fmtUsd(Math.round(n.taxMax))} a year`, { size: 10 });
   if (n.foreign) b.row('Foreign buyers', n.foreign === 'personal' ? 'Under 3,000 m2: can own in own name' : 'Over 3,000 m2: usually via a Honduran company', { size: 10 });
-  b.row('Distances (straight line)', n.distances.map((d) => `${d.name.replace(' (RTB)', '')} ${d.km.toFixed(1)} km`).join('  ·  '), { size: 10 });
+  b.row('Distances (straight line)', n.distances.map((d) => `${d.name.replace(/ \([A-Z]{3}\)$/, '')} ${d.km.toFixed(1)} km`).join('  ·  '), { size: 10 });
   b.y -= 10;
 
   if (listing.text) {

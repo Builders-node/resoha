@@ -1,3 +1,4 @@
+import { REGIONS } from '@/lib/regions';
 import { AREAS } from '@/lib/content/areas';
 import { HELP_SECTIONS } from '@/lib/content/help';
 import { GUIDES } from '@/lib/content/guides';
@@ -19,15 +20,16 @@ export function GET() {
     '',
     `> ${ORG_DESCRIPTION}`,
     '',
-    'Resoha is a listing platform, not a broker. Every listing links back to the island agency that holds it. Buyers contact agents directly; Resoha takes no commission from buyers. Land listings carry a "land passport": title, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked confirmed or not with the date of the check.',
+    'Resoha is a listing platform, not a broker. Every listing links back to the agency that holds it. Buyers contact agents directly; Resoha takes no commission from buyers. Land listings carry a "land passport": title, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked confirmed or not with the date of the check.',
     '',
     '## Key pages',
-    `- [Property for sale on Roatán](${u('/listings?deal=sale')}): homes, condos and land, on a map`,
+    `- [Property for sale in Honduras](${u('/listings?deal=sale')}): homes, condos and land in Roatán, San Pedro Sula and Tegucigalpa, on a map`,
+    ...REGIONS.map((r) => `- [Property for sale in ${r.name}](${u(`/listings?deal=sale&island=${encodeURIComponent(r.name)}`)})`),
     `- [Long-term rentals](${u('/listings?deal=rent')})`,
     `- [Land and lots](${u('/listings?type=land')}): filter by "Ready to build"`,
     `- [Land passport](${u('/land-passport')}): what is checked on every lot and how readiness is scored`,
     `- [Roatán market report](${u('/market')}): key figures with sources`,
-    `- [Areas of Roatán](${u('/areas')}): prices and character of each neighbourhood`,
+    `- [Areas and cities](${u('/areas')}): prices and character of each area of Roatán, San Pedro Sula and Tegucigalpa`,
     `- [Buying guides](${u('/guides')})`,
     `- [Questions and answers](${u('/faq')}): every common buyer question in one place`,
     `- [About Resoha](${u('/about')})`,

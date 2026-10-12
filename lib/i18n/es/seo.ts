@@ -1,11 +1,12 @@
 /** Заголовки й описи сторінок для пошуковиків, заголовки каталогу з фільтрів, сторінки каталогу. */
 export const ES_SEO: Record<string, string> = {
   /* заголовки й описи сторінок */
-  'Roatán Real Estate: Homes, Condos & Land for Sale': 'Bienes raíces en Roatán: casas, condominios y terrenos en venta',
-  'Every property on Roatán in one checked place: homes, condos, rentals and land from island agencies, with a land passport on every lot and direct WhatsApp contact with agents.':
-    'Todas las propiedades de Roatán en un solo lugar verificado: casas, condominios, alquileres y terrenos de las agencias de la isla, con pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
-  'Resoha is a property marketplace for Roatán and the Bay Islands, Honduras: homes, condos, rentals and land from island agencies in one searchable map, with a land passport on every lot.':
-    'Resoha es un portal inmobiliario de Roatán y las Islas de la Bahía, Honduras: casas, condominios, alquileres y terrenos de las agencias de la isla en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
+  'Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land':
+    'Bienes raíces en Roatán, San Pedro Sula y Tegucigalpa: casas, condominios y terrenos',
+  'Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.':
+    'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa en un solo lugar verificado: casas, condominios, alquileres y terrenos de agencias locales, con pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
+  'Resoha is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.':
+    'Resoha es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
   'Developers in Roatán': 'Desarrolladoras en Roatán',
   'Property developers building on Roatán and their projects.': 'Desarrolladoras inmobiliarias que construyen en Roatán y sus proyectos.',
   'About Resoha: every property on Roatán in one checked place': 'Sobre Resoha: todas las propiedades de Roatán en un solo lugar verificado',
@@ -29,7 +30,8 @@ export const ES_SEO: Record<string, string> = {
   'New developments in Roatán': 'Proyectos nuevos en Roatán',
   'Condo towers and new-build projects on Roatán with unit-by-unit prices from the developer.':
     'Torres de condominios y obra nueva en Roatán con precios unidad por unidad de la desarrolladora.',
-  '{area}, Roatán: homes, condos & land for sale': '{area}, Roatán: casas, condominios y terrenos en venta',
+  '{area}, {region}: homes, condos & land for sale':
+    '{area}, {region}: casas, condominios y terrenos en venta',
   'real estate agency on Roatán': 'agencia inmobiliaria en Roatán',
   'realtor': 'agente inmobiliario',
   'developer in Roatán': 'desarrolladora en Roatán',
@@ -65,4 +67,5 @@ export const ES_SEO: Record<string, string> = {
   'Next': 'Siguiente',
   'Page {n} of the results.': 'Página {n} de los resultados.',
   'Show earlier listings': 'Ver anuncios anteriores',
+  'Compare the areas of Roatán, San Pedro Sula and Tegucigalpa: typical prices, who each area suits and the homes, condos and land listed there now.': 'Compare las zonas de Roatán, San Pedro Sula y Tegucigalpa: precios típicos, para quién es cada zona y las casas, condominios y terrenos publicados ahora.',
 };

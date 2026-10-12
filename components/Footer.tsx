@@ -17,7 +17,7 @@ export default async function Footer() {
             <span>Resoha<span className="logo__sub"> Roatán</span></span>
           </Link>
           <p className="small" style={{ marginTop: 10 }}>
-            {t('Property on Roatán and the Bay Islands. Every listing links back to the island agency that holds it.')}
+            {t('Property in Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Every listing links back to the agency that holds it.')}
           </p>
         </div>
         <div className="footer__cols">
@@ -34,7 +34,7 @@ export default async function Footer() {
             <h4>{t('Buying on Roatán')}</h4>
             <ul>
               <li><Link href={lp('/guides')}>{t('Buying guides')}</Link></li>
-              <li><Link href={lp('/areas')}>{t('Areas of Roatán')}</Link></li>
+              <li><Link href={lp('/areas')}>{t('Areas and cities')}</Link></li>
               <li><Link href={lp('/market')}>{t('Market report')}</Link></li>
               <li><Link href={lp('/land-passport')}>{t('Land passport')}</Link></li>
               <li><Link href={lp('/faq')}>{t('FAQ')}</Link></li>

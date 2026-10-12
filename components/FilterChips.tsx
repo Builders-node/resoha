@@ -24,6 +24,7 @@ export default function FilterChips({ filters: f, onChange, onReset }: {
 
   if (f.q) add('q', `“${f.q}”`, { q: '' });
   if (f.type) add('type', t(TYPE[f.type] ?? f.type), { type: '', ready: false });
+  if (f.island) add('island', f.island, { island: '', neighborhoods: [] });
   for (const n of f.neighborhoods) add(`n-${n}`, n, { neighborhoods: f.neighborhoods.filter((x) => x !== n) });
   if (f.priceMin || f.priceMax) add('price', range(f.priceMin, f.priceMax, money.amount), { priceMin: '', priceMax: '' });
   if (f.beds.length) add('beds', t('{n} bd', { n: f.beds.map((b) => (b === '4' ? '4+' : b)).join(', ') }), { beds: [] });

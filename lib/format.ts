@@ -1,5 +1,6 @@
 import type { Deal, PropertyType } from './types';
 import { intlLocale, translate, type Lang } from './i18n';
+import { REGIONS } from './regions';
 
 export const TYPE_LABELS: Record<PropertyType, string> = {
   condo: 'Condo', house: 'House / Villa', land: 'Land', commercial: 'Commercial',
@@ -7,27 +8,10 @@ export const TYPE_LABELS: Record<PropertyType, string> = {
 export const DEAL_LABELS: Record<Deal, string> = { sale: 'For sale', rent: 'For rent' };
 
 /**
- * Райони та їхні центри. Координати — з OpenStreetMap; форма ставить пін у центр
+ * Райони та їхні центри — з усіх регіонів (lib/regions.ts). Форма ставить пін у центр
  * обраного району, щоб ріелтору не доводилось знати широту з довготою напамʼять.
- * Кожна точка перевірена на суші за береговою лінією OSM: центр у морі означав би
- * пін у морі в кожного нового оголошення цього району.
  */
-export const AREA_CENTRES: Record<string, [number, number]> = {
-  'West Bay': [16.2752, -86.5977],
-  'West End': [16.3047, -86.5929],
-  'Gibson Bight': [16.3190, -86.5808],
-  'Sandy Bay': [16.3323, -86.5633],
-  'Flowers Bay': [16.2950, -86.5699],
-  'Coxen Hole': [16.3211, -86.5383],
-  'French Harbour': [16.3518, -86.4570],
-  'Parrot Tree': [16.3641, -86.4131],
-  'Palmetto Bay': [16.3640, -86.4878],
-  'Pristine Bay': [16.366945, -86.471605],
-  'Crawfish Rock': [16.3699, -86.4747],
-  'Oak Ridge': [16.3890, -86.3591],
-  'Punta Gorda': [16.4145, -86.3674],
-  'Camp Bay': [16.4302, -86.2819],
-};
+export const AREA_CENTRES: Record<string, [number, number]> = Object.assign({}, ...REGIONS.map((r) => r.areas));
 
 export const NEIGHBORHOODS = Object.keys(AREA_CENTRES);
 

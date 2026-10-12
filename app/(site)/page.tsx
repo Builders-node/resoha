@@ -1,3 +1,4 @@
+import { REGIONS } from '@/lib/regions';
 import type { Metadata } from 'next';
 import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
@@ -121,13 +122,23 @@ export default async function HomePage() {
               </Link>
             ))}
           </div>
+
+          <h3>{t('By city')}</h3>
+          <div className="tiles">
+            {REGIONS.map((r) => (
+              <Link key={r.slug} className="tile" href={lp(`/listings?deal=sale&island=${encodeURIComponent(r.name)}`)}>
+                <span className="tile__ico"><Icon name={r.slug === 'roatan' ? 'island' : 'building'} size={26} /></span>
+                <span>{r.name}</span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <aside className="promo">
           {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}
-          <h1>{t('Every property on Roatán, checked before you fly')}</h1>
+          <h1>{t('Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy')}</h1>
           <p>
-            {t('Homes, condos, rentals and land from island agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
+            {t('Homes, condos, rentals and land from local agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
           </p>
           <div className="promo__btns">
             <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse the listings')} <Icon name="arrowRight" size={18} /></Link>
@@ -142,7 +153,7 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap">
           <div className="section__head">
-            <h2>{t('Featured on Roatán')}</h2>
+            <h2>{t('Featured listings')}</h2>
             <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
@@ -263,7 +274,7 @@ export default async function HomePage() {
       <section className="section">
         <div className="wrap cta">
           <div>
-            <h2 style={{ fontSize: 'var(--fs-h1)' }}>{t('Selling on the island?')}</h2>
+            <h2 style={{ fontSize: 'var(--fs-h1)' }}>{t('Selling property in Honduras?')}</h2>
             <p className="muted" style={{ fontSize: 18, margin: '12px 0 24px' }}>
               {t('Publish listings, take enquiries from buyers flying in, and track views from your own dashboard.')}
             </p>

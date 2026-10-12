@@ -48,7 +48,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div style={{ display: 'flex', fontSize: 30, color: '#ff4800', fontWeight: 800 }}>
-              {l ? `${l.deal === 'rent' ? 'For rent' : 'For sale'} · ${l.neighborhood}` : 'Roatán, Bay Islands'}
+              {l ? `${l.deal === 'rent' ? 'For rent' : 'For sale'} · ${l.neighborhood}` : 'Honduras'}
             </div>
             <div style={{ display: 'flex', fontSize: 60, fontWeight: 800, lineHeight: 1.1, letterSpacing: -1.5 }}>
               {l ? l.title : 'Property on Roatán'}
