@@ -13,7 +13,7 @@ import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import NotifySettings from './NotifySettings';
 import { renewedUntil } from '@/lib/lifecycle';
-import PromotePanel from './PromotePanel';
+import PromotePanel, { type PromoPick } from './PromotePanel';
 import { toast } from './Toaster';
 import { fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
@@ -67,6 +67,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   const [members, setMembers] = useState<Member[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
   const [editing, setEditing] = useState<Listing | null>(null);
+  const [promoPick, setPromoPick] = useState<PromoPick | null>(null);
+  const promote = (p: PromoPick) => { setPromoPick(p); setTab('promote'); };
 
   const load = useCallback(async () => {
     const [a, l, t, tm] = await Promise.all([
@@ -151,7 +153,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div key={g.title} className="sidenav__group" role="group" aria-label={g.title}>
             <span className="sidenav__title">{g.title}</span>
             {g.items.map((it) => (
-              <a key={it.tab} className={tab === it.tab ? 'is-active' : ''} onClick={() => setTab(it.tab)}>
+              <a key={it.tab} className={tab === it.tab ? 'is-active' : ''} onClick={() => { setPromoPick(null); setTab(it.tab); }}>
                 <Icon name={it.icon} size={18} /> {it.label}
                 {it.count != null && <span className={`sidenav__count ${it.alert ? 'is-alert' : ''}`}>{it.count}</span>}
               </a>
@@ -198,13 +200,14 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <div className="stat"><span className="muted small">Leads</span><b>{stats.leads}</b></div>
         </div>}
 
-        {tab === 'promote' && <PromotePanel />}
+        {tab === 'promote' && <PromotePanel pick={promoPick} />}
 
         {tab === 'analytics' && <AnalyticsPanel isOwner={canListings} agencyName={agency?.name} />}
 
         {tab === 'visits' && <VisitsCalendar meId={session.id} />}
 
-        {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin} />}
+        {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin}
+          onPromote={(id) => promote({ kind: 'development', id })} />}
 
         {tab === 'listings' && (
           <div className="panel">
@@ -228,6 +231,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
                 onRenew={(l) => patchListing(l, { expiresAt: renewedUntil() }, 'Renewed for 90 days')}
                 onSubmit={(l) => patchListing(l, { review: 'pending' }, 'Listing published')}
                 onBulkDone={load}
+                onPromote={(l) => promote({ kind: 'listing', id: l.id })}
               />
             )}
             {listings.length === 0 && (

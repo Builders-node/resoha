@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useId, useState } from 'react';
 import Icon from './Icon';
 import { useT } from './LangProvider';
-import { fmtUsd } from '@/lib/format';
+import { useMoney } from './CurrencyProvider';
 import {
   CASH_TERMS, CLOSING_GUIDE, COST_ITEMS, DEFAULT_TERMS, OWNER_TERMS, PROPERTY_TAX_RATE, TYPICAL_CLOSING,
   monthlyPayment, type Terms,
@@ -25,6 +25,7 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
   price: number; hoa: number; ownerFinancing: boolean; showCosts?: boolean; showFinancing?: boolean;
 }) {
   const t = useT();
+  const money = useMoney();
   const id = useId();
   const [legal, setLegal] = useState(String(COST_ITEMS[1].rate * 100));
   const [terms, setTerms] = useState(asText(ownerFinancing ? OWNER_TERMS : DEFAULT_TERMS));
@@ -58,7 +59,7 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
         {showCosts && <div className="calc__card">
           {showFinancing && <h4>{t('Purchase costs')}</h4>}
           <dl className="calc__rows">
-            <div><dt>{t('Price')}</dt><dd>{fmtUsd(price)}</dd></div>
+            <div><dt>{t('Price')}</dt><dd>{money.amount(price)}</dd></div>
             {COST_ITEMS.map((c, i) => (
               <div key={c.key}>
                 <dt>
@@ -75,25 +76,25 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
                       <span className="muted small">%</span>
                     </span>
                   ) : <span className="muted small">{pct(rates[i])}</span>}
-                  <b>{fmtUsd(Math.round(costs[i]))}</b>
+                  <b>{money.amount(Math.round(costs[i]))}</b>
                 </dd>
               </div>
             ))}
             <div className="calc__total">
               <dt>{t('Closing costs')}<small>{t('{p} of the price', { p: pct(closing / price) })}</small></dt>
-              <dd><b>{fmtUsd(Math.round(closing))}</b></dd>
+              <dd><b>{money.amount(Math.round(closing))}</b></dd>
             </div>
             <div className="calc__total calc__total--big">
               <dt>{t('Cash needed at closing')}<small>{t('Down payment plus closing costs')}</small></dt>
-              <dd><b>{fmtUsd(Math.round(price * (down / 100) + closing))}</b></dd>
+              <dd><b>{money.amount(Math.round(price * (down / 100) + closing))}</b></dd>
             </div>
           </dl>
           <p className="tiny muted calc__note">
             {t('Most straightforward deals land at {low}–{high} of the price ({from}–{to}); buying through a Honduran company or several parcels can reach 7%. The seller usually pays the agent.', {
               low: pct(TYPICAL_CLOSING.low), high: pct(TYPICAL_CLOSING.high),
-              from: fmtUsd(Math.round(price * TYPICAL_CLOSING.low)), to: fmtUsd(Math.round(price * TYPICAL_CLOSING.high)),
+              from: money.amount(Math.round(price * TYPICAL_CLOSING.low)), to: money.amount(Math.round(price * TYPICAL_CLOSING.high)),
             })}{' '}
-            {t('Property tax: up to {price}/yr (0.25% of the cadastral value).', { price: fmtUsd(Math.round(price * PROPERTY_TAX_RATE)) })}{' '}
+            {t('Property tax: up to {price}/yr (0.25% of the cadastral value).', { price: money.amount(Math.round(price * PROPERTY_TAX_RATE)) })}{' '}
             <Link className="link-accent" href={CLOSING_GUIDE}>{t('Roatán closing costs guide')} <Icon name="arrowRight" size={14} /></Link>
           </p>
         </div>}
@@ -123,7 +124,7 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
                   value={terms.down} onChange={(e) => edit('down', e.target.value)} />
                 <span className="muted small">%</span>
               </span>
-              <span className="tiny muted">{fmtUsd(Math.round(price * (down / 100)))}</span>
+              <span className="tiny muted">{money.amount(Math.round(price * (down / 100)))}</span>
             </div>
             <div className="field">
               <label htmlFor={`${id}-rate`}>{t('Interest rate')}</label>
@@ -145,21 +146,21 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
 
           {financed ? (
             <dl className="calc__rows">
-              <div><dt>{t('Loan amount')}</dt><dd><b>{fmtUsd(Math.round(loan))}</b></dd></div>
-              <div><dt>{t('Monthly payment')}</dt><dd><b>{fmtUsd(Math.round(pay))}</b></dd></div>
-              {hoa > 0 && <div><dt>{t('HOA')}</dt><dd><b>{fmtUsd(hoa)}</b></dd></div>}
+              <div><dt>{t('Loan amount')}</dt><dd><b>{money.amount(Math.round(loan))}</b></dd></div>
+              <div><dt>{t('Monthly payment')}</dt><dd><b>{money.amount(Math.round(pay))}</b></dd></div>
+              {hoa > 0 && <div><dt>{t('HOA')}</dt><dd><b>{money.amount(hoa)}</b></dd></div>}
               <div className="calc__total calc__total--big">
                 <dt>{t('Per month')}{hoa > 0 && <small>{t('Payment plus HOA')}</small>}</dt>
-                <dd><b>{fmtUsd(Math.round(monthly))}</b></dd>
+                <dd><b>{money.amount(Math.round(monthly))}</b></dd>
               </div>
-              <div><dt>{t('Total of payments')}<small>{t('over {n} years', { n: years })}</small></dt><dd>{fmtUsd(Math.round(totalPaid))}</dd></div>
-              <div><dt>{t('Total interest')}</dt><dd>{fmtUsd(Math.round(Math.max(0, totalPaid - loan)))}</dd></div>
+              <div><dt>{t('Total of payments')}<small>{t('over {n} years', { n: years })}</small></dt><dd>{money.amount(Math.round(totalPaid))}</dd></div>
+              <div><dt>{t('Total interest')}</dt><dd>{money.amount(Math.round(Math.max(0, totalPaid - loan)))}</dd></div>
             </dl>
           ) : (
             <dl className="calc__rows">
               <div className="calc__total calc__total--big">
                 <dt>{t('Per month')}<small>{hoa > 0 ? t('HOA only — no loan') : t('No loan')}</small></dt>
-                <dd><b>{fmtUsd(Math.round(hoa > 0 ? hoa : 0))}</b></dd>
+                <dd><b>{money.amount(Math.round(hoa > 0 ? hoa : 0))}</b></dd>
               </div>
             </dl>
           )}

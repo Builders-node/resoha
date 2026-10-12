@@ -7,6 +7,7 @@ import type { T } from '@/lib/i18n';
 import type { Lang } from '@/lib/i18n';
 import type { Listing } from '@/lib/types';
 import type { GoneListing } from '@/lib/gone';
+import { localePath } from '@/lib/i18n/paths';
 
 /**
  * «Цей обʼєкт більше недоступний»: замість 404 — що це було і схожі живі обʼєкти поруч.
@@ -15,6 +16,7 @@ import type { GoneListing } from '@/lib/gone';
 export default function ListingGone({ gone, similar, favIds, t, lang }: {
   gone: GoneListing; similar: Listing[]; favIds: string[]; t: T; lang: Lang;
 }) {
+  const lp = (href: string) => localePath(lang, href);
   const area = areaForNeighborhood(gone.neighborhood);
   const areaHref = area ? `/areas/${area.slug}` : `/listings?deal=${gone.deal}&neighborhoods=${encodeURIComponent(gone.neighborhood)}`;
   const searchHref = `/listings?deal=${gone.deal}&type=${gone.type}&neighborhoods=${encodeURIComponent(gone.neighborhood)}`;
@@ -53,8 +55,8 @@ export default function ListingGone({ gone, similar, favIds, t, lang }: {
       )}
 
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">{t('Home')}</Link> ·{' '}
-        <Link href={`/listings?deal=${gone.deal}`}>{t(DEAL_LABELS[gone.deal])}</Link> ·{' '}
+        <Link href={lp('/')}>{t('Home')}</Link> ·{' '}
+        <Link href={lp(`/listings?deal=${gone.deal}`)}>{t(DEAL_LABELS[gone.deal])}</Link> ·{' '}
         <Link href={areaHref}>{gone.neighborhood}</Link>
       </div>
     </div>

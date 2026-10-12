@@ -1,11 +1,13 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import AddToCalendar from './AddToCalendar';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import { useLang, useT } from './LangProvider';
 import { Calendar, useAvailability } from './VisitBooking';
 import { intlLocale } from '@/lib/i18n';
+import { visitUid } from '@/lib/ics';
 import type { VisitCard } from '@/lib/visitBookings';
 import {
   BOOK_DAYS, SALES_TZ, addDays, fmtVisit, freeSlotsFor, officeDayOf, officeTimeToDate, officeToday, slotKey, slotPart,
@@ -113,6 +115,11 @@ export default function VisitManage({ token, initial }: { token: string; initial
           </p>
         )}
       </div>
+
+      {upcoming && !moving && (
+        <AddToCalendar href={`/api/visit/${token}/ics`} uid={visitUid(visit.leadId)} visitAt={visit.visitAt}
+          place={place} address={address} agent={visit.agent} />
+      )}
 
       {upcoming && !moving && (
         <div className="visit__nav">

@@ -47,7 +47,7 @@ export default function ReportListing({ listingId, email }: { listingId: string;
     });
     setSending(false);
     if (res.ok) setSent(true);
-    else toast((await res.json().catch(() => ({}))).error ?? t('Something went wrong'));
+    else toast(t((await res.json().catch(() => ({}))).error ?? 'Something went wrong'));
   }
 
   return (

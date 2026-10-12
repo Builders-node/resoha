@@ -1,16 +1,21 @@
 'use client';
 import Link from 'next/link';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
+import Photo from './Photo';
 import { toast } from './Toaster';
 import { fmtDate, fmtNumber } from '@/lib/format';
 import {
-  KIND_LABEL, PROMO_KINDS, fmtMoney, isLive,
-  type PromoCampaign, type PromoKind, type PromoPackage, type PromoTarget,
+  KIND_LABEL, PROMO_KINDS, PROMO_PRODUCTS, PROMO_PRODUCT_KEYS, fmtMoney, isLive,
+  type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget,
 } from '@/lib/promoShared';
+import { EffectCell, PaymentHistory } from './PromoExtras';
 
 type Payments = 'stripe' | 'stripe-test' | 'manual';
-type Data = { packages: PromoPackage[]; campaigns: PromoCampaign[]; targets: PromoTarget[]; payments: Payments };
+type Data = {
+  packages: PromoPackage[]; campaigns: PromoCampaign[]; targets: PromoTarget[]; payments: Payments;
+  effects?: Record<string, PromoEffect>;
+};
 
 const KIND_ICON: Record<PromoKind, string> = { listing: 'home', development: 'building', building: 'layers', agency: 'briefcase' };
 
@@ -22,6 +27,7 @@ export function targetHref(kind: PromoKind, id: string) {
 }
 
 export function StatusPill({ c }: { c: PromoCampaign }) {
+  if (c.refundedAt) return <span className="pill pill--off">Refunded</span>;
   if (c.status === 'pending') return <span className="badge badge--warn">Awaiting payment</span>;
   if (c.status === 'cancelled') return <span className="pill pill--off">Cancelled</span>;
   if (c.status === 'ended') return <span className="pill pill--off">Ended</span>;
@@ -33,23 +39,34 @@ export function StatusPill({ c }: { c: PromoCampaign }) {
 export const ctr = (c: { impressions: number; clicks: number }) =>
   c.impressions ? `${((c.clicks / c.impressions) * 100).toFixed(1)}%` : '—';
 
+/** Що просувати одразу: кнопка «Promote» біля оголошення чи ЖК в інших вкладках кабінету */
+export type PromoPick = { kind: PromoKind; id: string };
+
 /**
  * Вкладка Promote у кабінеті: вибрати своє оголошення, ЖК, дім чи агенцію,
  * строк — і оплатити. Нижче — свої кампанії з показами й переходами.
  */
-export default function PromotePanel() {
+export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState('');
-  const [kind, setKind] = useState<PromoKind>('listing');
-  const [targetId, setTargetId] = useState('');
+  const [kind, setKind] = useState<PromoKind>(pick?.kind ?? 'listing');
+  const [pickedProduct, setProduct] = useState<PromoProduct>('featured');
+  const [targetId, setTargetId] = useState(pick?.id ?? '');
   const [packageId, setPackageId] = useState('');
   const [busy, setBusy] = useState(false);
+  const buyRef = useRef<HTMLDivElement>(null);
+  // «Продовжити» з листа-нагадування: ?renew=<кампанія>, спрацьовує, коли дані прийшли
+  const renewId = useRef('');
 
   const load = useCallback(async () => {
     const res = await fetch('/api/promo');
     const d = await res.json().catch(() => ({}));
     if (!res.ok) { setError(d.unavailable ? 'Promotions are being set up — check back soon.' : d.error ?? 'Could not load'); return; }
     setData(d);
+    const r = (d as Data).campaigns.find((c) => c.id === renewId.current);
+    renewId.current = '';
+    if (r) renew(r, d);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- renew лише ставить стан
   }, []);
 
   useEffect(() => { load(); }, [load]);
@@ -63,8 +80,10 @@ export default function PromotePanel() {
     else if (paid === '0' || sp.get('canceled')) toast('Payment was not completed');
     const k = sp.get('kind') as PromoKind | null;
     if (k && PROMO_KINDS.includes(k)) { setKind(k); setTargetId(sp.get('id') ?? ''); }
-    if (paid || sp.get('canceled') || k) {
-      ['paid', 'canceled', 'kind', 'id'].forEach((p) => sp.delete(p));
+    const r = sp.get('renew');
+    if (r) renewId.current = r;
+    if (paid || sp.get('canceled') || k || r) {
+      ['paid', 'canceled', 'kind', 'id', 'renew'].forEach((p) => sp.delete(p));
       window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`);
     }
   }, []);
@@ -75,14 +94,31 @@ export default function PromotePanel() {
     if (data && kinds.length && !kinds.includes(kind)) setKind(kinds[0]);
   }, [data, kinds, kind]);
 
+  // активні кампанії по обʼєктах: «просувається до …» у списку вибору
+  const liveUntil = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of data?.campaigns ?? []) {
+      if (c.status !== 'active' || !c.endsAt || PROMO_PRODUCTS[c.product].once) continue;
+      const key = `${c.kind}:${c.targetId}`;
+      if (!m.has(key) || c.endsAt > m.get(key)!) m.set(key, c.endsAt);
+    }
+    return m;
+  }, [data]);
+
   const targets = useMemo(() => (data?.targets ?? []).filter((t) => t.kind === kind), [data, kind]);
-  const packages = useMemo(() => (data?.packages ?? []).filter((p) => p.kind === kind), [data, kind]);
+  // види, для яких є пакети цього типу обʼєкта (до міграції 0060 — лише Featured)
+  const products = useMemo(() => PROMO_PRODUCT_KEYS.filter((p) => PROMO_PRODUCTS[p].kinds.includes(kind)
+    && (data?.packages ?? []).some((pk) => pk.kind === kind && pk.product === p)), [data, kind]);
+  // обраний вид недоступний для цього типу — беремо перший наявний
+  const product = products.includes(pickedProduct) ? pickedProduct : products[0] ?? 'featured';
+  const packages = useMemo(() => (data?.packages ?? []).filter((p) => p.kind === kind && p.product === product), [data, kind, product]);
   const target = targets.find((t) => t.id === targetId) ?? null;
   const pkg = packages.find((p) => p.id === packageId) ?? null;
 
+  // поки дані не прийшли, список порожній — не затираємо обʼєкт, переданий з іншої вкладки
   useEffect(() => {
-    if (!targets.some((t) => t.id === targetId)) setTargetId(targets.find((t) => t.active)?.id ?? targets[0]?.id ?? '');
-  }, [targets, targetId]);
+    if (data && !targets.some((t) => t.id === targetId)) setTargetId(targets.find((t) => t.active)?.id ?? targets[0]?.id ?? '');
+  }, [data, targets, targetId]);
   useEffect(() => {
     if (!packages.some((p) => p.id === packageId)) setPackageId(packages[Math.min(1, packages.length - 1)]?.id ?? '');
   }, [packages, packageId]);
@@ -102,6 +138,16 @@ export default function PromotePanel() {
     load();
   }
 
+  /** Продовжити: та сама річ, той самий вид і строк — лишається натиснути «Pay» */
+  function renew(c: PromoCampaign, d: Data | null = data) {
+    if (!d) return;
+    const same = d.packages.filter((p) => p.kind === c.kind && p.product === c.product);
+    const p = same.find((x) => x.days === c.days) ?? same[0];
+    setKind(c.kind); setProduct(c.product); setTargetId(c.targetId);
+    if (p) setPackageId(p.id);
+    buyRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
   async function cancel(c: PromoCampaign) {
     if (!confirm(`Cancel the request for “${c.targetName}”?`)) return;
     const res = await fetch(`/api/promo/${c.id}`, { method: 'DELETE' });
@@ -117,19 +163,25 @@ export default function PromotePanel() {
   const paid = campaigns.filter((c) => c.status === 'active' || c.status === 'ended');
   const totals = paid.reduce((s, c) => ({
     impressions: s.impressions + c.impressions, clicks: s.clicks + c.clicks,
-    spent: s.spent + c.priceCents,
+    spent: s.spent + c.priceCents - (c.refundedAt ? c.refundCents : 0),
   }), { impressions: 0, clicks: 0, spent: 0 });
-  const liveForTarget = target ? campaigns.filter((c) => c.kind === kind && c.targetId === target.id && c.status === 'active') : [];
+  const liveForTarget = target && !PROMO_PRODUCTS[product].once
+    ? campaigns.filter((c) => c.kind === kind && c.product === product && c.targetId === target.id && c.status === 'active') : [];
+  const effects = data.effects ?? {};
+  const canRenew = (c: PromoCampaign) => (c.status === 'active' || c.status === 'ended') && !c.refundedAt
+    && !PROMO_PRODUCTS[c.product].once && data.targets.some((t) => t.kind === c.kind && t.id === c.targetId)
+    && data.packages.some((p) => p.kind === c.kind && p.product === c.product);
   const until = liveForTarget.reduce<string | null>((m, c) => (!m || (c.endsAt && c.endsAt > m) ? c.endsAt : m), null);
 
   return (
     <>
-      <div className="panel promo-buy">
+      <div className="panel promo-buy" ref={buyRef}>
         <div className="promo__head">
           <div>
             <h3 className="with-ico"><Icon name="sparkle" size={20} /> Promote on Resoha</h3>
             <p className="muted small" style={{ marginTop: 4 }}>
-              Featured items go first in search and catalogs, get a spot on the home page and carry a Featured badge.
+              Pick what to promote and how: a Featured badge, a Sponsored place above search results,
+              a coloured card, a home page spot, a one-time bump or Premium agent on the listing page.
             </p>
           </div>
         </div>
@@ -152,13 +204,8 @@ export default function PromotePanel() {
                     </button>
                   ))}
                 </div>
-                <select className="input" value={targetId} onChange={(e) => setTargetId(e.target.value)} aria-label="Item to promote">
-                  {targets.map((t) => (
-                    <option key={t.id} value={t.id} disabled={!t.active}>
-                      {t.name}{t.sub ? ` — ${t.sub}` : ''}{!t.active ? ' (unpublished)' : ''}{t.featured ? ' ★' : ''}
-                    </option>
-                  ))}
-                </select>
+                <TargetPicker targets={targets} value={targetId} onChange={setTargetId}
+                  until={(t) => liveUntil.get(`${t.kind}:${t.id}`) ?? null} />
                 {until && (
                   <p className="tiny muted" style={{ marginTop: 8 }}>
                     Already promoted until {fmtDate(until)} — a new package adds its days after that.
@@ -170,7 +217,23 @@ export default function PromotePanel() {
             <div className="promo__step">
               <span className="promo__num">2</span>
               <div className="promo__body">
-                <b>How long</b>
+                <b>How to promote</b>
+                <div className="promo__products">
+                  {products.map((p) => (
+                    <button key={p} type="button" className={`promo__product ${p === product ? 'is-on' : ''}`}
+                      aria-pressed={p === product} onClick={() => setProduct(p)}>
+                      <span className="with-ico"><Icon name={PROMO_PRODUCTS[p].icon} size={16} /> <b>{PROMO_PRODUCTS[p].label}</b></span>
+                      <span className="tiny muted">{PROMO_PRODUCTS[p].blurb}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="promo__step">
+              <span className="promo__num">3</span>
+              <div className="promo__body">
+                <b>{PROMO_PRODUCTS[product].once ? 'Price' : 'How long'}</b>
                 {packages.length === 0 ? (
                   <p className="muted small" style={{ marginTop: 8 }}>No packages for this type yet.</p>
                 ) : (
@@ -178,9 +241,11 @@ export default function PromotePanel() {
                     {packages.map((p) => (
                       <button key={p.id} type="button" className={`promo__pkg ${p.id === packageId ? 'is-on' : ''}`}
                         aria-pressed={p.id === packageId} onClick={() => setPackageId(p.id)}>
-                        <span className="promo__days">{p.days} days</span>
+                        <span className="promo__days">{PROMO_PRODUCTS[p.product].once ? 'One time' : `${p.days} days`}</span>
                         <span className="promo__price">{fmtMoney(p.priceCents, p.currency)}</span>
-                        <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / day</span>
+                        {!PROMO_PRODUCTS[p.product].once && (
+                          <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / day</span>
+                        )}
                       </button>
                     ))}
                   </div>
@@ -189,7 +254,7 @@ export default function PromotePanel() {
             </div>
 
             <div className="promo__step">
-              <span className="promo__num">3</span>
+              <span className="promo__num">4</span>
               <div className="promo__body">
                 <b>{payments === 'manual' ? 'Send the request' : 'Pay'}</b>
                 <div className="promo__pay">
@@ -229,14 +294,14 @@ export default function PromotePanel() {
             </div>
             <div className="promo__table">
               <table className="table">
-                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Price</th><th></th></tr></thead>
+                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th></th></tr></thead>
                 <tbody>
                   {campaigns.map((c) => {
                     const href = targetHref(c.kind, c.targetId);
                     return (
                       <tr key={c.id}>
                         <td>
-                          <div className="tiny muted">{KIND_LABEL[c.kind]}</div>
+                          <div className="tiny muted">{PROMO_PRODUCTS[c.product].label} · {KIND_LABEL[c.kind]}</div>
                           {href ? <Link href={href}>{c.targetName || '—'}</Link> : c.targetName || '—'}
                         </td>
                         <td className="small" data-label="Period">
@@ -246,8 +311,15 @@ export default function PromotePanel() {
                         <td data-label="Impressions">{fmtNumber(c.impressions)}</td>
                         <td data-label="Visits">{fmtNumber(c.clicks)}</td>
                         <td data-label="CTR">{ctr(c)}</td>
+                        <td data-label="Before → during"><EffectCell e={effects[c.id]} /></td>
                         <td data-label="Price">{fmtMoney(c.priceCents, c.currency)}</td>
                         <td>
+                          {canRenew(c) && (
+                            <button type="button" className="btn btn--sm btn--ghost" title="Buy the same promotion again"
+                              onClick={() => renew(c)}>
+                              <Icon name="calendar" size={14} /> {c.status === 'active' ? 'Extend' : 'Renew'}
+                            </button>
+                          )}
                           {c.status === 'pending' && (
                             <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Cancel request"
                               aria-label={`Cancel request: ${c.targetName}`} onClick={() => cancel(c)}>
@@ -263,10 +335,61 @@ export default function PromotePanel() {
             </div>
             <p className="tiny muted" style={{ marginTop: 10 }}>
               Impressions — how many times the item was shown in lists while promoted. Visits — opens of its page during the campaign.
+              Before → during — page views and leads during the campaign against the same number of days right before it.
             </p>
           </>
         )}
       </div>
+
+      <PaymentHistory campaigns={campaigns} />
     </>
+  );
+}
+
+/**
+ * Вибір обʼєкта: пошук і список із фото замість довгого select.
+ * Неопубліковане видно, але вибрати не можна; поруч — до коли вже просувається.
+ */
+function TargetPicker({ targets, value, onChange, until }: {
+  targets: PromoTarget[]; value: string; onChange: (id: string) => void;
+  until: (t: PromoTarget) => string | null;
+}) {
+  const [q, setQ] = useState('');
+  const query = q.trim().toLowerCase();
+  const shown = query
+    ? targets.filter((t) => `${t.name} ${t.sub}`.toLowerCase().includes(query))
+    : targets;
+  // обраний завжди на початку, щоб не губився внизу довгого списку
+  const list = [...shown.filter((t) => t.id === value), ...shown.filter((t) => t.id !== value)];
+
+  return (
+    <div className="promo-pick">
+      {targets.length > 6 && (
+        <div className="promo-pick__search">
+          <Icon name="search" size={16} />
+          <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
+            placeholder="Search by title, unit or area" aria-label="Search items to promote" />
+        </div>
+      )}
+      <div className="promo-pick__list" role="radiogroup" aria-label="Item to promote">
+        {list.length === 0 && <p className="muted small" style={{ padding: 12 }}>Nothing matches “{q}”.</p>}
+        {list.map((t) => {
+          const end = until(t);
+          return (
+            <button key={t.id} type="button" role="radio" aria-checked={t.id === value} disabled={!t.active}
+              className={`promo-pick__item ${t.id === value ? 'is-on' : ''}`} onClick={() => onChange(t.id)}>
+              <Photo className="thumb" src={t.photo} label="" />
+              <span className="promo-pick__text">
+                <b>{t.name}</b>
+                {t.sub && <span className="tiny muted">{t.sub}</span>}
+              </span>
+              {!t.active
+                ? <span className="pill pill--off">Unpublished</span>
+                : end ? <span className="badge badge--ok">Promoted to {fmtDate(end)}</span> : null}
+            </button>
+          );
+        })}
+      </div>
+    </div>
   );
 }

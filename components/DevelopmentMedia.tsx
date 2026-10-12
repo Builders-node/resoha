@@ -1,12 +1,14 @@
 import Icon from './Icon';
 import { embedUrl } from '@/lib/embed';
+import { getT } from '@/lib/i18n/server';
 
 /** Відео та тур 360 / облёт дроном. Відомі сервіси вбудовуємо, решту — посиланням. */
-export default function DevelopmentMedia({ video, tour, name }: { video: string; tour: string; name: string }) {
+export default async function DevelopmentMedia({ video, tour, name }: { video: string; tour: string; name: string }) {
+  const t = await getT();
   const items = [
-    tour && { key: 'tour', url: tour, label: '360° tour', icon: 'orbit' as const },
-    video && { key: 'video', url: video, label: 'Video', icon: 'play' as const },
-  ].filter(Boolean) as { key: string; url: string; label: string; icon: 'orbit' | 'play' }[];
+    tour && { key: 'tour', url: tour, label: t('360° tour'), open: t('Open the 360° tour'), icon: 'orbit' as const },
+    video && { key: 'video', url: video, label: t('Video'), open: t('Open the video'), icon: 'play' as const },
+  ].filter(Boolean) as { key: string; url: string; label: string; open: string; icon: 'orbit' | 'play' }[];
 
   return (
     <div className="media">
@@ -21,7 +23,7 @@ export default function DevelopmentMedia({ video, tour, name }: { video: string;
               </div>
             ) : (
               <a className="media__link" href={m.url} target="_blank" rel="noreferrer nofollow">
-                <Icon name={m.icon} size={28} /> <span>Open {m.label.toLowerCase()}</span>
+                <Icon name={m.icon} size={28} /> <span>{m.open}</span>
               </a>
             )}
             <figcaption className="small muted"><Icon name={m.icon} size={16} /> {m.label}</figcaption>

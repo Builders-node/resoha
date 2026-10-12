@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Crumbs from '@/components/Crumbs';
@@ -11,11 +12,12 @@ import SourceList from '@/components/SourceList';
 import { AREAS, areaBySlug } from '@/lib/content/areas';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { queryListings } from '@/lib/db';
-import { AREA_CENTRES, fmtDate, fmtUsd, nListings } from '@/lib/format';
+import { AREA_CENTRES, fmtDate, nListings } from '@/lib/format';
 import { makeT } from '@/lib/i18n';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+import { getMoney } from '@/lib/currencyServer';
 
 export const dynamicParams = false;
 export const generateStaticParams = () => AREAS.map((a) => ({ slug: a.slug }));
@@ -23,21 +25,23 @@ export const generateStaticParams = () => AREAS.map((a) => ({ slug: a.slug }));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const a = areaBySlug((await params).slug);
   if (!a) return {};
-  const title = `${a.name}, Roatán: homes, condos & land for sale`;
+  const t = await getT();
+  const title = t('{area}, Roatán: homes, condos & land for sale', { area: t(a.name) });
   const description = `${a.summary}${a.priceRange ? ` Typical prices: ${a.priceRange}.` : ''}`.slice(0, 300);
-  return {
+  return localized(`/areas/${a.slug}`, {
     title: `${title} | ${SITE_NAME}`,
     description,
-    alternates: { canonical: `/areas/${a.slug}` },
     openGraph: { title, description, url: `/areas/${a.slug}`, type: 'website' },
-  };
+  });
 }
 
 export default async function AreaPage({ params }: { params: Promise<{ slug: string }> }) {
+  const lp = await getLp();
   const a = areaBySlug((await params).slug);
   if (!a) notFound();
   const lang = await getLang();
   const t = makeT(lang);
+  const money = await getMoney();
   const name = t(a.name);
 
   const listings = await queryListings({ neighborhoods: a.neighborhoods });
@@ -70,7 +74,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <h1>{t('{area}, Roatán: property and area guide', { area: name })}</h1>
       <section className="answer" aria-label={t('Summary')}>
         <span className="answer__k">{t('In short')}</span>
-        <p>{a.summary}</p>
+        <p>{t(a.summary)}</p>
       </section>
 
       <div className="stats area-stats">
@@ -82,7 +86,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         <div className="stat">
           <span className="muted small">{t('On Resoha now')}</span>
           <b>{nListings(listings.length, lang)}</b>
-          <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: fmtUsd(from) }) : t('Live count from our catalogue')}</span>
+          <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: money.amount(from) }) : t('Live count from our catalogue')}</span>
         </div>
         <div className="stat stat--wide">
           <span className="muted small">{t('Best for')}</span>
@@ -93,13 +97,13 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <div className="page__cols">
         <div className="prose prose--flush">
           <h2>{t('About {area}', { area: name })}</h2>
-          {a.intro.map((p) => <p key={p}><Rich text={p} /></p>)}
+          {a.intro.map((p) => <p key={p}><Rich text={t(p)} /></p>)}
 
           <h2>{t('Why buyers choose {area}', { area: name })}</h2>
-          <ul>{a.highlights.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
+          <ul>{a.highlights.map((h) => <li key={h}><Rich text={t(h)} /></li>)}</ul>
 
           <h2>{t('What to check before buying')}</h2>
-          <ul>{a.considerations.map((h) => <li key={h}><Rich text={h} /></li>)}</ul>
+          <ul>{a.considerations.map((h) => <li key={h}><Rich text={t(h)} /></li>)}</ul>
         </div>
 
         <aside className="panel page__aside">
@@ -113,7 +117,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
             <Link className="btn btn--ghost btn--block" href={`${filterHref}&type=land`}>{t('Land & lots')}</Link>
           </div>
           <p className="tiny muted" style={{ marginTop: 14 }}>
-            {t('Read next:')} <Link className="link-accent" href="/guides/best-areas-to-live-in-roatan">{t('all areas compared')}</Link>
+            {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
           </p>
         </aside>
       </div>
@@ -130,7 +134,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         ) : (
           <div className="panel empty">
             <p>{t('No listings in {area} yet. We are adding island agencies every week.', { area: name })}</p>
-            <Link className="btn btn--primary" href="/listings?deal=sale">{t('Browse the whole island')}</Link>
+            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the whole island')}</Link>
           </div>
         )}
       </section>
@@ -150,7 +154,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
       <section className="section">
         <h2 style={{ fontSize: 'var(--fs-h2)', marginBottom: 16 }}>{t('Other areas of Roatán')}</h2>
         <div className="chip-row">
-          {others.map((o) => <Link key={o.slug} className="chip-btn" href={`/areas/${o.slug}`}>{t(o.name)}</Link>)}
+          {others.map((o) => <Link key={o.slug} className="chip-btn" href={lp(`/areas/${o.slug}`)}>{t(o.name)}</Link>)}
         </div>
       </section>
       <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />

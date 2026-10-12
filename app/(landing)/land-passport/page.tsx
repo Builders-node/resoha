@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import Crumbs from '@/components/Crumbs';
 import Faq from '@/components/Faq';
@@ -6,15 +7,17 @@ import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import { queryListings } from '@/lib/db';
 import { LAND_FIELDS, isChecked } from '@/lib/land';
-import { getT } from '@/lib/i18n/server';
+import { getT, getLp } from '@/lib/i18n/server';
 import { breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 
-export const metadata: Metadata = {
-  title: `Land passport: check a Roatán lot before you buy | ${SITE_NAME}`,
-  description: 'Every land listing on Resoha carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.',
-  alternates: { canonical: '/land-passport' },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getT();
+  return localized('/land-passport', {
+    title: `${t('Land passport: check a Roatán lot before you buy')} | ${SITE_NAME}`,
+    description: t('Every land listing on Resoha carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.'),
+  });
+}
 
 const WHY: Record<string, string> = {
   titleStatus: 'Registered, free-and-clear title at the Instituto de la Propiedad is the single most important fact about a lot.',
@@ -35,6 +38,7 @@ const FAQ = [
 ];
 
 export default async function LandPassportPage() {
+  const lp = await getLp();
   const t = await getT();
   const land = await queryListings({ type: 'land' });
   const checked = land.filter((l) => isChecked(l.land)).length;
@@ -56,8 +60,8 @@ export default async function LandPassportPage() {
           {t('Buying land on Roatán means asking the same eight questions about every lot. The land passport puts the answers in one place, marks what is confirmed and what is not, and shows who checked it and when.')}
         </p>
         <div className="hero__cta">
-          <Link className="btn btn--orange btn--lg" href="/listings?type=land&ready=1">{t('Ready-to-build land')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--lg hero__ghost" href="/listings?type=land">{t('All land & lots')}</Link>
+          <Link className="btn btn--orange btn--lg" href={lp('/listings?type=land&ready=1')}>{t('Ready-to-build land')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--lg hero__ghost" href={lp('/listings?type=land')}>{t('All land & lots')}</Link>
         </div>
         {land.length > 0 && (
           <p className="tiny hero__note">{t('{checked} of {total} land listings on Resoha have a completed passport.', { checked, total: land.length })}</p>
@@ -114,7 +118,7 @@ export default async function LandPassportPage() {
             <p className="small muted" style={{ margin: '8px 0 16px' }}>
               {t('A completed passport answers buyers’ first questions before they ask, and lots marked Ready to build can be found with their own filter.')}
             </p>
-            <Link className="btn btn--primary" href="/for-agents">{t('List land on Resoha')}</Link>
+            <Link className="btn btn--primary" href={lp('/for-agents')}>{t('List land on Resoha')}</Link>
           </div>
         </div>
       </section>
@@ -123,7 +127,7 @@ export default async function LandPassportPage() {
         <h2>{t('Land passport: questions')}</h2>
         <Faq items={FAQ} open={FAQ.length} />
         <p className="small muted">
-          {t('Learn more in')} <Link className="link-accent" href="/guides/how-to-check-land-title-in-roatan">{t('how to check a land title on Roatán')}</Link>.
+          {t('Learn more in')} <Link className="link-accent" href={lp('/guides/how-to-check-land-title-in-roatan')}>{t('how to check a land title on Roatán')}</Link>.
         </p>
       </section>
       <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />

@@ -1,5 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
+import { localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/BackButton';
@@ -9,7 +10,7 @@ import ListingCard from '@/components/ListingCard';
 import { canReviewAgent, getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
 import { nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
-import { getLang } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
@@ -20,14 +21,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const a = await loadAgent(id);
   if (!a) return { title: `Agent not found — ${SITE_NAME}` };
-  return {
-    title: `${a.name} — ${a.agency || 'realtor'} | ${SITE_NAME}`,
+  return localized(`/agents/${a.id}`, {
+    title: `${a.name} — ${a.agency || (await getT())('realtor')} | ${SITE_NAME}`,
     description: (a.about || `${a.name}, realtor on Roatán — listings and contacts.`).slice(0, 200),
-    alternates: { canonical: `/agents/${a.id}` },
-  };
+  });
 }
 
 export default async function AgentPage({ params }: { params: Promise<{ id: string }> }) {
+  const lp = await getLp();
   const { id } = await params;
   const agent = await loadAgent(id);
   if (!agent) notFound();
@@ -58,7 +59,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             {agent.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
           <p className="muted" style={{ margin: '6px 0 0' }}>
-            {agency ? <Link className="link-accent" href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')}
+            {agency ? <Link className="link-accent" href={lp(`/agency/${agency.id}`)}>{agency.name}</Link> : t('Independent agent')}
             {agent.isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>{t('Owner')}</span>}
           </p>
           {agent.about && <p className="org__about" style={{ color: 'var(--ink-2)' }}>{agent.about}</p>}
@@ -93,7 +94,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       <section className="section" style={{ paddingTop: 32 }}>
         <div className="section__head">
           <h2>{nListings(listings.length, lang)}</h2>
-          <Link className="btn btn--primary" href={`/listings?agentId=${agent.id}`}>
+          <Link className="btn btn--primary" href={lp(`/listings?agentId=${agent.id}`)}>
             {t('Open in search')} <Icon name="arrowRight" size={18} />
           </Link>
         </div>
@@ -112,8 +113,8 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
         isSelf={session?.id === agent.id} />
 
       <div className="crumbs crumbs--foot small muted">
-        <Link href="/">{t('Home')}</Link> ·{' '}
-        {agency ? <Link href={`/agency/${agency.id}`}>{agency.name}</Link> : t('Independent agent')} · {agent.name}
+        <Link href={lp('/')}>{t('Home')}</Link> ·{' '}
+        {agency ? <Link href={lp(`/agency/${agency.id}`)}>{agency.name}</Link> : t('Independent agent')} · {agent.name}
       </div>
     </div>
   );
