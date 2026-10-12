@@ -22,6 +22,7 @@ import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 import VisitsCalendar from './VisitsCalendar';
 import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
+import { SkDashboard } from './Skeleton';
 
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
@@ -133,7 +134,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
     setScope('own'); load(); router.refresh();
   }
 
-  if (!agent || !stats) return <div className="wrap" style={{ padding: 60 }}>Loading dashboard…</div>;
+  if (!agent || !stats) return <SkDashboard />;
 
   const isOwner = agent.isOwner && !!agency;
   // усі оголошення команди бачать власник, менеджер і редактор (0055); роль — із сесії (публічний профіль її не має)

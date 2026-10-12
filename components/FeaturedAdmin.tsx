@@ -7,6 +7,7 @@ import { toast } from './Toaster';
 import { DEAL_LABELS, fmtNumber, fmtPrice } from '@/lib/format';
 import { stageLabel } from '@/lib/units';
 import type { Building, Development, Listing } from '@/lib/types';
+import { SkPanel } from './Skeleton';
 
 type Kind = 'development' | 'building' | 'listing';
 type AdminDevelopment = Development & { buildings: Building[]; units: number };
@@ -130,7 +131,7 @@ export default function FeaturedAdmin({ mode }: { mode: 'featured' | 'developmen
     </div>
   );
 
-  if (busy) return <div className="panel">Loading…</div>;
+  if (busy) return <SkPanel n={6} />;
 
   if (mode === 'developments') {
     const term = q.trim().toLowerCase();

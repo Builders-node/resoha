@@ -8,6 +8,7 @@ import { COMPARE_KEY, COMPARE_MAX, useIds, writeIds } from '@/lib/localLists';
 import { useListingsByIds } from '@/lib/useListingsByIds';
 import type { Listing } from '@/lib/types';
 import type { Lang, T } from '@/lib/i18n';
+import { SkCards } from './Skeleton';
 import { useMoney } from './CurrencyProvider';
 import type { Money } from '@/lib/currency';
 import { useLp } from './useLp';
@@ -61,7 +62,7 @@ export default function CompareTable() {
           <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the listings')}</Link>
         </div>
       ) : loading && items.length === 0 ? (
-        <p className="muted">{t('Loading…')}</p>
+        <SkCards n={Math.min(ids.length, 4)} />
       ) : items.length === 0 ? (
         <div className="empty">
           <p>{t('These listings are no longer on the market.')}</p>
