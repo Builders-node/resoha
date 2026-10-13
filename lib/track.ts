@@ -35,7 +35,7 @@ export function sourceOf(referer: string | null, host: string | null, utm?: stri
   let ref: URL;
   try { ref = new URL(referer); } catch { return 'other'; }
   if (host && ref.host === host) return 'internal';
-  if (/resoha/i.test(ref.host)) return 'internal';
+  if (/hogarli|resoha/i.test(ref.host)) return 'internal';
   return classify(ref.host) ?? 'other';
 }
 

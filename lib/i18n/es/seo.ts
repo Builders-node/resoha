@@ -5,22 +5,22 @@ export const ES_SEO: Record<string, string> = {
     'Bienes raíces en Roatán, San Pedro Sula y Tegucigalpa: casas, condominios y terrenos',
   'Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.':
     'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa en un solo lugar verificado: casas, condominios, alquileres y terrenos de agencias locales, con pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
-  'Resoha is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.':
-    'Resoha es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
+  'Hogarli is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.':
+    'Hogarli es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
   'Developers in Roatán': 'Desarrolladoras en Roatán',
   'Property developers building on Roatán and their projects.': 'Desarrolladoras inmobiliarias que construyen en Roatán y sus proyectos.',
-  'About Resoha: every property on Roatán in one checked place': 'Sobre Resoha: todas las propiedades de Roatán en un solo lugar verificado',
-  'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Resoha works.':
-    'Respuestas claras sobre comprar casa, condominio o terreno en Roatán: propiedad para extranjeros y la regla de los 3,000 m², precios, gastos de cierre, impuestos, revisión de títulos, alquileres y cómo funciona Resoha.',
+  'About Hogarli: every property on Roatán in one checked place': 'Sobre Hogarli: todas las propiedades de Roatán en un solo lugar verificado',
+  'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Hogarli works.':
+    'Respuestas claras sobre comprar casa, condominio o terreno en Roatán: propiedad para extranjeros y la regla de los 3,000 m², precios, gastos de cierre, impuestos, revisión de títulos, alquileres y cómo funciona Hogarli.',
   'List your Roatán properties for free': 'Publica gratis tus propiedades de Roatán',
-  'Island agencies and agents list on Resoha for free. We load your listings for you, enquiries go straight to your WhatsApp, and your agency gets its own page.':
-    'Las agencias y agentes de la isla publican gratis en Resoha. Cargamos tus anuncios por ti, las consultas llegan directo a tu WhatsApp y tu agencia tiene su propia página.',
+  'Island agencies and agents list on Hogarli for free. We load your listings for you, enquiries go straight to your WhatsApp, and your agency gets its own page.':
+    'Las agencias y agentes de la isla publican gratis en Hogarli. Cargamos tus anuncios por ti, las consultas llegan directo a tu WhatsApp y tu agencia tiene su propia página.',
   'Roatán property buying guides for foreigners': 'Guías para extranjeros que compran propiedad en Roatán',
   'Plain-language guides to buying property on Roatán: foreign ownership and the 3,000 m² rule, the buying process, closing costs, title checks, rental income and the best areas.':
     'Guías claras para comprar propiedad en Roatán: propiedad para extranjeros y la regla de los 3,000 m², el proceso de compra, gastos de cierre, revisión de títulos, ingresos por alquiler y las mejores zonas.',
   'Land passport: check a Roatán lot before you buy': 'Pasaporte de terreno: revisa un lote en Roatán antes de comprar',
-  'Every land listing on Resoha carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.':
-    'Cada terreno en Resoha lleva un pasaporte de terreno: título, acceso, electricidad, agua, plano, permiso de ZOLITUR, zona y pendiente, con quién lo revisó y cuándo. Informe PDF gratis.',
+  'Every land listing on Hogarli carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.':
+    'Cada terreno en Hogarli lleva un pasaporte de terreno: título, acceso, electricidad, agua, plano, permiso de ZOLITUR, zona y pendiente, con quién lo revisó y cuándo. Informe PDF gratis.',
   'Roatán real-estate market 2026: prices, sales and rentals': 'Mercado inmobiliario de Roatán 2026: precios, ventas y alquileres',
   'Roatán property market in numbers: about 340 homes for sale, a median sold price near $354K, ten months to sell, 3–7% closing costs and 43% holiday-rental occupancy. Sourced and updated.':
     'El mercado inmobiliario de Roatán en cifras: unas 340 viviendas en venta, un precio mediano de venta cercano a $354K, diez meses para vender, gastos de cierre del 3–7% y 43% de ocupación en alquiler vacacional. Con fuentes y actualizado.',

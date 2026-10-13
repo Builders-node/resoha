@@ -14,7 +14,7 @@ import { breadcrumbLd, graph } from '@/lib/seo';
 import { CONTACT_EMAIL, SITE_NAME, SITE_URL } from '@/lib/site';
 
 const TITLE = 'Buying property on Roatán: questions and answers';
-const DESCRIPTION = 'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Resoha works.';
+const DESCRIPTION = 'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Hogarli works.';
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
@@ -56,7 +56,7 @@ export default async function FaqLanding() {
 
       <section className="lp-hero" id="top">
         <div className="lp-wrap">
-          <span className="lp-hero__eyebrow">{t('Resoha help centre')}</span>
+          <span className="lp-hero__eyebrow">{t('Hogarli help centre')}</span>
           <h1>{t(TITLE)}</h1>
           <p className="lp-hero__lead">
             {t('Everything buyers from abroad ask before they fly to Roatán, answered in plain language. Every figure links to its source, and each answer starts with the short version.')}

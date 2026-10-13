@@ -19,7 +19,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <div className="lp-wrap lp-head__in">
           <Link className="logo" href={lp('/')}>
             <span className="logo__mark"><Logo size={28} /></span>
-            <span>Resoha<span className="logo__sub"> Roatán</span></span>
+            <span>Hogarli<span className="logo__sub"> Roatán</span></span>
           </Link>
           <nav className="lp-head__nav">
             <Link href={lp('/guides')}>{t('Guides')}</Link>
@@ -42,7 +42,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
           <div>
             <Link className="logo" href={lp('/')}>
               <span className="logo__mark"><Logo size={24} /></span>
-              <span>Resoha<span className="logo__sub"> Roatán</span></span>
+              <span>Hogarli<span className="logo__sub"> Roatán</span></span>
             </Link>
             <p className="tiny muted" style={{ marginTop: 8 }}>
               © 2026 {OPERATOR}. {t('A listing platform, not a broker.')}

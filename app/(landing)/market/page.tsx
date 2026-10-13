@@ -57,7 +57,7 @@ export default async function MarketPage() {
       })} />
 
       <h1>{t('Roatán real-estate market report')}</h1>
-      <p className="prose__meta tiny muted">{t('Figures checked')} <time dateTime={MARKET_UPDATED}>{fmtDate(MARKET_UPDATED, lang)}</time> · {t('Resoha catalogue counts update live')}</p>
+      <p className="prose__meta tiny muted">{t('Figures checked')} <time dateTime={MARKET_UPDATED}>{fmtDate(MARKET_UPDATED, lang)}</time> · {t('Hogarli catalogue counts update live')}</p>
 
       <section className="answer" aria-label={t('Summary')}>
         <span className="answer__k">{t('The market in one paragraph')}</span>
@@ -89,7 +89,7 @@ export default async function MarketPage() {
 
       <section className="section section--soft rounded">
         <div className="section__head">
-          <h2>{t('On Resoha right now')}</h2>
+          <h2>{t('On Hogarli right now')}</h2>
           <p>{t('Live counts from our own catalogue. They grow as island agencies join.')}</p>
         </div>
         <div className="stats">

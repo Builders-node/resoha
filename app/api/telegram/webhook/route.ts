@@ -25,7 +25,7 @@ export async function POST(req: Request) {
 
   const token = text.match(/^\/start\s+([a-f0-9]{20,64})$/i)?.[1];
   if (!token) {
-    await sendTelegram(chatId, `Hi! This bot sends Resoha enquiries and visit bookings to realtors. To connect it, open your dashboard → Profile → Notifications and press “Connect Telegram”: ${SITE_URL}/agent`);
+    await sendTelegram(chatId, `Hi! This bot sends Hogarli enquiries and visit bookings to realtors. To connect it, open your dashboard → Profile → Notifications and press “Connect Telegram”: ${SITE_URL}/agent`);
     return NextResponse.json({ ok: true });
   }
 
@@ -35,6 +35,6 @@ export async function POST(req: Request) {
   if (error) console.error('telegram_link failed:', error.message);
   await sendTelegram(chatId, name
     ? `Connected, ${String(name).split(' ')[0]}. New enquiries, visit bookings and listing updates will arrive here.`
-    : 'This link has expired. Open your Resoha dashboard → Profile → Notifications and press “Connect Telegram” again.');
+    : 'This link has expired. Open your Hogarli dashboard → Profile → Notifications and press “Connect Telegram” again.');
   return NextResponse.json({ ok: true });
 }

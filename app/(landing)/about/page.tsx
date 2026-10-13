@@ -11,7 +11,7 @@ import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from '@/lib/site';
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return localized('/about', {
-    title: `${t('About Resoha: every property on Roatán in one checked place')} | ${SITE_NAME}`,
+    title: `${t('About Hogarli: every property on Roatán in one checked place')} | ${SITE_NAME}`,
     description: t(ORG_DESCRIPTION),
   });
 }
@@ -19,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
 const PRINCIPLES = [
   { icon: 'link', title: 'Every listing says where it came from', text: 'Each property links back to the agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.' },
   { icon: 'deed', title: 'Land facts, not adjectives', text: 'Land listings carry a land passport: title, road, power, water, survey, permit, zone and slope, marked confirmed or not, with a date.' },
-  { icon: 'chat', title: 'Talk to the agent directly', text: 'Enquiries go straight to the listing agent by WhatsApp, phone or email. Resoha is not a broker and takes no commission from buyers.' },
+  { icon: 'chat', title: 'Talk to the agent directly', text: 'Enquiries go straight to the listing agent by WhatsApp, phone or email. Hogarli is not a broker and takes no commission from buyers.' },
   { icon: 'map', title: 'Three markets on one map', text: 'From West Bay to Lomas del Guijarro, filter by city, price, title and readiness, then search the area you are looking at.' },
 ];
 
@@ -37,10 +37,10 @@ export default async function AboutPage() {
       })} />
 
       <section className="hero hero--dark">
-        <span className="hero__eyebrow">{t('About Resoha')}</span>
+        <span className="hero__eyebrow">{t('About Hogarli')}</span>
         <h1>{t('Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy')}</h1>
         <p className="hero__sub">
-          {t('Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Resoha brings the island’s listings into one place and makes the facts that protect your money visible.')}
+          {t('Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Hogarli brings the island’s listings into one place and makes the facts that protect your money visible.')}
         </p>
       </section>
 
@@ -60,7 +60,7 @@ export default async function AboutPage() {
       <section className="section section--soft rounded">
         <div className="cta">
           <div className="prose prose--flush">
-            <h2>{t('Who Resoha is for')}</h2>
+            <h2>{t('Who Hogarli is for')}</h2>
             <ul>
               <li><b>{t('Retirees and future residents')}</b> {t('from the US and Canada who want a home on the island and cannot afford a mistake.')}</li>
               <li><b>{t('Investors')}</b> {t('looking at holiday rentals who need honest numbers. See our')} <Link className="link-accent" href={lp('/market')}>{t('market report')}</Link>.</li>
@@ -70,7 +70,7 @@ export default async function AboutPage() {
             </ul>
           </div>
           <div className="panel">
-            <h3>{t('How Resoha works')}</h3>
+            <h3>{t('How Hogarli works')}</h3>
             <ol className="steps-list">
               <li>{t('Island agencies and agents publish their listings, or we load them on their behalf.')}</li>
               <li>{t('Each listing keeps a link to its source, and land gets a land passport.')}</li>
@@ -90,7 +90,7 @@ export default async function AboutPage() {
           {t('Contact:')}{' '}
           {CONTACT_EMAIL
             ? <a className="link-accent" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            : t('use the enquiry form on any listing and mention “Resoha support”.')}
+            : t('use the enquiry form on any listing and mention “Hogarli support”.')}
         </p>
         <p className="small muted">
           <Link className="link-accent" href="/privacy">{t('Privacy policy')}</Link> · <Link className="link-accent" href="/terms">{t('Terms of use')}</Link>

@@ -545,7 +545,7 @@ export default async function PropertyPage({ params, searchParams }: {
         <AgentContact agent={agent} agency={agency} listing={listing} listingUrl={`${SITE_URL}/listings/${listing.id}`}
           isFav={favIds.includes(listing.id)} sticky
           extra={premium ? (
-            <p className="premium-agent small"><Icon name="verified" size={16} /> {t('Premium agent on Resoha')}</p>
+            <p className="premium-agent small"><Icon name="verified" size={16} /> {t('Premium agent on Hogarli')}</p>
           ) : undefined}
           me={me && me.role === 'user' ? { name: me.name, phone: me.phone, email: me.email } : null} />
       </div>

@@ -5,7 +5,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'or': 'o',
   'Could not sign in': 'No se pudo iniciar sesión',
   'Signed in as {name}': 'Sesión iniciada como {name}',
-  'Welcome back to Resoha Roatán.': 'Bienvenido de nuevo a Resoha Roatán.',
+  'Welcome back to Hogarli Roatán.': 'Bienvenido de nuevo a Hogarli Roatán.',
   'Email': 'Correo electrónico',
   'Password': 'Contraseña',
   'Signing in…': 'Iniciando sesión…',
@@ -27,8 +27,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Your account is created. Open the confirmation link sent to':
     'Su cuenta ya está creada. Abra el enlace de confirmación enviado a',
   'and then sign in.': 'y luego inicie sesión.',
-  'Nothing arrived? This site has no mail service connected yet — ask the Resoha admin to confirm the account by hand.':
-    '¿No le llegó nada? Este sitio aún no tiene un servicio de correo conectado: pida al administrador de Resoha que confirme la cuenta manualmente.',
+  'Nothing arrived? This site has no mail service connected yet — ask the Hogarli admin to confirm the account by hand.':
+    '¿No le llegó nada? Este sitio aún no tiene un servicio de correo conectado: pida al administrador de Hogarli que confirme la cuenta manualmente.',
   'Go to sign in': 'Ir a iniciar sesión',
   'With Google you get a realtor account first — open the agency from the':
     'Con Google primero obtiene una cuenta de agente: abra la agencia desde la pestaña',
@@ -48,8 +48,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Check your email': 'Revise su correo',
   'If that address has an account, a reset link is on its way. The link signs you in once and takes you straight to a new-password form.':
     'Si esa dirección tiene una cuenta, le enviamos un enlace para restablecerla. El enlace inicia sesión una sola vez y lo lleva directo al formulario de nueva contraseña.',
-  'Nothing arrived within a few minutes? This site has no mail service connected yet — ask the Resoha admin to reset it for you.':
-    '¿No le llegó nada en unos minutos? Este sitio aún no tiene un servicio de correo conectado: pida al administrador de Resoha que la restablezca.',
+  'Nothing arrived within a few minutes? This site has no mail service connected yet — ask the Hogarli admin to reset it for you.':
+    '¿No le llegó nada en unos minutos? Este sitio aún no tiene un servicio de correo conectado: pida al administrador de Hogarli que la restablezca.',
   'Back to sign in': 'Volver a iniciar sesión',
   'Reset your password': 'Restablecer su contraseña',
   "We'll email you a link to set a new one.": 'Le enviaremos un enlace por correo para crear una nueva.',
@@ -108,7 +108,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Something went wrong. Please try again.': 'Algo salió mal. Inténtelo de nuevo.',
   'Could not switch the account. Please try again.': 'No se pudo cambiar la cuenta. Inténtelo de nuevo.',
   'Sign-in required': 'Debe iniciar sesión',
-  'List properties on Resoha': 'Publique propiedades en Resoha',
+  'List properties on Hogarli': 'Publique propiedades en Hogarli',
   'Turn this account into a realtor account to publish listings and answer enquiries. Your saved listings and searches stay where they are.':
     'Convierta esta cuenta en una cuenta de agente para publicar propiedades y responder consultas. Sus propiedades y búsquedas guardadas se mantienen.',
   'Switching…': 'Cambiando…',
@@ -139,7 +139,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
     'Solo los compradores que han contactado a este agente pueden reseñarlo',
 
   // агенції й агенти
-  'No agencies on Resoha yet.': 'Aún no hay agencias en Resoha.',
+  'No agencies on Hogarli yet.': 'Aún no hay agencias en Hogarli.',
   'Island agencies get their own page here — listings, team and contacts — as soon as they sign up.':
     'Las agencias de la isla tienen aquí su propia página (propiedades, equipo y contactos) en cuanto se registran.',
   'Open an agency': 'Abrir una agencia',
@@ -150,8 +150,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'agent': 'agente',
   'agents': 'agentes',
   'Agents & agencies on Roatán': 'Agentes y agencias en Roatán',
-  'Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.':
-    'Todos los que publican en Resoha. Abra una tarjeta para ver lo que tienen publicado y cómo contactarlos.',
+  'Everyone publishing on Hogarli. Open a card to see what they have listed and how to reach them.':
+    'Todos los que publican en Hogarli. Abra una tarjeta para ver lo que tienen publicado y cómo contactarlos.',
   'Agencies': 'Agencias',
   'Join as an agent': 'Unirse como agente',
   'Realtors': 'Agentes inmobiliarios',
@@ -173,7 +173,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Views': 'Visitas',
   'Open in search': 'Abrir en la búsqueda',
   'Nothing listed right now': 'No hay propiedades publicadas por ahora',
-  'Roatán real-estate agency on Resoha.': 'Agencia inmobiliaria de Roatán en Resoha.',
+  'Roatán real-estate agency on Hogarli.': 'Agencia inmobiliaria de Roatán en Hogarli.',
   'The team': 'El equipo',
   '{n} yrs on island': '{n} años en la isla',
 

@@ -5,7 +5,7 @@ import { getT } from '@/lib/i18n/server';
 
 /**
  * «Документи» ЖК, як у LUN: згруповані за типом (земля, дозволи, введення, компанії),
- * у кожного — номер, дата, файл і позначка, якщо команда Resoha його перевірила.
+ * у кожного — номер, дата, файл і позначка, якщо команда Hogarli його перевірила.
  */
 export default async function DevelopmentDocs({ docs }: { docs: DevelopmentDocument[] }) {
   const t = await getT();
@@ -26,7 +26,7 @@ export default async function DevelopmentDocs({ docs }: { docs: DevelopmentDocum
                   )}
                   {d.note && <span className="small muted">{d.note}</span>}
                   {d.verified && (
-                    <span className="docs__ok tiny"><Icon name="check" size={13} strokeWidth={2.6} /> {t('Checked by Resoha')}</span>
+                    <span className="docs__ok tiny"><Icon name="check" size={13} strokeWidth={2.6} /> {t('Checked by Hogarli')}</span>
                   )}
                 </div>
                 {d.file && (

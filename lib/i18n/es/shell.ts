@@ -45,10 +45,10 @@ export const ES_SHELL: Record<string, string> = {
   'Accounts': 'Cuentas',
   'Agent dashboard': 'Panel del agente',
   'List your properties': 'Publique sus propiedades',
-  'About Resoha': 'Acerca de Resoha',
+  'About Hogarli': 'Acerca de Hogarli',
   'Privacy policy': 'Política de privacidad',
   'Terms of use': 'Términos de uso',
-  'Resoha is a listing platform, not a broker — listing details are as published by the agency holding each property.':
-    'Resoha es una plataforma de anuncios, no un corredor: los datos de cada anuncio son los que publica la agencia que tiene la propiedad.',
+  'Hogarli is a listing platform, not a broker — listing details are as published by the agency holding each property.':
+    'Hogarli es una plataforma de anuncios, no un corredor: los datos de cada anuncio son los que publica la agencia que tiene la propiedad.',
   'Areas and cities': 'Zonas y ciudades',
 };

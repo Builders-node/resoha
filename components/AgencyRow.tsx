@@ -12,7 +12,7 @@ export default async function AgencyRow({ rows }: { rows: Row[] }) {
   if (rows.length === 0) {
     return (
       <div className="panel empty">
-        <b>{t('No agencies on Resoha yet.')}</b>
+        <b>{t('No agencies on Hogarli yet.')}</b>
         <p className="muted small" style={{ marginTop: 6 }}>
           {t('Island agencies get their own page here — listings, team and contacts — as soon as they sign up.')}
         </p>

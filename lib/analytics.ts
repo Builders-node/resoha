@@ -73,7 +73,7 @@ export type Analytics = {
 };
 
 const SOURCE_LABELS: Record<string, string> = {
-  internal: 'Resoha search', direct: 'Direct / bookmarks', search: 'Google & search',
+  internal: 'Hogarli search', direct: 'Direct / bookmarks', search: 'Google & search',
   social: 'Social media', messenger: 'WhatsApp & messengers', other: 'Other sites',
 };
 const CHANNEL_LABELS: Record<string, string> = {

@@ -1,4 +1,4 @@
-# Resoha Roatán — real-estate MVP
+# Hogarli Roatán — real-estate MVP
 
 A deliberately small marketplace prototype for **Roatán, Bay Islands, Honduras**.
 Structure and visual language follow **lun.ua** — dark icon rail on the left, category tiles on the
@@ -157,7 +157,7 @@ the signup metadata. Two accounts exist, both real to the platform rather than i
 
 ```
 admin@resoha.dev        platform admin
-listings@resoha.dev     "Resoha listings desk" — holds the sourced listings (Roatan-Desk-2026!)
+listings@resoha.dev     "Hogarli listings desk" — holds the sourced listings (Roatan-Desk-2026!)
 ```
 
 Agency and team flows are tested by registering an account through the UI; there are no fictional
@@ -340,7 +340,7 @@ password reset and saved-search alerts all wait on the same thing. Pick one:
 `/privacy` and `/terms` describe what the site actually does (enquiries, accounts, Google sign-in,
 WhatsApp hand-off, Land check). Two env variables fill in the blanks:
 
-- `NEXT_PUBLIC_OPERATOR` — the legal name behind the site (default "Resoha Roatán")
+- `NEXT_PUBLIC_OPERATOR` — the legal name behind the site (default "Hogarli Roatán")
 - `NEXT_PUBLIC_CONTACT_EMAIL` — the address shown in the footer and on both pages; without it the
   pages point people to the enquiry form
 

@@ -64,7 +64,7 @@ export const PROMO_PRODUCTS: Record<PromoProduct, { label: string; icon: string;
   },
   homepage: {
     label: 'Home page spot', icon: 'home', kinds: ['listing'],
-    blurb: 'Shown among the featured homes on the Resoha home page.',
+    blurb: 'Shown among the featured homes on the Hogarli home page.',
   },
   bump: {
     label: 'Bump', icon: 'arrowUp', kinds: ['listing'], once: true,

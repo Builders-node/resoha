@@ -58,7 +58,7 @@ export default async function AreasPage() {
                     </span>
                     <span className="area-card__price">{a.priceRange ?? t(a.priceNote ?? 'Prices below the west')}</span>
                     <span className="small muted">{t(a.bestFor)}</span>
-                    <span className="tiny muted">{t('{n} on Resoha', { n: nListings(n, lang) })}</span>
+                    <span className="tiny muted">{t('{n} on Hogarli', { n: nListings(n, lang) })}</span>
                   </Link>
                 );
               })}

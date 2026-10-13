@@ -739,7 +739,7 @@ function DocumentsEditor({ devId, isAdmin }: { devId: string; isAdmin: boolean }
             <span className="tiny muted">PDF up to 20 MB, or a photo up to 8 MB.</span></div>
           {isAdmin && (
             <div className="field full switch-inline">
-              <label><input type="checkbox" name="verified" defaultChecked={d?.verified} /> Checked by Resoha (admins only)</label>
+              <label><input type="checkbox" name="verified" defaultChecked={d?.verified} /> Checked by Hogarli (admins only)</label>
             </div>
           )}
           <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>

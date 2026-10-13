@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return localized('/agents', {
     title: `${t('Agents & agencies on Roatán')} | ${SITE_NAME}`,
-    description: t('Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.'),
+    description: t('Everyone publishing on Hogarli. Open a card to see what they have listed and how to reach them.'),
   });
 }
 
@@ -36,7 +36,7 @@ export default async function AgentsIndexPage() {
       <header className="page-top" style={{ paddingBottom: 4 }}>
         <h1 style={{ fontSize: 'var(--fs-h1)' }}>{t('Agents & agencies on Roatán')}</h1>
         <p className="muted" style={{ marginTop: 8 }}>
-          {t('Everyone publishing on Resoha. Open a card to see what they have listed and how to reach them.')}
+          {t('Everyone publishing on Hogarli. Open a card to see what they have listed and how to reach them.')}
         </p>
       </header>
 

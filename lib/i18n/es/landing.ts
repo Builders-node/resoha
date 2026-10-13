@@ -27,17 +27,17 @@ export const ES_LANDING: Record<string, string> = {
   'Terms of use': 'Términos de uso',
   'Contact': 'Contacto',
   'Contact:': 'Contacto:',
-  'use the enquiry form on any listing and mention “Resoha support”.': 'use el formulario de consulta de cualquier anuncio y mencione “Soporte de Resoha”.',
+  'use the enquiry form on any listing and mention “Hogarli support”.': 'use el formulario de consulta de cualquier anuncio y mencione “Soporte de Hogarli”.',
   'Find an agent': 'Buscar un agente',
   'Write to us': 'Escríbanos',
   'Talk to us': 'Hable con nosotros',
 
   // Про нас
-  'About Resoha': 'Acerca de Resoha',
+  'About Hogarli': 'Acerca de Hogarli',
   'Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy':
     'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa, verificadas antes de comprar',
-  'Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Resoha brings the island’s listings into one place and makes the facts that protect your money visible.':
-    'Roatán no tiene MLS. Los anuncios están dispersos en decenas de sitios de agencias y grupos de Facebook, los precios no coinciden, las casas vendidas siguen publicadas y los agentes no necesitan licencia. Los compradores que viven a miles de kilómetros tienen que armar el rompecabezas por su cuenta. Resoha reúne los anuncios de la isla en un solo lugar y deja a la vista los datos que protegen su dinero.',
+  'Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Hogarli brings the island’s listings into one place and makes the facts that protect your money visible.':
+    'Roatán no tiene MLS. Los anuncios están dispersos en decenas de sitios de agencias y grupos de Facebook, los precios no coinciden, las casas vendidas siguen publicadas y los agentes no necesitan licencia. Los compradores que viven a miles de kilómetros tienen que armar el rompecabezas por su cuenta. Hogarli reúne los anuncios de la isla en un solo lugar y deja a la vista los datos que protegen su dinero.',
   'What we stand for': 'Lo que defendemos',
   'Every listing says where it came from': 'Cada anuncio indica de dónde viene',
   'Each property links back to the agency or agent who holds it. No scraped duplicates, no stock photos, no listings that sold last year.':
@@ -46,13 +46,13 @@ export const ES_LANDING: Record<string, string> = {
   'Land listings carry a land passport: title, road, power, water, survey, permit, zone and slope, marked confirmed or not, with a date.':
     'Los anuncios de terrenos incluyen un pasaporte del terreno: título, acceso, electricidad, agua, levantamiento, permiso, zona y pendiente, marcados como confirmados o no, con fecha.',
   'Talk to the agent directly': 'Hable directamente con el agente',
-  'Enquiries go straight to the listing agent by WhatsApp, phone or email. Resoha is not a broker and takes no commission from buyers.':
-    'Las consultas llegan directamente al agente del anuncio por WhatsApp, teléfono o correo. Resoha no es un corredor y no cobra comisión a los compradores.',
+  'Enquiries go straight to the listing agent by WhatsApp, phone or email. Hogarli is not a broker and takes no commission from buyers.':
+    'Las consultas llegan directamente al agente del anuncio por WhatsApp, teléfono o correo. Hogarli no es un corredor y no cobra comisión a los compradores.',
   'Three markets on one map':
     'Tres mercados en un solo mapa',
   'From West Bay to Lomas del Guijarro, filter by city, price, title and readiness, then search the area you are looking at.':
     'De West Bay a Lomas del Guijarro, filtre por ciudad, precio, título y disponibilidad, y luego busque en la zona que está mirando.',
-  'Who Resoha is for': 'Para quién es Resoha',
+  'Who Hogarli is for': 'Para quién es Hogarli',
   'Retirees and future residents': 'Jubilados y futuros residentes',
   'from the US and Canada who want a home on the island and cannot afford a mistake.': 'de EE. UU. y Canadá que quieren un hogar en la isla y no pueden permitirse un error.',
   'Investors': 'Inversionistas',
@@ -65,7 +65,7 @@ export const ES_LANDING: Record<string, string> = {
   'Island agencies and agents': 'Agencias y agentes de la isla',
   'who want serious buyers to find their listings. See': 'que quieren que compradores serios encuentren sus anuncios. Vea',
   'for agents': 'para agentes',
-  'How Resoha works': 'Cómo funciona Resoha',
+  'How Hogarli works': 'Cómo funciona Hogarli',
   'Island agencies and agents publish their listings, or we load them on their behalf.': 'Las agencias y agentes de la isla publican sus anuncios, o nosotros los cargamos por ellos.',
   'Each listing keeps a link to its source, and land gets a land passport.': 'Cada anuncio conserva un enlace a su fuente, y los terrenos reciben un pasaporte del terreno.',
   'You search the whole island, save listings and searches, and contact agents directly.': 'Usted busca en toda la isla, guarda anuncios y búsquedas, y contacta a los agentes directamente.',
@@ -77,8 +77,8 @@ export const ES_LANDING: Record<string, string> = {
   // Для агентів
   'For agencies and agents on Roatán': 'Para agencias y agentes en Roatán',
   'Put your listings where Roatán buyers search': 'Ponga sus anuncios donde buscan los compradores de Roatán',
-  'Buyers start in Google and AI assistants, and they want the whole island in one place. Resoha gives them that, and sends every enquiry straight to the agent who holds the property.':
-    'Los compradores empiezan en Google y en asistentes de IA, y quieren toda la isla en un solo lugar. Resoha se lo ofrece y envía cada consulta directamente al agente que tiene la propiedad.',
+  'Buyers start in Google and AI assistants, and they want the whole island in one place. Hogarli gives them that, and sends every enquiry straight to the agent who holds the property.':
+    'Los compradores empiezan en Google y en asistentes de IA, y quieren toda la isla en un solo lugar. Hogarli se lo ofrece y envía cada consulta directamente al agente que tiene la propiedad.',
   'Create a free agent account': 'Crear una cuenta de agente gratis',
   'What you get': 'Lo que obtiene',
   'Free for founding partners': 'Gratis para socios fundadores',
@@ -98,10 +98,10 @@ export const ES_LANDING: Record<string, string> = {
   'Publish listings from your dashboard, or send us your stock to load.': 'Publique anuncios desde su panel o envíenos su inventario para cargarlo.',
   'Answer enquiries on WhatsApp and track views and leads in one place.': 'Responda consultas por WhatsApp y siga visitas y contactos en un solo lugar.',
   'Questions from agents': 'Preguntas de agentes',
-  'What does it cost to list on Resoha?': '¿Cuánto cuesta publicar en Resoha?',
-  'Nothing for founding partners: no listing fees and no commission for the first 12 months. Resoha does not take a share of your sales commission.':
-    'Nada para los socios fundadores: sin tarifas de publicación ni comisión durante los primeros 12 meses. Resoha no se queda con parte de su comisión de venta.',
-  'Do buyers contact me or Resoha?': '¿Los compradores me contactan a mí o a Resoha?',
+  'What does it cost to list on Hogarli?': '¿Cuánto cuesta publicar en Hogarli?',
+  'Nothing for founding partners: no listing fees and no commission for the first 12 months. Hogarli does not take a share of your sales commission.':
+    'Nada para los socios fundadores: sin tarifas de publicación ni comisión durante los primeros 12 meses. Hogarli no se queda con parte de su comisión de venta.',
+  'Do buyers contact me or Hogarli?': '¿Los compradores me contactan a mí o a Hogarli?',
   'You. WhatsApp messages and calls go straight to your phone. Enquiry forms and visit bookings arrive by email and, if you connect it, in Telegram the moment they are sent, and appear in your agent dashboard.':
     'A usted. Los mensajes de WhatsApp y las llamadas llegan directo a su teléfono. Los formularios de consulta y las reservas de visita llegan por correo y, si lo conecta, por Telegram en el momento en que se envían, y aparecen en su panel de agente.',
   'Can my whole team join?': '¿Puede unirse todo mi equipo?',
@@ -113,7 +113,7 @@ export const ES_LANDING: Record<string, string> = {
 
   // FAQ
   'Buying property on Roatán: questions and answers': 'Comprar propiedad en Roatán: preguntas y respuestas',
-  'Resoha help centre': 'Centro de ayuda de Resoha',
+  'Hogarli help centre': 'Centro de ayuda de Hogarli',
   'Everything buyers from abroad ask before they fly to Roatán, answered in plain language. Every figure links to its source, and each answer starts with the short version.':
     'Todo lo que preguntan los compradores del extranjero antes de viajar a Roatán, respondido en lenguaje sencillo. Cada cifra enlaza a su fuente y cada respuesta empieza con la versión corta.',
   '{n} answers': '{n} respuestas',
@@ -132,7 +132,7 @@ export const ES_LANDING: Record<string, string> = {
   // Ринок
   'Roatán real-estate market report': 'Informe del mercado inmobiliario de Roatán',
   'Figures checked': 'Cifras verificadas el',
-  'Resoha catalogue counts update live': 'Los conteos del catálogo de Resoha se actualizan en vivo',
+  'Hogarli catalogue counts update live': 'Los conteos del catálogo de Hogarli se actualizan en vivo',
   'The market in one paragraph': 'El mercado en un párrafo',
   'Roatán is a slow buyer’s market. About 340 homes were for sale in May 2026 and only 9 sold that month, with homes taking around ten months to sell. The median asking price was about $475,000 against a median sold price near $354,000, and buyers typically negotiate 5–9% off. Prices are rising about 6% a year in US dollars. Holiday rentals are consolidating: listings fell by half in a year while occupancy held at 43%.':
     'Roatán es un mercado lento y favorable al comprador. En mayo de 2026 había unas 340 casas a la venta y solo 9 se vendieron ese mes; las casas tardan unos diez meses en venderse. El precio de oferta mediano rondaba los $475,000 frente a un precio de venta mediano cercano a $354,000, y los compradores suelen negociar un 5–9% de descuento. Los precios suben alrededor de un 6% al año en dólares. Los alquileres vacacionales se están consolidando: los anuncios bajaron a la mitad en un año mientras la ocupación se mantuvo en 43%.',
@@ -162,7 +162,7 @@ export const ES_LANDING: Record<string, string> = {
   '≈ 10%, paid by the seller': '≈ 10%, pagado por el vendedor',
   '1.7 million': '1.7 millones',
   'Direct flights to Roatán (RTB):': 'Vuelos directos a Roatán (RTB):',
-  'On Resoha right now': 'En Resoha ahora mismo',
+  'On Hogarli right now': 'En Hogarli ahora mismo',
   'Live counts from our own catalogue. They grow as island agencies join.': 'Conteos en vivo de nuestro propio catálogo. Crecen a medida que se suman agencias de la isla.',
   'Active listings': 'Anuncios activos',
   'For sale': 'En venta',
@@ -189,7 +189,7 @@ export const ES_LANDING: Record<string, string> = {
   'Roatán is about 77 km (48 miles) long and less than 8 km wide, and prices fall from the beaches of the west to the quiet, land-rich east. Pick an area to see typical prices, what it is like to live there and what is listed now.':
     'Roatán mide unos 77 km (48 millas) de largo y menos de 8 km de ancho, y los precios bajan desde las playas del oeste hacia el este tranquilo y con mucho terreno. Elija una zona para ver precios típicos, cómo es vivir allí y qué está publicado ahora.',
   'Prices below the west': 'Precios por debajo del oeste',
-  '{n} on Resoha': '{n} en Resoha',
+  '{n} on Hogarli': '{n} en Hogarli',
   'Not sure yet? Read': '¿Aún no lo decide? Lea',
   'the best areas to live in Roatán, compared': 'las mejores zonas para vivir en Roatán, comparadas',
   'Coxen Hole & Flowers Bay': 'Coxen Hole y Flowers Bay',
@@ -207,7 +207,7 @@ export const ES_LANDING: Record<string, string> = {
   'In short': 'En resumen',
   'Typical prices': 'Precios típicos',
   'Too few sales': 'Muy pocas ventas',
-  'On Resoha now': 'En Resoha ahora',
+  'On Hogarli now': 'En Hogarli ahora',
   'For sale from {price}': 'En venta desde {price}',
   'Live count from our catalogue': 'Conteo en vivo de nuestro catálogo',
   'Best for': 'Ideal para',
@@ -215,8 +215,8 @@ export const ES_LANDING: Record<string, string> = {
   'Why buyers choose {area}': 'Por qué los compradores eligen {area}',
   'What to check before buying': 'Qué revisar antes de comprar',
   'Search {area}': 'Buscar en {area}',
-  'Every listing on Resoha links back to the agency that holds it.':
-    'Cada anuncio en Resoha enlaza a la agencia que lo tiene.',
+  'Every listing on Hogarli links back to the agency that holds it.':
+    'Cada anuncio en Hogarli enlaza a la agencia que lo tiene.',
   'Homes for sale': 'Casas en venta',
   'Rentals': 'Alquileres',
   'Land & lots': 'Terrenos y lotes',
@@ -247,13 +247,13 @@ export const ES_LANDING: Record<string, string> = {
   'Related guides': 'Guías relacionadas',
 
   // Паспорт ділянки
-  'Free for every lot on Resoha': 'Gratis para cada lote en Resoha',
+  'Free for every lot on Hogarli': 'Gratis para cada lote en Hogarli',
   'The land passport: know what you are buying before you fly': 'El pasaporte del terreno: sepa lo que compra antes de viajar',
   'Buying land on Roatán means asking the same eight questions about every lot. The land passport puts the answers in one place, marks what is confirmed and what is not, and shows who checked it and when.':
     'Comprar terreno en Roatán significa hacer las mismas ocho preguntas sobre cada lote. El pasaporte del terreno reúne las respuestas en un solo lugar, marca lo que está confirmado y lo que no, y muestra quién lo verificó y cuándo.',
   'Ready-to-build land': 'Terrenos listos para construir',
   'All land & lots': 'Todos los terrenos y lotes',
-  '{checked} of {total} land listings on Resoha have a completed passport.': '{checked} de {total} anuncios de terrenos en Resoha tienen el pasaporte completo.',
+  '{checked} of {total} land listings on Hogarli have a completed passport.': '{checked} de {total} anuncios de terrenos en Hogarli tienen el pasaporte completo.',
   'Eight facts, checked for every lot': 'Ocho datos, verificados para cada lote',
   'The first four decide the readiness score. The rest tell you what building will involve.': 'Los primeros cuatro definen el nivel de preparación. El resto le dice lo que implicará construir.',
   'Core': 'Clave',
@@ -290,7 +290,7 @@ export const ES_LANDING: Record<string, string> = {
   'Selling land?': '¿Vende un terreno?',
   'A completed passport answers buyers’ first questions before they ask, and lots marked Ready to build can be found with their own filter.':
     'Un pasaporte completo responde las primeras preguntas de los compradores antes de que las hagan, y los lotes marcados como Listo para construir se encuentran con su propio filtro.',
-  'List land on Resoha': 'Publique terrenos en Resoha',
+  'List land on Hogarli': 'Publique terrenos en Hogarli',
   'Land passport: questions': 'Pasaporte del terreno: preguntas',
   'Learn more in': 'Más información en',
   'how to check a land title on Roatán': 'cómo verificar el título de un terreno en Roatán',
@@ -304,13 +304,13 @@ export const ES_LANDING: Record<string, string> = {
   'No. It is a structured record of what has been confirmed about the lot. Always have your own Honduran attorney check the title at the Instituto de la Propiedad before paying a deposit.':
     'No. Es un registro ordenado de lo que se ha confirmado sobre el lote. Siempre pida a su propio abogado hondureño que revise el título en el Instituto de la Propiedad antes de pagar un depósito.',
   'Does the land passport cost anything?': '¿El pasaporte del terreno tiene algún costo?',
-  'No. The passport and its PDF report are free for buyers and for agents listing land on Resoha.': 'No. El pasaporte y su informe en PDF son gratis para los compradores y para los agentes que publican terrenos en Resoha.',
+  'No. The passport and its PDF report are free for buyers and for agents listing land on Hogarli.': 'No. El pasaporte y su informe en PDF son gratis para los compradores y para los agentes que publican terrenos en Hogarli.',
 
   // Юридичні сторінки (лише обгортка)
   'Last updated {date}': 'Última actualización: {date}',
   'This document is currently available in English only.': 'Por ahora este documento solo está disponible en inglés.',
   'Questions about this document, your account or your data:': 'Preguntas sobre este documento, su cuenta o sus datos:',
-  'use the enquiry form on any listing and mention “Resoha support” — it reaches the platform team.': 'use el formulario de consulta de cualquier anuncio y mencione “Soporte de Resoha”; llega al equipo de la plataforma.',
+  'use the enquiry form on any listing and mention “Hogarli support” — it reaches the platform team.': 'use el formulario de consulta de cualquier anuncio y mencione “Soporte de Hogarli”; llega al equipo de la plataforma.',
   'See also:': 'Vea también:',
   '2 October 2026': '2 de octubre de 2026',
   '{area}: homes, condos & land for sale': '{area}: casas, condominios y terrenos en venta',

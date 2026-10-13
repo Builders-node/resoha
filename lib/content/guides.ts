@@ -80,7 +80,7 @@ export const GUIDES: Guide[] = [
             'The full title history and any liens at the Instituto de la Propiedad. See [how to check a land title on Roatán](/guides/how-to-check-land-title-in-roatan).',
             'Zoning and building permits from ZOLITUR, the Bay Islands tourism free zone authority, if you plan to build.',
           ] },
-          'On Resoha, land listings carry a [land passport](/land-passport) that shows which of these facts have been confirmed and when.',
+          'On Hogarli, land listings carry a [land passport](/land-passport) that shows which of these facts have been confirmed and when.',
         ],
       },
       { h: 'Important', body: [{ note: DISCLAIMER }] },
@@ -125,8 +125,8 @@ export const GUIDES: Guide[] = [
       {
         h: '3. Shortlist listings and agents',
         body: [
-          'Because there is no MLS, the same property can appear at different prices on different sites, and sold homes often stay online. On [Resoha](/listings?deal=sale), every listing links back to the island agency that holds it, so you can see where the details came from.',
-          'Ask any agent how long they have worked on the island, which agency they belong to and for references from past buyers. Read reviews on their [Resoha profile](/agents).',
+          'Because there is no MLS, the same property can appear at different prices on different sites, and sold homes often stay online. On [Hogarli](/listings?deal=sale), every listing links back to the island agency that holds it, so you can see where the details came from.',
+          'Ask any agent how long they have worked on the island, which agency they belong to and for references from past buyers. Read reviews on their [Hogarli profile](/agents).',
         ],
       },
       {
@@ -253,7 +253,7 @@ export const GUIDES: Guide[] = [
       'Common scams on Roatán include forged powers of attorney, fake sellers and land with competing claims.',
       'Titles are registered at the Instituto de la Propiedad (IP), the national property institute.',
       '“Possession rights” (derechos posesorios) are not the same as registered title.',
-      'Resoha’s land passport shows which checks have been confirmed for each lot, and when.',
+      'Hogarli’s land passport shows which checks have been confirmed for each lot, and when.',
     ],
     sections: [
       {
@@ -284,9 +284,9 @@ export const GUIDES: Guide[] = [
         ],
       },
       {
-        h: 'How Resoha helps',
+        h: 'How Hogarli helps',
         body: [
-          'Every land listing on Resoha carries a [land passport](/land-passport): title status, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked as confirmed or not, with the date of the check. You can download it as a PDF and send it to your attorney.',
+          'Every land listing on Hogarli carries a [land passport](/land-passport): title status, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked as confirmed or not, with the date of the check. You can download it as a PDF and send it to your attorney.',
           { note: 'The land passport records what has been confirmed and by whom. It does not replace a title search by your own attorney.' },
         ],
       },
@@ -349,7 +349,7 @@ export const GUIDES: Guide[] = [
         h: 'Before you buy for rental',
         body: [
           'Ask the seller or agent for real booking history, not projections. Check whether the building or community allows short-term rentals, and what share of revenue its rental programme takes. Remember that you will pay the island’s [closing costs](/guides/roatan-closing-costs) and a 10% capital gains tax when you sell.',
-          'Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Resoha.',
+          'Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Hogarli.',
         ],
       },
       { h: 'Important', body: [{ note: 'Figures are third-party estimates for the whole island and change month to month. They are not a forecast for any particular property.' }] },

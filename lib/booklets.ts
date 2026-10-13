@@ -77,7 +77,7 @@ export async function landReport(listing: Listing, agent: Agent | null, peers: L
   if (listing.sourceName) b.paragraph(`Facts from ${listing.sourceName}${listing.sourceRef ? ` · ${listing.sourceRef}` : ''}`, 10, { color: MUTED, gap: 2 });
   b.paragraph(`${SITE_URL}/listings/${listing.id}`, 10, { color: ORANGE });
 
-  return b.response(`resoha-land-${listing.id.slice(0, 8)}.pdf`,
+  return b.response(`hogarli-land-${listing.id.slice(0, 8)}.pdf`,
     `Generated ${fmtDate(new Date().toISOString())} by ${SITE_NAME}. "Ready to build" means title, road, electricity and water are in place. `
     + 'Costs and limits are estimates, not legal advice. Verify the title at the Instituto de la Propiedad before paying a deposit.');
 }
@@ -161,7 +161,7 @@ export async function listingBooklet(listing: Listing, agent: Agent | null, lang
   b.paragraph(`${SITE_URL}/listings/${listing.id}`, 10, { color: ORANGE, gap: 2 });
   b.paragraph(t('Listing ID {id}', { id: listing.id }), 8.5, { color: MUTED });
 
-  return b.response(`resoha-${listing.id.slice(0, 8)}.pdf`,
+  return b.response(`hogarli-${listing.id.slice(0, 8)}.pdf`,
     t('Generated {date} by {site}. Details come from the listing agent and can change: confirm them before you sign or pay a deposit.',
       { date: fmtDate(new Date().toISOString(), lang), site: SITE_NAME }));
 }

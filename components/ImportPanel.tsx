@@ -151,7 +151,7 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
   function downloadTemplate() {
     const url = URL.createObjectURL(new Blob([CSV_TEMPLATE], { type: 'text/csv' }));
     const a = document.createElement('a');
-    a.href = url; a.download = 'resoha-listings-template.csv'; a.click();
+    a.href = url; a.download = 'hogarli-listings-template.csv'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
