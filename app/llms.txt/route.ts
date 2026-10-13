@@ -34,6 +34,7 @@ export function GET() {
     `- [Questions and answers](${u('/faq')}): every common buyer question in one place`,
     `- [About Resoha](${u('/about')})`,
     `- [For agents](${u('/for-agents')})`,
+    `- [Promotion for agents and developers](${u('/promote')})`,
     '',
     '## Guides',
     ...GUIDES.map((g) => `- [${g.title}](${u(`/guides/${g.slug}`)}): ${plain(g.answer)}`),

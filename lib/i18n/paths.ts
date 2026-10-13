@@ -11,7 +11,7 @@ export const ES_PREFIX = '/es';
 const PUBLIC: RegExp[] = [
   /^\/$/,
   /^\/(listings|developments|developers|areas|guides|agents|agency)(\/|$)/,
-  /^\/(market|faq|land-passport|about|for-agents)$/,
+  /^\/(market|faq|land-passport|about|for-agents|promote)$/,
 ];
 
 /** Чи має сторінка іспанську адресу (лише шлях, без ?query). */
