@@ -1,6 +1,6 @@
 /**
  * Стиснення фото в браузері перед завантаженням: довша сторона до 2560 px,
- * WebP (або JPEG, де WebP не кодується), за потреби — ледь помітний знак «resoha»
+ * WebP (або JPEG, де WebP не кодується), за потреби — ледь помітний знак «hogarli»
  * у правому нижньому куті. Якщо щось не вдалось — вантажимо оригінал.
  */
 const MAX_SIDE = 2560;
@@ -30,7 +30,7 @@ function drawWatermark(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.shadowColor = 'rgba(0, 0, 0, 0.35)';
   ctx.shadowBlur = Math.round(size / 4);
   ctx.fillStyle = 'rgba(255, 255, 255, 0.55)';
-  ctx.fillText('resoha', w - pad, h - pad);
+  ctx.fillText('hogarli', w - pad, h - pad);
   ctx.restore();
 }
 

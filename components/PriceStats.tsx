@@ -100,7 +100,7 @@ export function CityPriceStats({ cities, period }: { cities: CityStat[]; period:
     <section className="section section--soft">
       <div className="wrap">
         <div className="section__head section__head--start">
-          <h2>{t('Resoha statistics')}</h2>
+          <h2>{t('Hogarli statistics')}</h2>
           <Link className="btn btn--primary" href={lp('/market')}>{t('Market report')} <Icon name="arrowRight" size={18} /></Link>
         </div>
         <div className="city-stats">
@@ -109,7 +109,7 @@ export function CityPriceStats({ cities, period }: { cities: CityStat[]; period:
               <div className="city-stat__top">
                 <div className="city-stat__title">
                   <h3>{c.name}</h3>
-                  <span className="city-stat__brand"><Logo size={22} /> Resoha</span>
+                  <span className="city-stat__brand"><Logo size={22} /> Hogarli</span>
                 </div>
                 <span className="city-stat__month">{month}</span>
                 <CityRow label={t('Median price')} stat={c.all} since={since} lead />

@@ -178,7 +178,7 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
       <div className="panel promo-buy" ref={buyRef}>
         <div className="promo__head">
           <div>
-            <h3 className="with-ico"><Icon name="sparkle" size={20} /> Promote on Resoha</h3>
+            <h3 className="with-ico"><Icon name="sparkle" size={20} /> Promote on Hogarli</h3>
             <p className="muted small" style={{ marginTop: 4 }}>
               Pick what to promote and how: a Featured badge, a Sponsored place above search results,
               a coloured card, a home page spot, a one-time bump or Premium agent on the listing page.

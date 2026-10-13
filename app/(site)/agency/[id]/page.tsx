@@ -60,7 +60,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
             {agency.name}
             {agency.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
-          <p className="org__about">{agency.about || t('Roatán real-estate agency on Resoha.')}</p>
+          <p className="org__about">{agency.about || t('Roatán real-estate agency on Hogarli.')}</p>
           <div className="org__contacts">
             {agency.phone && <a href={`tel:${agency.phone.replace(/[^+\d]/g, '')}`}><Icon name="phone" size={16} /> {agency.phone}</a>}
             {agency.email && <a href={`mailto:${agency.email}`}><Icon name="inbox" size={16} /> {agency.email}</a>}

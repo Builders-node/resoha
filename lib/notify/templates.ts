@@ -64,10 +64,10 @@ function layout(body: string, footer: string) {
 /** Підвал: чому прийшов лист і як відписатись (для листів, на які людина підписалась) */
 function footer(kind: 'agent' | 'alerts' | 'transactional', unsub?: string | null) {
   const base = kind === 'agent'
-    ? 'You get this because you list properties on Resoha. Change notifications in your dashboard → Profile.'
+    ? 'You get this because you list properties on Hogarli. Change notifications in your dashboard → Profile.'
     : kind === 'alerts'
-      ? 'You get this because you saved a search or a listing on Resoha.'
-      : 'You get this because you contacted an agent on Resoha.';
+      ? 'You get this because you saved a search or a listing on Hogarli.'
+      : 'You get this because you contacted an agent on Hogarli.';
   const link = unsub && kind !== 'transactional'
     ? ` <a href="${esc(`${SITE_URL}/unsubscribe?t=${unsub}&what=${kind === 'agent' ? 'leads' : 'alerts'}`)}" style="color:#999">Unsubscribe</a>`
     : '';
@@ -75,7 +75,7 @@ function footer(kind: 'agent' | 'alerts' | 'transactional', unsub?: string | nul
 }
 
 /** Підвал добірки для гостя без акаунта: відписка саме від цього пошуку (0058) */
-const guestFooter = (token: string) => esc('You get this because you subscribed to this search on Resoha.')
+const guestFooter = (token: string) => esc('You get this because you subscribed to this search on Hogarli.')
   + ` <a href="${esc(`${SITE_URL}/search-alert?a=stop&t=${encodeURIComponent(token)}`)}" style="color:#999">Unsubscribe</a>`;
 
 const plain = (lines: (string | false | undefined | null)[]) => lines.filter(Boolean).join('\n');
@@ -139,7 +139,7 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         subject,
         html: layout(`<p style="margin:0 0 12px">${esc(body)}</p><p style="margin:0 0 12px">${button(url, 'Accept the invitation')}</p>`
           + `<p style="margin:0;color:#777;font-size:13px">If you didn’t expect this, ignore this email.</p>`,
-          esc('You get this because someone invited this email address to their agency on Resoha.')),
+          esc('You get this because someone invited this email address to their agency on Hogarli.')),
         text: plain([subject, '', body, url]),
         telegram: '',
       };
@@ -164,7 +164,7 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
       const subject = `${p.count} new ${p.count === 1 ? 'property' : 'properties'} for “${p.title}”`;
       return {
         subject,
-        html: layout(`<p style="margin:0 0 12px">New on Resoha for your saved search <b>${esc(p.title)}</b>:</p>`
+        html: layout(`<p style="margin:0 0 12px">New on Hogarli for your saved search <b>${esc(p.title)}</b>:</p>`
           + items.map((c) => cardHtml(c)).join('')
           + (more ? `<p style="margin:0 0 12px">and ${more} more.</p>` : '') + button(url, 'See all results'),
           p.searchUnsub ? guestFooter(p.searchUnsub) : footer('alerts', unsub)),
@@ -184,7 +184,7 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         subject,
         html: layout(`<p style="margin:0 0 12px">${esc(body)}</p><p style="margin:0 0 12px">${button(confirm, 'Confirm the alert')}</p>`
           + `<p style="margin:0;color:#777;font-size:13px">The link works for 7 days. <a href="${esc(results)}" style="color:#777">See the current results</a>.</p>`,
-          esc('You get this because someone entered this email address to follow a search on Resoha. If it wasn’t you, ignore this email: nothing will be sent without confirmation.')),
+          esc('You get this because someone entered this email address to follow a search on Hogarli. If it wasn’t you, ignore this email: nothing will be sent without confirmation.')),
         text: plain([subject, '', body, `Confirm: ${confirm}`, '', `Current results: ${results}`]),
         telegram: '',
       };

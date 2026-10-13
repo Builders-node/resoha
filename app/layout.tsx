@@ -29,7 +29,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = makeT(lang);
   return {
     metadataBase: new URL(SITE_URL),
-    title: `${t('Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land')} | Resoha`,
+    title: `${t('Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land')} | Hogarli`,
     description: t('Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.'),
     openGraph: { siteName: SITE_NAME, type: 'website', locale: OG_LOCALE[lang] },
     twitter: { card: 'summary_large_image' },

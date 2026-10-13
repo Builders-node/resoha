@@ -15,7 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return localized('/land-passport', {
     title: `${t('Land passport: check a Roatán lot before you buy')} | ${SITE_NAME}`,
-    description: t('Every land listing on Resoha carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.'),
+    description: t('Every land listing on Hogarli carries a land passport: title, road, electricity, water, survey, ZOLITUR permit, zone and slope, with who checked it and when. Free PDF report.'),
   });
 }
 
@@ -34,7 +34,7 @@ const FAQ = [
   { q: 'What does “Ready to build” mean?', a: 'A lot is marked Ready to build when four core facts are all confirmed: registered free-and-clear title, road access, electricity at or near the lot, and a water source. Two or three of them gives “Needs work”; fewer gives “Raw land”.' },
   { q: 'Who fills in the land passport?', a: 'The listing agent fills it in from documents and site visits, and the passport shows who checked it and on which date. Items nobody has confirmed are shown as “Not confirmed”, never guessed.' },
   { q: 'Is the land passport a legal title guarantee?', a: 'No. It is a structured record of what has been confirmed about the lot. Always have your own Honduran attorney check the title at the Instituto de la Propiedad before paying a deposit.' },
-  { q: 'Does the land passport cost anything?', a: 'No. The passport and its PDF report are free for buyers and for agents listing land on Resoha.' },
+  { q: 'Does the land passport cost anything?', a: 'No. The passport and its PDF report are free for buyers and for agents listing land on Hogarli.' },
 ];
 
 export default async function LandPassportPage() {
@@ -49,12 +49,12 @@ export default async function LandPassportPage() {
       <JsonLd data={graph(breadcrumbLd(crumbs), faqLd(FAQ), {
         '@type': 'WebPage',
         '@id': `${SITE_URL}/land-passport`,
-        name: 'Resoha land passport',
+        name: 'Hogarli land passport',
         description: 'A standard checklist of title, access, utilities, permits, zone and slope for every land listing on Roatán.',
       })} />
 
       <section className="hero hero--dark">
-        <span className="hero__eyebrow">{t('Free for every lot on Resoha')}</span>
+        <span className="hero__eyebrow">{t('Free for every lot on Hogarli')}</span>
         <h1>{t('The land passport: know what you are buying before you fly')}</h1>
         <p className="hero__sub">
           {t('Buying land on Roatán means asking the same eight questions about every lot. The land passport puts the answers in one place, marks what is confirmed and what is not, and shows who checked it and when.')}
@@ -64,7 +64,7 @@ export default async function LandPassportPage() {
           <Link className="btn btn--lg hero__ghost" href={lp('/listings?type=land')}>{t('All land & lots')}</Link>
         </div>
         {land.length > 0 && (
-          <p className="tiny hero__note">{t('{checked} of {total} land listings on Resoha have a completed passport.', { checked, total: land.length })}</p>
+          <p className="tiny hero__note">{t('{checked} of {total} land listings on Hogarli have a completed passport.', { checked, total: land.length })}</p>
         )}
       </section>
 
@@ -118,7 +118,7 @@ export default async function LandPassportPage() {
             <p className="small muted" style={{ margin: '8px 0 16px' }}>
               {t('A completed passport answers buyers’ first questions before they ask, and lots marked Ready to build can be found with their own filter.')}
             </p>
-            <Link className="btn btn--primary" href={lp('/for-agents')}>{t('List land on Resoha')}</Link>
+            <Link className="btn btn--primary" href={lp('/for-agents')}>{t('List land on Hogarli')}</Link>
           </div>
         </div>
       </section>

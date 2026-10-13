@@ -52,7 +52,7 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
     'Piso a la izquierda · E estudio, 1D un dormitorio · toque una unidad para abrirla',
   'No. {n}': 'N.º {n}',
   'issued {date}': 'emitido el {date}',
-  'Checked by Resoha': 'Verificado por Resoha',
+  'Checked by Hogarli': 'Verificado por Hogarli',
   'Documents are uploaded by the listing agent. Before paying a deposit, have your own Honduran lawyer check the title and permits in the property registry.':
     'Los documentos los sube el agente del anuncio. Antes de pagar un depósito, pida a su propio abogado hondureño que revise el título y los permisos en el registro de la propiedad.',
   '{name} photos': 'Fotos de {name}',

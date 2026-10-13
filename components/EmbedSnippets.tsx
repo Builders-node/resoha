@@ -49,7 +49,7 @@ export default function EmbedSnippets({ companyIds }: { companyIds: string[] }) 
       <h3>Widget for your website</h3>
       <p className="muted small" style={{ margin: '4px 0 10px' }}>
         Show live unit availability — a floor-by-floor grid or a list with prices — on your own site.
-        Enquiries from the widget arrive in your Resoha leads marked “Website widget”. The frame resizes itself to fit.
+        Enquiries from the widget arrive in your Hogarli leads marked “Website widget”. The frame resizes itself to fit.
       </p>
       {!devs.length ? (
         <p className="small muted">No developments yet. Add a development (or link one to your company) to get its widget code.</p>

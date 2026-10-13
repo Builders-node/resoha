@@ -4,7 +4,7 @@ import { fmtPrice, photoUrl, specLine } from '@/lib/format';
 import { LOGO_PATH, LOGO_VIEWBOX } from '@/lib/logo';
 import { SITE_URL } from '@/lib/site';
 
-export const alt = 'Property on Resoha Roatán';
+export const alt = 'Property on Hogarli Roatán';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -43,7 +43,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             <svg width="62" height="58" viewBox={LOGO_VIEWBOX}><path d={LOGO_PATH} fill="#ff4800" /></svg>
-            <div style={{ display: 'flex', fontSize: 30, fontWeight: 800, letterSpacing: 4 }}>RESOHA ROATÁN</div>
+            <div style={{ display: 'flex', fontSize: 30, fontWeight: 800, letterSpacing: 4 }}>HOGARLI ROATÁN</div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>

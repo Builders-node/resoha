@@ -95,7 +95,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           {a.priceSource && <span className="tiny muted">{t('Source:')} {a.priceSource.name}</span>}
         </div>
         <div className="stat">
-          <span className="muted small">{t('On Resoha now')}</span>
+          <span className="muted small">{t('On Hogarli now')}</span>
           <b>{nListings(listings.length, lang)}</b>
           <span className="tiny muted">{from !== null ? t('For sale from {price}', { price: money.amount(from) }) : t('Live count from our catalogue')}</span>
         </div>
@@ -120,7 +120,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
         <aside className="panel page__aside">
           <h3>{t('Search {area}', { area: name })}</h3>
           <p className="small muted" style={{ margin: '6px 0 14px' }}>
-            {t('Every listing on Resoha links back to the agency that holds it.')}
+            {t('Every listing on Hogarli links back to the agency that holds it.')}
           </p>
           <div className="page__aside-btns">
             <Link className="btn btn--orange btn--block" href={`${filterHref}&deal=sale`}>{t('Homes for sale')}</Link>

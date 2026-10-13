@@ -23,7 +23,7 @@ export default async function LegalPage({ title, lead, children }: {
           {t('Questions about this document, your account or your data:')}{' '}
           {CONTACT_EMAIL
             ? <a className="link-accent" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
-            : t('use the enquiry form on any listing and mention “Resoha support” — it reaches the platform team.')}
+            : t('use the enquiry form on any listing and mention “Hogarli support” — it reaches the platform team.')}
         </p>
         <p className="small muted">
           {t('See also:')} <Link className="link-accent" href="/privacy">{t('Privacy policy')}</Link> ·{' '}

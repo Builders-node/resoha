@@ -47,7 +47,7 @@ export async function GET(req: Request) {
   for (let hop = 0; hop < 4 && target; hop++) {
     res = await fetch(target, {
       redirect: 'manual', cache: 'no-store', signal: AbortSignal.timeout(25_000),
-      headers: { Accept: 'application/xml, text/xml, */*', 'User-Agent': 'Resoha feed import' },
+      headers: { Accept: 'application/xml, text/xml, */*', 'User-Agent': 'Hogarli feed import' },
     }).catch(() => null);
     if (!res || res.status < 300 || res.status >= 400) break;
     const next = res.headers.get('location');

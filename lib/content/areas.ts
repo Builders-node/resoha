@@ -241,7 +241,7 @@ export const AREAS: Area[] = [
     ],
     faq: [
       { q: 'Can foreigners buy property in San Pedro Sula?', a: 'Generally yes. The constitution limits foreign ownership of land within 40 km of the coasts and borders, with exceptions for homes and tourism under Decree 90-90. Most of San Pedro Sula lies outside that strip, but have a Honduran attorney confirm it for the specific property before you pay.' },
-      { q: 'How do I find property in San Pedro Sula on Resoha?', a: 'Choose San Pedro Sula in the city filter on the listings map, or use the links on this page. Every listing links back to the agency that holds it.' },
+      { q: 'How do I find property in San Pedro Sula on Hogarli?', a: 'Choose San Pedro Sula in the city filter on the listings map, or use the links on this page. Every listing links back to the agency that holds it.' },
     ],
   },
   {

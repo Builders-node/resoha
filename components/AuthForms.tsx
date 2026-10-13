@@ -69,7 +69,7 @@ export function LoginForm({ next, onSwitch, onDone }: InModal & { next: string; 
   return (
     <>
         <h2 className="auth__title">{t('Sign in')}</h2>
-        <p className="muted" style={{ margin: '8px 0 20px' }}>{t('Welcome back to Resoha Roatán.')}</p>
+        <p className="muted" style={{ margin: '8px 0 20px' }}>{t('Welcome back to Hogarli Roatán.')}</p>
 
         {/* акаунти, відкладені в цьому браузері, — вхід одним дотиком */}
         <AccountSwitcher showAdd={false} onDone={onDone} />
@@ -138,7 +138,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
             {t('Your account is created. Open the confirmation link sent to')} <b>{pending}</b> {t('and then sign in.')}
           </p>
           <p className="tiny muted" style={{ margin: '-8px 0 20px' }}>
-            {t('Nothing arrived? This site has no mail service connected yet — ask the Resoha admin to confirm the account by hand.')}
+            {t('Nothing arrived? This site has no mail service connected yet — ask the Hogarli admin to confirm the account by hand.')}
           </p>
           <button type="button" className="btn btn--primary btn--lg btn--block" onClick={() => onSwitch('login')}>{t('Go to sign in')}</button>
       </div>
@@ -237,7 +237,7 @@ export function ForgotForm({ onSwitch }: InModal) {
               {t('If that address has an account, a reset link is on its way. The link signs you in once and takes you straight to a new-password form.')}
             </p>
             <p className="tiny muted" style={{ margin: '-8px 0 20px' }}>
-              {t('Nothing arrived within a few minutes? This site has no mail service connected yet — ask the Resoha admin to reset it for you.')}
+              {t('Nothing arrived within a few minutes? This site has no mail service connected yet — ask the Hogarli admin to reset it for you.')}
             </p>
             <button type="button" className="btn btn--ghost btn--block" onClick={() => onSwitch('login')}>{t('Back to sign in')}</button>
           </>

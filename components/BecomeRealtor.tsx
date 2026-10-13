@@ -29,7 +29,7 @@ export default function BecomeRealtor({ name }: { name: string }) {
     <div className="wrap" style={{ padding: '80px 0' }}>
       <div className="panel" style={{ maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
         <div className="empty__ico"><Icon name="building" size={40} /></div>
-        <h2 style={{ marginTop: 10 }}>{t('List properties on Resoha')}</h2>
+        <h2 style={{ marginTop: 10 }}>{t('List properties on Hogarli')}</h2>
 
         <p className="muted" style={{ margin: '10px 0 24px' }}>
           {t('You are signed in as')} <b>{name}</b>. {t('Turn this account into a realtor account to publish listings and answer enquiries. Your saved listings and searches stay where they are.')}

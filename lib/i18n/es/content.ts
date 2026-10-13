@@ -5,16 +5,16 @@
  */
 export const ES_CONTENT: Record<string, string> = {
   /* ---------- Загальні питання (lib/content/faq.ts) ---------- */
-  "What is Resoha?":
-    "¿Qué es Resoha?",
-  "Resoha is a property marketplace for Roatán and the Bay Islands, Honduras. It brings homes, condos, rentals and land from island agencies and independent agents into one searchable map, and every listing links back to the agency that holds it.":
-    "Resoha es un portal inmobiliario de Roatán y las Islas de la Bahía, Honduras. Reúne casas, condominios, alquileres y terrenos de agencias de la isla y agentes independientes en un solo mapa con buscador, y cada anuncio enlaza con la agencia que lo tiene.",
-  "Is Resoha a real-estate agency?":
-    "¿Resoha es una agencia inmobiliaria?",
-  "No. Resoha is a listing platform, not a broker. You contact the listing agent directly by WhatsApp, phone or the enquiry form, and Resoha takes no commission from buyers.":
-    "No. Resoha es una plataforma de anuncios, no un corredor. Usted contacta directamente al agente del anuncio por WhatsApp, por teléfono o con el formulario de consulta, y Resoha no cobra comisión a los compradores.",
-  "What is the Resoha land passport?":
-    "¿Qué es el pasaporte del terreno de Resoha?",
+  "What is Hogarli?":
+    "¿Qué es Hogarli?",
+  "Hogarli is a property marketplace for Roatán and the Bay Islands, Honduras. It brings homes, condos, rentals and land from island agencies and independent agents into one searchable map, and every listing links back to the agency that holds it.":
+    "Hogarli es un portal inmobiliario de Roatán y las Islas de la Bahía, Honduras. Reúne casas, condominios, alquileres y terrenos de agencias de la isla y agentes independientes en un solo mapa con buscador, y cada anuncio enlaza con la agencia que lo tiene.",
+  "Is Hogarli a real-estate agency?":
+    "¿Hogarli es una agencia inmobiliaria?",
+  "No. Hogarli is a listing platform, not a broker. You contact the listing agent directly by WhatsApp, phone or the enquiry form, and Hogarli takes no commission from buyers.":
+    "No. Hogarli es una plataforma de anuncios, no un corredor. Usted contacta directamente al agente del anuncio por WhatsApp, por teléfono o con el formulario de consulta, y Hogarli no cobra comisión a los compradores.",
+  "What is the Hogarli land passport?":
+    "¿Qué es el pasaporte del terreno de Hogarli?",
   "The land passport is a standard checklist on every land listing: title status, road access, electricity, water, survey, ZOLITUR building permit, zone and slope. Each item is marked as confirmed or not, with the date and the person who checked it, and it can be downloaded as a PDF report.":
     "El pasaporte del terreno es una lista de verificación estándar en cada anuncio de terreno: estado del título, acceso por carretera, electricidad, agua, levantamiento topográfico, permiso de construcción de ZOLITUR, zona y pendiente. Cada punto se marca como confirmado o no, con la fecha y la persona que lo verificó, y se puede descargar como informe en PDF.",
   "Can foreigners buy property in Roatán?":
@@ -29,20 +29,20 @@ export const ES_CONTENT: Record<string, string> = {
     "¿Cuáles son los gastos de cierre en Roatán?",
   "Buyers typically pay 3–7% of the price, most often 4–5.5%: a 1.5% transfer tax, 1–3% attorney and notary fees, and registration. The seller usually pays the agent’s commission.":
     "Los compradores suelen pagar entre el 3 y el 7 % del precio, casi siempre del 4 al 5.5 %: un impuesto de traspaso del 1.5 %, honorarios de abogado y notario del 1 al 3 % y el registro. La comisión del agente normalmente la paga el vendedor.",
-  "Does Resoha charge buyers?":
-    "¿Resoha cobra a los compradores?",
+  "Does Hogarli charge buyers?":
+    "¿Hogarli cobra a los compradores?",
   "No. Browsing, saving listings, saved searches and contacting agents are free for buyers and renters.":
     "No. Explorar, guardar anuncios, guardar búsquedas y contactar a los agentes es gratis para compradores e inquilinos.",
-  "How do agents and agencies list on Resoha?":
-    "¿Cómo publican los agentes y las agencias en Resoha?",
+  "How do agents and agencies list on Hogarli?":
+    "¿Cómo publican los agentes y las agencias en Hogarli?",
   "Agents create a free agent account and publish listings from their dashboard, or join their agency with an invite code. Enquiries go straight to the agent by WhatsApp and email.":
     "Los agentes crean una cuenta de agente gratuita y publican anuncios desde su panel, o se unen a su agencia con un código de invitación. Las consultas llegan directamente al agente por WhatsApp y correo electrónico.",
   "Does the land passport replace a lawyer?":
     "¿El pasaporte del terreno sustituye a un abogado?",
   "No. The land passport shows what has been confirmed about a lot and when, so you can compare land quickly. Always have your own Honduran attorney check the title at the Instituto de la Propiedad before you pay a deposit.":
     "No. El pasaporte del terreno muestra lo que se ha confirmado sobre un lote y cuándo, para que pueda comparar terrenos rápidamente. Pida siempre a su propio abogado hondureño que revise el título en el Instituto de la Propiedad antes de pagar un depósito.",
-  "Which areas of Roatán does Resoha cover?":
-    "¿Qué zonas de Roatán cubre Resoha?",
+  "Which areas of Roatán does Hogarli cover?":
+    "¿Qué zonas de Roatán cubre Hogarli?",
   "The whole island: West Bay, West End, Sandy Bay, Coxen Hole, Flowers Bay, French Harbour, Parrot Tree, Palmetto Bay, Pristine Bay, Crawfish Rock, Oak Ridge, Punta Gorda and Camp Bay.":
     "Toda la isla: West Bay, West End, Sandy Bay, Coxen Hole, Flowers Bay, French Harbour, Parrot Tree, Palmetto Bay, Pristine Bay, Crawfish Rock, Oak Ridge, Punta Gorda y Camp Bay.",
   /* ---------- Довідка /faq (lib/content/help.ts) ---------- */
@@ -78,8 +78,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Una compra sencilla al contado suele cerrarse entre uno y tres meses después de la oferta, según la revisión del título y el registro. Las casas en sí se venden despacio: unos diez meses de media, según Buying Roatan.",
   "Can I get a mortgage?":
     "¿Puedo obtener una hipoteca?",
-  "Mortgages for foreign buyers are rare on Roatán. Most buyers pay cash, use money from selling a home at home, or agree seller financing. On Resoha, listings that offer seller financing can be found with the “Owner financing” filter.":
-    "Las hipotecas para compradores extranjeros son poco comunes en Roatán. La mayoría paga al contado, usa el dinero de vender su casa en su país o acuerda financiamiento con el vendedor. En Resoha, los anuncios con financiamiento del vendedor se encuentran con el filtro «Financiamiento del dueño».",
+  "Mortgages for foreign buyers are rare on Roatán. Most buyers pay cash, use money from selling a home at home, or agree seller financing. On Hogarli, listings that offer seller financing can be found with the “Owner financing” filter.":
+    "Las hipotecas para compradores extranjeros son poco comunes en Roatán. La mayoría paga al contado, usa el dinero de vender su casa en su país o acuerda financiamiento con el vendedor. En Hogarli, los anuncios con financiamiento del vendedor se encuentran con el filtro «Financiamiento del dueño».",
   "Do I need a lawyer?":
     "¿Necesito un abogado?",
   "Yes. The deed must be signed before a Honduran notary, and you should hire your own attorney, not the seller’s, to check the title and handle registration.":
@@ -168,26 +168,26 @@ export const ES_CONTENT: Record<string, string> = {
     "Pida el historial real de reservas, no proyecciones. Compruebe que el edificio o la comunidad permite alquileres de corta estancia y cuánto cobra su programa de alquiler. Prevea la administración, a menudo del 20 al 30 % de los ingresos. Los detalles están en [ingresos por alquiler en Roatán](/guides/roatan-rental-income).",
   "What the site is, where the listings come from and what it costs.":
     "Qué es el sitio, de dónde vienen los anuncios y cuánto cuesta.",
-  "Can I buy a property on Resoha?":
-    "¿Puedo comprar una propiedad en Resoha?",
-  "Resoha is a listing platform, not a broker. You find a property here and contact the listing agent directly by WhatsApp, phone or the enquiry form. The viewing, the negotiation and the sale happen with the agent and your attorney.":
-    "Resoha es una plataforma de anuncios, no un corredor. Aquí encuentra la propiedad y contacta directamente al agente del anuncio por WhatsApp, por teléfono o con el formulario de consulta. La visita, la negociación y la venta se hacen con el agente y su abogado.",
-  "Can I sell my property on Resoha?":
-    "¿Puedo vender mi propiedad en Resoha?",
-  "Listings are published by island agencies and agents. If you are an owner, ask your agent to list on Resoha. If you are an agent, [create a free agent account](/for-agents).":
-    "Los anuncios los publican agencias y agentes de la isla. Si es propietario, pida a su agente que la publique en Resoha. Si es agente, [cree una cuenta de agente gratuita](/for-agents).",
-  "What is listed on Resoha?":
-    "¿Qué se publica en Resoha?",
+  "Can I buy a property on Hogarli?":
+    "¿Puedo comprar una propiedad en Hogarli?",
+  "Hogarli is a listing platform, not a broker. You find a property here and contact the listing agent directly by WhatsApp, phone or the enquiry form. The viewing, the negotiation and the sale happen with the agent and your attorney.":
+    "Hogarli es una plataforma de anuncios, no un corredor. Aquí encuentra la propiedad y contacta directamente al agente del anuncio por WhatsApp, por teléfono o con el formulario de consulta. La visita, la negociación y la venta se hacen con el agente y su abogado.",
+  "Can I sell my property on Hogarli?":
+    "¿Puedo vender mi propiedad en Hogarli?",
+  "Listings are published by island agencies and agents. If you are an owner, ask your agent to list on Hogarli. If you are an agent, [create a free agent account](/for-agents).":
+    "Los anuncios los publican agencias y agentes de la isla. Si es propietario, pida a su agente que la publique en Hogarli. Si es agente, [cree una cuenta de agente gratuita](/for-agents).",
+  "What is listed on Hogarli?":
+    "¿Qué se publica en Hogarli?",
   "Homes, condos, commercial property and land for sale, plus long-term rentals, across the whole island: from West Bay and West End to French Harbour, Oak Ridge and Camp Bay.":
     "Casas, condominios, locales comerciales y terrenos a la venta, además de alquileres de larga estancia, en toda la isla: desde West Bay y West End hasta French Harbour, Oak Ridge y Camp Bay.",
   "Where does the information come from?":
     "¿De dónde sale la información?",
   "From the island agency or agent who holds each listing. Every listing shows its source and links back to the original, so you can see who published the details.":
     "De la agencia o el agente de la isla que tiene cada anuncio. Cada anuncio muestra su fuente y enlaza con el original, para que vea quién publicó los datos.",
-  "Is it true that listing on Resoha is free?":
-    "¿Es cierto que publicar en Resoha es gratis?",
-  "Yes. Agents publish listings for free, and buyers pay nothing to search, save listings or contact agents. Resoha takes no commission from buyers.":
-    "Sí. Los agentes publican gratis y los compradores no pagan nada por buscar, guardar anuncios ni contactar a los agentes. Resoha no cobra comisión a los compradores.",
+  "Is it true that listing on Hogarli is free?":
+    "¿Es cierto que publicar en Hogarli es gratis?",
+  "Yes. Agents publish listings for free, and buyers pay nothing to search, save listings or contact agents. Hogarli takes no commission from buyers.":
+    "Sí. Los agentes publican gratis y los compradores no pagan nada por buscar, guardar anuncios ni contactar a los agentes. Hogarli no cobra comisión a los compradores.",
   "Are prices shown?":
     "¿Se muestran los precios?",
   "Yes. Every listing shows its price in US dollars, and rentals show the monthly rent. Condos also show the HOA fee when the agent provides it.":
@@ -434,8 +434,8 @@ export const ES_CONTENT: Record<string, string> = {
     "El historial completo del título y cualquier gravamen en el Instituto de la Propiedad. Vea [cómo revisar el título de un terreno en Roatán](/guides/how-to-check-land-title-in-roatan).",
   "Zoning and building permits from ZOLITUR, the Bay Islands tourism free zone authority, if you plan to build.":
     "La zonificación y los permisos de construcción de ZOLITUR, la autoridad de la zona libre turística de las Islas de la Bahía, si piensa construir.",
-  "On Resoha, land listings carry a [land passport](/land-passport) that shows which of these facts have been confirmed and when.":
-    "En Resoha, los anuncios de terrenos llevan un [pasaporte del terreno](/land-passport) que muestra cuáles de estos datos se han confirmado y cuándo.",
+  "On Hogarli, land listings carry a [land passport](/land-passport) that shows which of these facts have been confirmed and when.":
+    "En Hogarli, los anuncios de terrenos llevan un [pasaporte del terreno](/land-passport) que muestra cuáles de estos datos se han confirmado y cuándo.",
   "Important":
     "Importante",
   "This guide is general information, not legal or tax advice. Rules and fees change; confirm every step with a Honduran attorney (abogado y notario) before you pay a deposit.":
@@ -484,10 +484,10 @@ export const ES_CONTENT: Record<string, string> = {
     "La isla cambia mucho de oeste a este. West Bay y West End son los centros turísticos y de expatriados; Sandy Bay es residencial; Coxen Hole y French Harbour son las ciudades de trabajo; el East End es donde está el terreno. Compárelas en nuestra [guía de las zonas de Roatán](/guides/best-areas-to-live-in-roatan) o explore las [páginas de zonas](/areas).",
   "3. Shortlist listings and agents":
     "3. Preseleccione anuncios y agentes",
-  "Because there is no MLS, the same property can appear at different prices on different sites, and sold homes often stay online. On [Resoha](/listings?deal=sale), every listing links back to the island agency that holds it, so you can see where the details came from.":
-    "Como no hay MLS, la misma propiedad puede aparecer con precios distintos en sitios distintos, y las casas vendidas a menudo siguen en línea. En [Resoha](/listings?deal=sale), cada anuncio enlaza con la agencia de la isla que lo tiene, para que vea de dónde salen los datos.",
-  "Ask any agent how long they have worked on the island, which agency they belong to and for references from past buyers. Read reviews on their [Resoha profile](/agents).":
-    "Pregunte a cualquier agente cuánto tiempo lleva trabajando en la isla, a qué agencia pertenece y pida referencias de compradores anteriores. Lea las reseñas en su [perfil de Resoha](/agents).",
+  "Because there is no MLS, the same property can appear at different prices on different sites, and sold homes often stay online. On [Hogarli](/listings?deal=sale), every listing links back to the island agency that holds it, so you can see where the details came from.":
+    "Como no hay MLS, la misma propiedad puede aparecer con precios distintos en sitios distintos, y las casas vendidas a menudo siguen en línea. En [Hogarli](/listings?deal=sale), cada anuncio enlaza con la agencia de la isla que lo tiene, para que vea de dónde salen los datos.",
+  "Ask any agent how long they have worked on the island, which agency they belong to and for references from past buyers. Read reviews on their [Hogarli profile](/agents).":
+    "Pregunte a cualquier agente cuánto tiempo lleva trabajando en la isla, a qué agencia pertenece y pida referencias de compradores anteriores. Lea las reseñas en su [perfil de Hogarli](/agents).",
   "4. Offer and purchase agreement":
     "4. Oferta y contrato de compra",
   "Once the price is agreed, your attorney or the seller’s prepares a purchase agreement, often a promise of sale (promesa de compraventa), that sets the price, the deposit, the closing date and the conditions, including a clean title. Deposits are usually around 10% and should be held in escrow, not paid straight to the seller.":
@@ -626,8 +626,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Los títulos se inscriben en el Instituto de la Propiedad (IP), la entidad nacional de la propiedad.",
   "“Possession rights” (derechos posesorios) are not the same as registered title.":
     "Los «derechos posesorios» no son lo mismo que un título inscrito.",
-  "Resoha’s land passport shows which checks have been confirmed for each lot, and when.":
-    "El pasaporte del terreno de Resoha muestra qué comprobaciones se han confirmado para cada lote y cuándo.",
+  "Hogarli’s land passport shows which checks have been confirmed for each lot, and when.":
+    "El pasaporte del terreno de Hogarli muestra qué comprobaciones se han confirmado para cada lote y cuándo.",
   "Why title checks matter so much here":
     "Por qué aquí importa tanto revisar el título",
   "Analysts at [The LatInvestor](https://thelatinvestor.com/blogs/news/roatan-island-risks-pitfalls) list forged powers of attorney (poder), fake sellers and parcels with competing claims among the most common problems on Roatán. With no MLS and no licensing for agents, the buyer has to verify the basics.":
@@ -654,10 +654,10 @@ export const ES_CONTENT: Record<string, string> = {
     "Título inscrito frente a derechos posesorios",
   "Some land, especially on the less developed parts of the island, is offered with possession rights only (derechos posesorios), not a registered title. Turning possession into registered title can take time and is not guaranteed. Treat such land as higher risk and price it accordingly.":
     "Algunos terrenos, sobre todo en las partes menos desarrolladas de la isla, se ofrecen solo con derechos posesorios, sin título inscrito. Convertir la posesión en título inscrito puede llevar tiempo y no está garantizado. Considere ese terreno de mayor riesgo y valórelo en consecuencia.",
-  "How Resoha helps":
-    "Cómo ayuda Resoha",
-  "Every land listing on Resoha carries a [land passport](/land-passport): title status, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked as confirmed or not, with the date of the check. You can download it as a PDF and send it to your attorney.":
-    "Cada anuncio de terreno en Resoha lleva un [pasaporte del terreno](/land-passport): estado del título, acceso por carretera, electricidad, agua, levantamiento, permiso de ZOLITUR, zona y pendiente, cada uno marcado como confirmado o no, con la fecha de la comprobación. Puede descargarlo en PDF y enviárselo a su abogado.",
+  "How Hogarli helps":
+    "Cómo ayuda Hogarli",
+  "Every land listing on Hogarli carries a [land passport](/land-passport): title status, road access, electricity, water, survey, ZOLITUR permit, zone and slope, each marked as confirmed or not, with the date of the check. You can download it as a PDF and send it to your attorney.":
+    "Cada anuncio de terreno en Hogarli lleva un [pasaporte del terreno](/land-passport): estado del título, acceso por carretera, electricidad, agua, levantamiento, permiso de ZOLITUR, zona y pendiente, cada uno marcado como confirmado o no, con la fecha de la comprobación. Puede descargarlo en PDF y enviárselo a su abogado.",
   "The land passport records what has been confirmed and by whom. It does not replace a title search by your own attorney.":
     "El pasaporte del terreno registra qué se ha confirmado y quién lo confirmó. No sustituye la búsqueda de título que haga su propio abogado.",
   "How do I verify a property title in Honduras?":
@@ -718,8 +718,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Antes de comprar para alquilar",
   "Ask the seller or agent for real booking history, not projections. Check whether the building or community allows short-term rentals, and what share of revenue its rental programme takes. Remember that you will pay the island’s [closing costs](/guides/roatan-closing-costs) and a 10% capital gains tax when you sell.":
     "Pida al vendedor o al agente el historial real de reservas, no proyecciones. Compruebe si el edificio o la comunidad permite alquileres de corta estancia y qué parte de los ingresos se queda su programa de alquiler. Recuerde que pagará los [gastos de cierre](/guides/roatan-closing-costs) de la isla y un 10 % de impuesto sobre la ganancia de capital cuando venda.",
-  "Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Resoha.":
-    "Explore en Resoha los anuncios con la etiqueta [Ingresos por alquiler](/listings?deal=sale&tags=Rental%20income).",
+  "Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Hogarli.":
+    "Explore en Hogarli los anuncios con la etiqueta [Ingresos por alquiler](/listings?deal=sale&tags=Rental%20income).",
   "Figures are third-party estimates for the whole island and change month to month. They are not a forecast for any particular property.":
     "Las cifras son estimaciones de terceros para toda la isla y cambian de un mes a otro. No son una previsión para ninguna propiedad en particular.",
   "Is Airbnb profitable in Roatán?":
@@ -807,7 +807,7 @@ export const ES_CONTENT: Record<string, string> = {
   'Have a Honduran attorney check the title at the Instituto de la Propiedad before you pay a deposit.': 'Pida a un abogado hondureño que verifique el título en el Instituto de la Propiedad antes de pagar un depósito.',
   'Can foreigners buy property in San Pedro Sula?': '¿Pueden los extranjeros comprar propiedades en San Pedro Sula?',
   'Generally yes. The constitution limits foreign ownership of land within 40 km of the coasts and borders, with exceptions for homes and tourism under Decree 90-90. Most of San Pedro Sula lies outside that strip, but have a Honduran attorney confirm it for the specific property before you pay.': 'En general, sí. La Constitución limita la propiedad extranjera de tierras a menos de 40 km de las costas y fronteras, con excepciones para vivienda y turismo según el Decreto 90-90. La mayor parte de San Pedro Sula queda fuera de esa franja, pero pida a un abogado hondureño que lo confirme para la propiedad concreta antes de pagar.',
-  'How do I find property in San Pedro Sula on Resoha?': '¿Cómo encuentro propiedades en San Pedro Sula en Resoha?',
+  'How do I find property in San Pedro Sula on Hogarli?': '¿Cómo encuentro propiedades en San Pedro Sula en Hogarli?',
   'Choose San Pedro Sula in the city filter on the listings map, or use the links on this page. Every listing links back to the agency that holds it.': 'Elija San Pedro Sula en el filtro de ciudad del mapa de anuncios o use los enlaces de esta página. Cada anuncio enlaza con la agencia que lo publica.',
   'Tegucigalpa is the capital of Honduras, a hillside city in Francisco Morazán where government, embassies and many employers are based; most buyers look in the south-east colonias such as Lomas del Guijarro and Los Próceres.': 'Tegucigalpa es la capital de Honduras, una ciudad entre colinas en Francisco Morazán donde están el gobierno, las embajadas y muchos empleadores; la mayoría de los compradores busca en las colonias del sureste, como Lomas del Guijarro y Los Próceres.',
   'Professionals, diplomats and NGO staff, Honduran families, long-term renters': 'Profesionales, personal diplomático y de ONG, familias hondureñas, inquilinos de largo plazo',

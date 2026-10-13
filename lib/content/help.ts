@@ -66,7 +66,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'mortgage',
         q: 'Can I get a mortgage?',
         a: [
-          'Mortgages for foreign buyers are rare on Roatán. Most buyers pay cash, use money from selling a home at home, or agree seller financing. On Resoha, listings that offer seller financing can be found with the “Owner financing” filter.',
+          'Mortgages for foreign buyers are rare on Roatán. Most buyers pay cash, use money from selling a home at home, or agree seller financing. On Hogarli, listings that offer seller financing can be found with the “Owner financing” filter.',
         ],
       },
       {
@@ -167,7 +167,7 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         id: 'land-passport',
-        q: 'What is the Resoha land passport?',
+        q: 'What is the Hogarli land passport?',
         a: [
           'A standard checklist on every land listing: title, road access, electricity, water, survey, ZOLITUR building permit, zone and slope. Each item is marked confirmed or not, with the date and the person who checked it. You can download it as a PDF and send it to your attorney.',
           'More on the [land passport page](/land-passport).',
@@ -237,26 +237,26 @@ export const HELP_SECTIONS: HelpSection[] = [
   {
     id: 'service',
     icon: 'island',
-    title: 'How Resoha works',
+    title: 'How Hogarli works',
     lead: 'What the site is, where the listings come from and what it costs.',
     items: [
       {
-        id: 'buy-on-resoha',
-        q: 'Can I buy a property on Resoha?',
+        id: 'buy-on-hogarli',
+        q: 'Can I buy a property on Hogarli?',
         a: [
-          'Resoha is a listing platform, not a broker. You find a property here and contact the listing agent directly by WhatsApp, phone or the enquiry form. The viewing, the negotiation and the sale happen with the agent and your attorney.',
+          'Hogarli is a listing platform, not a broker. You find a property here and contact the listing agent directly by WhatsApp, phone or the enquiry form. The viewing, the negotiation and the sale happen with the agent and your attorney.',
         ],
       },
       {
-        id: 'sell-on-resoha',
-        q: 'Can I sell my property on Resoha?',
+        id: 'sell-on-hogarli',
+        q: 'Can I sell my property on Hogarli?',
         a: [
-          'Listings are published by island agencies and agents. If you are an owner, ask your agent to list on Resoha. If you are an agent, [create a free agent account](/for-agents).',
+          'Listings are published by island agencies and agents. If you are an owner, ask your agent to list on Hogarli. If you are an agent, [create a free agent account](/for-agents).',
         ],
       },
       {
         id: 'what-listed',
-        q: 'What is listed on Resoha?',
+        q: 'What is listed on Hogarli?',
         a: [
           'Homes, condos, commercial property and land for sale, plus long-term rentals, across the whole island: from West Bay and West End to French Harbour, Oak Ridge and Camp Bay.',
         ],
@@ -270,9 +270,9 @@ export const HELP_SECTIONS: HelpSection[] = [
       },
       {
         id: 'free',
-        q: 'Is it true that listing on Resoha is free?',
+        q: 'Is it true that listing on Hogarli is free?',
         a: [
-          'Yes. Agents publish listings for free, and buyers pay nothing to search, save listings or contact agents. Resoha takes no commission from buyers.',
+          'Yes. Agents publish listings for free, and buyers pay nothing to search, save listings or contact agents. Hogarli takes no commission from buyers.',
         ],
       },
       {

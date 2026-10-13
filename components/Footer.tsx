@@ -14,7 +14,7 @@ export default async function Footer() {
         <div style={{ maxWidth: 280 }}>
           <Link className="logo" href={lp('/')}>
             <span className="logo__mark"><Logo size={28} /></span>
-            <span>Resoha<span className="logo__sub"> Roatán</span></span>
+            <span>Hogarli<span className="logo__sub"> Roatán</span></span>
           </Link>
           <p className="small" style={{ marginTop: 10 }}>
             {t('Property in Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Every listing links back to the agency that holds it.')}
@@ -49,9 +49,9 @@ export default async function Footer() {
             </ul>
           </div>
           <div>
-            <h4>Resoha</h4>
+            <h4>Hogarli</h4>
             <ul>
-              <li><Link href={lp('/about')}>{t('About Resoha')}</Link></li>
+              <li><Link href={lp('/about')}>{t('About Hogarli')}</Link></li>
               <li><Link href="/privacy">{t('Privacy policy')}</Link></li>
               <li><Link href="/terms">{t('Terms of use')}</Link></li>
               {CONTACT_EMAIL && <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>}
@@ -61,7 +61,7 @@ export default async function Footer() {
       </div>
       <div className="wrap footer__bottom">
         <div className="tiny muted">
-          © 2026 {OPERATOR}. {t('Resoha is a listing platform, not a broker — listing details are as published by the agency holding each property.')}
+          © 2026 {OPERATOR}. {t('Hogarli is a listing platform, not a broker — listing details are as published by the agency holding each property.')}
         </div>
         <span className="prefs"><LangSwitch /><CurrencySwitch /></span>
       </div>

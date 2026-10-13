@@ -14,7 +14,7 @@ import { REGIONS, regionByName } from './regions';
 const ORG_ID = `${SITE_URL}/#organization`;
 const abs = (path: string) => (path.startsWith('http') ? path : `${SITE_URL}${path}`);
 
-export const ORG_DESCRIPTION = 'Resoha is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.';
+export const ORG_DESCRIPTION = 'Hogarli is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.';
 
 export function organizationLd() {
   return {

@@ -4,7 +4,7 @@ import { OPERATOR, SITE_NAME } from '@/lib/site';
 
 export const metadata: Metadata = {
   title: `Privacy policy — ${SITE_NAME}`,
-  description: 'What Resoha Roatán collects, why, who sees it and how to have it removed.',
+  description: 'What Hogarli Roatán collects, why, who sees it and how to have it removed.',
   alternates: { canonical: '/privacy' },
 };
 
@@ -16,7 +16,7 @@ export default function PrivacyPage() {
   return (
     <LegalPage
       title="Privacy policy"
-      lead={`${SITE_NAME} is a property marketplace for Honduras (Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa), operated by ${OPERATOR} (“Resoha”, “we”). This policy explains what we collect, why, who can see it and how to have it removed. It is written in plain language on purpose.`}
+      lead={`${SITE_NAME} is a property marketplace for Honduras (Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa), operated by ${OPERATOR} (“Hogarli”, “we”). This policy explains what we collect, why, who can see it and how to have it removed. It is written in plain language on purpose.`}
     >
       <section>
         <h2>1. What we collect</h2>
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
           (IP address, browser, pages requested) for a short time to keep the site running and to stop abuse.</p>
         <p><b>If you send an enquiry on a listing</b>, we store the name, phone number, email and message you type,
           together with the listing and the agent it was sent to. If you tap “Message on WhatsApp”, we record that a
-          visitor opened WhatsApp from that listing; the conversation itself happens in WhatsApp, not on Resoha.</p>
+          visitor opened WhatsApp from that listing; the conversation itself happens in WhatsApp, not on Hogarli.</p>
         <p><b>If you create an account</b>, we store your name, email address and password (stored only as a hash),
           and for realtors also your phone, WhatsApp number, agency, photo and the text you write about yourself.
           Buyer accounts also store saved listings and saved searches.</p>
@@ -85,7 +85,7 @@ export default function PrivacyPage() {
 
       <section>
         <h2>7. Children</h2>
-        <p>Resoha is for adults buying, renting and selling property. We do not knowingly collect data from anyone
+        <p>Hogarli is for adults buying, renting and selling property. We do not knowingly collect data from anyone
           under 18.</p>
       </section>
 

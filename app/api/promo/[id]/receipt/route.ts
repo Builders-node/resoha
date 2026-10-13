@@ -47,5 +47,5 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     if (c.refundRef && c.refundRef !== 'manual') b.row('Refund reference', c.refundRef);
   }
   b.row('Total', fmtMoney(c.priceCents - (c.refundedAt ? c.refundCents || c.priceCents : 0), c.currency));
-  return b.response(`resoha-receipt-${no}.pdf`, `${SITE_NAME} - ${SITE_URL}. This receipt confirms payment for advertising on the site.`);
+  return b.response(`hogarli-receipt-${no}.pdf`, `${SITE_NAME} - ${SITE_URL}. This receipt confirms payment for advertising on the site.`);
 }

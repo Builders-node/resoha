@@ -191,7 +191,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
           {agent.verified && (
             <div className="cc__verified">
               {t('Verified agent')}
-              <span className="cc__badge" title={t('Licence and ID checked by Resoha')}>
+              <span className="cc__badge" title={t('Licence and ID checked by Hogarli')}>
                 <Icon name="check" size={14} strokeWidth={2.6} /> ID
               </span>
             </div>

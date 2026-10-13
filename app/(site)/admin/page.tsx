@@ -4,7 +4,7 @@ import AuthLink from '@/components/AuthLink';
 import Icon from '@/components/Icon';
 import { getSession } from '@/lib/session';
 
-export const metadata = { title: 'Admin — Resoha Roatán' };
+export const metadata = { title: 'Admin — Hogarli Roatán' };
 
 export default async function AdminPage() {
   const session = await getSession();

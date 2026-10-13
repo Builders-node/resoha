@@ -2,6 +2,6 @@
 export const ES_PROMO: Record<string, string> = {
   Sponsored: 'Patrocinado',
   'Paid placement': 'Ubicación pagada',
-  'Premium agent on Resoha': 'Agente premium en Resoha',
+  'Premium agent on Hogarli': 'Agente premium en Hogarli',
   'More from {name}': 'Más de {name}',
 };

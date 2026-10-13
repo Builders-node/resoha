@@ -39,7 +39,7 @@ function fold(line: string) {
 export function buildIcs(e: CalEvent, now = new Date()) {
   const end = new Date(e.start.getTime() + (e.minutes ?? VISIT_MINUTES) * 60_000);
   const lines = [
-    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Resoha//Visits//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Hogarli//Visits//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${e.uid}`,
     `DTSTAMP:${stamp(now)}`,
@@ -91,7 +91,7 @@ export function visitEvent(v: {
 }
 
 /** UID для запису за id заявки: однаковий у листі й на сторінці /visit/<token> */
-export const visitUid = (leadId: string) => `visit-${leadId}@resoha`;
+export const visitUid = (leadId: string) => `visit-${leadId}@hogarli`;
 
 /** SEQUENCE, що лише росте: хвилини від 2026 року — новіший файл перекриває старіший */
 export const seqNow = (now = Date.now()) => Math.max(0, Math.floor((now - Date.UTC(2026, 0, 1)) / 60_000));
