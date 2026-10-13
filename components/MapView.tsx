@@ -390,9 +390,12 @@ export default function MapView({
       if (a) {
         // пошук по області: карта лишається там, де її поставили; підганяємо
         // лише коли вид цю область не вміщає (відкрили посилання з bbox)
-        const b = new ml.LngLatBounds([a[1], a[0]], [a[3], a[2]]);
+        // запас 0.0001° — область з посунутої карти округлена до 4 знаків і може
+        // вилазити за вид на волосину; через це карта не має смикатись після кожного руху
+        const E = 0.0001;
         const v = m.getBounds();
-        if (first || !(v.contains(b.getSouthWest()) && v.contains(b.getNorthEast()))) m.fitBounds(b, { animate: false });
+        const fits = a[0] >= v.getSouth() - E && a[1] >= v.getWest() - E && a[2] <= v.getNorth() + E && a[3] <= v.getEast() + E;
+        if (first || !fits) m.fitBounds(new ml.LngLatBounds([a[1], a[0]], [a[3], a[2]]), { animate: false });
         return;
       }
       if (!items.length) return;

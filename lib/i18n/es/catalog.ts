@@ -99,8 +99,8 @@ export const ES_CATALOG: Record<string, string> = {
   '{n} for sale on Roatán': '{n} en venta en Roatán',
   '{listings} on Roatán': '{listings} en Roatán',
   'Bay Islands, Honduras': 'Islas de la Bahía, Honduras',
-  'Nothing in this part of the map. Zoom out or move the map, then search again.':
-    'No hay nada en esta parte del mapa. Aleje o mueva el mapa y vuelva a buscar.',
+  'Nothing in this part of the map. Zoom out or move the map.':
+    'No hay nada en esta parte del mapa. Aleje o mueva el mapa.',
   'Nothing matches these filters. Drop one of them and try again.':
     'Ningún anuncio coincide con estos filtros. Quite alguno e intente de nuevo.',
   'Nothing on Roatán for rent in this section yet.': 'Aún no hay nada en alquiler en Roatán en esta sección.',
@@ -108,6 +108,7 @@ export const ES_CATALOG: Record<string, string> = {
   'Loading…': 'Cargando…',
   'Show more — {n} left': 'Ver más: quedan {n}',
   'Search this area': 'Buscar en esta zona',
+  'Search as I move the map': 'Buscar al mover el mapa',
   'Show map': 'Ver mapa',
   'Show list': 'Ver lista',
   'Map': 'Mapa',
