@@ -6,4 +6,4 @@ update public.profiles
  where email = 'listings@resoha.dev';
 
 -- Новий домен: планувальник сповіщень штовхає відправку сюди.
-update private.notify_config set site_url = 'https://hogarli.com' where id = 1;
+update private.notify_config set site_url = 'https://www.hogarli.com' where id = 1;
