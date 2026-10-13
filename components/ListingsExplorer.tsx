@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import FilterChips from './FilterChips';
@@ -40,6 +40,13 @@ const pageIndex = (v: string | null) => {
   return Number.isFinite(n) && n > 1 ? n - 1 : 0;
 };
 
+/** «Шукати, коли рухаю карту» — вибір відвідувача живе між візитами */
+const AUTO_KEY = 'resoha:map-auto-search';
+const noSubscribe = () => () => {};
+const readAutoOff = () => {
+  try { return localStorage.getItem(AUTO_KEY) === '0'; } catch { return false; /* приватне вікно */ }
+};
+
 export default function ListingsExplorer({
   initialItems, initialPins, initialTotal, initialHasMore, initialFilters, favIds, authed, roomStats = [],
   initialPage = 0, pageSize = 24,
@@ -69,6 +76,19 @@ export default function ListingsExplorer({
   const [guestAlert, setGuestAlert] = useState<{ title: string; query: string } | null>(null);
   // межі, куди користувач посунув карту після останнього пошуку — тоді й зʼявляється «Search this area»
   const [movedTo, setMovedTo] = useState<Bbox | null>(null);
+  /*
+   * Як на Airbnb: посунули чи наблизили карту — список сам перебудовується під те,
+   * що видно. Вимкнули галочку — повертається кнопка «Search this area».
+   */
+  // сервер завжди віддає «увімкнено», браузер підхоплює збережене без розбіжності гідрації
+  const [autoOff, setAutoOff] = useState<boolean | null>(null);
+  const storedOff = useSyncExternalStore(noSubscribe, readAutoOff, () => false);
+  const autoSearch = !(autoOff ?? storedOff);
+  const toggleAuto = () => {
+    const off = autoSearch;
+    setAutoOff(off);
+    try { localStorage.setItem(AUTO_KEY, off ? '0' : '1'); } catch { /* приватне вікно */ }
+  };
   // на вузьких екранах показуємо щось одне: список або карту
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
@@ -207,6 +227,20 @@ export default function ListingsExplorer({
     setMovedTo(null);
   };
 
+  // кілька кліків «+» чи ривків поспіль — один запит, коли карта зупинилась
+  const moveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => clearTimeout(moveTimer.current), []);
+  const autoRef = useRef(autoSearch);
+  useEffect(() => { autoRef.current = autoSearch; }, [autoSearch]);
+  const onMoved = useCallback((b: Bbox) => {
+    clearTimeout(moveTimer.current);
+    if (!autoRef.current) { setMovedTo(b); return; }
+    moveTimer.current = setTimeout(() => {
+      setFilters((f) => ({ ...f, bbox: formatBbox(b) }));
+      setMovedTo(null);
+    }, 350);
+  }, []);
+
   const active = countActive(filters);
 
   return (
@@ -222,7 +256,7 @@ export default function ListingsExplorer({
                 onKeyDown={(e) => { if (e.key === 'Enter') flushQ(); }} />
 
               <select className="input filters__type filters__city" value={filters.island} aria-label={t('City')}
-                onChange={(e) => set({ island: e.target.value, neighborhoods: filters.neighborhoods.filter((n) => !e.target.value || islandFor(n) === e.target.value) })}>
+                onChange={(e) => set({ island: e.target.value, bbox: '', neighborhoods: filters.neighborhoods.filter((n) => !e.target.value || islandFor(n) === e.target.value) })}>
                 <option value="">{t('All cities')}</option>
                 {REGIONS.map((r) => <option key={r.slug} value={r.name}>{r.name}</option>)}
               </select>
@@ -304,7 +338,7 @@ export default function ListingsExplorer({
             <div className="empty">
               <div className="empty__ico"><Icon name="island" size={40} /></div>
               {filters.bbox
-                ? t('Nothing in this part of the map. Zoom out or move the map, then search again.')
+                ? t('Nothing in this part of the map. Zoom out or move the map.')
                 : active > 0
                 ? t('Nothing matches these filters. Drop one of them and try again.')
                 : filters.deal === 'rent'
@@ -337,11 +371,16 @@ export default function ListingsExplorer({
 
         <div className="split__map">
           <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId}
-            area={area} onMoved={setMovedTo} center={regionByName(filters.island)?.centre} />
-          {movedTo && (
+            area={area} onMoved={onMoved} center={regionByName(filters.island)?.centre} />
+          {movedTo && !autoSearch ? (
             <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>
               <Icon name="search" size={16} /> {t('Search this area')}
             </button>
+          ) : (
+            <label className="btn btn--sm map-area-btn map-auto">
+              <input type="checkbox" checked={autoSearch} onChange={toggleAuto} />
+              {t('Search as I move the map')}
+            </label>
           )}
         </div>
       </div>
