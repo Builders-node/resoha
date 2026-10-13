@@ -48,6 +48,7 @@ export default async function ForAgentsPage() {
         <div className="hero__cta">
           <Link className="btn btn--orange btn--lg" href="/signup?as=agent">{t('Create a free agent account')} <Icon name="arrowRight" size={18} /></Link>
           {CONTACT_EMAIL && <a className="btn btn--lg hero__ghost" href={`mailto:${CONTACT_EMAIL}?subject=Founding%20partner`}>{t('Talk to us')}</a>}
+          <Link className="btn btn--lg hero__ghost" href={lp('/promote')}>{t('Promotion and prices')}</Link>
         </div>
       </section>
 
