@@ -2,7 +2,7 @@ import { after } from 'next/server';
 import { headers } from 'next/headers';
 import { supabaseServer } from './supabase/server';
 import type { Agent } from './types';
-import { isPromoProduct, type PromoCampaign, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget } from './promoShared';
+import { isPromoProduct, type PromoCampaign, type PromoDay, type PromoEffect, type PromoKind, type PromoPackage, type PromoProduct, type PromoTarget } from './promoShared';
 
 /**
  * Платне просування (міграція 0046). Кампанія = Featured на N днів для оголошення,
@@ -222,6 +222,21 @@ export async function campaignEffects(ids: string[]): Promise<Record<string, Pro
       viewsBefore: Number(r.views_before) || 0, viewsDuring: Number(r.views_during) || 0,
       leadsBefore: Number(r.leads_before) || 0, leadsDuring: Number(r.leads_during) || 0,
     };
+  }
+  return out;
+}
+
+/** Покази й переходи по днях для своїх кампаній. Без міграції 0062 — порожньо. */
+export async function campaignDaily(ids: string[]): Promise<Record<string, PromoDay[]>> {
+  if (!ids.length) return {};
+  const { data, error } = await (await supabaseServer()).rpc('promo_daily_stats', { p_ids: ids.slice(0, 200) });
+  if (error) {
+    if (!/promo_daily_stats/.test(error.message)) console.error('promo_daily_stats failed:', error.message);
+    return {};
+  }
+  const out: Record<string, PromoDay[]> = {};
+  for (const r of (data ?? []) as Row[]) {
+    (out[r.campaign_id] ??= []).push({ day: String(r.day).slice(0, 10), impressions: Number(r.impressions) || 0, clicks: Number(r.clicks) || 0 });
   }
   return out;
 }

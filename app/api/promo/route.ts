@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/session';
 import {
-  PROMO_KINDS, PROMO_PRODUCTS, attachSession, campaignEffects, campaignTitle, cancelCampaign, createCampaign, fmtMoney,
+  PROMO_KINDS, PROMO_PRODUCTS, attachSession, campaignDaily, campaignEffects, campaignTitle, cancelCampaign, createCampaign, fmtMoney,
   listCampaigns, listPackages, promoTargets, sweepPromotions, type PromoKind,
 } from '@/lib/promo';
 import { createCheckout, stripeEnabled, stripeTestMode } from '@/lib/stripe';
@@ -14,9 +14,10 @@ export async function GET() {
     await sweepPromotions();
     const [packages, campaigns, targets] = await Promise.all([listPackages(), listCampaigns(), promoTargets(user)]);
     // «до/після» — лише для кампаній, що вже стартували
-    const effects = await campaignEffects(campaigns.filter((c) => c.startsAt && c.startsAt < new Date().toISOString()).map((c) => c.id));
+    const started = campaigns.filter((c) => c.startsAt && c.startsAt < new Date().toISOString()).map((c) => c.id);
+    const [effects, daily] = await Promise.all([campaignEffects(started), campaignDaily(started)]);
     return NextResponse.json({
-      packages, campaigns, targets, effects,
+      packages, campaigns, targets, effects, daily,
       payments: stripeEnabled() ? (stripeTestMode() ? 'stripe-test' : 'stripe') : 'manual',
     });
   } catch (e) {

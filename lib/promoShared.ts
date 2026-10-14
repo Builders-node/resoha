@@ -94,3 +94,21 @@ export function liftLabel(before: number, during: number) {
   const pct = Math.round(((during - before) / before) * 100);
   return `${pct > 0 ? '+' : pct < 0 ? '−' : ''}${Math.abs(pct)}%`;
 }
+
+/** Покази й переходи кампанії за один день (міграція 0062), day — YYYY-MM-DD за часом Роатана. */
+export type PromoDay = { day: string; impressions: number; clicks: number };
+
+/** Дні від from до to включно (YYYY-MM-DD), щоб на графіку були й дні без показів. */
+export function dayRange(from: string, to: string, max = 92): string[] {
+  const out: string[] = [];
+  const d = new Date(`${from}T00:00:00Z`);
+  const end = new Date(`${to}T00:00:00Z`).getTime();
+  while (d.getTime() <= end && out.length < max) {
+    out.push(d.toISOString().slice(0, 10));
+    d.setUTCDate(d.getUTCDate() + 1);
+  }
+  return out;
+}
+
+/** Сьогодні за часом Роатана (UTC−6, без переходу на літній час). */
+export const roatanToday = (now = Date.now()) => new Date(now - 6 * 3600_000).toISOString().slice(0, 10);
