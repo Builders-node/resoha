@@ -26,7 +26,7 @@ export function GET() {
     `- [Property for sale in Honduras](${u('/listings?deal=sale')}): homes, condos and land in Roatán, San Pedro Sula and Tegucigalpa, on a map`,
     ...REGIONS.map((r) => `- [Property for sale in ${r.name}](${u(`/listings?deal=sale&island=${encodeURIComponent(r.name)}`)})`),
     `- [Long-term rentals](${u('/listings?deal=rent')})`,
-    `- [Land and lots](${u('/listings?type=land')}): filter by "Ready to build"`,
+    `- [Land and lots](${u('/listings?deal=sale&type=land')}): filter by "Ready to build"`,
     `- [Land passport](${u('/land-passport')}): what is checked on every lot and how readiness is scored`,
     `- [Roatán market report](${u('/market')}): key figures with sources`,
     `- [Areas and cities](${u('/areas')}): prices and character of each area of Roatán, San Pedro Sula and Tegucigalpa`,

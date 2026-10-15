@@ -26,8 +26,8 @@ export default async function Footer() {
             <ul>
               <li><Link href={lp('/listings?deal=sale')}>{t('Homes & condos for sale')}</Link></li>
               <li><Link href={lp('/listings?deal=rent')}>{t('Long-term rentals')}</Link></li>
-              <li><Link href={lp('/listings?type=land')}>{t('Land & lots')}</Link></li>
-              <li><Link href={lp('/listings?oceanfront=1')}>{t('Oceanfront')}</Link></li>
+              <li><Link href={lp('/listings?deal=sale&type=land')}>{t('Land & lots')}</Link></li>
+              <li><Link href={lp('/listings?deal=sale&oceanfront=1')}>{t('Oceanfront')}</Link></li>
             </ul>
           </div>
           <div>

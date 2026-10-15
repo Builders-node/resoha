@@ -6,7 +6,7 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
 import { fromParams } from '@/lib/filters';
 import { catalogUrl } from '@/lib/catalogSeo';
-import { both, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
+import { both, sitemapCatalogCombos, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
 
 /**
  * Карта сайту кількома файлами (/sitemaps/sitemap/<id>.xml), список файлів — у /sitemap.xml.
@@ -29,9 +29,15 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   const key = String(await id);
 
   if (key === 'pages') {
+    // міста й райони — лише ті, де є оголошення; без бази лишаються загальні сторінки
+    const combos = await sitemapCatalogCombos().catch(() => []);
+    const local = combos
+      .map((c) => catalogUrl(fromParams(new URLSearchParams({ deal: c.deal, type: c.type, island: c.island, neighborhoods: c.neighborhood }))))
+      .filter((u) => !CATALOG.includes(u));
     return [
       ...both('/', { changeFrequency: 'daily', priority: 1 }),
       ...CATALOG.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.9 })),
+      ...local.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.8 })),
       ...both('/land-passport', { changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/market', { lastModified: new Date(MARKET_UPDATED), changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/areas', { changeFrequency: 'weekly', priority: 0.8 }),
