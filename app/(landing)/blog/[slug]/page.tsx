@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import BlogCover from '@/components/BlogCover';
 import Blocks from '@/components/Blocks';
 import Crumbs from '@/components/Crumbs';
 import Icon from '@/components/Icon';
@@ -70,12 +71,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
         breadcrumbLd(crumbs),
       )} />
 
-      <header className={`blog-hero blog-cover--${post.topic}`}>
-        <svg className="blog-cover__waves" viewBox="0 0 400 225" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M0 150c50-22 100-22 150 0s100 22 150 0 70-20 100-8" />
-          <path d="M0 178c50-22 100-22 150 0s100 22 150 0 70-20 100-8" />
-          <path d="M0 206c50-22 100-22 150 0s100 22 150 0 70-20 100-8" />
-        </svg>
+      <header className="blog-hero">
         <Link className="blog-hero__topic" href={lp(`/blog/topic/${topic.slug}`)}>
           <Icon name={topic.icon} size={16} /> {t(topic.name)}
         </Link>
@@ -87,6 +83,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           {' · '}{t('{n} min read', { n: minutes })}
         </p>
       </header>
+      <BlogCover topic={post.topic} label={t(topic.name)} icon={post.icon} size="wide" />
 
       <div className="blog-post__cols">
         <aside className="blog-post__aside">

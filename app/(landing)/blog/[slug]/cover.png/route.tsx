@@ -6,12 +6,12 @@ const size = { width: 1200, height: 630 };
 export const dynamicParams = false;
 export const generateStaticParams = () => POSTS.map((p) => ({ slug: p.slug }));
 
-/** Фон картки — той самий градієнт рубрики, що й обкладинка на сайті (.blog-cover--*). */
+/** Фон картки — той самий пастельний колір рубрики, що й обкладинка на сайті (.blog-cover--*). */
 const BG: Record<string, string> = {
-  buying: 'linear-gradient(135deg, #ff6a2b 0%, #c53600 100%)',
-  'new-builds': 'linear-gradient(135deg, #2b2b33 0%, #0f0f10 100%)',
-  living: 'linear-gradient(135deg, #12a3a8 0%, #0b5a73 100%)',
-  market: 'linear-gradient(135deg, #3a4a86 0%, #1b2340 100%)',
+  buying: '#fdd892',
+  'new-builds': '#a9c4f5',
+  living: '#9fdccf',
+  market: '#f7b9b2',
 };
 
 /**
@@ -25,15 +25,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
     (
       <div style={{
         width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-        padding: 72, background: BG[p?.topic ?? 'new-builds'], color: '#fff', fontFamily: 'sans-serif',
+        padding: 72, background: BG[p?.topic ?? 'new-builds'], color: '#0f0f10', fontFamily: 'sans-serif',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 30, fontWeight: 700 }}>
-          <svg width="52" height="49" viewBox={LOGO_VIEWBOX}><path d={LOGO_PATH} fill={p?.topic === 'buying' ? '#fff' : '#ff4800'} /></svg>
+          <svg width="52" height="49" viewBox={LOGO_VIEWBOX}><path d={LOGO_PATH} fill="#ff4800" /></svg>
           <span>Hogarli Blog</span>
           <span style={{ opacity: 0.6 }}>·</span>
           <span style={{ opacity: 0.85 }}>{topic}</span>
         </div>
-        <div style={{ display: 'flex', fontSize: (p?.title.length ?? 0) > 70 ? 58 : 68, fontWeight: 800, letterSpacing: -1.5, lineHeight: 1.08 }}>
+        <div style={{ display: 'flex', fontSize: (p?.title.length ?? 0) > 70 ? 58 : 68, fontWeight: 500, letterSpacing: -2, lineHeight: 1.08 }}>
           {p?.title ?? 'Hogarli Blog'}
         </div>
         <div style={{ display: 'flex', fontSize: 28, opacity: 0.8 }}>

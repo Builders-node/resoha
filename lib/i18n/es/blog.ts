@@ -33,6 +33,9 @@ export const ES_BLOG: Record<string, string> = {
   'New developments': 'Proyectos nuevos',
   'Keep reading': 'Siga leyendo',
   'Important': 'Importante',
+  'Learn': 'Aprender',
+  'Search homes, condos, rentals and land on one map and contact the agent directly. Free for buyers.':
+    'Busque casas, condominios, alquileres y terrenos en un solo mapa y contacte directamente al agente. Gratis para compradores.',
 
   /* ---------- Рубрики ---------- */
   'Buying': 'Comprar',
