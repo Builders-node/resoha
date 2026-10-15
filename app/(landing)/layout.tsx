@@ -24,7 +24,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
         <div className="lp-wrap lp-head__in">
           <Link className="logo" href={lp('/')}>
             <span className="logo__mark"><Logo size={28} /></span>
-            <span>Hogarli<span className="logo__sub"> Roatán</span></span>
+            <span>Hogarli</span>
           </Link>
           <nav className="lp-head__nav">
             {nav.map(([href, name]) => <Link key={href} href={lp(href)}>{t(name)}</Link>)}
@@ -43,7 +43,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
             <div className="lp-foot__brand">
               <Link className="logo" href={lp('/')}>
                 <span className="logo__mark"><Logo size={26} /></span>
-                <span>Hogarli<span className="logo__sub"> Roatán</span></span>
+                <span>Hogarli</span>
               </Link>
               <p className="small">
                 {t('Property in Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Every listing links back to the agency that holds it.')}
