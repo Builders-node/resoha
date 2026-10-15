@@ -60,8 +60,8 @@ export default async function LandPassportPage() {
           {t('Buying land on Roatán means asking the same eight questions about every lot. The land passport puts the answers in one place, marks what is confirmed and what is not, and shows who checked it and when.')}
         </p>
         <div className="hero__cta">
-          <Link className="btn btn--orange btn--lg" href={lp('/listings?type=land&ready=1')}>{t('Ready-to-build land')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--lg hero__ghost" href={lp('/listings?type=land')}>{t('All land & lots')}</Link>
+          <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale&type=land&ready=1')}>{t('Ready-to-build land')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--lg hero__ghost" href={lp('/listings?deal=sale&type=land')}>{t('All land & lots')}</Link>
         </div>
         {land.length > 0 && (
           <p className="tiny hero__note">{t('{checked} of {total} land listings on Hogarli have a completed passport.', { checked, total: land.length })}</p>

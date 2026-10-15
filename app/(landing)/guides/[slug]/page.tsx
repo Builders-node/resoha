@@ -97,7 +97,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         </div>
         <div className="prose__cta-btns">
           <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--ghost btn--lg" href={lp('/listings?type=land')}>{t('Land with a passport')}</Link>
+          <Link className="btn btn--ghost btn--lg" href={lp('/listings?deal=sale&type=land')}>{t('Land with a passport')}</Link>
         </div>
       </section>
 

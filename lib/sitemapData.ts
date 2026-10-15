@@ -2,6 +2,8 @@ import type { MetadataRoute } from 'next';
 import { supabaseServer } from './supabase/server';
 import { SITE_URL } from './site';
 import { langAlternates } from './i18n/paths';
+import { regionByName, regionOfArea } from './regions';
+import { OPEN_STATUSES } from './units';
 
 /**
  * Дані для карти сайту. Окремі легкі запити замість queryListings: тут потрібні лише id,
@@ -96,6 +98,43 @@ export async function sitemapDevelopments(): Promise<SitemapDevelopment[]> {
     if ((data ?? []).length < BATCH) break;
   }
   return out;
+}
+
+/** Комбінація фільтрів каталогу для карти сайту — те, що каталог сам вважає індексованим. */
+export type CatalogCombo = { deal: string; type: string; island: string; neighborhood: string };
+
+/** Нижче цього посадкова сторінка надто тонка, щоб віддавати її пошуковику. */
+const MIN_LISTINGS = 2;
+const TYPES = ['house', 'condo', 'land', 'commercial'];
+
+/**
+ * Посадкові сторінки каталогу, де справді є оголошення: розділ × місто, розділ × тип × місто,
+ * розділ × район і розділ × тип × район. Рахуємо з легкої вибірки, а не запитом на кожну комбінацію.
+ */
+export async function sitemapCatalogCombos(): Promise<CatalogCombo[]> {
+  const db = await supabaseServer();
+  const counts = new Map<string, number>();
+  const add = (c: CatalogCombo) => {
+    const k = JSON.stringify(c);
+    counts.set(k, (counts.get(k) ?? 0) + 1);
+  };
+  for (let off = 0; ; off += BATCH) {
+    const { data, error } = await db.from('listings').select('deal, type, island, neighborhood')
+      .eq('active', true).in('status', OPEN_STATUSES).order('id').range(off, off + BATCH - 1);
+    if (error) throw error;
+    for (const r of (data ?? []) as { deal: string; type: string; island: string | null; neighborhood: string | null }[]) {
+      if (r.deal !== 'sale' && r.deal !== 'rent') continue;
+      const types = TYPES.includes(r.type) ? ['', r.type] : [''];
+      const island = regionByName(r.island)?.name;
+      const hood = r.neighborhood && regionOfArea(r.neighborhood) ? r.neighborhood : '';
+      for (const type of types) {
+        if (island) add({ deal: r.deal, type, island, neighborhood: '' });
+        if (hood) add({ deal: r.deal, type, island: '', neighborhood: hood });
+      }
+    }
+    if ((data ?? []).length < BATCH) break;
+  }
+  return [...counts].filter(([, n]) => n >= MIN_LISTINGS).map(([k]) => JSON.parse(k) as CatalogCombo);
 }
 
 /** Імена файлів карти: сторінки, ЖК, люди й агенції, оголошення частинами по тисячі. */
