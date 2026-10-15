@@ -2,7 +2,7 @@ import type { T } from '../i18n';
 
 /** Поля, які не перекладаємо: адреси, ідентифікатори, дати, назви районів для запитів і джерела. */
 const KEEP = new Set(['slug', 'id', 'icon', 'published', 'updated', 'related', 'neighborhoods', 'url', 'path', 'href',
-  'sources', 'priceSource', 'source']);
+  'sources', 'priceSource', 'source', 'topic', 'guides']);
 
 /**
  * Проганяє весь текст контенту (гайд, район, розділ довідки) через t(): переклад лежить

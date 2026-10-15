@@ -60,4 +60,24 @@ export const SOURCES = {
     title: 'Property for sale in Roatán, Islas de la Bahía',
     url: 'https://www.encuentra24.com/honduras-es/bienes-raices-venta-de-propiedades-en-islas/islas-de-la-bahia-roatan',
   },
+  nhcClimo: {
+    name: 'National Hurricane Center (NOAA)',
+    title: 'Tropical cyclone climatology: the Atlantic hurricane season',
+    url: 'https://www.nhc.noaa.gov/climo/',
+  },
+  nhcMitch: {
+    name: 'National Hurricane Center (NOAA)',
+    title: 'Tropical cyclone report: Hurricane Mitch, 22 October – 5 November 1998',
+    url: 'https://www.nhc.noaa.gov/data/tcr/AL131998_Mitch.pdf',
+  },
+  nhcEta: {
+    name: 'National Hurricane Center (NOAA)',
+    title: 'Tropical cyclone report: Hurricane Eta, 31 October – 13 November 2020',
+    url: 'https://www.nhc.noaa.gov/data/tcr/AL292020_Eta.pdf',
+  },
+  nhcIota: {
+    name: 'National Hurricane Center (NOAA)',
+    title: 'Tropical cyclone report: Hurricane Iota, 13–18 November 2020',
+    url: 'https://www.nhc.noaa.gov/data/tcr/AL312020_Iota.pdf',
+  },
 } satisfies Record<string, Source>;

@@ -2,6 +2,7 @@ import type { Development, Listing } from './types';
 import type { Lang } from './i18n';
 import { localePath } from './i18n/paths';
 import type { Guide } from './content/guides';
+import { readingMinutes, topicBySlug, type Post } from './content/blog';
 import { plain } from '@/components/Rich';
 import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from './site';
 import { TYPE_LABELS } from './format';
@@ -80,6 +81,53 @@ export function articleLd(g: Guide) {
     publisher: { '@id': ORG_ID },
     about: { '@type': 'Place', name: 'Roatán, Honduras' },
     citation: g.sources.map((s) => ({ '@type': 'CreativeWork', name: s.title, url: s.url, publisher: s.name })),
+  };
+}
+
+/**
+ * Стаття блогу: BlogPosting у складі Blog — так Google показує дату й автора в сніпеті.
+ * Сторінка передає вже перекладений текст; адреси й inLanguage під /es править JsonLd (localizeLd).
+ */
+export function blogPostingLd(p: Post) {
+  const url = abs(`/blog/${p.slug}`);
+  return {
+    '@type': 'BlogPosting',
+    '@id': `${url}#article`,
+    headline: p.title,
+    description: p.description,
+    abstract: plain(p.lead),
+    url,
+    mainEntityOfPage: url,
+    image: `${url}/cover.png`,
+    datePublished: p.published,
+    dateModified: p.updated,
+    inLanguage: 'en',
+    articleSection: topicBySlug(p.topic)?.name,
+    timeRequired: `PT${readingMinutes(p)}M`,
+    author: { '@id': ORG_ID },
+    publisher: { '@id': ORG_ID },
+    isPartOf: { '@id': `${abs('/blog')}#blog` },
+    about: { '@type': 'Place', name: 'Honduras' },
+    ...(p.sources.length ? { citation: p.sources.map((s) => ({ '@type': 'CreativeWork', name: s.title, url: s.url, publisher: s.name })) } : {}),
+  };
+}
+
+/** Сам блог: список статей для сторінки /blog. */
+export function blogLd(posts: Post[]) {
+  return {
+    '@type': 'Blog',
+    '@id': `${abs('/blog')}#blog`,
+    name: `${SITE_NAME} Blog`,
+    url: abs('/blog'),
+    inLanguage: 'en',
+    publisher: { '@id': ORG_ID },
+    blogPost: posts.map((p) => ({
+      '@type': 'BlogPosting',
+      headline: p.title,
+      url: abs(`/blog/${p.slug}`),
+      datePublished: p.published,
+      dateModified: p.updated,
+    })),
   };
 }
 

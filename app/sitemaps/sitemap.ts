@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { agencyBoard, listAgents, listDevelopers } from '@/lib/db';
 import { AREAS } from '@/lib/content/areas';
 import { GUIDES } from '@/lib/content/guides';
+import { POSTS, TOPICS } from '@/lib/content/blog';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
 import { fromParams } from '@/lib/filters';
@@ -44,6 +45,9 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       ...AREAS.flatMap((a) => both(`/areas/${a.slug}`, { changeFrequency: 'weekly', priority: 0.8 })),
       ...both('/guides', { changeFrequency: 'weekly', priority: 0.7 }),
       ...GUIDES.flatMap((g) => both(`/guides/${g.slug}`, { lastModified: new Date(g.updated), changeFrequency: 'monthly', priority: 0.7 })),
+      ...both('/blog', { lastModified: new Date(POSTS.map((p) => p.updated).sort().at(-1)!), changeFrequency: 'weekly', priority: 0.7 }),
+      ...TOPICS.flatMap((tp) => both(`/blog/topic/${tp.slug}`, { changeFrequency: 'weekly', priority: 0.5 })),
+      ...POSTS.flatMap((p) => both(`/blog/${p.slug}`, { lastModified: new Date(p.updated), changeFrequency: 'monthly', priority: 0.7 })),
       ...both('/faq', { changeFrequency: 'monthly', priority: 0.6 }),
       ...both('/about', { changeFrequency: 'yearly', priority: 0.5 }),
       ...both('/for-agents', { changeFrequency: 'monthly', priority: 0.5 }),

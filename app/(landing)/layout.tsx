@@ -7,7 +7,7 @@ import { getT, getLp } from '@/lib/i18n/server';
 import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 
 /**
- * Контентна частина (FAQ, гайди, райони, ринок, паспорт ділянки, про нас) живе без рейки каталогу: власна легка шапка з виходом у каталог
+ * Контентна частина (FAQ, гайди, блог, райони, ринок, паспорт ділянки, про нас) живе без рейки каталогу: власна легка шапка з виходом у каталог
  * і короткий футер. Так сторінка читається як окремий сайт, а не як розділ кабінету.
  */
 export default async function LandingLayout({ children }: { children: React.ReactNode }) {
@@ -23,6 +23,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
           </Link>
           <nav className="lp-head__nav">
             <Link href={lp('/guides')}>{t('Guides')}</Link>
+            <Link href={lp('/blog')}>{t('Blog')}</Link>
             <Link href={lp('/areas')}>{t('Areas')}</Link>
             <Link href={lp('/market')}>{t('Market')}</Link>
             <Link href={lp('/land-passport')}>{t('Land passport')}</Link>
