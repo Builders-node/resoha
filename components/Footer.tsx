@@ -34,6 +34,7 @@ export default async function Footer() {
             <h4>{t('Buying on Roatán')}</h4>
             <ul>
               <li><Link href={lp('/guides')}>{t('Buying guides')}</Link></li>
+              <li><Link href={lp('/blog')}>{t('Blog')}</Link></li>
               <li><Link href={lp('/areas')}>{t('Areas and cities')}</Link></li>
               <li><Link href={lp('/market')}>{t('Market report')}</Link></li>
               <li><Link href={lp('/land-passport')}>{t('Land passport')}</Link></li>

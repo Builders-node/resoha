@@ -2,6 +2,7 @@ import { REGIONS } from '@/lib/regions';
 import { AREAS } from '@/lib/content/areas';
 import { HELP_SECTIONS } from '@/lib/content/help';
 import { GUIDES } from '@/lib/content/guides';
+import { POSTS_SORTED } from '@/lib/content/blog';
 import { MARKET_FACTS, MARKET_UPDATED } from '@/lib/content/market';
 import { plain } from '@/components/Rich';
 import { ORG_DESCRIPTION } from '@/lib/seo';
@@ -31,12 +32,16 @@ export function GET() {
     `- [Roatán market report](${u('/market')}): key figures with sources`,
     `- [Areas and cities](${u('/areas')}): prices and character of each area of Roatán, San Pedro Sula and Tegucigalpa`,
     `- [Buying guides](${u('/guides')})`,
+    `- [Blog](${u('/blog')}): articles on buying safely, off-plan condos, renting and where to buy in Honduras`,
     `- [Questions and answers](${u('/faq')}): every common buyer question in one place`,
     `- [About Hogarli](${u('/about')})`,
     `- [For agents](${u('/for-agents')})`,
     '',
     '## Guides',
     ...GUIDES.map((g) => `- [${g.title}](${u(`/guides/${g.slug}`)}): ${plain(g.answer)}`),
+    '',
+    '## Blog',
+    ...POSTS_SORTED.map((p) => `- [${p.title}](${u(`/blog/${p.slug}`)}): ${plain(p.lead)}`),
     '',
     '## Areas',
     ...AREAS.map((a) => `- [${a.name}](${u(`/areas/${a.slug}`)}): ${a.summary}${a.priceRange ? ` Typical prices ${a.priceRange} (${a.priceSource?.name}).` : ''}`),
