@@ -14,7 +14,7 @@ export default async function Footer() {
         <div style={{ maxWidth: 280 }}>
           <Link className="logo" href={lp('/')}>
             <span className="logo__mark"><Logo size={28} /></span>
-            <span>Hogarli<span className="logo__sub"> Roatán</span></span>
+            <span>Hogarli</span>
           </Link>
           <p className="small" style={{ marginTop: 10 }}>
             {t('Property in Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Every listing links back to the agency that holds it.')}
