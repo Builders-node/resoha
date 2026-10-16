@@ -2,6 +2,7 @@ import type { MetadataRoute } from 'next';
 import { agencyBoard, listAgents, listDevelopers } from '@/lib/db';
 import { AREAS } from '@/lib/content/areas';
 import { GUIDES } from '@/lib/content/guides';
+import { RESIDENT_GUIDES } from '@/lib/content/residentGuides';
 import { POSTS, TOPICS } from '@/lib/content/blog';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
@@ -64,7 +65,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       ...developments.flatMap((d) => [
         ...both(`/developments/${d.slug}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly', priority: 0.9, images: d.photos }),
         // вкладки, які є в кожного ЖК; решта (стройка, документи, новини) — лише коли заповнені
-        ...['layouts', 'contacts'].flatMap((t) => both(`/developments/${d.slug}/${t}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 })),
+        ...['layouts', 'contacts', ...(RESIDENT_GUIDES[d.slug] ? ['guide'] : [])].flatMap((t) => both(`/developments/${d.slug}/${t}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 })),
       ]),
       ...both('/developers', { changeFrequency: 'weekly', priority: 0.6 }),
       ...developers.flatMap((d) => both(`/developers/${d.slug}`, { changeFrequency: 'weekly', priority: 0.6 })),

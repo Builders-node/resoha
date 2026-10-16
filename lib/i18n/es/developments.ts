@@ -132,6 +132,37 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
   'Not found': 'No encontrado',
   'Forbidden': 'Acceso denegado',
 
+  /* ---------- гід для мешканців ---------- */
+  'Resident guide': 'Guía para residentes',
+  'Duna Tower runs as an aparthotel, Duna Residences, inside Próspera in Crawfish Rock, on Roatán’s north shore. Here is what owners, residents and guests use every day: what is in the building and when, how to reach the team, and what is nearby.':
+    'Duna Tower funciona como apartahotel, Duna Residences, dentro de Próspera en Crawfish Rock, en la costa norte de Roatán. Esto es lo que propietarios, residentes y huéspedes usan a diario: qué hay en el edificio y en qué horario, cómo contactar al equipo y qué hay cerca.',
+  'Amenities and hours, the front desk, community and what is nearby': 'Servicios y horarios, recepción, comunidad y qué hay cerca',
+  'In the building': 'En el edificio',
+  'Monday–Friday, 9:00 AM–5:00 PM': 'Lunes a viernes, 9:00 a. m.–5:00 p. m.',
+  '2 Cans convenience store': 'Tienda de conveniencia 2 Cans',
+  'Level 1': 'Nivel 1',
+  'Level 8': 'Nivel 8',
+  'Open 24/7': 'Abierto 24/7',
+  'Self-checkout; pay with $LIVES or PayPal.': 'Autopago; se paga con $LIVES o PayPal.',
+  'Infinity pool': 'Piscina infinita',
+  'Quiet hours from 10:00 PM': 'Horas de silencio desde las 10:00 p. m.',
+  'Sauna': 'Sauna',
+  'Hours are set by the building operator and can change; check with the front desk.':
+    'Los horarios los fija el operador del edificio y pueden cambiar; confírmelos en recepción.',
+  'Community and news': 'Comunidad y novedades',
+  'Residents’ Discord: news, meetups and workshops': 'Discord de residentes: novedades, encuentros y talleres',
+  'Próspera spaces, events and services': 'Espacios, eventos y servicios de Próspera',
+  'Health and emergencies': 'Salud y emergencias',
+  'For a doctor, the building’s guide points residents to Ad Astra Clinic in Próspera.':
+    'Para consultas médicas, la guía del edificio recomienda Ad Astra Clinic en Próspera.',
+  'In an emergency anywhere in Honduras, call 911.': 'En una emergencia, en cualquier lugar de Honduras, llame al 911.',
+  'Around the tower': 'Alrededor de la torre',
+  'Local guide': 'Guía local',
+  'Beaches, snorkeling, restaurants and day trips within half an hour of the building.':
+    'Playas, esnórquel, restaurantes y excursiones a menos de media hora del edificio.',
+  'Based on the': 'Basado en la',
+  'Duna Residences guidebook': 'guía de Duna Residences',
+
   /* ---------- інше ---------- */
   'Browse agents & agencies': 'Ver agentes y agencias',
 };
