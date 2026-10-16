@@ -2691,6 +2691,34 @@ html{scroll-behavior:smooth}
 .blog-cover__kicker{position:absolute;left:16px;top:16px;font-size:12px;font-weight:600;letter-spacing:.04em;
   background:rgba(255,255,255,.75);border-radius:999px;padding:5px 12px}
 
+.blog-cover--thumb{aspect-ratio:auto;height:100%;border-radius:0}
+
+/* блог на головній: картка як у новинах ЛУН — обкладинка зліва, дата й заголовок, шеврон.
+   Головна не під .lp, тож пастельні кольори рубрик задаємо тут */
+.home-blog__tabs{margin:0 0 20px}
+.home-blog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;
+  --p-blue:#a9c4f5; --p-yellow:#fdd892; --p-teal:#9fdccf; --p-pink:#f7b9b2}
+.home-blog__card{display:grid;grid-template-columns:132px minmax(0,1fr) auto;align-items:center;gap:20px;
+  min-height:156px;background:var(--bg-soft);border-radius:var(--radius);overflow:hidden;padding-right:20px;
+  transition:background var(--dur) var(--ease)}
+.home-blog__card:hover{background:#ebebf0}
+.home-blog__card .blog-cover{align-self:stretch}
+.home-blog__card:hover .blog-cover__icon{transform:translate(-50%,-50%) scale(1.08) rotate(-4deg)}
+.home-blog__body{display:flex;flex-direction:column;gap:8px;padding:16px 0}
+.home-blog__date{color:var(--ink-2);font-size:13px}
+.home-blog__title{font-size:16px;font-weight:600;line-height:1.4;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.home-blog__go{flex:none}
+@media (max-width:1200px){ .home-blog{grid-template-columns:repeat(2,minmax(0,1fr))} }
+@media (max-width:700px){
+  .home-blog{grid-template-columns:1fr;gap:10px}
+  .home-blog__card{grid-template-columns:96px minmax(0,1fr) auto;min-height:112px;gap:14px;padding-right:14px}
+  .home-blog__body{padding:12px 0}
+  .home-blog__title{font-size:15px}
+  .home-blog__tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .home-blog__tabs .chip-btn{flex:none}
+}
+
 .blog__head{text-align:center;margin-bottom:8px}
 .blog__topics{justify-content:center;margin:0 0 40px}
 .post-card{display:flex;flex-direction:column;gap:16px;color:inherit}
