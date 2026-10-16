@@ -14,6 +14,8 @@ export const ES_BLOG: Record<string, string> = {
     'Artículos prácticos para compradores, inquilinos e inversionistas inmobiliarios en Honduras: comprar con seguridad, condominios en preventa, estafas, huracanes, alquiler y dónde comprar en Roatán, San Pedro Sula y Tegucigalpa.',
   'Topics': 'Temas',
   'All articles': 'Todos los artículos',
+  'Real estate news & articles': 'Noticias y artículos inmobiliarios',
+  'Latest': 'Lo más reciente',
   'No articles in this topic yet.': 'Todavía no hay artículos en este tema.',
   '{n} min read': '{n} min de lectura',
   'Read article': 'Leer artículo',
