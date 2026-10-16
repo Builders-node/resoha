@@ -55,6 +55,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
               <Link href={lp('/blog')}>{t('Blog')}</Link>
               <Link href={lp('/areas')}>{t('Areas and cities')}</Link>
               <Link href={lp('/market')}>{t('Market report')}</Link>
+              <Link href={lp('/market/price-index')}>{t('Price index')}</Link>
               <Link href={lp('/faq')}>{t('FAQ')}</Link>
             </nav>
             <nav className="lp-foot__col small" aria-label={t('Property')}>

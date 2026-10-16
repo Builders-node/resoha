@@ -1510,7 +1510,7 @@ export async function adminAnalyticsRaw(days: number) {
 export async function priceStatsRows(asOf: string): Promise<StatRow[]> {
   const client = await db();
   const sel = applyFilters(client.from('listings')
-    .select('id, deal, type, beds, price, sqft, neighborhood, created_at'), {}).in('type', ['condo', 'house']);
+    .select('id, deal, type, beds, price, sqft, neighborhood, island, created_at'), {}).in('type', ['condo', 'house']);
   const { data, error } = await sel.limit(2000);
   if (error) throw error;
   const rows = (data ?? []) as Row[];
@@ -1528,7 +1528,7 @@ export async function priceStatsRows(asOf: string): Promise<StatRow[]> {
   }
   return rows.map((r) => ({
     deal: r.deal, type: r.type, beds: Number(r.beds) || 0, price: Number(r.price), sqft: Number(r.sqft) || 0,
-    neighborhood: r.neighborhood, priceThen: then.get(r.id) ?? null,
+    neighborhood: r.neighborhood, island: islandFor(r.neighborhood, r.island), priceThen: then.get(r.id) ?? null,
   }));
 }
 
@@ -1725,4 +1725,17 @@ async function sponsoredSlots(q: ListingQuery): Promise<Listing[]> {
     .sort((a, b) => top(a) - top(b) || fnv(`${a.id}:${hour}`) - fnv(`${b.id}:${hour}`))
     .slice(0, SPONSORED_SLOTS)
     .map((l) => ({ ...l, sponsored: true }));
+}
+
+/* ---------- «Агент місяця» (міграція 0063) ---------- */
+export type AgentResponse = { agentId: string; enough: boolean; answeredShare: number; medianHours: number | null };
+
+/** Частка заявок, опрацьованих за 24 години, по ріелторах за період. До міграції 0063 — порожньо. */
+export async function agentResponseStats(from: string, to: string): Promise<AgentResponse[]> {
+  const { data, error } = await (await db()).rpc('agent_response_stats', { p_from: from, p_to: to });
+  if (error) return [];
+  return ((data ?? []) as Row[]).map((r) => ({
+    agentId: r.agent_id, enough: Boolean(r.enough), answeredShare: Number(r.answered_share) || 0,
+    medianHours: r.median_hours === null ? null : Number(r.median_hours),
+  }));
 }

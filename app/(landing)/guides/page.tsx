@@ -13,8 +13,8 @@ import { SITE_NAME, SITE_URL } from '@/lib/site';
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return localized('/guides', {
-    title: `${t('Roatán property buying guides for foreigners')} | ${SITE_NAME}`,
-    description: t('Plain-language guides to buying property on Roatán: foreign ownership and the 3,000 m² rule, the buying process, closing costs, title checks, rental income and the best areas.'),
+    title: `${t('Honduras property buying guides')} | ${SITE_NAME}`,
+    description: t('Plain-language guides to buying property in Honduras: Roatán for foreigners, buying from the USA, home loans for Hondurans abroad, San Pedro Sula, Tegucigalpa and how to avoid scams.'),
   });
 }
 
@@ -27,11 +27,11 @@ export default async function GuidesPage() {
     <div className="wrap page">
       <JsonLd data={graph(breadcrumbLd(crumbs), {
         '@type': 'CollectionPage',
-        name: 'Roatán property buying guides',
+        name: 'Honduras property buying guides',
         url: `${SITE_URL}/guides`,
         hasPart: GUIDES.map((g) => ({ '@type': 'Article', headline: g.title, url: `${SITE_URL}/guides/${g.slug}` })),
       })} />
-      <h1>{t('Buying property on Roatán: guides')}</h1>
+      <h1>{t('Buying property in Honduras: guides')}</h1>
       <p className="page__lead">
         {t('Straight answers to the questions buyers ask before they fly: who can own land, what it costs, how to check a title and where to live. Every figure links to its source.')}
       </p>

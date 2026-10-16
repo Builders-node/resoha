@@ -121,6 +121,9 @@ export default async function MarketPage() {
         </ul>
         <h2>{t('Sources')}</h2>
         <SourceList sources={MARKET_FACTS.map((f) => f.source)} />
+        <p className="small">
+          <Link className="link-accent" href={lp('/market/price-index')}>{t('Hogarli Price Index')}</Link>: {t('monthly prices per m², rents and yields in Roatán, San Pedro Sula and Tegucigalpa.')}
+        </p>
         <p className="small muted">
           {t('Journalists and researchers are welcome to cite this page. Please link to {url}.', { url: `${SITE_URL}/market` })}
         </p>

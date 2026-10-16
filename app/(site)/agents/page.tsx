@@ -49,7 +49,10 @@ export default async function AgentsIndexPage() {
       </section>
 
       <section className="section" style={{ paddingTop: 0 }}>
-        <div className="section__head"><h2>{t('Realtors')}</h2></div>
+        <div className="section__head">
+          <h2>{t('Realtors')}</h2>
+          <Link className="btn btn--ghost" href={lp('/agents/top')}>{t('Top agents of the month')}</Link>
+        </div>
 
         {sorted.length === 0 ? (
           <div className="panel empty">
