@@ -20,6 +20,7 @@ import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
 import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
 import TabStrip from './TabStrip';
+import AgentBadgePanel from './AgentBadgePanel';
 import VisitsCalendar from './VisitsCalendar';
 import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
 
@@ -297,6 +298,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           </div>
         )}
 
+        {tab === 'profile' && <AgentBadgePanel agentId={session.id} />}
         {tab === 'profile' && <NotifySettings agent />}
       </div>
     </div>

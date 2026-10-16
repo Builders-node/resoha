@@ -1,3 +1,4 @@
+import { HONDURAS_GUIDES } from './guidesHonduras';
 import { SOURCES, type Source } from './sources';
 
 /**
@@ -26,11 +27,13 @@ export type Guide = {
   faq: { q: string; a: string }[];
   sources: Source[];
   related: string[];
+  /** місто гайду (колонка `island`) — для кнопки «що продається»; без нього — Роатан */
+  region?: string;
 };
 
 const DISCLAIMER = 'This guide is general information, not legal or tax advice. Rules and fees change; confirm every step with a Honduran attorney (abogado y notario) before you pay a deposit.';
 
-export const GUIDES: Guide[] = [
+const ROATAN_GUIDES: Guide[] = [
   {
     slug: 'can-foreigners-buy-property-in-roatan',
     title: 'Can foreigners buy property in Roatán? The 3,000 m² rule explained',
@@ -420,5 +423,7 @@ export const GUIDES: Guide[] = [
     related: ['how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
   },
 ];
+
+export const GUIDES: Guide[] = [...ROATAN_GUIDES, ...HONDURAS_GUIDES];
 
 export const guideBySlug = (slug: string) => GUIDES.find((g) => g.slug === slug);

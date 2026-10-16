@@ -424,6 +424,8 @@ export interface StatRow {
   price: number;
   sqft: number;
   neighborhood: string;
+  /** місто або острів (колонка `island`) — для «Індексу Hogarli» по містах */
+  island: string;
   priceThen: number | null;
 }
 

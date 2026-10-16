@@ -12,6 +12,7 @@ const PUBLIC: RegExp[] = [
   /^\/$/,
   /^\/(listings|developments|developers|areas|guides|blog|agents|agency)(\/|$)/,
   /^\/(market|faq|land-passport|about|for-agents)$/,
+  /^\/market\/price-index$/,
 ];
 
 /** Чи має сторінка іспанську адресу (лише шлях, без ?query). */

@@ -13,7 +13,7 @@ import { GUIDES, guideBySlug } from '@/lib/content/guides';
 import { fmtDate } from '@/lib/format';
 import { localizeContent } from '@/lib/content/localize';
 import { makeT } from '@/lib/i18n';
-import { getLang, getLp } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { articleLd, breadcrumbLd, faqLd, graph } from '@/lib/seo';
 import { SITE_NAME } from '@/lib/site';
 
@@ -23,10 +23,11 @@ export const generateStaticParams = () => GUIDES.map((g) => ({ slug: g.slug }));
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const g = guideBySlug((await params).slug);
   if (!g) return {};
+  const t = await getT();
   return localized(`/guides/${g.slug}`, {
-    title: `${g.title} | ${SITE_NAME}`,
-    description: g.description,
-    openGraph: { title: g.title, description: g.description, type: 'article', url: `/guides/${g.slug}`,
+    title: `${t(g.title)} | ${SITE_NAME}`,
+    description: t(g.description),
+    openGraph: { title: t(g.title), description: t(g.description), type: 'article', url: `/guides/${g.slug}`,
       publishedTime: g.published, modifiedTime: g.updated },
   });
 }
@@ -92,12 +93,14 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
       <section className="prose__cta">
         <div>
-          <h2>{t('See what is for sale on Roatán')}</h2>
-          <p className="muted">{t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
+          <h2>{g.region ? t('See what is for sale in {city}', { city: g.region }) : t('See what is for sale on Roatán')}</h2>
+          <p className="muted">{g.region
+            ? t('Homes, condos and land from local agencies, each linked to the agency that holds it.')
+            : t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
         </div>
         <div className="prose__cta-btns">
-          <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--ghost btn--lg" href={lp('/listings?deal=sale&type=land')}>{t('Land with a passport')}</Link>
+          <Link className="btn btn--orange btn--lg" href={lp(g.region ? `/listings?deal=sale&island=${encodeURIComponent(g.region)}` : '/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+          <Link className="btn btn--ghost btn--lg" href={lp('/market/price-index')}>{t('Prices by city')}</Link>
         </div>
       </section>
 

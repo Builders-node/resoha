@@ -14,6 +14,7 @@ import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
+import { loadRanking, periodLabel } from '@/lib/agentRanking';
 
 const loadAgent = cache(getAgent);
 
@@ -33,12 +34,14 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = await loadAgent(id);
   if (!agent) notFound();
 
-  const [agency, listings, session, lang] = await Promise.all([
+  const [agency, listings, session, lang, ranking] = await Promise.all([
     getAgency(agent.agencyId),
     queryListings({ agentId: agent.id, sort: 'new' }),
     getSession(),
     getLang(),
+    loadRanking().catch(() => null),
   ]);
+  const myRank = ranking?.rows.find((r) => r.agent.id === agent.id && r.top);
   const t = makeT(lang);
   const [favIds, canReview] = await Promise.all([
     session ? getFavorites(session.id) : Promise.resolve([]),
@@ -62,6 +65,11 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
             {agency ? <Link className="link-accent" href={lp(`/agency/${agency.id}`)}>{agency.name}</Link> : t('Independent agent')}
             {agent.isOwner && <span className="pill pill--on" style={{ marginLeft: 8 }}>{t('Owner')}</span>}
           </p>
+          {myRank && ranking && (
+            <Link className="top-pill" href={lp('/agents/top')}>
+              <Icon name="star" size={15} /> {t('Top agent #{n} · {month}', { n: myRank.rank, month: periodLabel(ranking.period, lang) })}
+            </Link>
+          )}
           {agent.about && <p className="org__about" style={{ color: 'var(--ink-2)' }}>{agent.about}</p>}
           <div className="org__contacts org__contacts--light">
             {/* Порожній телефон давав живу кнопку WhatsApp, що вела на wa.me без номера. */}

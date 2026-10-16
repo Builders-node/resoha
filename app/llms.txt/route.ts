@@ -30,6 +30,8 @@ export function GET() {
     `- [Land and lots](${u('/listings?deal=sale&type=land')}): filter by "Ready to build"`,
     `- [Land passport](${u('/land-passport')}): what is checked on every lot and how readiness is scored`,
     `- [Roatán market report](${u('/market')}): key figures with sources`,
+    `- [Hogarli Price Index](${u('/market/price-index')}): monthly median price per m², rents and rental yields in Roatán, San Pedro Sula and Tegucigalpa from open listings; CSV at ${u('/market/price-index/data.csv')}`,
+    `- [Top agents of the month](${u('/agents/top')}): monthly agent ranking by listing quality, reply speed and buyer reviews`,
     `- [Areas and cities](${u('/areas')}): prices and character of each area of Roatán, San Pedro Sula and Tegucigalpa`,
     `- [Buying guides](${u('/guides')})`,
     `- [Blog](${u('/blog')}): articles on buying safely, off-plan condos, renting and where to buy in Honduras`,
