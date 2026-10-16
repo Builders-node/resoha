@@ -76,7 +76,7 @@ export function catalogTitle(f: Filters, lang: Lang) {
   const t = makeT(lang);
   let what = t(NOUN[f.type] ?? 'homes, condos & land');
   const beds = f.beds.length === 1 && f.type !== 'land' ? f.beds[0] : '';
-  if (beds) what = t(beds === '4' ? '{n}+ bed {what}' : '{n}-bed {what}', { n: beds, what });
+  if (beds) what = t(beds === '4' ? '{n}+ bed {what}' : beds === '1' ? '1-bed {what}' : '{n}-bed {what}', { n: beds, what });
   if (f.oceanfront) what = t('oceanfront {what}', { what });
   if (f.ready && f.type === 'land') what = t('ready-to-build {what}', { what });
   if (f.deal === 'rent') what = t('{what} for rent', { what });

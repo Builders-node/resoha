@@ -29,7 +29,8 @@ export function listingHeadline(l: L, lang: Lang) {
   const t = makeT(lang);
   let what = SINGULAR[lang][l.type] ?? t('property');
   if (l.type !== 'land' && l.type !== 'commercial') {
-    what = l.beds > 0 ? t('{n}-bed {what}', { n: l.beds, what }) : t('studio {what}', { what });
+    what = l.beds === 1 ? t('1-bed {what}', { what })
+      : l.beds > 0 ? t('{n}-bed {what}', { n: l.beds, what }) : t('studio {what}', { what });
   }
   if (l.oceanfront) what = t('oceanfront {what}', { what });
   what = l.deal === 'rent' ? t('{what} for rent', { what }) : t('{what} for sale', { what });

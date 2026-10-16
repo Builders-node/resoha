@@ -51,6 +51,7 @@ export const ES_SEO: Record<string, string> = {
   'commercial property': 'propiedades comerciales',
   'homes, condos & land': 'casas, condominios y terrenos',
   '{n}-bed {what}': '{what} de {n} habitaciones',
+  '1-bed {what}': '{what} de 1 habitación',
   '{n}+ bed {what}': '{what} de {n} o más habitaciones',
   'oceanfront {what}': '{what} frente al mar',
   'ready-to-build {what}': '{what} listos para construir',
