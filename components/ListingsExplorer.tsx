@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { catalogTitle } from '@/lib/catalogTitle';
 import FilterChips from './FilterChips';
 import FiltersModal from './FiltersModal';
 import GuestSearchAlert from './GuestSearchAlert';
@@ -15,7 +16,7 @@ import { toast } from './Toaster';
 import {
   SORTS, type Bbox, EMPTY_FILTERS, type Filters, countActive, formatBbox, fromParams, parseBbox, toQuery,
 } from '@/lib/filters';
-import { fmtNumber, nListings } from '@/lib/format';
+import { nListings } from '@/lib/format';
 import type { RoomStat } from '@/lib/priceStats';
 import type { Listing } from '@/lib/types';
 import { useLang, useT } from './LangProvider';
@@ -306,15 +307,8 @@ export default function ListingsExplorer({
 
           <FilterChips filters={filters} onChange={set} onReset={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal })} />
           <div className="list-head">
-            <h1>
-              {loading
-                ? t('Searching…')
-                : filters.deal === 'rent'
-                  ? t('{n} for rent on Roatán', { n: fmtNumber(total) })
-                  : filters.deal === 'sale'
-                    ? t('{n} for sale on Roatán', { n: fmtNumber(total) })
-                    : t('{listings} on Roatán', { listings: nListings(total, lang) })}
-            </h1>
+            {/* H1 = заголовок добірки з фільтрів, той самий, що в <title>: «Condos for sale in West Bay» */}
+            <h1>{catalogTitle(filters, lang)}</h1>
             <label className="list-sort">
               <span className="muted small">{t('Sort')}</span>
               <select className="input" value={filters.sort} onChange={(e) => set({ sort: e.target.value })}>
