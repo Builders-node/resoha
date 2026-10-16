@@ -5,6 +5,9 @@ import { EMPTY_FILTERS, fromParams, toListingQuery, toQuery, type Filters } from
 import { makeT, type Lang } from './i18n';
 import { localePath } from './i18n/paths';
 import { fmtNumber } from './format';
+import { catalogTitle } from './catalogTitle';
+
+export { catalogTitle };
 import { OG_LOCALE, localized } from './seoMeta';
 import { SITE_NAME } from './site';
 
@@ -62,28 +65,6 @@ export function isIndexable(f: Filters) {
   if (f.neighborhoods.length > 1 || f.beds.length > 1) return false;
   const facets = [f.type, f.island && !f.neighborhoods.length, f.neighborhoods.length, f.beds.length, f.oceanfront, core.ready].filter(Boolean).length;
   return facets <= 3;
-}
-
-const NOUN: Record<string, string> = {
-  house: 'houses',
-  condo: 'condos',
-  land: 'land',
-  commercial: 'commercial property',
-};
-
-/** «3-bed houses for sale in West Bay» — зі складу фільтрів, перекладено шаблонами t(). */
-export function catalogTitle(f: Filters, lang: Lang) {
-  const t = makeT(lang);
-  let what = t(NOUN[f.type] ?? 'homes, condos & land');
-  const beds = f.beds.length === 1 && f.type !== 'land' ? f.beds[0] : '';
-  if (beds) what = t(beds === '4' ? '{n}+ bed {what}' : '{n}-bed {what}', { n: beds, what });
-  if (f.oceanfront) what = t('oceanfront {what}', { what });
-  if (f.ready && f.type === 'land') what = t('ready-to-build {what}', { what });
-  if (f.deal === 'rent') what = t('{what} for rent', { what });
-  else if (f.deal === 'sale') what = t('{what} for sale', { what });
-  const place = f.neighborhoods.length === 1 ? f.neighborhoods[0] : f.island || 'Honduras';
-  const s = t('{what} in {place}', { what, place });
-  return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** Метадані каталогу: заголовок з фільтрів, canonical на нормалізовану адресу, noindex для зайвого. */

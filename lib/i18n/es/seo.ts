@@ -51,6 +51,7 @@ export const ES_SEO: Record<string, string> = {
   'commercial property': 'propiedades comerciales',
   'homes, condos & land': 'casas, condominios y terrenos',
   '{n}-bed {what}': '{what} de {n} habitaciones',
+  '1-bed {what}': '{what} de 1 habitación',
   '{n}+ bed {what}': '{what} de {n} o más habitaciones',
   'oceanfront {what}': '{what} frente al mar',
   'ready-to-build {what}': '{what} listos para construir',
@@ -68,4 +69,20 @@ export const ES_SEO: Record<string, string> = {
   'Page {n} of the results.': 'Página {n} de los resultados.',
   'Show earlier listings': 'Ver anuncios anteriores',
   'Compare the areas of Roatán, San Pedro Sula and Tegucigalpa: typical prices, who each area suits and the homes, condos and land listed there now.': 'Compare las zonas de Roatán, San Pedro Sula y Tegucigalpa: precios típicos, para quién es cada zona y las casas, condominios y terrenos publicados ahora.',
+
+  /* сторінка оголошення: заголовок, довідка з фактів, перелинковка (lib/listingSeo.ts) */
+  'studio {what}': '{what} tipo estudio',
+  'property': 'propiedad',
+  '{headline}, listed at {price}.': '{headline}, con precio de {price}.',
+  'That is about {ppsf} per ft².': 'Equivale a unos {ppsf} por ft².',
+  'Lot of {n} acres.': 'Lote de {n} acres.',
+  'Built in {year}.': 'Construido en {year}.',
+  'HOA {hoa} a month.': 'Cuota de HOA de {hoa} al mes.',
+  'Unit {n} in {name}.': 'Unidad {n} en {name}.',
+  'Part of {name}.': 'Forma parte de {name}.',
+  'Currently reserved.': 'Actualmente reservado.',
+  '{area} area guide: prices and what it is like to live there': 'Guía de {area}: precios y cómo es vivir allí',
+  'More property like this': 'Más propiedades como esta',
+  'All units in {name}': 'Todas las unidades de {name}',
+  'Breadcrumbs': 'Ruta de navegación',
 };

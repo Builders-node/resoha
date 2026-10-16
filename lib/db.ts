@@ -11,6 +11,7 @@ import { islandFor } from './regions';
 import type { ImportedListing } from './listingImport';
 import type { ExistingUnit } from './priceList';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
+import { pingListings } from './indexNow';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -432,7 +433,9 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
   }
   const { data, error } = res;
   if (error) throw error;
-  return mapListing(data);
+  const created = mapListing(data);
+  pingListings([created.id]);
+  return created;
 }
 
 const LAND_COLUMNS: Record<string, string> = {
@@ -507,6 +510,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
   }
   const { data, error } = res;
   if (error) throw error;
+  if (data) pingListings([id]);
   return data ? mapListing(data) : null;
 }
 
@@ -522,6 +526,7 @@ export async function deleteListing(id: string) {
   const { error, count } = await (await db())
     .from('listings').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
+  if (count) pingListings([id]);
   return (count ?? 0) > 0;
 }
 
@@ -1157,6 +1162,7 @@ export async function adminSetListingFlags(id: string, patch: { featured?: boole
     ? await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle()
     : await client.from('listings').select(listingCols({})).eq('id', id).maybeSingle();
   if (error) throw error;
+  if (data && patch.active !== undefined) pingListings([id]);
   return data ? mapListing(data) : null;
 }
 
@@ -1584,6 +1590,7 @@ export async function adminReviewListing(id: string, decision: 'approved' | 'rej
   const { data, error } = await (await db()).from('listings')
     .update({ review: decision, review_note: note.slice(0, 500) }).eq('id', id).select('id, title').maybeSingle();
   if (error) throw error;
+  if (data && decision === 'approved') pingListings([id]);
   return data as { id: string; title: string } | null;
 }
 

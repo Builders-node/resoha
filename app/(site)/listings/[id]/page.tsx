@@ -23,13 +23,13 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, getSiteSettings, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
-import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, specLine, sqftToM2 } from '@/lib/format';
+import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import { FOREIGN_LIMIT_SQM, LAND_FIELDS, isChecked, landLabel, landNumbers, landState, readiness } from '@/lib/land';
 import { fmtDate as fmtDay } from '@/lib/format';
 import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
-import { areaForNeighborhood } from '@/lib/content/areas';
+import { listingCrumbs, listingExploreLinks, listingMetaDescription, listingMetaTitle, listingSummary } from '@/lib/listingSeo';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
 import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
 import { DETAIL_FIELDS, IN_UNIT, detailLabel, floorLine } from '@/lib/details';
@@ -64,14 +64,24 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
       : { title: `Listing not found — ${SITE_NAME}` };
   }
 
-  const title = `${l.title} — ${fmtPrice(l.price, l.deal)}`;
-  const description = `${specLine(l)} · ${l.neighborhood}, Roatán. ${l.text}`.slice(0, 200);
+  // заголовок і опис — мовою адреси (/es) і з фактів: тип, угода, район, місто, ціна
+  const lang = await getLang();
+  const title = listingMetaTitle(l, lang);
+  const description = listingMetaDescription(l, lang);
   return localized(`/listings/${l.id}`, {
     title: `${title} | ${SITE_NAME}`,
     description,
     openGraph: { title, description, url: `/listings/${l.id}`, type: 'website', siteName: SITE_NAME },
-    ...(soldStandalone(l) ? { robots: { index: false, follow: true } } : {}),
-  });
+    other: {
+      // ціна для превʼю у Facebook/Pinterest і для краулерів, які не читають JSON-LD
+      'product:price:amount': String(l.price),
+      'product:price:currency': 'USD',
+    },
+    // нічого не ховаємо від сніпетів: велике фото й повний опис у видачі
+    robots: soldStandalone(l)
+      ? { index: false, follow: true }
+      : { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
+  }, lang);
 }
 
 /** Продане чи здане окреме оголошення (квартири ЖК лишаються в шахматці ЖК зі статусом) */
@@ -188,24 +198,23 @@ export default async function PropertyPage({ params, searchParams }: {
   const inUnit = IN_UNIT.filter(([k]) => listing.details.inUnit?.includes(k));
   const updatedAgo = ago(listing.updatedAt, t);
 
-  const area = areaForNeighborhood(listing.neighborhood);
-  const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(listing.neighborhood)}`;
 
   const isLand = listing.type === 'land';
   const inDevelopment = listing.development !== null;
   const lc = lifecycle(listing);
   // титул: якщо паспорт ділянки заповнено, він головніший за старий прапорець titled
   const titleOk = listing.land?.checkedAt ? listing.land.titleStatus === 'registered' : listing.titled;
+  const crumbs = listingCrumbs(listing, lang);
+  const explore = listingExploreLinks(listing, lang);
 
   return (
     <div className="wrap">
       <RecordView id={listing.id} />
-      <JsonLd data={graph(listingLd(listing, agent.name), breadcrumbLd([
-        { name: 'Home', path: '/' },
-        { name: DEAL_LABELS[listing.deal], path: `/listings?deal=${listing.deal}` },
-        { name: listing.neighborhood, path: areaPath },
-        { name: listing.title, path: `/listings/${listing.id}` },
-      ]))} />
+      <JsonLd data={graph(listingLd(listing, {
+        agent, agency,
+        description: lang === 'es' && listing.textEs?.trim() ? listing.textEs : listing.text,
+        lang,
+      }), breadcrumbLd(crumbs))} />
       {/* Не публічне (чернетка, перевірка, строк минув, приховане) відкривається лише автору й адміну */}
       {!lc.public && (
         <div className="lc-banner is-warn page-top" style={{ marginBottom: 0 }}>
@@ -424,9 +433,11 @@ export default async function PropertyPage({ params, searchParams }: {
             </section>
           )}
 
+          <h3 className="prop__h">{t('About this property')}</h3>
+          {/* довідка з полів: її цитують пошуковики й AI, і сторінка не порожня без опису */}
+          <p className="prop__summary">{listingSummary(listing, lang)}</p>
           {(listing.text || listing.textEs) && (
             <>
-              <h3 className="prop__h">{t('About this property')}</h3>
               <ListingDescription text={listing.text} textEs={listing.textEs ?? ''} lang={lang} t={t} />
             </>
           )}
@@ -573,12 +584,23 @@ export default async function PropertyPage({ params, searchParams }: {
         </section>
       )}
 
-      <div className="crumbs crumbs--foot small muted">
-        <Link href={lp('/')}>{t('Home')}</Link> ·{' '}
-        <Link href={lp(`/listings?deal=${listing.deal}`)}>{t(DEAL_LABELS[listing.deal])}</Link> ·{' '}
-        <Link href={areaPath}>{listing.neighborhood}</Link>
-        {listing.development && <> · <Link href={lp(`/developments/${listing.development.slug}`)}>{listing.development.name}</Link></>}
-      </div>
+      {explore.length > 0 && (
+        <nav className="explore-links" aria-label={t('More property like this')}>
+          <h2 className="prop__h">{t('More property like this')}</h2>
+          <ul>
+            {explore.map((x) => <li key={x.path}><Link href={lp(x.path)}>{x.name}</Link></li>)}
+            {listing.development && (
+              <li><Link href={lp(`/developments/${listing.development.slug}`)}>{t('All units in {name}', { name: listing.development.name })}</Link></li>
+            )}
+          </ul>
+        </nav>
+      )}
+
+      <nav className="crumbs crumbs--foot small muted" aria-label={t('Breadcrumbs')}>
+        {crumbs.slice(0, -1).map((c, i) => (
+          <span key={c.path}>{i > 0 && ' · '}<Link href={lp(c.path)}>{c.name}</Link></span>
+        ))}
+      </nav>
     </div>
   );
 }

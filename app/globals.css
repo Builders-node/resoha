@@ -1399,6 +1399,13 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dnav ~ .prop .cc-wrap{top:66px;scroll-margin-top:66px}
 .dnav ~ .prop{padding-top:6px}
 .crumbs--foot{padding:16px 0 28px;margin-top:24px;border-top:1px solid var(--line)}
+/* сторінка оголошення: довідка з фактів і посилання на схожі добірки каталогу */
+.prop__summary{margin:0 0 12px;color:var(--ink-2);line-height:1.6}
+.explore-links{margin-top:8px}
+.explore-links .prop__h{margin-top:0}
+.explore-links ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.explore-links a{display:inline-block;padding:8px 14px;border:1px solid var(--line);border-radius:999px;font-size:14px;color:inherit;text-decoration:none}
+.explore-links a:hover{border-color:currentColor}
 /* крихти тепер унизу: верхній відступ, який вони давали, переходить на перший блок */
 .page-top{margin-top:20px}
 .dev__head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
