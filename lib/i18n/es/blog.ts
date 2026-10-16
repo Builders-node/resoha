@@ -320,4 +320,117 @@ export const ES_BLOG: Record<string, string> = {
   'From renting to buying': 'Del alquiler a la compra',
   'Keep a list as you go: what you like about the area, what you would change, and which agents answered quickly and honestly. When you are ready, read [how to buy property in Roatán](/guides/how-to-buy-property-in-roatan) and set up a saved search for homes [for sale](/listings?deal=sale) in the areas you now know.':
     'Lleve una lista sobre la marcha: qué le gusta de la zona, qué cambiaría y qué agentes respondieron rápido y con honestidad. Cuando esté listo, lea [cómo comprar propiedad en Roatán](/guides/how-to-buy-property-in-roatan) y guarde una búsqueda de casas [en venta](/listings?deal=sale) en las zonas que ya conoce.',
+  /* ---------- Найкращі місця біля Duna Tower ---------- */
+  'West Bay and beyond: the best places near Duna Tower, Roatán':
+    'West Bay y más: los mejores lugares cerca de Duna Tower, Roatán',
+  'Beaches, snorkeling, restaurants and day trips within half an hour of Duna Tower in Crawfish Rock, from West Bay Beach and West End to Sandy Bay and French Harbour.':
+    'Playas, esnórquel, restaurantes y paseos a menos de media hora de Duna Tower en Crawfish Rock, desde West Bay Beach y West End hasta Sandy Bay y French Harbour.',
+  'Duna Tower sits in Crawfish Rock, on the north shore of central Roatán, inside Próspera. That puts the island’s famous west end, West Bay Beach, West End village and Sandy Bay, within a short drive, and French Harbour even closer. Here are the places worth knowing if you live or stay in the building, all real, all open to the public, and none of them paid to be listed.':
+    'Duna Tower está en Crawfish Rock, en la costa norte del centro de Roatán, dentro de Próspera. Eso deja a poca distancia en carro el famoso extremo oeste de la isla, West Bay Beach, el pueblo de West End y Sandy Bay, y French Harbour todavía más cerca. Estos son los lugares que vale la pena conocer si vive o se hospeda en el edificio: todos reales, todos abiertos al público y ninguno pagó por aparecer aquí.',
+  'West Bay Beach is the island’s best white-sand beach, with a reef you can snorkel from the shore. Go early or on a day without cruise ships.':
+    'West Bay Beach es la mejor playa de arena blanca de la isla, con un arrecife al que se llega nadando desde la orilla. Vaya temprano o un día sin cruceros.',
+  'West End is the place for sunsets, casual food and dive shops; Half Moon Bay has free snorkeling from the beach.':
+    'West End es el lugar para atardeceres, comida sencilla y centros de buceo; en Half Moon Bay se hace esnórquel gratis desde la playa.',
+  'Sandy Bay has the botanical gardens, the island museum and the dolphins at Anthony’s Key Resort.':
+    'Sandy Bay tiene el jardín botánico, el museo de la isla y los delfines de Anthony’s Key Resort.',
+  'For everyday life, French Harbour is closest: supermarkets, seafood and the Black Pearl golf course at Pristine Bay.':
+    'Para el día a día, French Harbour es lo más cercano: supermercados, mariscos y el campo de golf Black Pearl en Pristine Bay.',
+  'Where Duna Tower is, and how far everything is':
+    'Dónde está Duna Tower y a qué distancia queda todo',
+  'Roatán is long and narrow, and one main road runs along it. Duna Tower is roughly in the middle, so the west-end beaches and the harbour towns are both an easy trip. The times below are approximate drives by car or taxi outside rush hour; on cruise ship days, the road to West Bay is slower.':
+    'Roatán es larga y angosta, y una carretera principal la recorre. Duna Tower queda más o menos en el centro, así que las playas del oeste y los pueblos del puerto quedan a un paseo fácil. Los tiempos de abajo son aproximados, en carro o taxi fuera de las horas pico; los días de crucero, la carretera a West Bay es más lenta.',
+  'Place':
+    'Lugar',
+  'Best for':
+    'Ideal para',
+  'Roughly by car':
+    'Aprox. en carro',
+  'Groceries, seafood, golf':
+    'Supermercado, mariscos, golf',
+  '15 minutes':
+    '15 minutos',
+  'Airport (RTB)':
+    'Aeropuerto (RTB)',
+  'Flights, Coxen Hole errands':
+    'Vuelos, trámites en Coxen Hole',
+  'Gardens, museum, dolphins':
+    'Jardín, museo, delfines',
+  '20 minutes':
+    '20 minutos',
+  'Sunsets, food, diving':
+    'Atardeceres, comida, buceo',
+  '30 minutes':
+    '30 minutos',
+  'The beach and the reef':
+    'La playa y el arrecife',
+  '35 minutes':
+    '35 minutos',
+  'West Bay: the beach and the reef':
+    'West Bay: la playa y el arrecife',
+  '**West Bay Beach** is the reason most people come to Roatán: a long curve of raked white sand at the island’s western tip, with the reef only a few metres from shore. The stretch between Infinity Bay Resort and Grand Roatán Resort has no sea grass, which makes it the easiest place to walk in with a mask. Swim out about ten minutes and the reef wall drops some 25 metres (80 ft) into coral canyons with fish, rays and turtles.':
+    '**West Bay Beach** es la razón por la que la mayoría viene a Roatán: una larga curva de arena blanca y rastrillada en el extremo oeste de la isla, con el arrecife a pocos metros de la orilla. El tramo entre Infinity Bay Resort y Grand Roatán Resort no tiene pasto marino, así que es el lugar más fácil para entrar con careta. Nade unos diez minutos y la pared del arrecife cae unos 25 metros (80 pies) hacia cañones de coral con peces, rayas y tortugas.',
+  'On cruise ship days West Bay can get very crowded. Check the port schedule, go early in the morning, or pick a day with no ships in.':
+    'Los días de crucero West Bay puede llenarse mucho. Revise el calendario del puerto, vaya temprano o elija un día sin barcos.',
+  '**Gumbalimba Park.** A nature park just off the West Bay road with monkeys and tropical birds, a canopy zipline, a hanging bridge, a pirate-themed cave and its own beach. Good with children and visiting family.':
+    '**Gumbalimba Park.** Un parque natural junto a la carretera de West Bay con monos y aves tropicales, tirolesa sobre el dosel, un puente colgante, una cueva de piratas y su propia playa. Ideal con niños y familia de visita.',
+  '**Beach Club San Simon.** A private beach club with loungers and cabanas you can rent for half or a full day, and a grill known for lobster, grouper and rotisserie chicken.':
+    '**Beach Club San Simon.** Un club de playa privado con camastros y cabañas que se alquilan por medio día o el día completo, y una parrilla conocida por la langosta, el mero y el pollo rostizado.',
+  '**Lala’s Gallery and Garden Cafe.** A garden café with a seasonal, vegetable-first menu, friendly to vegans and gluten-free diets, surrounded by Central American art.':
+    '**Lala’s Gallery and Garden Cafe.** Un café en un jardín con un menú de temporada centrado en vegetales, apto para veganos y dietas sin gluten, rodeado de arte centroamericano.',
+  'A water taxi connects West Bay and West End in about ten minutes, so you can park once and do both in a day.':
+    'Un taxi acuático une West Bay y West End en unos diez minutos, así que puede estacionar una sola vez y conocer los dos en un día.',
+  'West End: sunsets, street food and diving':
+    'West End: atardeceres, comida callejera y buceo',
+  'West End is a walkable village on a sandy road, with dive shops, small hotels and most of the island’s casual restaurants. It is where people who live on Roatán go on a Friday evening.':
+    'West End es un pueblo que se recorre a pie por una calle de arena, con centros de buceo, hoteles pequeños y la mayoría de los restaurantes informales de la isla. Es adonde van los residentes de Roatán un viernes por la tarde.',
+  '**Half Moon Bay.** Free snorkeling straight from the beach: enter at the sheltered southern end and swim out to the reef, about 200 metres offshore, inside the Sandy Bay–West End marine reserve. Watch for boats.':
+    '**Half Moon Bay.** Esnórquel gratis directamente desde la playa: entre por el extremo sur, que está protegido, y nade hasta el arrecife, a unos 200 metros, dentro de la reserva marina Sandy Bay–West End. Cuidado con las lanchas.',
+  '**Sundowners.** The classic sunset bar on Half Moon Bay, with a happy hour. Come for the view and the drinks rather than the food.':
+    '**Sundowners.** El bar clásico para ver el atardecer en Half Moon Bay, con happy hour. Vale la pena por la vista y las bebidas más que por la comida.',
+  '**Creole’s Rotisserie Chicken.** Lightly spiced chicken with big sides; go for lunch or an early dinner before it sells out.':
+    '**Creole’s Rotisserie Chicken.** Pollo ligeramente condimentado con acompañamientos generosos; vaya a almorzar o a cenar temprano, antes de que se acabe.',
+  '**Calelu’s.** Cheap, filling baleadas, the Honduran folded tortilla, for breakfast, lunch or dinner.':
+    '**Calelu’s.** Baleadas baratas y abundantes para el desayuno, el almuerzo o la cena.',
+  '**Roatán Chocolate Factory.** A café with free tours of how the chocolate is made, and plenty to take home.':
+    '**Roatán Chocolate Factory.** Un café con recorridos gratuitos por la fábrica de chocolate, y mucho para llevar a casa.',
+  '**Roatán Institute of Deepsea Exploration.** Submarine trips to about 600 metres (2,000 ft) below the surface, by reservation only. A once-in-a-lifetime outing for visitors.':
+    '**Roatán Institute of Deepsea Exploration.** Viajes en submarino a unos 600 metros (2,000 pies) de profundidad, solo con reservación. Una salida única para quien viene de visita.',
+  'Sandy Bay: gardens, history and dolphins':
+    'Sandy Bay: jardines, historia y delfines',
+  '**Carambola Botanical Gardens.** A large orchid collection and forest trails up the hill, with a view over the West End coast from the top. Go in the morning, before the heat.':
+    '**Carambola Botanical Gardens.** Una gran colección de orquídeas y senderos de bosque que suben la colina, con vista a la costa de West End desde arriba. Vaya en la mañana, antes del calor.',
+  '**Roatán Museum.** A small museum of archaeological finds and island history at Anthony’s Key Resort.':
+    '**Roatán Museum.** Un pequeño museo con hallazgos arqueológicos e historia de la isla, en Anthony’s Key Resort.',
+  '**Dolphin encounters.** Anthony’s Key Resort also runs dolphin encounters and swims you can book online, a favourite with children.':
+    '**Encuentros con delfines.** Anthony’s Key Resort también organiza encuentros y nado con delfines que se reservan en línea, los favoritos de los niños.',
+  'Closer to home: French Harbour and the east':
+    'Más cerca de casa: French Harbour y el este',
+  'For everyday life you will mostly head east. French Harbour is the commercial hub of central Roatán, with the big supermarkets, hardware stores, marinas and banks. Read more in our [French Harbour area guide](/areas/french-harbour).':
+    'Para el día a día irá sobre todo hacia el este. French Harbour es el centro comercial del centro de Roatán, con los supermercados grandes, ferreterías, marinas y bancos. Lea más en nuestra [guía de French Harbour](/areas/french-harbour).',
+  '**Gio’s.** A French Harbour institution for king crab in lemon butter, plus seafood and steaks.':
+    '**Gio’s.** Un clásico de French Harbour por el cangrejo real en mantequilla de limón, además de mariscos y cortes de carne.',
+  '**Arch’s Iguana & Marine Park.** Thousands of iguanas, plus turtles, monkeys and a fish hatchery, on French Cay. The iguanas gather around noon for lunch.':
+    '**Arch’s Iguana & Marine Park.** Miles de iguanas, además de tortugas, monos y un criadero de peces, en French Cay. Las iguanas se reúnen hacia el mediodía para comer.',
+  '**Black Pearl golf course.** The island’s golf course at Pristine Bay Resort, designed by Perry Dye and opened in 2010.':
+    '**Campo de golf Black Pearl.** El campo de golf de la isla en Pristine Bay Resort, diseñado por Perry Dye e inaugurado en 2010.',
+  '**The Crow’s Nest, Oak Ridge.** A garden restaurant with seafood, smoked pork and mango margaritas, on the way to the quieter east end.':
+    '**The Crow’s Nest, Oak Ridge.** Un restaurante en un jardín con mariscos, cerdo ahumado y margaritas de mango, camino al tranquilo extremo este.',
+  '**Hole in the Wall, Jonesville.** A local favourite for lobster and shrimp that you reach by boat.':
+    '**Hole in the Wall, Jonesville.** Un favorito local para langosta y camarones al que se llega en lancha.',
+  'A weekend from Duna Tower':
+    'Un fin de semana desde Duna Tower',
+  '**Saturday morning:** drive to West Bay before nine and snorkel the reef wall while the beach is quiet.':
+    '**Sábado en la mañana:** maneje a West Bay antes de las nueve y haga esnórquel en la pared del arrecife mientras la playa está tranquila.',
+  '**Saturday afternoon:** water taxi to West End, chicken at Creole’s, then sunset at Sundowners on Half Moon Bay.':
+    '**Sábado en la tarde:** taxi acuático a West End, pollo en Creole’s y el atardecer en Sundowners, en Half Moon Bay.',
+  '**Sunday morning:** the trails and orchids at Carambola Botanical Gardens in Sandy Bay.':
+    '**Domingo en la mañana:** los senderos y las orquídeas de Carambola Botanical Gardens, en Sandy Bay.',
+  '**Sunday evening:** king crab at Gio’s in French Harbour, fifteen minutes from home.':
+    '**Domingo en la noche:** cangrejo real en Gio’s, en French Harbour, a quince minutos de casa.',
+  'Opening hours, prices and menus on the island change often, and some places close in the low season. Check before you go.':
+    'Los horarios, precios y menús en la isla cambian a menudo, y algunos lugares cierran en temporada baja. Confirme antes de ir.',
+  'Living here':
+    'Vivir aquí',
+  'Living in Crawfish Rock means a quieter, newer part of the island with West Bay, West End and French Harbour all within a short drive, at prices well below beachfront West Bay. See the apartments, floor plans and construction progress on the [Duna Tower page](/developments/duna-tower), or browse [long-term rentals](/listings?deal=rent) if you would like to try the area first. Comparing areas? Start with [the best areas to live in Roatán](/guides/best-areas-to-live-in-roatan) and the [West Bay area guide](/areas/west-bay).':
+    'Vivir en Crawfish Rock significa una parte de la isla más tranquila y nueva, con West Bay, West End y French Harbour a poca distancia en carro, a precios muy por debajo de la primera línea de playa en West Bay. Vea los apartamentos, los planos y el avance de obra en la [página de Duna Tower](/developments/duna-tower), o explore los [alquileres a largo plazo](/listings?deal=rent) si prefiere probar la zona primero. ¿Compara zonas? Empiece por [las mejores zonas para vivir en Roatán](/guides/best-areas-to-live-in-roatan) y la [guía de West Bay](/areas/west-bay).',
 };

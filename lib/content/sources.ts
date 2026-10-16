@@ -80,4 +80,34 @@ export const SOURCES = {
     title: 'Tropical cyclone report: Hurricane Iota, 13–18 November 2020',
     url: 'https://www.nhc.noaa.gov/data/tcr/AL312020_Iota.pdf',
   },
+  westBayBeach: {
+    name: 'West Bay Tours',
+    title: 'The best beach in Roatán: West Bay Beach',
+    url: 'https://roatan.westbaytours.com/the-best-beach-in-roatan-west-bay-beach/',
+  },
+  snorkelWestEnd: {
+    name: 'Snorkeling Report',
+    title: 'Snorkeling at West End and Half Moon Bay, Roatán',
+    url: 'https://www.snorkeling-report.com/spot/snorkeling-west-end-roatan/',
+  },
+  fodorsSights: {
+    name: 'Fodor’s Travel',
+    title: 'Best sights in Roatán and the Bay Islands',
+    url: 'https://www.fodors.com/world/mexico-and-central-america/honduras/roatan-and-the-bay-islands/things-to-do/sights',
+  },
+  fodorsFood: {
+    name: 'Fodor’s Travel',
+    title: 'Best restaurants in Roatán',
+    url: 'https://www.fodors.com/world/mexico-and-central-america/honduras/roatan-and-the-bay-islands/places/roatan/restaurants',
+  },
+  westEndFood: {
+    name: 'Sally Sees',
+    title: 'Restaurants in West End, Roatán (2025)',
+    url: 'https://sallysees.com/restaurants-in-west-end-roatan/',
+  },
+  blackPearl: {
+    name: 'Top 100 Golf Courses',
+    title: 'Black Pearl at Pristine Bay',
+    url: 'https://www.top100golfcourses.com/golf-course/black-pearl-at-pristine-bay',
+  },
 } satisfies Record<string, Source>;
