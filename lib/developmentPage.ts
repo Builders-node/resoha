@@ -7,6 +7,7 @@ import { currentUser } from './session';
 import { fromPrice } from './units';
 import type { Listing } from './types';
 import { SITE_NAME } from './site';
+import { RESIDENT_GUIDES } from './content/residentGuides';
 import { getLp, getT } from './i18n/server';
 
 /**
@@ -39,6 +40,7 @@ export const developmentContext = cache(async (slug: string) => {
     (progress.length > 0 || buildings.length > 0) && { href: `${base}/construction`, key: 'construction', label: 'Construction' },
     docs.length > 0 && { href: `${base}/documents`, key: 'documents', label: 'Documents' },
     (dev.video || dev.tour) && { href: `${base}/tour`, key: 'tour', label: dev.tour ? 'Video & 360°' : 'Video' },
+    RESIDENT_GUIDES[dev.slug] && { href: `${base}/guide`, key: 'guide', label: 'Resident guide' },
     { href: `${base}/contacts`, key: 'contacts', label: 'Contacts' },
     news.length > 0 && { href: `${base}/news`, key: 'news', label: 'News' },
   ].filter(Boolean) as DevTab[];

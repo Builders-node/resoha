@@ -14,6 +14,7 @@ import { ProgressPhotos } from '@/components/DevelopmentProgress';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
+import { RESIDENT_GUIDES } from '@/lib/content/residentGuides';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
 import { fmtNumber } from '@/lib/format';
 import { getLang } from '@/lib/i18n/server';
@@ -154,6 +155,16 @@ export default async function DevelopmentPage({ params, searchParams }: {
           <Link className="dteaser" href={`${base}/tour`}>
             <Icon name={dev.tour ? 'orbit' : 'play'} size={28} />
             <span><b>{t(dev.tour ? 'Video & 360° tour' : 'Video')}</b><span className="small muted">{t('Walk around {name} without leaving home', { name: dev.name })}</span></span>
+            <Icon name="arrowRight" size={20} />
+          </Link>
+        </section>
+      )}
+
+      {RESIDENT_GUIDES[dev.slug] && (
+        <section className="dev">
+          <Link className="dteaser" href={`${base}/guide`}>
+            <Icon name="key" size={28} />
+            <span><b>{t('Resident guide')}</b><span className="small muted">{t('Amenities and hours, the front desk, community and what is nearby')}</span></span>
             <Icon name="arrowRight" size={20} />
           </Link>
         </section>

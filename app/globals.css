@@ -1410,6 +1410,18 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dteaser-list{list-style:none;margin:0;padding:0;display:grid;gap:10px}
 .dteaser-list li{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .dteaser-list .ico{color:var(--ink-2);flex:none}
+/* гід для мешканців ЖК */
+.dguide__lead{font-size:17px;line-height:1.55;max-width:760px;color:var(--ink-2)}
+.dguide__grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.dguide__card{display:flex;flex-direction:column;gap:4px;padding:18px;border:1px solid var(--line);border-radius:var(--radius)}
+.dguide__card > .ico{color:var(--orange);margin-bottom:6px}
+.dguide__card b{font-size:16px}
+.dguide__hours{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:14px;margin-top:4px}
+.dguide__list{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.dguide__table{overflow-x:auto}
+.dguide__table table{width:100%;border-collapse:collapse;font-size:15px}
+.dguide__table th{text-align:left;font-size:13px;color:var(--ink-3);font-weight:600;padding:8px 12px 8px 0;border-bottom:1px solid var(--line)}
+.dguide__table td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line)}
 
 /* Планування — як на LUN: фільтри, сітка карток з планом, вікно планування */
 .lay{display:grid;gap:36px}
