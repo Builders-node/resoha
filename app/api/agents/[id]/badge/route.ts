@@ -22,7 +22,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const me = rows.find((r) => r.agent.id === id);
   const top = Boolean(me?.top && period);
   const line1 = top ? t('Top agent · #{n}', { n: me!.rank }) : t('Agent on Hogarli');
-  const line2 = top ? `${periodLabel(period!, lang)} · Hogarli` : t('See my listings');
+  const line2 = top ? `${periodLabel(period!, lang, true)} · Hogarli` : t('See my listings');
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="72" viewBox="0 0 240 72" role="img" aria-label="${esc(`${line1}, ${line2}`)}">
 <rect x="0.5" y="0.5" width="239" height="71" rx="12" fill="${top ? '#131316' : '#ffffff'}" stroke="${top ? '#131316' : '#e7e6ec'}"/>

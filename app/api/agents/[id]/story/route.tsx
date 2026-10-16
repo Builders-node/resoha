@@ -40,7 +40,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
           {top && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: 28 }}>
               <span style={{ fontSize: 300, fontWeight: 800, lineHeight: 1, letterSpacing: -12 }}>#{me!.rank}</span>
-              <span style={{ fontSize: 56, opacity: 0.8 }}>{periodLabel(period!, lang)}</span>
+              <span style={{ fontSize: 56, opacity: 0.8 }}>{periodLabel(period!, lang, true)}</span>
             </div>
           )}
           <div style={{ display: 'flex', fontSize: agent.name.length > 22 ? 84 : 104, fontWeight: 700, lineHeight: 1.05, letterSpacing: -3 }}>

@@ -36,12 +36,16 @@ export function rankingPeriod(now = new Date()): RankingPeriod {
   return { from: from.toISOString(), to: to.toISOString(), month: from.toISOString() };
 }
 
-export const periodLabel = (p: RankingPeriod, lang: Lang) => {
+/** Посеред речення іспанською місяць пишеться з малої; `start` — для підпису, що з місяця починається */
+export const periodLabel = (p: RankingPeriod, lang: Lang, start = false) => {
   const s = new Date(p.month).toLocaleDateString(intlLocale(lang), { month: 'long', year: 'numeric', timeZone: 'UTC' });
-  return s.charAt(0).toUpperCase() + s.slice(1);
+  return start ? s.charAt(0).toUpperCase() + s.slice(1) : s;
 };
 
 const round1 = (n: number) => Math.round(n * 10) / 10;
+
+/** Службовий акаунт Hogarli з зібраними оголошеннями («listings desk») — не ріелтор, у рейтинг не йде */
+const isHouseAccount = (a: Agent) => /listings desk/i.test(a.name);
 
 export function rankAgents(agents: Agent[], listings: Listing[], responses: AgentResponse[]): AgentRank[] {
   const byAgent = new Map<string, Listing[]>();
@@ -49,7 +53,7 @@ export function rankAgents(agents: Agent[], listings: Listing[], responses: Agen
   const resp = new Map(responses.map((r) => [r.agentId, r]));
 
   const rows = agents
-    .filter((a) => a.active && (byAgent.get(a.id)?.length ?? 0) > 0)
+    .filter((a) => a.active && !isHouseAccount(a) && (byAgent.get(a.id)?.length ?? 0) > 0)
     .map((agent) => {
       const own = byAgent.get(agent.id)!;
       const qualityPct = Math.round(own.reduce((s, l) => s + listingScore(l).pct, 0) / own.length);
