@@ -6,6 +6,7 @@ import { readingMinutes, topicBySlug, type Post } from './content/blog';
 import { plain } from '@/components/Rich';
 import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from './site';
 import { TYPE_LABELS } from './format';
+import { IN_UNIT } from './details';
 import { REGIONS, regionByName } from './regions';
 
 /**
@@ -140,9 +141,27 @@ const AVAILABILITY: Record<string, string> = {
 };
 const availabilityOf = (status: string) => `https://schema.org/${AVAILABILITY[status] ?? 'InStock'}`;
 
-/** Оголошення як RealEstateListing з пропозицією (ціна) та обʼєктом (житло чи ділянка). */
-export function listingLd(l: Listing, agentName?: string) {
+/** Що з «в квартирі» і тегів варто віддати як amenityFeature — без службових міток. */
+const amenities = (l: Listing) => [
+  ...(l.oceanfront ? ['Oceanfront'] : []),
+  ...(l.details.inUnit ?? []).map((k) => IN_UNIT.find(([key]) => key === k)?.[1] ?? ''),
+  ...l.tags,
+].filter((v, i, a) => v && a.indexOf(v) === i).slice(0, 20);
+
+/**
+ * Оголошення як RealEstateListing з пропозицією (ціна, продавець) та обʼєктом (житло чи ділянка).
+ * Опис — мовою сторінки; продавець — ріелтор і агенція з посиланнями на їхні сторінки.
+ */
+export function listingLd(l: Listing, opts: {
+  agent?: { id: string; name: string } | null;
+  agency?: { id: string; name: string } | null;
+  description?: string;
+  lang?: Lang;
+} = {}) {
   const url = abs(`/listings/${l.id}`);
+  const region = regionByName(l.island) ?? REGIONS[0];
+  const photos = l.photos.filter((p) => p.startsWith('http') || p.startsWith('/')).map(abs);
+  const features = amenities(l);
   const place = {
     '@type': l.type === 'condo' ? 'Apartment' : l.type === 'house' ? 'SingleFamilyResidence' : 'Place',
     name: l.title,
@@ -150,34 +169,51 @@ export function listingLd(l: Listing, agentName?: string) {
       '@type': 'PostalAddress',
       streetAddress: l.address || undefined,
       addressLocality: l.neighborhood,
-      addressRegion: (regionByName(l.island) ?? REGIONS[0]).department,
+      addressRegion: region.department,
       addressCountry: 'HN',
     },
     geo: l.lat && l.lng ? { '@type': 'GeoCoordinates', latitude: l.lat, longitude: l.lng } : undefined,
+    ...(photos.length ? { photo: photos.slice(0, 10).map((u) => ({ '@type': 'ImageObject', url: u })) } : {}),
     ...(l.type !== 'land' && l.beds > 0 ? { numberOfRooms: l.beds, numberOfBedrooms: l.beds } : {}),
     ...(l.type !== 'land' && l.baths > 0 ? { numberOfBathroomsTotal: l.baths } : {}),
     ...(l.sqft > 0 ? { floorSize: { '@type': 'QuantitativeValue', value: l.sqft, unitCode: 'FTK' } } : {}),
+    ...(l.lotAcres > 0 ? { lotSize: { '@type': 'QuantitativeValue', value: l.lotAcres, unitCode: 'ACR' } } : {}),
     ...(l.year > 0 ? { yearBuilt: l.year } : {}),
+    ...(l.floor !== null && l.type === 'condo' ? { floorLevel: String(l.floor) } : {}),
+    ...(features.length ? { amenityFeature: features.map((name) => ({ '@type': 'LocationFeatureSpecification', name, value: true })) } : {}),
+    ...(l.details.pets === 'yes' ? { petsAllowed: true } : l.details.pets === 'no' ? { petsAllowed: false } : {}),
+    containedInPlace: l.development
+      ? { '@type': 'ApartmentComplex', '@id': `${abs(`/developments/${l.development.slug}`)}#complex`, name: l.development.name, url: abs(`/developments/${l.development.slug}`) }
+      : { '@type': 'Place', name: `${l.neighborhood}, ${region.name}, Honduras` },
   };
+  const seller = opts.agency
+    ? { '@type': 'RealEstateAgent', name: opts.agency.name, url: abs(`/agency/${opts.agency.id}`) }
+    : opts.agent ? { '@type': 'RealEstateAgent', name: opts.agent.name, url: abs(`/agents/${opts.agent.id}`) } : undefined;
   return {
     '@type': 'RealEstateListing',
     '@id': `${url}#listing`,
     url,
     name: l.title,
-    description: l.text.slice(0, 500),
+    description: (opts.description || l.text).slice(0, 1000),
+    inLanguage: opts.lang ?? 'en',
     datePosted: l.createdAt,
-    image: l.photos.filter((p) => p.startsWith('http') || p.startsWith('/')).slice(0, 5).map(abs),
+    dateModified: l.updatedAt || l.createdAt,
+    image: photos.slice(0, 10),
     category: `${TYPE_LABELS[l.type]} ${l.deal === 'rent' ? 'for rent' : 'for sale'}`,
+    ...(opts.agent ? { author: { '@type': 'Person', name: opts.agent.name, url: abs(`/agents/${opts.agent.id}`) } } : {}),
+    publisher: { '@id': ORG_ID },
     offers: {
       '@type': 'Offer',
+      url,
       price: l.price,
       priceCurrency: 'USD',
       businessFunction: l.deal === 'rent' ? 'http://purl.org/goodrelations/v1#LeaseOut' : 'http://purl.org/goodrelations/v1#Sell',
       availability: availabilityOf(l.status),
-      ...(l.deal === 'rent' ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: l.price, priceCurrency: 'USD', unitCode: 'MON' } } : {}),
-      ...(agentName ? { offeredBy: { '@type': 'RealEstateAgent', name: agentName } } : {}),
+      ...(l.deal === 'rent' ? { priceSpecification: { '@type': 'UnitPriceSpecification', price: l.price, priceCurrency: 'USD', unitCode: 'MON', referenceQuantity: { '@type': 'QuantitativeValue', value: 1, unitCode: 'MON' } } } : {}),
+      ...(seller ? { seller, offeredBy: seller } : {}),
+      itemOffered: { '@id': `${url}#property` },
     },
-    mainEntity: place,
+    mainEntity: { '@id': `${url}#property`, ...place },
   };
 }
 
