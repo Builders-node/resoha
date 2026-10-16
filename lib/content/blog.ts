@@ -42,6 +42,111 @@ const DISCLAIMER = 'This article is general information, not legal, tax or engin
 
 export const POSTS: Post[] = [
   {
+    slug: 'best-places-near-duna-tower-roatan',
+    title: 'West Bay and beyond: the best places near Duna Tower, Roatán',
+    description: 'Beaches, snorkeling, restaurants and day trips within half an hour of Duna Tower in Crawfish Rock, from West Bay Beach and West End to Sandy Bay and French Harbour.',
+    topic: 'living',
+    icon: 'pin',
+    published: '2026-10-16',
+    updated: '2026-10-16',
+    lead: 'Duna Tower sits in Crawfish Rock, on the north shore of central Roatán, inside Próspera. That puts the island’s famous west end, West Bay Beach, West End village and Sandy Bay, within a short drive, and French Harbour even closer. Here are the places worth knowing if you live or stay in the building, all real, all open to the public, and none of them paid to be listed.',
+    takeaways: [
+      'West Bay Beach is the island’s best white-sand beach, with a reef you can snorkel from the shore. Go early or on a day without cruise ships.',
+      'West End is the place for sunsets, casual food and dive shops; Half Moon Bay has free snorkeling from the beach.',
+      'Sandy Bay has the botanical gardens, the island museum and the dolphins at Anthony’s Key Resort.',
+      'For everyday life, French Harbour is closest: supermarkets, seafood and the Black Pearl golf course at Pristine Bay.',
+    ],
+    sections: [
+      {
+        h: 'Where Duna Tower is, and how far everything is',
+        body: [
+          'Roatán is long and narrow, and one main road runs along it. Duna Tower is roughly in the middle, so the west-end beaches and the harbour towns are both an easy trip. The times below are approximate drives by car or taxi outside rush hour; on cruise ship days, the road to West Bay is slower.',
+          { table: {
+            head: ['Place', 'Best for', 'Roughly by car'],
+            rows: [
+              ['French Harbour', 'Groceries, seafood, golf', '15 minutes'],
+              ['Airport (RTB)', 'Flights, Coxen Hole errands', '15 minutes'],
+              ['Sandy Bay', 'Gardens, museum, dolphins', '20 minutes'],
+              ['West End', 'Sunsets, food, diving', '30 minutes'],
+              ['West Bay', 'The beach and the reef', '35 minutes'],
+            ],
+          } },
+        ],
+      },
+      {
+        h: 'West Bay: the beach and the reef',
+        body: [
+          '**West Bay Beach** is the reason most people come to Roatán: a long curve of raked white sand at the island’s western tip, with the reef only a few metres from shore. The stretch between Infinity Bay Resort and Grand Roatán Resort has no sea grass, which makes it the easiest place to walk in with a mask. Swim out about ten minutes and the reef wall drops some 25 metres (80 ft) into coral canyons with fish, rays and turtles.',
+          { note: 'On cruise ship days West Bay can get very crowded. Check the port schedule, go early in the morning, or pick a day with no ships in.' },
+          { list: [
+            '**Gumbalimba Park.** A nature park just off the West Bay road with monkeys and tropical birds, a canopy zipline, a hanging bridge, a pirate-themed cave and its own beach. Good with children and visiting family.',
+            '**Beach Club San Simon.** A private beach club with loungers and cabanas you can rent for half or a full day, and a grill known for lobster, grouper and rotisserie chicken.',
+            '**Lala’s Gallery and Garden Cafe.** A garden café with a seasonal, vegetable-first menu, friendly to vegans and gluten-free diets, surrounded by Central American art.',
+          ] },
+          'A water taxi connects West Bay and West End in about ten minutes, so you can park once and do both in a day.',
+        ],
+      },
+      {
+        h: 'West End: sunsets, street food and diving',
+        body: [
+          'West End is a walkable village on a sandy road, with dive shops, small hotels and most of the island’s casual restaurants. It is where people who live on Roatán go on a Friday evening.',
+          { list: [
+            '**Half Moon Bay.** Free snorkeling straight from the beach: enter at the sheltered southern end and swim out to the reef, about 200 metres offshore, inside the Sandy Bay–West End marine reserve. Watch for boats.',
+            '**Sundowners.** The classic sunset bar on Half Moon Bay, with a happy hour. Come for the view and the drinks rather than the food.',
+            '**Creole’s Rotisserie Chicken.** Lightly spiced chicken with big sides; go for lunch or an early dinner before it sells out.',
+            '**Calelu’s.** Cheap, filling baleadas, the Honduran folded tortilla, for breakfast, lunch or dinner.',
+            '**Roatán Chocolate Factory.** A café with free tours of how the chocolate is made, and plenty to take home.',
+            '**Roatán Institute of Deepsea Exploration.** Submarine trips to about 600 metres (2,000 ft) below the surface, by reservation only. A once-in-a-lifetime outing for visitors.',
+          ] },
+        ],
+      },
+      {
+        h: 'Sandy Bay: gardens, history and dolphins',
+        body: [
+          { list: [
+            '**Carambola Botanical Gardens.** A large orchid collection and forest trails up the hill, with a view over the West End coast from the top. Go in the morning, before the heat.',
+            '**Roatán Museum.** A small museum of archaeological finds and island history at Anthony’s Key Resort.',
+            '**Dolphin encounters.** Anthony’s Key Resort also runs dolphin encounters and swims you can book online, a favourite with children.',
+          ] },
+        ],
+      },
+      {
+        h: 'Closer to home: French Harbour and the east',
+        body: [
+          'For everyday life you will mostly head east. French Harbour is the commercial hub of central Roatán, with the big supermarkets, hardware stores, marinas and banks. Read more in our [French Harbour area guide](/areas/french-harbour).',
+          { list: [
+            '**Gio’s.** A French Harbour institution for king crab in lemon butter, plus seafood and steaks.',
+            '**Arch’s Iguana & Marine Park.** Thousands of iguanas, plus turtles, monkeys and a fish hatchery, on French Cay. The iguanas gather around noon for lunch.',
+            '**Black Pearl golf course.** The island’s golf course at Pristine Bay Resort, designed by Perry Dye and opened in 2010.',
+            '**The Crow’s Nest, Oak Ridge.** A garden restaurant with seafood, smoked pork and mango margaritas, on the way to the quieter east end.',
+            '**Hole in the Wall, Jonesville.** A local favourite for lobster and shrimp that you reach by boat.',
+          ] },
+        ],
+      },
+      {
+        h: 'A weekend from Duna Tower',
+        body: [
+          { list: [
+            '**Saturday morning:** drive to West Bay before nine and snorkel the reef wall while the beach is quiet.',
+            '**Saturday afternoon:** water taxi to West End, chicken at Creole’s, then sunset at Sundowners on Half Moon Bay.',
+            '**Sunday morning:** the trails and orchids at Carambola Botanical Gardens in Sandy Bay.',
+            '**Sunday evening:** king crab at Gio’s in French Harbour, fifteen minutes from home.',
+          ], ordered: true },
+          { note: 'Opening hours, prices and menus on the island change often, and some places close in the low season. Check before you go.' },
+        ],
+      },
+      {
+        h: 'Living here',
+        body: [
+          'Living in Crawfish Rock means a quieter, newer part of the island with West Bay, West End and French Harbour all within a short drive, at prices well below beachfront West Bay. See the apartments, floor plans and construction progress on the [Duna Tower page](/developments/duna-tower), or browse [long-term rentals](/listings?deal=rent) if you would like to try the area first. Comparing areas? Start with [the best areas to live in Roatán](/guides/best-areas-to-live-in-roatan) and the [West Bay area guide](/areas/west-bay).',
+        ],
+      },
+    ],
+    sources: [SOURCES.westBayBeach, SOURCES.snorkelWestEnd, SOURCES.fodorsSights, SOURCES.fodorsFood, SOURCES.westEndFood, SOURCES.blackPearl],
+    related: ['renting-in-honduras-before-you-buy', 'buying-off-plan-in-honduras-questions-for-the-developer'],
+    guides: ['best-areas-to-live-in-roatan'],
+  },
+  {
     slug: 'buying-off-plan-in-honduras-questions-for-the-developer',
     title: 'Buying off-plan in Honduras: 10 questions to ask the developer before you sign',
     description: 'Pre-construction condos can be the best value in Honduras, or the costliest mistake. Ten questions about title, permits, payments, delays and handover to ask any developer first.',
