@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { localized } from '@/lib/seoMeta';
+import { localized, metaDescription } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Icon from '@/components/Icon';
@@ -8,16 +8,20 @@ import { getDeveloper, listDevelopments, queryListings } from '@/lib/db';
 import { getMoney } from '@/lib/currencyServer';
 import { SITE_NAME } from '@/lib/site';
 import { fromPrice, salesLabel } from '@/lib/units';
-import { getLp, getT } from '@/lib/i18n/server';
+import { getLang, getLp, getT } from '@/lib/i18n/server';
 
 type Props = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const dev = await getDeveloper((await params).slug);
   if (!dev) return {};
+  const [t, lang] = await Promise.all([getT(), getLang()]);
+  // «про компанію» в базі англійською — на /es шаблон, а не англійський текст
+  const about = lang === 'en' ? (dev.about ?? '').trim() : '';
   return localized(`/developers/${dev.slug}`, {
-    title: `${dev.name} — ${(await getT())('developer in Roatán')} | ${SITE_NAME}`,
-    description: dev.about.slice(0, 160) || `Developments by ${dev.name} on Roatán.`,
+    title: `${dev.name} — ${t('developer in Roatán')} | ${SITE_NAME}`,
+    description: metaDescription(about.length >= 70 ? about
+      : t('Developments by {name} on Roatán: projects, available apartments and contacts.', { name: dev.name })),
   });
 }
 

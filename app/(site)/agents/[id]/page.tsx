@@ -1,6 +1,6 @@
 import { cache } from 'react';
 import type { Metadata } from 'next';
-import { localized } from '@/lib/seoMeta';
+import { localized, metaDescription } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/BackButton';
@@ -21,9 +21,12 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const { id } = await params;
   const a = await loadAgent(id);
   if (!a) return { title: `Agent not found — ${SITE_NAME}` };
+  const [t, lang] = await Promise.all([getT(), getLang()]);
+  // «про себе» ріелтор пише англійською — на /es шаблон, а не англійський текст
+  const about = lang === 'en' ? (a.about ?? '').trim() : '';
   return localized(`/agents/${a.id}`, {
-    title: `${a.name} — ${a.agency || (await getT())('realtor')} | ${SITE_NAME}`,
-    description: (a.about || `${a.name}, realtor on Roatán — listings and contacts.`).slice(0, 200),
+    title: `${a.name} — ${a.agency || t('realtor')} | ${SITE_NAME}`,
+    description: metaDescription(about.length >= 70 ? about : t('{name}, realtor on Roatán: listings and contact details.', { name: a.name })),
   });
 }
 
