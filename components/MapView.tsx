@@ -235,9 +235,15 @@ export default function MapView({
         setReady(true);
       });
 
-      // перегруповуємо й домальовуємо маркери, коли карта зупинилась
+      // перегруповуємо й домальовуємо маркери, коли карта зупинилась.
+      // m.resize() у ефекті маркерів теж шле moveend, хоч вид не змінився, — без
+      // перевірки виду це нескінченний цикл рендерів, що вішає сторінку
+      let lastView = '';
       m.on('moveend', () => {
-        setViewTick((t) => t + 1);
+        const c = m.getCenter();
+        const { clientWidth: w, clientHeight: h } = m.getContainer();
+        const view = `${w}x${h}|${m.getZoom()}|${c.lng},${c.lat}`;
+        if (view !== lastView) { lastView = view; setViewTick((t) => t + 1); }
         if (quiet.current) return;
         const b = m.getBounds();
         onMovedRef.current?.([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]);
