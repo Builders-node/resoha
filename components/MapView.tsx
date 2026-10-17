@@ -162,11 +162,14 @@ export default function MapView({
   const popups = useRef<Record<string, Popup>>({});
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cache = useRef<Record<string, Listing>>({});
-  const clusterLayer = useRef<Marker[]>([]);
+  // усе, що зараз на карті: цінники (`p:id`) і кластери (`c:id,id…`)
+  const shown = useRef(new Map<string, Marker>());
+  // для чого ці маркери будували: інша вибірка, мова чи валюта — будуємо заново
+  const built = useRef<{ items: Pin[]; lang: Lang; money: Money } | null>(null);
   // підганяння меж під поточні піни; викликаємо, коли карта вперше отримала розмір
   const refit = useRef<(() => void) | null>(null);
   const lastSize = useRef({ w: 0, h: 0 });
-  const [zoomTick, setZoomTick] = useState(0);
+  const [viewTick, setViewTick] = useState(0);
   // вибірка, під яку карту вже підігнали: перегрупування після зуму її не міняє
   const fittedFor = useRef<Pin[] | null>(null);
   // >0, поки карту рухаємо ми самі — такі moveend не мають показувати «Search this area»
@@ -181,6 +184,7 @@ export default function MapView({
   const onHoverRef = useRef(onHover);
   const onMovedRef = useRef(onMoved);
   const areaRef = useRef(area);
+  const activeIdRef = useRef(activeId);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
   useEffect(() => { onHoverRef.current = onHover; }, [onHover]);
   useEffect(() => { onMovedRef.current = onMoved; }, [onMoved]);
@@ -231,9 +235,9 @@ export default function MapView({
         setReady(true);
       });
 
-      // перегруповуємо після кожної зміни масштабу
-      m.on('zoomend', () => setZoomTick((t) => t + 1));
+      // перегруповуємо й домальовуємо маркери, коли карта зупинилась
       m.on('moveend', () => {
+        setViewTick((t) => t + 1);
         if (quiet.current) return;
         const b = m.getBounds();
         onMovedRef.current?.([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]);
@@ -263,20 +267,27 @@ export default function MapView({
       map.current = null;
       markers.current = {};
       popups.current = {};
+      shown.current = new Map();
+      built.current = null;
       fittedFor.current = null;
       setReady(false);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* Групуємо піни, що злипаються на екрані: сітка 64px у поточному масштабі. */
-  const clusterize = (m: MLMap, pins: Pin[]) => {
+  /*
+   * Групуємо піни, що злипаються на екрані: сітка 64px у поточному масштабі.
+   * Сітка привʼязана до світу, а не до екрана, — тож при зсуві карти групи не міняються.
+   */
+  const clusterize = (ml: typeof import('maplibre-gl'), m: MLMap, pins: Pin[]) => {
     const CELL = 64;
+    const world = 512 * 2 ** m.getZoom();
     const cells = new Map<string, Pin[]>();
     pins.forEach((p) => {
-      const pt = m.project([p.lng, p.lat]);
-      const key = `${Math.floor(pt.x / CELL)}:${Math.floor(pt.y / CELL)}`;
-      cells.set(key, [...(cells.get(key) ?? []), p]);
+      const { x, y } = ml.MercatorCoordinate.fromLngLat([p.lng, p.lat]);
+      const key = `${Math.floor((x * world) / CELL)}:${Math.floor((y * world) / CELL)}`;
+      const cell = cells.get(key);
+      if (cell) cell.push(p); else cells.set(key, [p]);
     });
     return [...cells.values()].map((ps) => ({
       pins: ps,
@@ -285,18 +296,16 @@ export default function MapView({
     }));
   };
 
-  /* --- маркери + hover-картка --- */
+  /*
+   * --- маркери + hover-картка ---
+   * Маркери — це DOM-елементи, і MapLibre рухає кожен на кожному кадрі зуму.
+   * Тому тримаємо на карті лише ті, що біля видимої області, а після зупинки
+   * карти лише доставляємо нові й прибираємо зайві, не перебудовуючи решту.
+   */
   useEffect(() => {
     const ml = lib.current;
     const m = map.current;
     if (!ready || !ml || !m) return;
-
-    Object.values(markers.current).forEach((mk) => mk.remove());
-    Object.values(popups.current).forEach((p) => p.remove());
-    markers.current = {};
-    popups.current = {};
-    clusterLayer.current.forEach((c) => c.remove());
-    clusterLayer.current = [];
 
     const boundsOf = (pins: { lat: number; lng: number }[]) => {
       const b = new ml.LngLatBounds();
@@ -304,36 +313,88 @@ export default function MapView({
       return b;
     };
 
-    (m.getSource('glow') as GeoJSONSource).setData({
-      type: 'FeatureCollection',
-      features: items.map((p) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } })),
-    });
-
-    const groups = detail ? items.map((p) => ({ pins: [p], lat: p.lat, lng: p.lng })) : clusterize(m, items);
-    const singles: Pin[] = [];
-    groups.forEach((g) => {
-      if (g.pins.length === 1) { singles.push(g.pins[0]); return; }
-      // кластер: показуємо кількість, клік — наближення до його меж
-      const size = g.pins.length > 20 ? 52 : g.pins.length > 8 ? 46 : 40;
-      const node = document.createElement('div');
-      node.className = 'pin-cluster';
-      node.style.width = node.style.height = `${size}px`;
-      node.textContent = String(g.pins.length);
-      node.addEventListener('click', (e) => {
-        e.stopPropagation();
-        m.fitBounds(boundsOf(g.pins), { padding: 60, maxZoom: 17 });
+    const b0 = built.current;
+    if (!b0 || b0.items !== items || b0.lang !== lang || b0.money !== money) {
+      shown.current.forEach((mk) => mk.remove());
+      Object.values(popups.current).forEach((p) => p.remove());
+      shown.current.clear();
+      markers.current = {};
+      popups.current = {};
+      built.current = { items, lang, money };
+      (m.getSource('glow') as GeoJSONSource).setData({
+        type: 'FeatureCollection',
+        features: items.map((p) => ({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: [p.lng, p.lat] } })),
       });
-      clusterLayer.current.push(new ml.Marker({ element: node }).setLngLat([g.lng, g.lat]).addTo(m));
+    }
+
+    const fitToItems = (first: boolean) => quietly(() => {
+      if (detail && items[0]) {
+        if (pinned.length) {
+          // є місця поблизости — показуємо їх разом з обʼєктом, але не відлітаємо далеко
+          m.fitBounds(boundsOf([items[0], ...pinned.map((p) => ({ lat: p.lat!, lng: p.lng! }))]),
+            { padding: 70, maxZoom: 17, animate: false });
+          return;
+        }
+        m.jumpTo({ center: [items[0].lng, items[0].lat] });
+        return;
+      }
+      const a = areaRef.current;
+      if (a) {
+        // пошук по області: карта лишається там, де її поставили; підганяємо
+        // лише коли вид цю область не вміщає (відкрили посилання з bbox)
+        // запас 0.0001° — область з посунутої карти округлена до 4 знаків і може
+        // вилазити за вид на волосину; через це карта не має смикатись після кожного руху
+        const E = 0.0001;
+        const v = m.getBounds();
+        const fits = a[0] >= v.getSouth() - E && a[1] >= v.getWest() - E && a[2] <= v.getNorth() + E && a[3] <= v.getEast() + E;
+        if (first || !fits) m.fitBounds(new ml.LngLatBounds([a[1], a[0]], [a[3], a[2]]), { animate: false });
+        return;
+      }
+      if (!items.length) return;
+      if (items.length > 1) {
+        // запас під сам цінник: точка — його низ, а напис тягнеться в боки й угору
+        m.fitBounds(boundsOf(items), { padding: 80, animate: false });
+      } else {
+        m.jumpTo({ center: [items[0].lng, items[0].lat], zoom: Math.max(zoom, 14) });
+      }
     });
+    refit.current = () => fitToItems(true);
+
+    quietly(() => m.resize());
+    // перегрупування після руху карти вибірку не міняє — підганяємо лише під нову
+    if (fittedFor.current !== items) {
+      const first = fittedFor.current === null;
+      fittedFor.current = items;
+      fitToItems(first);
+    }
 
     const cancelClose = () => {
       if (closeTimer.current) { clearTimeout(closeTimer.current); closeTimer.current = null; }
     };
 
-    singles.forEach((l) => {
+    // кластер: показуємо кількість, клік — наближення до його меж
+    const addCluster = (pins: Pin[], lat: number, lng: number) => {
+      const size = pins.length > 20 ? 52 : pins.length > 8 ? 46 : 40;
+      // MapLibre ставить маркеру власний transform на кожному кадрі, тож вигляд
+      // (і анімації наведення) — на внутрішньому елементі, а не на самому маркері
       const node = document.createElement('div');
-      node.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
-      node.textContent = l.label ?? money.short(l.price, l.deal, lang);
+      const face = node.appendChild(document.createElement('div'));
+      face.className = 'pin-cluster';
+      face.style.width = face.style.height = `${size}px`;
+      face.textContent = String(pins.length);
+      node.addEventListener('click', (e) => {
+        e.stopPropagation();
+        m.fitBounds(boundsOf(pins), { padding: 60, maxZoom: 17 });
+      });
+      return new ml.Marker({ element: node }).setLngLat([lng, lat]).addTo(m);
+    };
+
+    const addPin = (l: Pin) => {
+      const node = document.createElement('div');
+      const face = node.appendChild(document.createElement('div'));
+      face.className = detail ? 'price-pin price-pin--hero' : 'price-pin';
+      face.classList.toggle('is-active', l.id === activeIdRef.current);
+      face.textContent = l.label ?? money.short(l.price, l.deal, lang);
       // цінник висить над будинком, як прапорець, — сам будинок і сяйво під ним лишаються видні
       const mk = new ml.Marker({ element: node, anchor: 'bottom', offset: detail ? [0, -30] : [0, -12] })
         .setLngLat([l.lng, l.lat])
@@ -373,48 +434,39 @@ export default function MapView({
       }
 
       markers.current[l.id] = mk;
+      return mk;
+    };
+
+    // що має бути на карті зараз: групи в межах видимої області з запасом в екран
+    // на кожен бік, щоб при перетягуванні цінники не зʼявлялись із запізненням
+    const { clientWidth: w, clientHeight: h } = m.getContainer();
+    const groups = detail ? items.map((p) => ({ pins: [p], lat: p.lat, lng: p.lng })) : clusterize(ml, m, items);
+    const want = new Map<string, (typeof groups)[number]>();
+    groups.forEach((g) => {
+      if (!detail) {
+        const pt = m.project([g.lng, g.lat]);
+        if (pt.x < -w || pt.x > 2 * w || pt.y < -h || pt.y > 2 * h) return;
+      }
+      want.set(g.pins.length === 1 ? `p:${g.pins[0].id}` : `c:${g.pins.map((p) => p.id).join(',')}`, g);
     });
 
-    const fitToItems = (first: boolean) => quietly(() => {
-      if (detail && items[0]) {
-        if (pinned.length) {
-          // є місця поблизости — показуємо їх разом з обʼєктом, але не відлітаємо далеко
-          m.fitBounds(boundsOf([items[0], ...pinned.map((p) => ({ lat: p.lat!, lng: p.lng! }))]),
-            { padding: 70, maxZoom: 17, animate: false });
-          return;
-        }
-        m.jumpTo({ center: [items[0].lng, items[0].lat] });
-        return;
-      }
-      const a = areaRef.current;
-      if (a) {
-        // пошук по області: карта лишається там, де її поставили; підганяємо
-        // лише коли вид цю область не вміщає (відкрили посилання з bbox)
-        // запас 0.0001° — область з посунутої карти округлена до 4 знаків і може
-        // вилазити за вид на волосину; через це карта не має смикатись після кожного руху
-        const E = 0.0001;
-        const v = m.getBounds();
-        const fits = a[0] >= v.getSouth() - E && a[1] >= v.getWest() - E && a[2] <= v.getNorth() + E && a[3] <= v.getEast() + E;
-        if (first || !fits) m.fitBounds(new ml.LngLatBounds([a[1], a[0]], [a[3], a[2]]), { animate: false });
-        return;
-      }
-      if (!items.length) return;
-      if (items.length > 1) {
-        // запас під сам цінник: точка — його низ, а напис тягнеться в боки й угору
-        m.fitBounds(boundsOf(items), { padding: 80, animate: false });
-      } else {
-        m.jumpTo({ center: [items[0].lng, items[0].lat], zoom: Math.max(zoom, 14) });
+    shown.current.forEach((mk, key) => {
+      if (want.has(key)) return;
+      mk.remove();
+      shown.current.delete(key);
+      if (key.startsWith('p:')) {
+        const id = key.slice(2);
+        popups.current[id]?.remove();
+        delete popups.current[id];
+        delete markers.current[id];
       }
     });
-    refit.current = () => fitToItems(true);
-
-    quietly(() => m.resize());
-    if (fittedFor.current === items) return;   // це перегрупування, а не нова вибірка
-    const first = fittedFor.current === null;
-    fittedFor.current = items;
-    fitToItems(first);
+    want.forEach((g, key) => {
+      if (shown.current.has(key)) return;
+      shown.current.set(key, g.pins.length === 1 ? addPin(g.pins[0]) : addCluster(g.pins, g.lat, g.lng));
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [items, ready, zoomTick, lang, money]);
+  }, [items, ready, viewTick, lang, money]);
 
   /*
    * --- будинки обʼєктів помаранчеві: шукаємо їх у векторних тайлах біля пінів ---
@@ -429,6 +481,8 @@ export default function MapView({
     // setData сам знову будить карту, і після нього прийде ще один idle —
     // оновлюємо джерела лише коли результат справді змінився, інакше вийде цикл
     let last = '';
+    // idle приходить і після нашого ж setData — той самий вид вдруге не рахуємо
+    let lastView = '';
     const put = (buildings: FeatureCollection, plot: FeatureCollection) => {
       const key = JSON.stringify([buildings, plot]);
       if (key === last) return;
@@ -438,6 +492,9 @@ export default function MapView({
     };
     const highlight = () => {
       if (!m.isSourceLoaded('omt')) return;
+      const viewKey = `${m.getZoom()}|${m.getBounds().toArray()}`;
+      if (!detail && viewKey === lastView) return;
+      lastView = viewKey;
       if (m.getZoom() < 13) { put(EMPTY, EMPTY); return; }
       const feats = m.querySourceFeatures('omt', { sourceLayer: 'building' }) as never;
       if (detail) {
@@ -481,12 +538,13 @@ export default function MapView({
 
   /* --- підсвітка активного --- */
   useEffect(() => {
+    activeIdRef.current = activeId;
     Object.entries(markers.current).forEach(([id, mk]) => {
       const node = mk.getElement();
-      node.classList.toggle('is-active', id === activeId);
+      node.firstElementChild?.classList.toggle('is-active', id === activeId);
       node.style.zIndex = id === activeId ? '2' : '';
     });
-  }, [activeId, items, ready, zoomTick]);
+  }, [activeId, items, ready, viewTick]);
 
   /* --- шари: схема / супутник --- */
   useEffect(() => {
