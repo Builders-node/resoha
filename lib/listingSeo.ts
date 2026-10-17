@@ -112,7 +112,8 @@ export function listingSummary(l: L, lang: Lang) {
 
 /** meta description: довідка, потім початок опису ріелтора — до ~160 знаків, по межі слова. */
 export function listingMetaDescription(l: L & { text: string; textEs?: string }, lang: Lang) {
-  const body = (lang === 'es' && l.textEs?.trim() ? l.textEs : l.text).replace(/\s+/g, ' ').trim();
+  // іспанською без body_es опис ріелтора не дописуємо: англійський хвіст у сніпеті /es ні до чого
+  const body = (lang === 'es' ? l.textEs ?? '' : l.text).replace(/\s+/g, ' ').trim();
   const s = `${listingSummary(l, lang)} ${body}`.trim();
   if (s.length <= 160) return s;
   const cut = s.slice(0, 157);
