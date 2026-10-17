@@ -1,13 +1,16 @@
 import { BUILDING_STAGES, stageIndex, stageLabel } from '@/lib/units';
 import type { Building, Listing } from '@/lib/types';
 import { getT } from '@/lib/i18n/server';
+import OptImg from './OptImg';
 
 /**
  * «Статус будівництва»: картка на кожен дім ЖК — фото, назва, стадія зі шкалою,
  * поверхи й кількість квартир, термін здачі, адреса. Клік веде до шахматки цього дому.
  */
-export default async function DevelopmentBuildings({ buildings, units, fallbackPhoto, hrefFor }: {
+export default async function DevelopmentBuildings({ buildings, units, fallbackPhoto, hrefFor, devName }: {
   buildings: Building[];
+  /** Назва ЖК для alt фото: «Darien Village, Building C» */
+  devName: string;
   units: Listing[];
   fallbackPhoto: string;
   /** Куди веде картка; за замовчуванням — до шахматки дому на тій самій сторінці */
@@ -23,7 +26,9 @@ export default async function DevelopmentBuildings({ buildings, units, fallbackP
         const done = b.stage === 'built' || b.stage === 'delivered';
         return (
           <a key={b.id} href={hrefFor ? hrefFor(b) : `#bld-${b.id}`} className="bld">
-            {photo ? <img src={photo} alt="" className="bld__img" loading="lazy" /> : <div className="bld__img bld__img--empty" />}
+            {photo
+              ? <OptImg src={photo} alt={`${devName}, ${b.name}`} className="bld__img" sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 360px" />
+              : <div className="bld__img bld__img--empty" />}
             <span className="bld__name">{b.name}</span>
             <div className="bld__body">
               <b className="bld__stage">{t(stageLabel(b.stage))}</b>

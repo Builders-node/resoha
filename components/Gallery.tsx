@@ -2,8 +2,20 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import Photo from './Photo';
+import OptImg from './OptImg';
 import { photoUrl } from '@/lib/format';
 import { useT } from './LangProvider';
+
+/**
+ * Ширина плитки сітки (sizes) — як у CSS .gallery: на десктопі перша плитка 2fr з 4fr
+ * (з 3fr, коли фото 2–3), на телефоні (≤860px) — дві колонки, перша на всю ширину.
+ */
+function tileSizes(i: number, n: number) {
+  if (n === 1) return '(max-width: 1500px) 100vw, 1400px';
+  const desk = i === 0 ? (n <= 3 ? 67 : 50) : (n <= 3 ? 33 : 25);
+  const full = i === 0 || (n === 2 && i === 1) || (n === 4 && i === 3);
+  return `(max-width: 860px) ${full ? 100 : 50}vw, (max-width: 1500px) ${desk}vw, ${desk * 14}px`;
+}
 
 /**
  * Фото обʼєкта: сітка з п'яти на сторінці і повноекранний перегляд усіх фото,
@@ -29,7 +41,7 @@ export default function Gallery({ photos, title }: { photos: string[]; title: st
         {shown.map((p, i) => (
           <button key={`${i}-${p}`} type="button" className="gallery__tile" onClick={() => setOpen(i)}
             aria-label={t('Open photo {n} of {total}', { n: i + 1, total: photos.length })}>
-            <Photo src={p} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} eager={i === 0} />
+            <Photo src={p} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} eager={i === 0} sizes={tileSizes(i, shown.length)} />
             {i === shown.length - 1 && more > 0 && <span className="gallery__more">+{more}</span>}
           </button>
         ))}
@@ -93,7 +105,7 @@ export function Lightbox({ photos, title, start, onClose, captions }: {
         {n > 1 && (
           <button type="button" className="lightbox__nav lightbox__nav--prev" onClick={() => go(-1)} aria-label={t('Previous photo')}>‹</button>
         )}
-        <img src={photoUrl(photos[i])} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} />
+        <OptImg src={photoUrl(photos[i])} alt={`${title} — ${t('photo {n}', { n: i + 1 })}`} width={1600} eager />
         {n > 1 && (
           <button type="button" className="lightbox__nav lightbox__nav--next" onClick={() => go(1)} aria-label={t('Next photo')}>›</button>
         )}
@@ -102,7 +114,7 @@ export function Lightbox({ photos, title, start, onClose, captions }: {
         <div className="lightbox__thumbs" ref={thumbs}>
           {photos.map((p, k) => (
             <button key={`${k}-${p}`} type="button" className={k === i ? 'is-on' : ''} onClick={() => setI(k)} aria-label={t('Photo {n}', { n: k + 1 })}>
-              <img src={photoUrl(p)} alt="" loading="lazy" />
+              <OptImg src={photoUrl(p)} sizes="76px" />
             </button>
           ))}
         </div>

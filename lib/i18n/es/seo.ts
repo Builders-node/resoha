@@ -1,6 +1,15 @@
 /** Заголовки й описи сторінок для пошуковиків, заголовки каталогу з фільтрів, сторінки каталогу. */
 export const ES_SEO: Record<string, string> = {
   /* заголовки й описи сторінок */
+  'Typical prices: {range}.': 'Precios típicos: {range}.',
+  'Apartment layouts with floor plans, sizes, prices per m² and availability.':
+    'Planos de los apartamentos, tamaños, precio por m² y disponibilidad.',
+  'Sales office address, opening hours, booking a visit, the agent and the developer.':
+    'Dirección de la sala de ventas, horarios, cómo agendar una visita, el agente y el desarrollador.',
+  '{name}: apartments for sale and rent in {area}, Roatán.': '{name}: apartamentos en venta y alquiler en {area}, Roatán.',
+  'Developments by {name} on Roatán: projects, available apartments and contacts.':
+    'Proyectos de {name} en Roatán: desarrollos, apartamentos disponibles y contacto.',
+  '{name}, realtor on Roatán: listings and contact details.': '{name}, agente inmobiliario en Roatán: anuncios y datos de contacto.',
   'Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land':
     'Bienes raíces en Roatán, San Pedro Sula y Tegucigalpa: casas, condominios y terrenos',
   'Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.':

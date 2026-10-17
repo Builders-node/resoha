@@ -8,6 +8,7 @@ import AuthModal from '@/components/AuthModal';
 import JsonLd from '@/components/JsonLd';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Clarity from '@/components/Clarity';
+import GaSignup from '@/components/GaSignup';
 import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import LangProvider from '@/components/LangProvider';
@@ -55,6 +56,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         </CurrencyProvider>
         </LangProvider>
         <GoogleAnalytics />
+        <GaSignup />
         <Clarity />
       </body>
     </html>

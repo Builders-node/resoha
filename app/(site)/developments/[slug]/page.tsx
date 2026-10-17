@@ -108,7 +108,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
             <h2 className="dev__title">{t(buildings.length > 1 ? 'Buildings' : 'Construction status')}</h2>
             <Link className="dev__more" href={`${base}/construction`}>{t('Construction progress')} →</Link>
           </div>
-          <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''} />
+          <DevelopmentBuildings buildings={buildings} units={units} devName={dev.name} fallbackPhoto={dev.photos[0] ?? ''} />
         </section>
       )}
 

@@ -5,6 +5,7 @@ import { EMBED_HEIGHT_MESSAGE, type EmbedView } from '@/lib/embed';
 import { fmtNumber, fmtPrice, fmtPriceShort } from '@/lib/format';
 import { statusLabel, toM2, type UnitStatus } from '@/lib/units';
 import type { Deal } from '@/lib/types';
+import { gaLead } from '@/lib/gtag';
 
 /** Квартира у віджеті: лише те, що показуємо, — без решти полів оголошення */
 export interface EmbedUnit {
@@ -112,7 +113,7 @@ export default function EmbedWidget({ units, view: initialView, canGrid, form, d
       }),
     }).catch(() => null);
     setSending(false);
-    if (res?.ok) { setSent(true); return; }
+    if (res?.ok) { setSent(true); gaLead('form', { listingId: unit?.id || defaultUnitId, price: unit?.price }); return; }
     setError(t((await res?.json().catch(() => ({})))?.error ?? 'Something went wrong'));
   }
 

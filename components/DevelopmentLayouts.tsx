@@ -402,8 +402,8 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
             <div className="lm__main">
               <div className="lm__plan">
                 {l.plan
-                  ? <a href={l.plan} target="_blank" rel="noopener" title={t('Open full size')}><Photo src={l.plan} alt={title} eager /></a>
-                  : <Photo src={l.lead.photos[0]} alt={title} label="Plan coming soon" eager />}
+                  ? <a href={l.plan} target="_blank" rel="noopener" title={t('Open full size')}><Photo src={l.plan} alt={title} eager optimize={false} /></a>
+                  : <Photo src={l.lead.photos[0]} alt={title} label="Plan coming soon" eager optimize={false} />}
                 <FavButton listingId={l.lead.id} initial={favIds.includes(l.lead.id)} className="fav lay__fav" />
               </div>
 

@@ -15,6 +15,8 @@ import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
 import { getMoney } from '@/lib/currencyServer';
+import JsonLd from '@/components/JsonLd';
+import { agencyLd, breadcrumbLd, graph } from '@/lib/seo';
 
 const loadAgency = cache(getAgency);
 
@@ -48,9 +50,17 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
   const cheapest = listings.filter((l) => l.deal === 'sale').sort((a, b) => a.price - b.price)[0];
   const views = listings.reduce((s, l) => s + l.views, 0);
   const areas = [...new Set(listings.map((l) => l.neighborhood))];
+  const about = agency.about || t('Roatán real-estate agency on Hogarli.');
+  // крихти як у підвалі сторінки
+  const crumbs = [
+    { name: t('Home'), path: '/' },
+    { name: t('Agencies'), path: '/listings?deal=sale' },
+    { name: agency.name, path: `/agency/${agency.id}` },
+  ];
 
   return (
     <div className="wrap">
+      <JsonLd data={graph(agencyLd(agency, team, areas, about), breadcrumbLd(crumbs))} />
       <div className="crumbs small muted"><BackButton variant="inline" fallback="/" /></div>
 
       <header className="org" style={{ background: agency.brand }}>
@@ -60,7 +70,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
             {agency.name}
             {agency.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
           </h1>
-          <p className="org__about">{agency.about || t('Roatán real-estate agency on Hogarli.')}</p>
+          <p className="org__about">{about}</p>
           <div className="org__contacts">
             {agency.phone && <a href={`tel:${agency.phone.replace(/[^+\d]/g, '')}`}><Icon name="phone" size={16} /> {agency.phone}</a>}
             {agency.email && <a href={`mailto:${agency.email}`}><Icon name="inbox" size={16} /> {agency.email}</a>}

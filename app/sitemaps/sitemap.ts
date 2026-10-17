@@ -5,8 +5,8 @@ import { GUIDES } from '@/lib/content/guides';
 import { POSTS, TOPICS } from '@/lib/content/blog';
 import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
-import { fromParams } from '@/lib/filters';
-import { catalogUrl } from '@/lib/catalogSeo';
+import { fromParams, toQuery } from '@/lib/filters';
+import { catalogUrl, loadCatalogPage } from '@/lib/catalogSeo';
 import { both, sitemapCatalogCombos, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
 
 /**
@@ -32,12 +32,18 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
   if (key === 'pages') {
     // міста й райони — лише ті, де є оголошення; без бази лишаються загальні сторінки
     const combos = await sitemapCatalogCombos().catch(() => []);
+    // порожня загальна добірка (скажімо, «готова до будівництва» земля) має noindex — у карту не йде
+    const catalog = (await Promise.all(CATALOG.map(async (u) => {
+      const f = fromParams(new URLSearchParams(u.split('?')[1] ?? ''));
+      const { total } = await loadCatalogPage(toQuery(f), 1).catch(() => ({ total: 1 }));
+      return total > 0 ? u : null;
+    }))).filter((u): u is string => u !== null);
     const local = combos
       .map((c) => catalogUrl(fromParams(new URLSearchParams({ deal: c.deal, type: c.type, island: c.island, neighborhoods: c.neighborhood }))))
       .filter((u) => !CATALOG.includes(u));
     return [
       ...both('/', { changeFrequency: 'daily', priority: 1 }),
-      ...CATALOG.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.9 })),
+      ...catalog.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.9 })),
       ...local.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.8 })),
       ...both('/land-passport', { changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/market', { lastModified: new Date(MARKET_UPDATED), changeFrequency: 'monthly', priority: 0.8 }),
@@ -64,7 +70,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       ...developments.flatMap((d) => [
         ...both(`/developments/${d.slug}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly', priority: 0.9, images: d.photos }),
         // вкладки, які є в кожного ЖК; решта (стройка, документи, новини) — лише коли заповнені
-        ...['layouts', 'contacts'].flatMap((t) => both(`/developments/${d.slug}/${t}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 })),
+        ...(d.units ? ['layouts', 'contacts'] : ['contacts']).flatMap((t) => both(`/developments/${d.slug}/${t}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 })),
       ]),
       ...both('/developers', { changeFrequency: 'weekly', priority: 0.6 }),
       ...developers.flatMap((d) => both(`/developers/${d.slug}`, { changeFrequency: 'weekly', priority: 0.6 })),

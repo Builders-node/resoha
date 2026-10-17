@@ -1,11 +1,14 @@
-import type { Development, Listing } from './types';
-import type { Lang } from './i18n';
+import type { Agency, Agent, Developer, Development, Listing } from './types';
+import { makeT, type Lang } from './i18n';
 import { localePath } from './i18n/paths';
 import type { Guide } from './content/guides';
 import { readingMinutes, topicBySlug, type Post } from './content/blog';
 import { plain } from '@/components/Rich';
 import { CONTACT_EMAIL, OPERATOR, SITE_NAME, SITE_URL } from './site';
-import { TYPE_LABELS } from './format';
+import { DEAL_LABELS, TYPE_LABELS, photoUrl } from './format';
+import { EMPTY_FILTERS, type Filters } from './filters';
+import { PAGE_SIZE } from './db';
+import { catalogTitle, catalogUrl, isIndexable } from './catalogSeo';
 import { IN_UNIT } from './details';
 import { REGIONS, regionByName } from './regions';
 
@@ -282,6 +285,108 @@ export function developmentLd(d: Development, units: Listing[]) {
       },
     } : {}),
   };
+}
+
+/** Райони без повторів і порожніх → areaServed. */
+const placesOf = (names: string[]) => [...new Set(names.filter(Boolean))]
+  .map((name) => ({ '@type': 'Place', name: `${name}, Honduras` }));
+
+/**
+ * Сторінка каталогу: ItemList показаних оголошень і «хлібні крихти» Головна → розділ → добірка.
+ * Лише для індексованих комбінацій; для решти — null, розмітки немає.
+ */
+export function catalogLd(f: Filters, items: Pick<Listing, 'id' | 'title'>[], page: number, lang: Lang) {
+  if (!isIndexable(f) || !items.length || (f.deal !== 'sale' && f.deal !== 'rent')) return null;
+  const t = makeT(lang);
+  const title = catalogTitle(f, lang);
+  const path = catalogUrl(f, page);
+  const section = catalogUrl({ ...EMPTY_FILTERS, deal: f.deal });
+  const offset = (page - 1) * PAGE_SIZE;
+  return [
+    {
+      '@type': 'ItemList',
+      '@id': `${abs(path)}#list`,
+      name: title,
+      url: abs(path),
+      numberOfItems: items.length,
+      itemListElement: items.map((l, i) => ({
+        '@type': 'ListItem', position: offset + i + 1, url: abs(`/listings/${l.id}`), name: l.title,
+      })),
+    },
+    breadcrumbLd([
+      { name: t('Home'), path: '/' },
+      // добірка «лише продаж» і є сторінкою розділу — другої крихти з тією ж адресою не треба
+      ...(catalogUrl(f) !== section ? [{ name: t(DEAL_LABELS[f.deal]), path: section }] : []),
+      { name: title, path },
+    ]),
+  ];
+}
+
+/** Ріелтор: лише те, що видно на його сторінці (телефон показуємо, пошту — ні). */
+export function agentLd(a: Agent, agency: Pick<Agency, 'id' | 'name'> | null, areas: string[]) {
+  const url = abs(`/agents/${a.id}`);
+  const image = photoUrl(a.avatar);
+  const served = placesOf(areas);
+  return {
+    '@type': 'RealEstateAgent',
+    '@id': `${url}#agent`,
+    name: a.name,
+    url,
+    ...(image ? { image: abs(image) } : {}),
+    ...(a.about ? { description: a.about.slice(0, 500) } : {}),
+    ...(a.phone ? { telephone: a.phone } : {}),
+    ...(a.languages.length ? { knowsLanguage: a.languages } : {}),
+    ...(served.length ? { areaServed: served } : {}),
+    ...(agency ? { parentOrganization: { '@type': 'RealEstateAgent', '@id': `${abs(`/agency/${agency.id}`)}#agency`, name: agency.name, url: abs(`/agency/${agency.id}`) } } : {}),
+  };
+}
+
+/** Агенція: контакти з шапки сторінки, райони з її оголошень, команда — посиланнями на ріелторів. */
+export function agencyLd(a: Agency, team: Pick<Agent, 'id' | 'name'>[], areas: string[], description: string) {
+  const url = abs(`/agency/${a.id}`);
+  const served = placesOf(areas);
+  return {
+    '@type': 'RealEstateAgent',
+    '@id': `${url}#agency`,
+    name: a.name,
+    url,
+    ...(description ? { description: description.slice(0, 500) } : {}),
+    ...(a.phone ? { telephone: a.phone } : {}),
+    ...(a.email ? { email: a.email } : {}),
+    ...(served.length ? { areaServed: served } : {}),
+    ...(team.length ? { employee: team.map((m) => ({ '@type': 'Person', name: m.name, url: abs(`/agents/${m.id}`) })) } : {}),
+  };
+}
+
+/** Забудовник як Organization і його ЖК окремим ItemList (makesOffer вимагав би цін). */
+export function developerLd(d: Developer, projects: Pick<Development, 'slug' | 'name' | 'neighborhood'>[]) {
+  const url = abs(`/developers/${d.slug}`);
+  const logo = photoUrl(d.logo);
+  const served = placesOf(projects.map((p) => p.neighborhood));
+  const site = /^https?:\/\//.test(d.website) ? d.website : '';
+  const org = {
+    '@type': 'Organization',
+    '@id': `${url}#developer`,
+    name: d.name,
+    url,
+    ...(logo ? { logo: abs(logo), image: abs(logo) } : {}),
+    ...(d.about ? { description: d.about.slice(0, 500) } : {}),
+    ...(d.founded ? { foundingDate: String(d.founded) } : {}),
+    ...(d.phone ? { telephone: d.phone } : {}),
+    ...(d.email ? { email: d.email } : {}),
+    ...(site ? { sameAs: [site] } : {}),
+    ...(served.length ? { areaServed: served } : {}),
+  };
+  if (!projects.length) return [org];
+  return [org, {
+    '@type': 'ItemList',
+    '@id': `${url}#developments`,
+    name: `${d.name} developments`,
+    numberOfItems: projects.length,
+    itemListElement: projects.map((p, i) => ({
+      '@type': 'ListItem', position: i + 1, url: abs(`/developments/${p.slug}`), name: p.name,
+    })),
+  }];
 }
 
 const LINK_KEYS = new Set(['url', 'item', 'mainEntityOfPage', '@id', 'urlTemplate']);

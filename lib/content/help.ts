@@ -207,7 +207,7 @@ export const HELP_SECTIONS: HelpSection[] = [
         id: 'airbnb',
         q: 'Is a holiday rental on Roatán profitable?',
         a: [
-          'It can be. AirDNA reports 1,002 active short-term rentals on the island, with 43% average occupancy at about $209 a night. That is roughly $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs.',
+          'It can be. AirDNA reports 1,002 active short-term rentals on the island, with 43% average occupancy at about $209 a night and about $15,500 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs, but only the best-run units reach that.',
         ],
       },
       {

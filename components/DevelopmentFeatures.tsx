@@ -61,7 +61,8 @@ export async function PhotoStrip({ photos, title }: { photos: string[]; title: s
   return (
     <div className="pstrip" tabIndex={0} aria-label={t('{name} photos', { name: title })}>
       {photos.map((p, i) => (
-        <div key={`${i}-${p}`} className="pstrip__item"><Photo src={p} alt={t('{name} — photo {n}', { name: title, n: i + 1 })} /></div>
+        <div key={`${i}-${p}`} className="pstrip__item"><Photo src={p} alt={t('{name} — photo {n}', { name: title, n: i + 1 })}
+          sizes="(max-width: 1200px) 100vw, 900px" /></div>
       ))}
     </div>
   );

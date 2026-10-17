@@ -42,15 +42,40 @@ export function listingHeadline(l: L, lang: Lang) {
 
 const fold = (s: string) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-/** <title>: назва ріелтора + те, чого в ній бракує (тип, угода, місце), + ціна. */
-export function listingMetaTitle(l: L, lang: Lang) {
-  const title = l.title.trim();
+/** Коротка назва типу для <title>: «Studio», «2-bed condo», «Casa de 3 hab.». */
+const SHORT: Record<Lang, { studio: string; beds: (n: number, what: string) => string; deal: Record<string, string> }> = {
+  en: { studio: 'Studio', beds: (n, what) => `${n}-bed ${what}`, deal: { sale: 'for sale', rent: 'for rent' } },
+  es: { studio: 'Estudio', beds: (n, what) => `${what} de ${n} hab.`, deal: { sale: 'en venta', rent: 'en alquiler' } },
+};
+
+/** Скільки знаків <title> влазить у видачу до « | Hogarli». */
+const TITLE_MAX = 60;
+
+/**
+ * <title> за шаблоном «{тип} {угода}, {будинок}, {район} · {ціна}» — до ~60 знаків, щоб Google
+ * не обрізав. Будинок — ЖК з номером квартири; у звичайного оголошення англійською — коротка
+ * назва ріелтора, якщо влазить. Іспанською назву ріелтора не беремо: вона англійська.
+ */
+export function listingMetaTitle(l: L & { address?: string }, lang: Lang) {
+  const sh = SHORT[lang];
+  const base = SINGULAR[lang][l.type] ?? makeT(lang)('property');
+  let what = base;
+  if (l.type !== 'land' && l.type !== 'commercial') {
+    what = l.beds > 0 ? sh.beds(l.beds, base) : l.type === 'condo' ? sh.studio : base;
+  }
+  const head = `${what.charAt(0).toUpperCase()}${what.slice(1)} ${sh.deal[l.deal] ?? ''}`.trim();
+  const city = listingCity(l);
+  const area = l.neighborhood || city;
   const price = fmtPrice(l.price, l.deal, lang);
-  const has = (s: string) => Boolean(s) && fold(title).includes(fold(s));
-  // назва вже каже, що це за угода і де (район і місто), — досить ціни; інакше додаємо «тип · угода · місце»
-  const dealWords = l.deal === 'rent' ? ['rent', 'alquiler', 'renta'] : ['sale', 'venta'];
-  if (has(l.neighborhood) && has(listingCity(l)) && dealWords.some(has)) return `${title} — ${price}`;
-  return `${title} — ${listingHeadline(l, lang)}, ${price}`;
+  const building = l.development
+    ? `${l.development.name}${l.unitNo ? ` #${l.unitNo}` : ''}`
+    : lang === 'en' ? l.title.trim() : (l.address ?? '').trim();
+  const fold2 = (s: string) => fold(s).replace(/[^a-z0-9]+/g, ' ').trim();
+  // назва ріелтора, що лише повторює тип і угоду («Studio for rent»), нічого не додає
+  const useful = building && !fold2(head).includes(fold2(building));
+  const full = `${head}, ${useful ? `${building}, ` : ''}${area} · ${price}`;
+  if (full.length <= TITLE_MAX || l.development) return full;
+  return `${head}, ${area} · ${price}`;
 }
 
 /**
@@ -87,7 +112,8 @@ export function listingSummary(l: L, lang: Lang) {
 
 /** meta description: довідка, потім початок опису ріелтора — до ~160 знаків, по межі слова. */
 export function listingMetaDescription(l: L & { text: string; textEs?: string }, lang: Lang) {
-  const body = (lang === 'es' && l.textEs?.trim() ? l.textEs : l.text).replace(/\s+/g, ' ').trim();
+  // іспанською без body_es опис ріелтора не дописуємо: англійський хвіст у сніпеті /es ні до чого
+  const body = (lang === 'es' ? l.textEs ?? '' : l.text).replace(/\s+/g, ' ').trim();
   const s = `${listingSummary(l, lang)} ${body}`.trim();
   if (s.length <= 160) return s;
   const cut = s.slice(0, 157);
