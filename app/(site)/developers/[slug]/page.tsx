@@ -9,6 +9,8 @@ import { getMoney } from '@/lib/currencyServer';
 import { SITE_NAME } from '@/lib/site';
 import { fromPrice, salesLabel } from '@/lib/units';
 import { getLang, getLp, getT } from '@/lib/i18n/server';
+import JsonLd from '@/components/JsonLd';
+import { developerLd, graph } from '@/lib/seo';
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -37,6 +39,7 @@ export default async function DeveloperPage({ params }: Props) {
 
   return (
     <div className="wrap" style={{ padding: '32px 32px 60px' }}>
+      <JsonLd data={graph(...developerLd(dev, projects))} />
       <div className="profile-head">
         <Photo className="dev-logo" src={dev.logo} alt={dev.name} label="" />
         <div>
