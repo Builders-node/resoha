@@ -17,6 +17,8 @@ import { getCurrencyRate } from '@/lib/currencyServer';
 import { makeT } from '@/lib/i18n';
 import { OG_LOCALE } from '@/lib/seoMeta';
 
+const BING_VERIFICATION = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION?.trim();
+
 // next/font сам хостить шрифт: раніше сторінка чекала на окремий CSS із fonts.googleapis.com
 const inter = Inter({
   subsets: ['latin'],
@@ -34,6 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
     description: t('Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.'),
     openGraph: { siteName: SITE_NAME, type: 'website', locale: OG_LOCALE[lang] },
     twitter: { card: 'summary_large_image' },
+    // код із Bing Webmaster Tools (спосіб «HTML Meta Tag»): без змінної тег не виводимо
+    ...(BING_VERIFICATION && { verification: { other: { 'msvalidate.01': BING_VERIFICATION } } }),
   };
 }
 
