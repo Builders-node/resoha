@@ -1,9 +1,21 @@
 'use client';
 import { useState } from 'react';
 import { Lightbox } from './Gallery';
+import OptImg from './OptImg';
 import { useT } from './LangProvider';
 import { photoUrl } from '@/lib/format';
 import { roomLabel, type TourGroup } from '@/lib/rooms';
+
+/**
+ * Ширина фото в плитці (sizes): плиток три в ряд у колонці сторінки (дві на телефоні),
+ * кожне фото — половина плитки, окрім одиночного і третього з трьох.
+ */
+function tourSizes(i: number, n: number) {
+  const whole = n === 1 || (n === 3 && i === 2);
+  return whole
+    ? '(max-width: 560px) 50vw, (max-width: 1200px) 33vw, 320px'
+    : '(max-width: 560px) 25vw, (max-width: 1200px) 17vw, 160px';
+}
 
 /**
  * Фототур, як у LUN: кожна кімната — плитка з чотирьох фото і назва під нею.
@@ -29,7 +41,7 @@ export default function PhotoTour({ groups, title }: { groups: TourGroup[]; titl
             <button key={g.room} type="button" className="tour__item" onClick={() => setOpen(starts[k])}
               aria-label={t('{room}: {n} photos', { room: label, n: g.photos.length })}>
               <span className={`tour__tile tour__tile--n${shown.length}`}>
-                {shown.map((p, i) => <img key={`${i}-${p}`} src={photoUrl(p)} alt="" loading="lazy" />)}
+                {shown.map((p, i) => <OptImg key={`${i}-${p}`} src={photoUrl(p)} sizes={tourSizes(i, shown.length)} />)}
               </span>
               <span className="tour__name">{label}</span>
             </button>

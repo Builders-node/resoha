@@ -1,8 +1,23 @@
 import type { NextConfig } from 'next';
 
-// Картинки віддаємо звичайним <img> (Supabase Storage і плейсхолдери),
-// тому окремої конфігурації next/image тут не потрібно.
 const nextConfig: NextConfig = {
+  // Фото оголошень і ЖК ідуть через оптимізатор /_next/image (components/OptImg.tsx):
+  // браузер отримує AVIF/WebP під ширину картки, а не оригінал на кілька мегабайт.
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    // 4K не потрібен: найширше фото — галерея на всю ширину екрана
+    deviceSizes: [640, 750, 828, 1080, 1200, 1600, 1920],
+    imageSizes: [96, 128, 256, 384],
+    qualities: [75],
+    // фото за адресою не змінюються (нове фото — новий файл), тож кешуємо надовго
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [
+      // Supabase Storage — основне сховище фото
+      { protocol: 'https', hostname: 'zgfcysoyksticnbgbhxb.supabase.co' },
+      // фото з сайтів агенцій (імпорт посилається на них напряму) — хостів багато й вони змінюються
+      { protocol: 'https', hostname: '**' },
+    ],
+  },
   // Значок дев-режиму сидить у лівому нижньому куті й перекриває нижню панель на мобільному
   devIndicators: false,
   // Duna Tower спершу був одним оголошенням з прайсом; тепер це ЖК з окремими квартирами.
