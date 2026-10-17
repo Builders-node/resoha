@@ -12,6 +12,7 @@ import StickyContactBar from './StickyContactBar';
 import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
 import { useLp } from './useLp';
+import { gaLead } from '@/lib/gtag';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -93,6 +94,12 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     tgHref && { key: 'tg', href: tgHref, label: 'Telegram', mark: <TelegramMark /> },
   ].filter(Boolean) as { key: string; href: string; label: string; mark: React.ReactNode }[];
 
+  // для GA4: картка ЖК — звернення про весь будинок, ціна «від»
+  const gaTarget = {
+    listingId: listing.id, agentId: agent.id, price,
+    developmentId: forBuilding ? listing.developmentId : null,
+  };
+
   /** Відмітка для аналітики ріелтора: який канал зв'язку обрали. */
   function track(kind: 'phone' | 'whatsapp' | 'viber' | 'telegram' | 'share' | 'form_open') {
     fetch('/api/track', {
@@ -100,6 +107,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ listingId: listing.id, kind }),
     }).catch(() => {});
+    // канал звʼязку — це лід і для GA4; «поділитись» і відкриття форми — ще ні
+    if (kind !== 'share' && kind !== 'form_open') gaLead(kind, gaTarget);
   }
 
   /** Розмова піде в месенджері; тут лишаємо відмітку, щоб ріелтор і платформа бачили звернення. */
@@ -137,7 +146,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
       }),
     });
     setSending(false);
-    if (res.ok) { setSent(true); toast(t('Enquiry sent to the agent')); }
+    if (res.ok) { setSent(true); toast(t('Enquiry sent to the agent')); gaLead('form', gaTarget); }
     else toast(t((await res.json().catch(() => ({}))).error ?? 'Something went wrong'));
   }
 
@@ -229,7 +238,8 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               <span>
                 {t('Held by')} <b>{listing.sourceName}</b>{listing.sourceRef && <> · {listing.sourceRef}</>}.
                 {listing.sourceUrl && (
-                  <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">{t('Original listing')}</a></>
+                  <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow"
+                    onClick={() => gaLead('agency_link', gaTarget)}>{t('Original listing')}</a></>
                 )}
               </span>
             </p>

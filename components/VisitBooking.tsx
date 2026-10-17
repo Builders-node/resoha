@@ -6,6 +6,7 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import { useLang, useT } from './LangProvider';
 import { intlLocale } from '@/lib/i18n';
+import { gaLead } from '@/lib/gtag';
 import {
   BOOK_DAYS, CONTACT_PREFS, NO_LIMITS, SALES_TZ, VISIT_TOPICS, WEEKDAYS, addDays, freeSlotsFor, officeTimeToDate, officeToday,
   scheduleLines, slotPart, weekdayOf, type Availability, type WeekSchedule,
@@ -99,7 +100,7 @@ export default function VisitBooking({ devId, devName, address, schedule, blacko
       }),
     });
     setSending(false);
-    if (res.ok) return setStep(3);
+    if (res.ok) { gaLead('form', { developmentId: devId }); return setStep(3); }
     const error = (await res.json().catch(() => ({}))).error;
     toast(error ? t(error) : t('Something went wrong'));
     // слот могли вже прибрати (минув час чи хтось зайняв останнє місце) — повертаємо на вибір часу

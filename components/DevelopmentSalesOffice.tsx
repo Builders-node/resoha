@@ -12,6 +12,7 @@ export default async function DevelopmentSalesOffice({ ctx, card }: { ctx: DevCo
       schedule={dev.schedule} note={dev.hours}
       phone={agent.phone} whatsapp={agent.whatsapp}
       visitHref={dev.schedule.length && leadUnit ? `${base}/visit` : null}
-      logo={developer?.logo || undefined} listingId={leadUnit?.id} card={card} />
+      logo={developer?.logo || undefined} listingId={leadUnit?.id}
+      developmentId={dev.id} agentId={agent.id} card={card} />
   );
 }

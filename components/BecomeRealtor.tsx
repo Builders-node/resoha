@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Icon from './Icon';
 import { useT } from './LangProvider';
+import { gaEvent } from '@/lib/gtag';
 
 /**
  * Залогінений покупець у /agent. Замість «створіть інший акаунт» — перемикаємо роль
@@ -21,6 +22,7 @@ export default function BecomeRealtor({ name }: { name: string }) {
     const r = await fetch('/api/profile/realtor', { method: 'POST' });
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { setError(t(j.error ?? 'Something went wrong. Please try again.')); setBusy(null); return; }
+    gaEvent('agent_sign_up', { method: 'upgrade', account: next === 'agency' ? 'agency' : 'agent' });
     router.replace(next === 'agency' ? '/agent?tab=team' : '/agent');
     router.refresh();
   }
