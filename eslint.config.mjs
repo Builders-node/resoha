@@ -8,8 +8,8 @@ const config = [
   ...typescript,
   {
     rules: {
-      // Фото віддаємо звичайним <img>: файли лежать у Supabase Storage,
-      // а next/image під них тут нічого не дає.
+      // Фото віддаємо звичайним <img>, а src/srcSet бере з оптимізатора OptImg
+      // (getImageProps) — компонент next/image зі своїми стилями тут не потрібен.
       '@next/next/no-img-element': 'off',
       // Завантаження даних при монтуванні (fetch → setState) React-плагін вважає
       // помилкою. Патерн тут свідомий і працює; переписувати всі кабінети на

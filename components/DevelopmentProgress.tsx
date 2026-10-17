@@ -56,7 +56,9 @@ export async function ProgressPhotos({ photos, title, max }: { photos: string[];
     <div className="prog__grid">
       {list.map((p, i) => (
         <a key={`${i}-${p}`} href={p} target="_blank" rel="noreferrer" className="prog__ph">
-          <Photo src={p} alt={t('{name} — photo {n}', { name: title, n: i + 1 })} />
+          {/* чотири в ряд у колонці сторінки, два — на телефоні */}
+          <Photo src={p} alt={t('{name} — photo {n}', { name: title, n: i + 1 })}
+            sizes="(max-width: 640px) 50vw, (max-width: 1200px) 25vw, 220px" />
           {max && i === list.length - 1 && photos.length > max && <span className="prog__more">+{photos.length - max}</span>}
         </a>
       ))}

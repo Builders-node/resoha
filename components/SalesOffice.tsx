@@ -50,7 +50,7 @@ export default function SalesOffice({ name, address, schedule, note, phone, what
 
   return (
     <section className={`sales${logo ? '' : ' sales--nologo'}${card ? ' sales--card' : ''}`} id="sales-office">
-      {logo && <div className="sales__logo"><Photo src={logo} alt={name} label="" /></div>}
+      {logo && <div className="sales__logo"><Photo src={logo} alt={name} label="" optimize={false} /></div>}
       <div className="sales__body">
         <div className="sales__info">
           <h2 className="sales__title">{t('Sales office contacts')}</h2>
