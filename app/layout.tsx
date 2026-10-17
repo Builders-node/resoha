@@ -31,8 +31,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const t = makeT(lang);
   return {
     metadataBase: new URL(SITE_URL),
-    title: `${t('Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land')} | Hogarli`,
-    description: t('Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.'),
+    title: `${t('Honduras Real Estate: Homes, Condos & Land in Roatán, Tegucigalpa & San Pedro Sula')} | Hogarli`,
+    description: t('Homes, condos, rentals and land for sale across Honduras: Roatán and the Bay Islands, Tegucigalpa and San Pedro Sula. Listings from local agencies, a land passport on every lot and direct WhatsApp contact with agents.'),
     openGraph: { siteName: SITE_NAME, type: 'website', locale: OG_LOCALE[lang] },
     twitter: { card: 'summary_large_image' },
   };
