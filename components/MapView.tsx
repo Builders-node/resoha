@@ -45,6 +45,8 @@ type Props = {
   area?: Bbox | null;
   /** користувач посунув або наблизив карту — межі нового виду */
   onMoved?: (bounds: Bbox) => void;
+  /** користувач знову почав рухати карту — відкладений пошук по області ще рано слати */
+  onMoveStart?: () => void;
   /** сторінка обʼєкта: місця поблизости, яким ріелтор поставив точку */
   places?: NearbyPlace[];
 };
@@ -149,7 +151,7 @@ function addOverlays(m: MLMap) {
 }
 
 export default function MapView({
-  items, activeId, onSelect, onHover, area, onMoved, center = [16.36, -86.45], zoom = 11,
+  items, activeId, onSelect, onHover, area, onMoved, onMoveStart, center = [16.36, -86.45], zoom = 11,
   interactive = true, detail = false, places,
 }: Props) {
   const t = useT();
@@ -183,11 +185,13 @@ export default function MapView({
   const onSelectRef = useRef(onSelect);
   const onHoverRef = useRef(onHover);
   const onMovedRef = useRef(onMoved);
+  const onMoveStartRef = useRef(onMoveStart);
   const areaRef = useRef(area);
   const activeIdRef = useRef(activeId);
   useEffect(() => { onSelectRef.current = onSelect; }, [onSelect]);
   useEffect(() => { onHoverRef.current = onHover; }, [onHover]);
   useEffect(() => { onMovedRef.current = onMoved; }, [onMoved]);
+  useEffect(() => { onMoveStartRef.current = onMoveStart; }, [onMoveStart]);
   useEffect(() => { areaRef.current = area; }, [area]);
 
   const [ready, setReady] = useState(false);
@@ -248,6 +252,8 @@ export default function MapView({
         const b = m.getBounds();
         onMovedRef.current?.([b.getSouth(), b.getWest(), b.getNorth(), b.getEast()]);
       });
+      // лише рух від людини (колесо, жест, «+»): наш resize і fitBounds originalEvent не мають
+      m.on('movestart', (e) => { if (e.originalEvent) onMoveStartRef.current?.(); });
       m.on('rotate', () => setBearing(m.getBearing()));
       m.on('click', (e) => {
         if (!rulerRef.current) return;
