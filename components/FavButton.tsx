@@ -4,6 +4,7 @@ import { HeartIcon } from './Icon';
 import { toast } from './Toaster';
 import { useT } from './LangProvider';
 import { FAV_KEY, toggleFav, useIds } from '@/lib/localLists';
+import { gaEvent } from '@/lib/gtag';
 
 export default function FavButton({ listingId, initial = false, className = 'fav', size = 18 }: {
   listingId: string; initial?: boolean; className?: string; size?: number;
@@ -24,12 +25,15 @@ export default function FavButton({ listingId, initial = false, className = 'fav
     }).catch(() => null);
     if (!res || res.status === 401) {
       const added = toggleFav(listingId);
+      if (added) gaEvent('save_listing', { listing_id: listingId });
       toast(added ? t('Saved on this device. Sign in to keep it in your account') : t('Removed from saved'));
       return;
     }
     // роут відповідає { on }, а не { added } — через це серце не зафарбовувалось
     const { on: added } = await res.json();
     setServer(added);
+    // лише додавання: зняте серце — не збереження
+    if (added) gaEvent('save_listing', { listing_id: listingId });
     toast(added ? t('Saved to your account') : t('Removed from saved'));
   }
 

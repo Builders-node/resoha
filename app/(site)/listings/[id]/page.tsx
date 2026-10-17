@@ -41,6 +41,7 @@ import ListingTools from '@/components/ListingTools';
 import { getGoneListing, similarActive, type GoneListing } from '@/lib/gone';
 import { getMoney } from '@/lib/currencyServer';
 import ListingDescription from '@/components/ListingDescription';
+import OriginalListingLink from '@/components/OriginalListingLink';
 import { rankSimilar } from '@/lib/similar';
 import { departmentLabel } from '@/lib/regions';
 
@@ -451,7 +452,9 @@ export default async function PropertyPage({ params, searchParams }: {
                 {listing.sourceUrl && (
                   <>
                     {' '}
-                    <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow">{t('Open the original listing')}</a>
+                    <OriginalListingLink href={listing.sourceUrl} listingId={listing.id} agentId={listing.agentId} price={listing.price}>
+                      {t('Open the original listing')}
+                    </OriginalListingLink>
                   </>
                 )}
               </span>

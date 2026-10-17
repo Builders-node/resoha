@@ -6,6 +6,7 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import type { AuthMode as Mode, AuthView } from '@/lib/auth-modal';
 import { useT } from './LangProvider';
+import { gaEvent } from '@/lib/gtag';
 
 /** Форми входу живуть у модалці (AuthModal): перемикання між ними — без переходу на іншу сторінку. */
 type InModal = {
@@ -120,6 +121,9 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
     const data = await res.json();
     setBusy(false);
     if (!res.ok) { setError(t(data.error ?? 'Could not create the account')); return; }
+    // акаунт створено, навіть якщо пошту ще треба підтвердити
+    gaEvent('sign_up', { method: 'email' });
+    if (mode !== 'buyer') gaEvent('agent_sign_up', { method: 'email', account: mode });
     if (data.pendingConfirmation) { setPending(data.email); return; }
     if (data.warning) toast(data.warning);
     else toast(t(mode === 'agency' ? 'Agency created' : 'Account created'));

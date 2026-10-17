@@ -6,6 +6,7 @@ import Icon from './Icon';
 import Photo from './Photo';
 import { useT } from './LangProvider';
 import { scheduleLines, type WeekSchedule } from '@/lib/visits';
+import { gaLead } from '@/lib/gtag';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -13,7 +14,7 @@ const digits = (v: string) => v.replace(/[^\d]/g, '');
  * «Контакти відділу продажів», як у LUN: адреса, графік по днях і три дії — записатись
  * на візит, показати телефон, написати у WhatsApp (на цьому ринку замість Viber).
  */
-export default function SalesOffice({ name, address, schedule, note, phone, whatsapp, visitHref, logo, listingId, card }: {
+export default function SalesOffice({ name, address, schedule, note, phone, whatsapp, visitHref, logo, listingId, developmentId, agentId, card }: {
   name: string;
   address: string;
   schedule: WeekSchedule;
@@ -26,6 +27,9 @@ export default function SalesOffice({ name, address, schedule, note, phone, what
   logo?: string;
   /** Для відмітки в аналітиці ріелтора, як у картці агента */
   listingId?: string;
+  /** Для GA4: звернення про ЖК і до якого ріелтора */
+  developmentId?: string;
+  agentId?: string;
   /** Вкладка «Contacts»: вузька картка поверх карти, логотип над нею, кнопки — під графіком */
   card?: boolean;
 }) {
@@ -36,6 +40,7 @@ export default function SalesOffice({ name, address, schedule, note, phone, what
   const waHref = wa ? `https://wa.me/${wa}?text=${encodeURIComponent(t('Hi, I have a question about {what}', { what: name }))}` : '';
 
   function track(kind: 'phone' | 'whatsapp') {
+    gaLead(kind, { listingId, developmentId, agentId });
     if (!listingId) return;
     fetch('/api/track', {
       method: 'POST', keepalive: true, headers: { 'Content-Type': 'application/json' },
