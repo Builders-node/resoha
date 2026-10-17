@@ -4,6 +4,7 @@ import { SITE_URL } from './site';
 import { langAlternates } from './i18n/paths';
 import { regionByName, regionOfArea } from './regions';
 import { OPEN_STATUSES } from './units';
+import { THIN_LISTINGS } from './catalogSeo';
 
 /**
  * Дані для карти сайту. Окремі легкі запити замість queryListings: тут потрібні лише id,
@@ -84,27 +85,32 @@ export async function sitemapListings(chunk: number): Promise<SitemapListing[]> 
   return out;
 }
 
-export type SitemapDevelopment = { slug: string; createdAt: string; photos: string[] };
+export type SitemapDevelopment = { slug: string; createdAt: string; photos: string[]; units: number };
 
 /** Усі активні ЖК (без обмеження в 200, як у каталозі). */
 export async function sitemapDevelopments(): Promise<SitemapDevelopment[]> {
   const db = await supabaseServer();
-  const out: SitemapDevelopment[] = [];
+  const out: (SitemapDevelopment & { id: string })[] = [];
   for (let off = 0; ; off += BATCH) {
-    const { data, error } = await db.from('developments').select('slug, created_at, photos')
+    const { data, error } = await db.from('developments').select('id, slug, created_at, photos')
       .eq('active', true).order('created_at', { ascending: true }).range(off, off + BATCH - 1);
     if (error) throw error;
-    out.push(...(data ?? []).map((r) => ({ slug: r.slug as string, createdAt: r.created_at as string, photos: sitemapImages(r.photos) })));
+    out.push(...(data ?? []).map((r) => ({ id: r.id as string, slug: r.slug as string, createdAt: r.created_at as string, photos: sitemapImages(r.photos), units: 0 })));
     if ((data ?? []).length < BATCH) break;
   }
-  return out;
+  // вкладка «Планування» без квартир — 404, у карту сайту її не даємо: рахуємо живі квартири кожного ЖК
+  const { data: units } = await db.from('listings').select('development_id')
+    .eq('active', true).in('development_id', out.map((d) => d.id)).limit(10000);
+  for (const u of units ?? []) {
+    const d = out.find((x) => x.id === u.development_id);
+    if (d) d.units += 1;
+  }
+  return out.map((d) => ({ slug: d.slug, createdAt: d.createdAt, photos: d.photos, units: d.units }));
 }
 
 /** Комбінація фільтрів каталогу для карти сайту — те, що каталог сам вважає індексованим. */
 export type CatalogCombo = { deal: string; type: string; island: string; neighborhood: string };
 
-/** Нижче цього посадкова сторінка надто тонка, щоб віддавати її пошуковику. */
-const MIN_LISTINGS = 2;
 const TYPES = ['house', 'condo', 'land', 'commercial'];
 
 /**
@@ -134,7 +140,7 @@ export async function sitemapCatalogCombos(): Promise<CatalogCombo[]> {
     }
     if ((data ?? []).length < BATCH) break;
   }
-  return [...counts].filter(([, n]) => n >= MIN_LISTINGS).map(([k]) => JSON.parse(k) as CatalogCombo);
+  return [...counts].filter(([, n]) => n >= THIN_LISTINGS).map(([k]) => JSON.parse(k) as CatalogCombo);
 }
 
 /** Імена файлів карти: сторінки, ЖК, люди й агенції, оголошення частинами по тисячі. */

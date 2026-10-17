@@ -36,6 +36,12 @@ export function catalogPage(sp: SP): number {
 export const loadCatalogPage = cache(async (qs: string, page: number) =>
   searchListings(toListingQuery(new URLSearchParams(qs)), page - 1, PAGE_SIZE));
 
+/**
+ * Менше оголошень — посадкова сторінка міста чи району надто тонка для пошуковика:
+ * у карту сайту не йде й має noindex, follow.
+ */
+export const THIN_LISTINGS = 3;
+
 /** Фільтри, з яких складається індексована сторінка: розділ, тип, місто, район, спальні, біля моря, «готова» земля. */
 function coreOf(f: Filters): Filters {
   return {
@@ -79,7 +85,17 @@ export async function catalogMetadata(sp: SP, lang: Lang): Promise<Metadata> {
     what: head, n: fmtNumber(total),
   });
 
-  if (!isIndexable(f) || total === 0) {
+  const local = Boolean(f.island || f.neighborhoods.length);
+  // правильна комбінація, але порожня чи тонка: noindex, проте зі своїм canonical і hreflang
+  if (isIndexable(f) && (total === 0 || (local && total < THIN_LISTINGS))) {
+    return localized(catalogUrl(coreOf(f), page), {
+      title: `${title} | ${SITE_NAME}`,
+      description,
+      robots: { index: false, follow: true },
+      openGraph: { title, description },
+    }, lang);
+  }
+  if (!isIndexable(f)) {
     return {
       title: `${title} | ${SITE_NAME}`,
       description,

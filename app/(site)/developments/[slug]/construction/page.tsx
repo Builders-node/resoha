@@ -25,7 +25,7 @@ export default async function ConstructionPage({ params, searchParams }: Props) 
         <section className="dev" style={{ marginTop: 0 }}>
           <h2 className="dev__title">{t(buildings.length > 1 ? 'Buildings' : 'Construction status')}</h2>
           {/* у вкладці картка дому веде на фото саме цього дому */}
-          <DevelopmentBuildings buildings={buildings} units={units} fallbackPhoto={dev.photos[0] ?? ''}
+          <DevelopmentBuildings buildings={buildings} units={units} devName={dev.name} fallbackPhoto={dev.photos[0] ?? ''}
             hrefFor={(b) => `${base}/construction?building=${b.id}`} />
         </section>
       )}
