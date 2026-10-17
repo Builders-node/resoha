@@ -306,8 +306,8 @@ export const GUIDES: Guide[] = [
     short: 'Rental income and yields',
     description: 'Honest numbers for Roatán holiday rentals: 1,002 active listings, 43% occupancy, $209 average nightly rate and 5–8% net yields quoted by local agents, with a worked example.',
     published: '2026-10-03',
-    updated: '2026-10-03',
-    answer: 'Roatán holiday rentals average about 43% occupancy at roughly $209 a night, according to AirDNA, which means around $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% a year after costs. The supply of rentals fell by about half over the past year, which has pushed occupancy up.',
+    updated: '2026-10-17',
+    answer: 'Roatán holiday rentals average about 43% occupancy at roughly $209 a night, according to AirDNA, and a typical listing earns about $15,500 a year in gross revenue. Local agents quote net yields of about 5–8% a year after costs, which only well-run units in the best locations reach. The supply of rentals fell by about half over the past year, which has pushed occupancy up.',
     keyFacts: [
       '1,002 active short-term rentals on Roatán, down 48.7% year on year (AirDNA).',
       'Average occupancy 43% and average nightly rate about $209 (AirDNA).',
@@ -323,6 +323,7 @@ export const GUIDES: Guide[] = [
             ['Change in listings, year on year', '−48.7%', 'AirDNA'],
             ['Average occupancy', '43%', 'AirDNA'],
             ['Average nightly rate', '≈ $209', 'AirDNA'],
+            ['Average yearly revenue per listing', '≈ $15,500', 'AirDNA'],
             ['Cruise passengers (2024)', '1.7 million', 'Revista E&N'],
           ] } },
         ],
@@ -330,8 +331,8 @@ export const GUIDES: Guide[] = [
       {
         h: 'Worked example',
         body: [
-          'A listing at the island average earns about $209 × 365 nights × 43% ≈ **$32,800 a year in gross revenue**. From that come platform fees, cleaning, a property manager (often 20–30% of revenue), utilities, HOA, insurance, maintenance and property tax.',
-          'On a $400,000 condo, a 5–8% net yield means about $20,000–$32,000 a year. Treat the top of that range as a well-run, well-located unit, not the norm.',
+          'AirDNA puts the average Roatán listing at about **$15,500 a year in gross revenue**. That is less than $209 × 365 nights × 43% (about $32,800), because most listings are not open for bookings all year. From the revenue come platform fees, cleaning, a property manager (often 20–30% of revenue), utilities, HOA, insurance, maintenance and property tax.',
+          'On a $400,000 condo, a 5–8% net yield would mean $20,000–$32,000 a year, more than the island’s average gross revenue. Returns like that need a well-run unit in West Bay or West End that is booked most of the year; for an average listing, plan on far less.',
         ],
       },
       {
@@ -355,7 +356,7 @@ export const GUIDES: Guide[] = [
       { h: 'Important', body: [{ note: 'Figures are third-party estimates for the whole island and change month to month. They are not a forecast for any particular property.' }] },
     ],
     faq: [
-      { q: 'Is Airbnb profitable in Roatán?', a: 'It can be. AirDNA reports 43% average occupancy at about $209 a night, roughly $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs.' },
+      { q: 'Is Airbnb profitable in Roatán?', a: 'It can be. AirDNA reports 43% average occupancy at about $209 a night and about $15,500 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs, but only the best-run units reach that.' },
       { q: 'What is the best area in Roatán for vacation rentals?', a: 'West Bay and West End have the strongest tourist demand and the highest nightly rates on the island.' },
       { q: 'When is high season in Roatán?', a: 'Roughly December to April, when North American visitors escape winter.' },
     ],

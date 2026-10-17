@@ -152,8 +152,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Cifras honestas para quienes piensan alquilar la propiedad.",
   "Is a holiday rental on Roatán profitable?":
     "¿Es rentable un alquiler vacacional en Roatán?",
-  "It can be. AirDNA reports 1,002 active short-term rentals on the island, with 43% average occupancy at about $209 a night. That is roughly $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs.":
-    "Puede serlo. AirDNA registra 1,002 alquileres de corta estancia activos en la isla, con una ocupación media del 43 % a unos $209 por noche. Eso equivale a unos $32,800 al año de ingresos brutos para un anuncio típico. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % después de gastos.",
+  "It can be. AirDNA reports 1,002 active short-term rentals on the island, with 43% average occupancy at about $209 a night and about $15,500 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs, but only the best-run units reach that.":
+    "Puede serlo. AirDNA registra 1,002 alquileres de corta estancia activos en la isla, con una ocupación media del 43 % a unos $209 por noche y unos $15,500 al año de ingresos brutos para un anuncio típico. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % después de gastos, pero solo las unidades mejor administradas lo alcanzan.",
   "Which area rents best?":
     "¿Qué zona se alquila mejor?",
   "West Bay and West End have the strongest tourist demand and the highest nightly rates. The east of the island rents less often.":
@@ -678,8 +678,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Ingresos por alquiler y rendimientos",
   "Honest numbers for Roatán holiday rentals: 1,002 active listings, 43% occupancy, $209 average nightly rate and 5–8% net yields quoted by local agents, with a worked example.":
     "Cifras honestas sobre los alquileres vacacionales en Roatán: 1,002 anuncios activos, 43 % de ocupación, tarifa media de $209 por noche y rendimientos netos del 5 al 8 % según agentes locales, con un ejemplo práctico.",
-  "Roatán holiday rentals average about 43% occupancy at roughly $209 a night, according to AirDNA, which means around $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% a year after costs. The supply of rentals fell by about half over the past year, which has pushed occupancy up.":
-    "Los alquileres vacacionales en Roatán tienen una ocupación media de alrededor del 43 % a unos $209 por noche, según AirDNA, lo que equivale a unos $32,800 al año de ingresos brutos para un anuncio típico. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % anual después de gastos. La oferta de alquileres se redujo a la mitad en el último año, lo que ha hecho subir la ocupación.",
+  "Roatán holiday rentals average about 43% occupancy at roughly $209 a night, according to AirDNA, and a typical listing earns about $15,500 a year in gross revenue. Local agents quote net yields of about 5–8% a year after costs, which only well-run units in the best locations reach. The supply of rentals fell by about half over the past year, which has pushed occupancy up.":
+    "Los alquileres vacacionales en Roatán tienen una ocupación media de alrededor del 43 % a unos $209 por noche, según AirDNA, y un anuncio típico genera unos $15,500 al año de ingresos brutos. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % anual después de gastos, algo que solo alcanzan las unidades bien administradas en las mejores zonas. La oferta de alquileres se redujo a la mitad en el último año, lo que ha hecho subir la ocupación.",
   "1,002 active short-term rentals on Roatán, down 48.7% year on year (AirDNA).":
     "1,002 alquileres de corta estancia activos en Roatán, un 48.7 % menos que hace un año (AirDNA).",
   "Average occupancy 43% and average nightly rate about $209 (AirDNA).":
@@ -696,14 +696,16 @@ export const ES_CONTENT: Record<string, string> = {
     "Ocupación media",
   "Average nightly rate":
     "Tarifa media por noche",
+  "Average yearly revenue per listing":
+    "Ingreso anual medio por anuncio",
   "Cruise passengers (2024)":
     "Pasajeros de cruceros (2024)",
   "Worked example":
     "Ejemplo práctico",
-  "A listing at the island average earns about $209 × 365 nights × 43% ≈ **$32,800 a year in gross revenue**. From that come platform fees, cleaning, a property manager (often 20–30% of revenue), utilities, HOA, insurance, maintenance and property tax.":
-    "Un anuncio con el promedio de la isla gana unos $209 × 365 noches × 43 % ≈ **$32,800 al año de ingresos brutos**. De ahí salen las comisiones de la plataforma, la limpieza, un administrador (a menudo del 20 al 30 % de los ingresos), los servicios, la HOA, el seguro, el mantenimiento y el impuesto sobre la propiedad.",
-  "On a $400,000 condo, a 5–8% net yield means about $20,000–$32,000 a year. Treat the top of that range as a well-run, well-located unit, not the norm.":
-    "En un condominio de $400,000, un rendimiento neto del 5 al 8 % significa entre $20,000 y $32,000 al año. Considere la parte alta de ese rango como propia de una unidad bien administrada y bien ubicada, no como lo normal.",
+  "AirDNA puts the average Roatán listing at about **$15,500 a year in gross revenue**. That is less than $209 × 365 nights × 43% (about $32,800), because most listings are not open for bookings all year. From the revenue come platform fees, cleaning, a property manager (often 20–30% of revenue), utilities, HOA, insurance, maintenance and property tax.":
+    "Según AirDNA, un anuncio medio en Roatán genera unos **$15,500 al año de ingresos brutos**. Es menos que $209 × 365 noches × 43 % (unos $32,800), porque la mayoría de los anuncios no están disponibles todo el año. De esos ingresos salen las comisiones de la plataforma, la limpieza, un administrador (a menudo del 20 al 30 % de los ingresos), los servicios, la HOA, el seguro, el mantenimiento y el impuesto sobre la propiedad.",
+  "On a $400,000 condo, a 5–8% net yield would mean $20,000–$32,000 a year, more than the island’s average gross revenue. Returns like that need a well-run unit in West Bay or West End that is booked most of the year; for an average listing, plan on far less.":
+    "En un condominio de $400,000, un rendimiento neto del 5 al 8 % significaría entre $20,000 y $32,000 al año, más que el ingreso bruto medio de la isla. Para eso hace falta una unidad bien administrada en West Bay o West End y reservada la mayor parte del año; para un anuncio promedio, cuente con mucho menos.",
   "What drives returns on Roatán":
     "Qué determina la rentabilidad en Roatán",
   "**Location.** West Bay and West End command the highest rates; the east of the island rents less often.":
@@ -724,8 +726,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Las cifras son estimaciones de terceros para toda la isla y cambian de un mes a otro. No son una previsión para ninguna propiedad en particular.",
   "Is Airbnb profitable in Roatán?":
     "¿Es rentable Airbnb en Roatán?",
-  "It can be. AirDNA reports 43% average occupancy at about $209 a night, roughly $32,800 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs.":
-    "Puede serlo. AirDNA registra una ocupación media del 43 % a unos $209 por noche, unos $32,800 al año de ingresos brutos para un anuncio típico. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % después de gastos.",
+  "It can be. AirDNA reports 43% average occupancy at about $209 a night and about $15,500 a year in gross revenue for a typical listing. Local agents quote net yields of about 5–8% after costs, but only the best-run units reach that.":
+    "Puede serlo. AirDNA registra una ocupación media del 43 % a unos $209 por noche y unos $15,500 al año de ingresos brutos para un anuncio típico. Los agentes locales hablan de rendimientos netos de alrededor del 5 al 8 % después de gastos, pero solo las unidades mejor administradas lo alcanzan.",
   "What is the best area in Roatán for vacation rentals?":
     "¿Cuál es la mejor zona de Roatán para alquileres vacacionales?",
   "West Bay and West End have the strongest tourist demand and the highest nightly rates on the island.":
