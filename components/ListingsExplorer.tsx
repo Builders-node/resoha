@@ -43,6 +43,8 @@ const pageIndex = (v: string | null) => {
 
 /** «Шукати, коли рухаю карту» — вибір відвідувача живе між візитами */
 const AUTO_KEY = 'resoha:map-auto-search';
+// скільки карта має постояти після зуму чи зсуву, перш ніж список перешукає видиму область
+const MOVE_DELAY = 800;
 const noSubscribe = () => () => {};
 const readAutoOff = () => {
   try { return localStorage.getItem(AUTO_KEY) === '0'; } catch { return false; /* приватне вікно */ }
@@ -228,7 +230,8 @@ export default function ListingsExplorer({
     setMovedTo(null);
   };
 
-  // кілька кліків «+» чи ривків поспіль — один запит, коли карта зупинилась
+  // кілька кліків «+», прокруток колеса чи ривків поспіль — один запит, коли карта
+  // постояла спокійно MOVE_DELAY; новий рух скасовує запит, що ще не пішов
   const moveTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   useEffect(() => () => clearTimeout(moveTimer.current), []);
   const autoRef = useRef(autoSearch);
@@ -239,8 +242,9 @@ export default function ListingsExplorer({
     moveTimer.current = setTimeout(() => {
       setFilters((f) => ({ ...f, bbox: formatBbox(b) }));
       setMovedTo(null);
-    }, 350);
+    }, MOVE_DELAY);
   }, []);
+  const onMoveStart = useCallback(() => clearTimeout(moveTimer.current), []);
 
   const active = countActive(filters);
 
@@ -365,7 +369,7 @@ export default function ListingsExplorer({
 
         <div className="split__map">
           <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId}
-            area={area} onMoved={onMoved} center={regionByName(filters.island)?.centre} />
+            area={area} onMoved={onMoved} onMoveStart={onMoveStart} center={regionByName(filters.island)?.centre} />
           {movedTo && !autoSearch ? (
             <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>
               <Icon name="search" size={16} /> {t('Search this area')}
