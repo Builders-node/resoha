@@ -10,6 +10,8 @@ import { trackSearchAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { getLang } from '@/lib/i18n/server';
 import { catalogFilters, catalogMetadata, catalogPage, loadCatalogPage, pageLinks } from '@/lib/catalogSeo';
+import JsonLd from '@/components/JsonLd';
+import { catalogLd, graph } from '@/lib/seo';
 
 type SP = Record<string, string | string[] | undefined>;
 
@@ -43,12 +45,15 @@ export default async function ListingsPage({ searchParams }: { searchParams: Pro
   if (page === 1 && !query.agentId && !query.agencyId) await trackSearchAfterResponse(query, total, await headers());
   await trackPromo('listing', items, 'impression');
   const links = pageLinks(filters, page, total, lang);
+  // розмітка лише для індексованих добірок — решта закрита noindex
+  const ld = catalogLd(filters, items, page, lang);
 
   return (
     <>
       {/* React піднімає <link> у <head>: сусідні сторінки для пошуковиків */}
       {links.prev && <link rel="prev" href={links.prev} />}
       {links.next && <link rel="next" href={links.next} />}
+      {ld && <JsonLd data={graph(...ld)} />}
       <ListingsExplorer
         initialItems={items}
         initialPins={pins}

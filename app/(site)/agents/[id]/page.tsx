@@ -14,6 +14,8 @@ import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { SITE_NAME } from '@/lib/site';
 import Avatar from '@/components/Avatar';
+import JsonLd from '@/components/JsonLd';
+import { agentLd, graph } from '@/lib/seo';
 
 const loadAgent = cache(getAgent);
 
@@ -49,6 +51,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="wrap">
+      <JsonLd data={graph(agentLd(agent, agency, areas))} />
       <div className="crumbs small muted"><BackButton variant="inline" fallback="/" /></div>
 
       <header className="org org--person">
