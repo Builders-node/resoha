@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { LANG_HEADER, isLocalizedPath, stripLang } from '@/lib/i18n/paths';
+import { LANG_HEADER, isLocalizedPath, localePath, stripLang } from '@/lib/i18n/paths';
+import { supabaseAnon } from '@/lib/supabase/anon';
+import { cloneMap } from '@/lib/clones';
 
 // те саме імʼя, що LANG_COOKIE у lib/i18n: сам модуль не тягнемо, бо з ним їде весь словник
 const LANG_COOKIE = 'lang';
@@ -28,8 +30,29 @@ function langRoute(req: NextRequest): { redirect?: URL; rewrite?: URL; lang?: 'e
   return { lang: 'en' };
 }
 
+const LISTING_PATH = /^\/listings\/([0-9a-f-]{36})$/;
+
+/** Однакова квартира ЖК без номера → 308 на головне оголошення групи (lib/clones.ts). */
+async function cloneRedirect(req: NextRequest): Promise<URL | null> {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return null;
+  const { lang, path } = stripLang(req.nextUrl.pathname);
+  const id = LISTING_PATH.exec(path)?.[1];
+  if (!id) return null;
+  try {
+    const primary = (await cloneMap(supabaseAnon())).get(id);
+    if (!primary) return null;
+    const url = req.nextUrl.clone();
+    url.pathname = localePath(lang ?? 'en', `/listings/${primary}`);
+    return url;
+  } catch {
+    return null;
+  }
+}
+
 /** Оновлює токен Supabase у кукі, щоб сесія не протухала між запитами, і розводить мовні адреси. */
 export async function proxy(req: NextRequest) {
+  const clone = await cloneRedirect(req);
+  if (clone) return NextResponse.redirect(clone, 308);
   const route = langRoute(req);
   if (route.redirect) {
     const res = NextResponse.redirect(route.redirect, 307);

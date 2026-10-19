@@ -1,46 +1,34 @@
-import { cache } from 'react';
-import { supabaseServer } from './supabase/server';
-import type { Listing } from './types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 /**
  * Однакові квартири ЖК без номера: забудовник заводить кілька оголошень «Studio for rent»
  * з тією самою ціною, площею й описом (Duna Tower — 16 студій, 6 двокімнатних). Для пошуковика
  * це десятки сторінок з однаковим <title>, які конкурують між собою. Лишаємо одну — з найменшим id,
- * решта постійно перенаправляє на неї й не йде в карту сайту. Самі рядки в базі не чіпаємо:
+ * решта постійно перенаправляє на неї (proxy.ts) і не йде в карту сайту. Самі рядки в базі не чіпаємо:
  * щойно квартирі дадуть номер, вона стане окремою сторінкою.
+ *
+ * Перенаправлення — у proxy, а не на сторінці: сторінка оголошення стрімиться (loading.tsx),
+ * і redirect() звідти віддав би 200 з <meta refresh> замість справжнього 308.
  */
-type Key = Pick<Listing, 'id' | 'developmentId' | 'unitNo' | 'deal' | 'type' | 'beds' | 'price'>;
+const TTL = 10 * 60 * 1000;
+let cached: { at: number; map: Map<string, string> } | null = null;
 
-const NO_UNIT = 'unit_no.is.null,unit_no.eq.';
-
-const groupKey = (r: { development_id: string; deal: string; type: string; beds: number; price: number | string }) =>
-  [r.development_id, r.deal, r.type, r.beds, Number(r.price)].join('|');
-
-/** id головного оголошення групи, якщо це — копія; null, якщо оголошення саме собі головне. */
-export const clonePrimary = cache(async (l: Key): Promise<string | null> => {
-  if (!l.developmentId || l.unitNo) return null;
-  const db = await supabaseServer();
-  const { data, error } = await db.from('listings').select('id')
-    .eq('active', true).eq('development_id', l.developmentId).eq('deal', l.deal).eq('type', l.type)
-    .eq('beds', l.beds).eq('price', l.price).or(NO_UNIT)
-    .order('id', { ascending: true }).limit(1);
-  if (error || !data?.length) return null;
-  return data[0].id === l.id ? null : data[0].id;
-});
-
-/** id усіх копій (без головних) — щоб не давати їх у карту сайту. */
-export async function cloneIds(): Promise<Set<string>> {
-  const db = await supabaseServer();
-  const { data, error } = await db.from('listings').select('id, development_id, deal, type, beds, price')
-    .eq('active', true).not('development_id', 'is', null).or(NO_UNIT)
-    .order('id', { ascending: true }).limit(5000);
-  if (error) return new Set();
-  const seen = new Set<string>();
-  const out = new Set<string>();
+/** копія → головне оголошення групи. Порожня мапа, якщо база не відповіла. */
+export async function cloneMap(db: SupabaseClient): Promise<Map<string, string>> {
+  if (cached && Date.now() - cached.at < TTL) return cached.map;
+  const { data, error } = await db.from('listings').select('id, development_id, deal, type, beds, price, unit_no')
+    .eq('active', true).not('development_id', 'is', null)
+    .order('id', { ascending: true }).limit(10000);
+  if (error) return cached?.map ?? new Map();
+  const primary = new Map<string, string>();
+  const map = new Map<string, string>();
   for (const r of data ?? []) {
-    const k = groupKey(r);
-    if (seen.has(k)) out.add(r.id);
-    else seen.add(k);
+    if (r.unit_no) continue;
+    const key = [r.development_id, r.deal, r.type, r.beds, Number(r.price)].join('|');
+    const head = primary.get(key);
+    if (head) map.set(r.id, head);
+    else primary.set(key, r.id);
   }
-  return out;
+  cached = { at: Date.now(), map };
+  return map;
 }

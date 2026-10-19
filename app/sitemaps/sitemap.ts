@@ -7,7 +7,8 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
 import { fromParams, toQuery } from '@/lib/filters';
 import { catalogUrl, loadCatalogPage } from '@/lib/catalogSeo';
-import { cloneIds } from '@/lib/clones';
+import { cloneMap } from '@/lib/clones';
+import { supabaseAnon } from '@/lib/supabase/anon';
 import { both, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
 
 /**
@@ -86,7 +87,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 
   const chunk = /^listings-(\d+)$/.exec(key);
   if (!chunk) return [];
-  const [listings, clones] = await Promise.all([sitemapListings(Number(chunk[1])), cloneIds()]);
+  const [listings, clones] = await Promise.all([sitemapListings(Number(chunk[1])), cloneMap(supabaseAnon()).catch(() => new Map<string, string>())]);
   return listings.filter((l) => !clones.has(l.id)).flatMap((l) => both(`/listings/${l.id}`, {
     lastModified: new Date(l.updatedAt), changeFrequency: 'weekly', priority: 0.8, images: l.photos,
   }));
