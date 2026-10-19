@@ -87,7 +87,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 
   const chunk = /^listings-(\d+)$/.exec(key);
   if (!chunk) return [];
-  const [listings, clones] = await Promise.all([sitemapListings(Number(chunk[1])), cloneMap(supabaseAnon()).catch(() => new Map<string, string>())]);
+  const [listings, clones] = await Promise.all([sitemapListings(Number(chunk[1])), (async () => cloneMap(supabaseAnon()))().catch(() => new Map<string, string>())]);
   return listings.filter((l) => !clones.has(l.id)).flatMap((l) => both(`/listings/${l.id}`, {
     lastModified: new Date(l.updatedAt), changeFrequency: 'weekly', priority: 0.8, images: l.photos,
   }));
