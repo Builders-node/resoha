@@ -4,7 +4,8 @@ import { localized } from '@/lib/seoMeta';
 import type { Listing } from '@/lib/types';
 import Link from 'next/link';
 import { lifecycle } from '@/lib/lifecycle';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
+import { clonePrimary } from '@/lib/clones';
 import dynamic from 'next/dynamic';
 import AgentContact from '@/components/AgentContact';
 import FavButton from '@/components/FavButton';
@@ -108,6 +109,9 @@ export default async function PropertyPage({ params, searchParams }: {
     if (!gone) notFound();
     return <GonePage id={id} gone={gone} />;
   }
+  // однакова квартира ЖК без номера — одна сторінка на всю групу (lib/clones.ts)
+  const primary = await clonePrimary(listing);
+  if (primary) permanentRedirect(lp(`/listings/${primary}`));
   if (soldStandalone(listing)) {
     // продане бачать як звичайну сторінку лише автор, власник агенції й адмін
     const viewer = await currentUser();

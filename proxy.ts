@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { LANG_HEADER, isLocalizedPath, localePath, stripLang } from '@/lib/i18n/paths';
+import { LANG_HEADER, isLocalizedPath, stripLang } from '@/lib/i18n/paths';
 
 // те саме імʼя, що LANG_COOKIE у lib/i18n: сам модуль не тягнемо, бо з ним їде весь словник
 const LANG_COOKIE = 'lang';
@@ -8,9 +8,9 @@ const YEAR = 60 * 60 * 24 * 365;
 
 /**
  * Мова в адресі. /es/... — переписуємо на звичайний маршрут з мовою es у заголовку й
- * запамʼятовуємо вибір у кукі. Публічна сторінка без префікса — завжди англійська,
- * а хто обрав іспанську, того ведемо на /es-версію: так посилання без префікса
- * (старі закладки, листи, клієнтська навігація) не викидають людину з іспанської.
+ * запамʼятовуємо вибір у кукі. Публічна сторінка без префікса — завжди англійська, і кукі
+ * її не перенаправляє: інакше одна адреса віддавала б різні сторінки, а canonical і hreflang
+ * залежали б від кукі. Хто обрав іспанську, тому components/LangHint пропонує /es-версію.
  */
 function langRoute(req: NextRequest): { redirect?: URL; rewrite?: URL; lang?: 'en' | 'es' } {
   const { pathname } = req.nextUrl;
@@ -25,11 +25,6 @@ function langRoute(req: NextRequest): { redirect?: URL; rewrite?: URL; lang?: 'e
     return { rewrite: url, lang: 'es' };
   }
   if (!isLocalizedPath(pathname)) return {};
-  if (read && req.cookies.get(LANG_COOKIE)?.value === 'es') {
-    const url = req.nextUrl.clone();
-    url.pathname = localePath('es', pathname);
-    return { redirect: url };
-  }
   return { lang: 'en' };
 }
 

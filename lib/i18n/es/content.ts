@@ -826,4 +826,8 @@ export const ES_CONTENT: Record<string, string> = {
   'Yes. Tegucigalpa is outside the coastal and border strip where the constitution limits foreign ownership, so foreigners can generally buy in their own name. Have a Honduran attorney check the title before you pay a deposit.': 'Sí. Tegucigalpa está fuera de la franja costera y fronteriza donde la Constitución limita la propiedad extranjera, así que en general los extranjeros pueden comprar a su nombre. Pida a un abogado hondureño que verifique el título antes de pagar un depósito.',
   'Which airport serves Tegucigalpa?': '¿Qué aeropuerto sirve a Tegucigalpa?',
   'Most international flights use Palmerola International Airport (XPL) near Comayagua, about an hour by road. Toncontín (TGU) in the city handles mainly domestic and regional flights.': 'La mayoría de los vuelos internacionales usan el Aeropuerto Internacional de Palmerola (XPL), cerca de Comayagua, a una hora por carretera. Toncontín (TGU), en la ciudad, atiende sobre todo vuelos nacionales y regionales.',
+  /* ---------- Короткі <title> для видачі (seoTitle) ---------- */
+  'Can foreigners buy property in Roatán? The 3,000 m² rule': '¿Pueden los extranjeros comprar en Roatán? La regla de 3,000 m²',
+  'Roatán rental income: Airbnb occupancy and yields in 2026': 'Alquiler en Roatán: ocupación de Airbnb y rendimientos 2026',
+  'Best areas to live in Roatán: neighbourhoods compared': 'Mejores zonas para vivir en Roatán: barrios comparados',
 };

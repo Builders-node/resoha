@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = postBySlug((await params).slug);
   if (!p) return {};
   const t = makeT(await getLang());
-  const title = t(p.title);
+  const title = t(p.seoTitle ?? p.title);
   const description = t(p.description);
   const image = { url: `/blog/${p.slug}/cover.png`, width: 1200, height: 630, alt: p.title };
   return localized(`/blog/${p.slug}`, {

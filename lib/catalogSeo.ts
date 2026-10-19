@@ -37,10 +37,10 @@ export const loadCatalogPage = cache(async (qs: string, page: number) =>
   searchListings(toListingQuery(new URLSearchParams(qs)), page - 1, PAGE_SIZE));
 
 /**
- * Менше оголошень — посадкова сторінка міста чи району надто тонка для пошуковика:
- * у карту сайту не йде й має noindex, follow.
+ * Менше оголошень — вузька добірка (місто, район, спальні, «біля моря», «готова» земля)
+ * надто тонка для пошуковика: noindex, follow.
  */
-export const THIN_LISTINGS = 3;
+export const THIN_LISTINGS = 5;
 
 /** Фільтри, з яких складається індексована сторінка: розділ, тип, місто, район, спальні, біля моря, «готова» земля. */
 function coreOf(f: Filters): Filters {
@@ -85,9 +85,9 @@ export async function catalogMetadata(sp: SP, lang: Lang): Promise<Metadata> {
     what: head, n: fmtNumber(total),
   });
 
-  const local = Boolean(f.island || f.neighborhoods.length);
+  const narrow = Boolean(f.island || f.neighborhoods.length || f.beds.length || f.oceanfront || (f.ready && f.type === 'land'));
   // правильна комбінація, але порожня чи тонка: noindex, проте зі своїм canonical і hreflang
-  if (isIndexable(f) && (total === 0 || (local && total < THIN_LISTINGS))) {
+  if (isIndexable(f) && (total === 0 || (narrow && total < THIN_LISTINGS))) {
     return localized(catalogUrl(coreOf(f), page), {
       title: `${title} | ${SITE_NAME}`,
       description,

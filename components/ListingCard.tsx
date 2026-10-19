@@ -21,10 +21,12 @@ type Props = {
   ratio?: 'tall' | 'wide';
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  /** Перша картка на першому екрані: фото вантажимо одразу, а не ліниво (LCP). */
+  eager?: boolean;
 };
 
 export default function ListingCard({
-  listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave,
+  listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave, eager,
 }: Props) {
   const lp = useLp();
   const t = useT();
@@ -37,7 +39,7 @@ export default function ListingCard({
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
-      <Photo src={l.photos[0]} alt={l.title} />
+      <Photo src={l.photos[0]} alt={l.title} eager={eager} />
       <div className="card__badges">
         {/* платне місце в пошуку підписане чесно — «Sponsored», а не просто Featured */}
         {l.sponsored

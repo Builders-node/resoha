@@ -130,8 +130,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <Link className="btn btn--primary" href={lp(`/listings?deal=sale${cityQ}`)}>{t('See all {n}', { n: nListings(all.filter((l) => l.deal === 'sale').length, lang) })} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
-            {featured.map((l) => (
-              <ListingCard key={l.id} listing={l} ratio="tall" isFav={favIds.includes(l.id)}
+            {featured.map((l, i) => (
+              <ListingCard key={l.id} listing={l} ratio="tall" isFav={favIds.includes(l.id)} eager={i === 0}
                 agentName={agencyNameById.get(l.agencyId ?? '')} />
             ))}
           </div>

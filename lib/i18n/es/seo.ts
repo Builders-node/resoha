@@ -18,7 +18,7 @@ export const ES_SEO: Record<string, string> = {
     'Hogarli es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
   'Developers in Roatán': 'Desarrolladoras en Roatán',
   'Property developers building on Roatán and their projects.': 'Desarrolladoras inmobiliarias que construyen en Roatán y sus proyectos.',
-  'About Hogarli: every property on Roatán in one checked place': 'Sobre Hogarli: todas las propiedades de Roatán en un solo lugar verificado',
+  'About Hogarli: every property on Roatán in one checked place': 'Sobre Hogarli: todas las propiedades de Roatán, verificadas',
   'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Hogarli works.':
     'Respuestas claras sobre comprar casa, condominio o terreno en Roatán: propiedad para extranjeros y la regla de los 3,000 m², precios, gastos de cierre, impuestos, revisión de títulos, alquileres y cómo funciona Hogarli.',
   'List your Roatán properties for free': 'Publica gratis tus propiedades de Roatán',

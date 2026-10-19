@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!g) return {};
   // заголовок і опис — мовою адреси: переклад лежить у словнику поруч із текстом гайду
   const t = await getT();
-  const title = t(g.title);
+  const title = t(g.seoTitle ?? g.title);
   const description = t(g.description);
   return localized(`/guides/${g.slug}`, {
     title: `${title} | ${SITE_NAME}`,

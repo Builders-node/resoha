@@ -314,6 +314,7 @@ export const ES_LANDING: Record<string, string> = {
   'See also:': 'Vea también:',
   '2 October 2026': '2 de octubre de 2026',
   '{area}: homes, condos & land for sale': '{area}: casas, condominios y terrenos en venta',
+  '{area}, {region}: property for sale': '{area}, {region}: propiedades en venta',
   '{area}: property and city guide': '{area}: guía de propiedades y de la ciudad',
   'Browse all of {region}': 'Ver todo {region}',
   'No published benchmark yet': 'Aún no hay una referencia publicada',

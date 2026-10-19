@@ -1,7 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '@/lib/site';
 
-const PRIVATE = ['/admin', '/agent', '/account', '/api/', '/login', '/signup', '/forgot', '/reset', '/unsubscribe'];
+// '/agent' без слеша закрив би й публічні /agents/<id>: robots.txt зіставляє префікс
+const PRIVATE = ['/admin', '/agent/', '/agent$', '/account', '/api/', '/login', '/signup', '/forgot', '/reset', '/unsubscribe'];
 
 /**
  * Кабінети й API індексувати нема чого; усе інше — відкрите. AI-пошуковиків називаємо явно:
