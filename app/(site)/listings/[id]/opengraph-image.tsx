@@ -1,7 +1,7 @@
 import { ImageResponse } from 'next/og';
 import { getListing } from '@/lib/db';
 import { fmtPrice, photoUrl, specLine } from '@/lib/format';
-import { LOGO_PATH, LOGO_VIEWBOX } from '@/lib/logo';
+import Logo from '@/components/Logo';
 import { SITE_URL } from '@/lib/site';
 
 export const alt = 'Property on Hogarli Roatán';
@@ -42,7 +42,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
           width: '100%', height: '100%', padding: 64,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <svg width="62" height="58" viewBox={LOGO_VIEWBOX}><path d={LOGO_PATH} fill="#ff4800" /></svg>
+            <Logo size={62} />
             <div style={{ display: 'flex', fontSize: 30, fontWeight: 800, letterSpacing: 4 }}>HOGARLI ROATÁN</div>
           </div>
 

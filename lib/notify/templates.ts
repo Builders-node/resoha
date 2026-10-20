@@ -55,7 +55,8 @@ const rows = (pairs: [string, unknown][]) => pairs.filter(([, v]) => v !== undef
 function layout(body: string, footer: string) {
   return `<!doctype html><html><body style="margin:0;background:#f6f6f6;font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:#111">`
     + `<div style="max-width:560px;margin:0 auto;padding:24px 16px">`
-    + `<div style="font-weight:800;font-size:18px;margin-bottom:16px">${esc(SITE_NAME)}</div>`
+    + `<div style="font-weight:800;font-size:18px;margin-bottom:16px">`
+    + `<img src="${SITE_URL}/brand/symbol-orange.png" alt="" width="21" height="24" style="display:inline-block;vertical-align:-4px;margin-right:8px;border:0">${esc(SITE_NAME)}</div>`
     + `<div style="background:#fff;border-radius:16px;padding:24px;font-size:15px;line-height:1.5">${body}</div>`
     + `<div style="color:#999;font-size:12px;margin-top:16px;line-height:1.5">${footer}</div>`
     + `</div></body></html>`;
