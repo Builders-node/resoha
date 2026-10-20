@@ -42,7 +42,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
           <div className="lp-foot__grid">
             <div className="lp-foot__brand">
               <Link className="logo" href={lp('/')}>
-                <span className="logo__mark"><Logo size={26} /></span>
+                <span className="logo__mark"><Logo size={26} tone="light" /></span>
                 <span>Hogarli</span>
               </Link>
               <p className="small">

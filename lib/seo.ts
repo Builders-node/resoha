@@ -28,7 +28,7 @@ export function organizationLd() {
     name: SITE_NAME,
     legalName: OPERATOR,
     url: SITE_URL,
-    logo: abs('/icon.svg'),
+    logo: abs('/icon-512.png'),
     description: ORG_DESCRIPTION,
     areaServed: REGIONS.map((r) => ({ '@type': 'Place', name: `${r.name}, ${r.department}, Honduras` })),
     knowsAbout: [...REGIONS.map((r) => `${r.name} real estate`), 'Bay Islands property', 'Honduras land title', 'buying property in Honduras as a foreigner'],

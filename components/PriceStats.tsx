@@ -109,7 +109,7 @@ export function CityPriceStats({ cities, period }: { cities: CityStat[]; period:
               <div className="city-stat__top">
                 <div className="city-stat__title">
                   <h3>{c.name}</h3>
-                  <span className="city-stat__brand"><Logo size={22} /> Hogarli</span>
+                  <span className="city-stat__brand"><Logo size={22} tone="light" /> Hogarli</span>
                 </div>
                 <span className="city-stat__month">{month}</span>
                 <CityRow label={t('Median price')} stat={c.all} since={since} lead />
