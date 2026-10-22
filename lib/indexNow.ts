@@ -12,23 +12,30 @@ import { langAlternates } from './i18n/paths';
 export const INDEXNOW_KEY = 'e818fc25acd8b0877803576258cce94d';
 
 /** Пінгуємо лише з бойового сайту: превʼю й локальні збірки мають чужі адреси. */
-const enabled = () => process.env.VERCEL_ENV === 'production' && SITE_URL.startsWith('https://');
+export const enabled = () => process.env.VERCEL_ENV === 'production' && SITE_URL.startsWith('https://');
 
 export async function submitUrls(paths: string[]) {
-  const urlList = [...new Set(paths.flatMap((p) => Object.values(langAlternates(p))))].map((p) => `${SITE_URL}${p}`);
-  if (!urlList.length) return;
-  const res = await fetch('https://api.indexnow.org/indexnow', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-    body: JSON.stringify({
-      host: new URL(SITE_URL).host,
-      key: INDEXNOW_KEY,
-      keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
-      urlList,
-    }),
-    signal: AbortSignal.timeout(5000),
-  });
-  if (!res.ok && res.status !== 202) console.error('IndexNow:', res.status, await res.text().catch(() => ''));
+  await submitAbsolute(paths.flatMap((p) => Object.values(langAlternates(p))).map((p) => `${SITE_URL}${p}`));
+}
+
+/** Повні адреси свого домену; протокол приймає до 10 000 за запит. Повертає, скільки відправили. */
+export async function submitAbsolute(urls: string[]) {
+  const urlList = [...new Set(urls)].filter((u) => u.startsWith(`${SITE_URL}/`) || u === SITE_URL);
+  for (let i = 0; i < urlList.length; i += 10000) {
+    const res = await fetch('https://api.indexnow.org/indexnow', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json; charset=utf-8' },
+      body: JSON.stringify({
+        host: new URL(SITE_URL).host,
+        key: INDEXNOW_KEY,
+        keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
+        urlList: urlList.slice(i, i + 10000),
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    if (!res.ok && res.status !== 202) throw new Error(`IndexNow ${res.status}: ${await res.text().catch(() => '')}`);
+  }
+  return urlList.length;
 }
 
 /** Сторінки оголошень (обидві мови) — після відповіді, щоб не тримати збереження форми. */
