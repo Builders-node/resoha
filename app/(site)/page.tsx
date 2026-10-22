@@ -14,7 +14,6 @@ import { cityStats, statsPeriod, yearAgo } from '@/lib/priceStats';
 import { fmtNumber, nListings } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { trackPromo } from '@/lib/promo';
-import { areaForNeighborhood } from '@/lib/content/areas';
 import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
 import { getLang, getLp } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
@@ -26,10 +25,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return localized('/');
 }
 
-/** Район із бази веде на сторінку-гайд району, якщо така є; інакше — на фільтр. */
+/** Картка району завжди веде в каталог з цим районом — однаково для всіх районів і мов. */
 function areaHref(name: string) {
-  const area = areaForNeighborhood(name);
-  return area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(name)}`;
+  return `/listings?neighborhoods=${encodeURIComponent(name)}`;
 }
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -147,7 +145,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
               <Link key={name} className="ov ov--area ov--plain"
-                href={areaHref(name)}>
+                href={lp(areaHref(name))}>
                 <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
