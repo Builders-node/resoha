@@ -9,7 +9,7 @@ import { langAlternates } from './i18n/paths';
  *
  * Ключ не секретний: він лише доводить, що домен наш, і лежить файлом у public/.
  */
-export const INDEXNOW_KEY = 'e818fc25acd8b0877803576258cce94d';
+export const INDEXNOW_KEY = '3ee2b7851aa849fa942cbb9e57a43ebf';
 
 /** Пінгуємо лише з бойового сайту: превʼю й локальні збірки мають чужі адреси. */
 const enabled = () => process.env.VERCEL_ENV === 'production' && SITE_URL.startsWith('https://');
