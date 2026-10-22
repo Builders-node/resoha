@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
+import { SkRows } from './Skeleton';
 import VisitSettings from './VisitSettings';
 import LocationPicker from './LocationPicker';
 import Photo from './Photo';
@@ -60,7 +61,7 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false, onPro
       <p className="muted small" style={{ margin: '4px 0 14px' }}>
         Each development has its own page. Open one to edit it section by section, add units or post news.
       </p>
-      {items === null && <p className="muted">Loading…</p>}
+      {items === null && <SkRows n={3} title={false} />}
       {items?.length === 0 && <p className="muted">No developments yet.</p>}
       <div className="dev-cards">
         {items?.map((d) => (

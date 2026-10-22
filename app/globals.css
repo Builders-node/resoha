@@ -864,6 +864,16 @@ textarea.input{resize:vertical;min-height:96px}
 .sk-stack{display:grid;gap:10px}
 .sk-row{display:flex;gap:10px;flex-wrap:wrap}
 .sk-head{padding:28px 0 14px;display:grid;gap:12px}
+/* кабінети: пункти меню, плитки цифр і рядки таблиць */
+.sk--nav{display:block;height:40px;border-radius:12px}
+.sidenav .sk,.profile-head .sk{background:#e6e6ec}
+.sk-nav{display:grid;gap:6px}
+.sk--stat{min-height:74px;border-radius:var(--radius)}
+.sk--row{height:52px;border-radius:12px}
+@media (max-width:1080px){
+  .sk-nav{display:flex;overflow:hidden}
+  .sk--nav{flex:0 0 112px;height:36px}
+}
 @media (max-width:860px){
   .sk--map{display:none}
   .sk--gallery{height:210px}
