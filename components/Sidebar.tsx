@@ -56,7 +56,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
     <>
       <aside className="sidebar">
         <Link className="sidebar__logo" href={lp('/')}>
-          <span className="sidebar__mark"><Logo size={40} /></span>
+          <span className="sidebar__mark"><Logo size={38} /></span>
           <span className="sidebar__word">Hogarli</span>
         </Link>
 

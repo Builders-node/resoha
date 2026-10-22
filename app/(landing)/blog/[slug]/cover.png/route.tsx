@@ -1,6 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { POSTS, postBySlug, readingMinutes, topicBySlug } from '@/lib/content/blog';
-import { LOGO_PATH, LOGO_VIEWBOX } from '@/lib/logo';
+import Logo from '@/components/Logo';
 
 const size = { width: 1200, height: 630 };
 export const dynamicParams = false;
@@ -28,7 +28,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
         padding: 72, background: BG[p?.topic ?? 'new-builds'], color: '#0f0f10', fontFamily: 'sans-serif',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 18, fontSize: 30, fontWeight: 700 }}>
-          <svg width="52" height="49" viewBox={LOGO_VIEWBOX}><path d={LOGO_PATH} fill="#ff4800" /></svg>
+          <Logo size={54} />
           <span>Hogarli Blog</span>
           <span style={{ opacity: 0.6 }}>·</span>
           <span style={{ opacity: 0.85 }}>{topic}</span>

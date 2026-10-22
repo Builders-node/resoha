@@ -44,7 +44,7 @@ code{background:var(--chip);padding:2px 6px;border-radius:6px;font-size:13px}
   overflow-y:auto;scrollbar-width:none}
 .sidebar::-webkit-scrollbar{display:none}
 .sidebar__logo{display:flex;flex-direction:column;align-items:center;gap:6px;margin-bottom:20px}
-.sidebar__mark{width:44px;height:44px;display:grid;place-items:center;color:var(--orange)}
+.sidebar__mark{width:44px;height:44px;display:grid;place-items:center}
 .sidebar__word{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .sidebar a,.sidebar button.sidelink{
   width:100%;background:none;border:0;color:#fff;cursor:pointer;text-align:center;
@@ -482,7 +482,7 @@ textarea.input{resize:vertical;min-height:96px}
 .langswitch button.is-active{background:var(--ink);color:#fff;font-weight:600}
 .langswitch[aria-busy=true]{opacity:.6}
 .logo{display:flex;align-items:center;gap:8px;font-weight:900;font-size:20px;letter-spacing:-.03em}
-.logo__mark{width:30px;height:30px;display:grid;place-items:center;color:var(--orange)}
+.logo__mark{width:30px;height:30px;display:grid;place-items:center}
 .logo-mark{display:block}
 .logo__sub{font-weight:700;color:var(--ink-3)}
 
@@ -2074,7 +2074,6 @@ html{scroll-behavior:smooth}
 .city-stat__title{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .city-stat__title h3{font-size:26px;line-height:1.15;color:#fff}
 .city-stat__brand{display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:15px;color:#fff;flex:none;padding-top:4px}
-.city-stat__brand .logo-mark{color:var(--orange)}
 .city-stat__month{display:block;margin:14px 0 22px;font-size:14px;color:rgba(255,255,255,.8)}
 .city-stat__row{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:start}
 .city-stat__k{font-weight:700;font-size:17px}

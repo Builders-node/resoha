@@ -1,21 +1,19 @@
-import { LOGO_PATH, LOGO_VIEWBOX } from '@/lib/logo';
+import { LOGO_PATHS, LOGO_RATIO, LOGO_TONES, LOGO_VIEWBOX, type LogoTone } from '@/lib/logo';
 
 /**
- * Знак Hogarli: помаранчева пляма з вирізаною шестикутною зіркою. Той самий
- * файл лежить в app/icon.svg як фавікон; тут — інлайном, щоб масштабувати
- * й фарбувати через брендовий токен без зайвого запиту.
+ * Знак Hogarli: ізометричний будинок. Той самий контур лежить в app/icon.svg як фавікон;
+ * тут — інлайном, без зайвого запиту. size — висота знака; tone — набір відтінків граней:
+ * orange на світлому тлі, light на темному (сайдбар, темні підвали й картки).
  */
-export default function Logo({ size = 40, className = '' }: { size?: number; className?: string }) {
+export default function Logo({ size = 40, tone = 'orange', className = '' }: { size?: number; tone?: LogoTone; className?: string }) {
+  const fills = LOGO_TONES[tone];
   return (
     <svg
       className={`logo-mark ${className}`.trim()}
-      width={size} height={Math.round(size * 621 / 661)} viewBox={LOGO_VIEWBOX}
+      width={Math.round(size * LOGO_RATIO)} height={size} viewBox={LOGO_VIEWBOX}
       fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false"
     >
-      <path
-        fill="currentColor"
-        d={LOGO_PATH}
-      />
+      {LOGO_PATHS.map((d, i) => <path key={i} fill={fills[i]} d={d} />)}
     </svg>
   );
 }
