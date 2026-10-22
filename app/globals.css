@@ -491,6 +491,13 @@ textarea.input{resize:vertical;min-height:96px}
   background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-weight:600;z-index:3000;transition:.25s}
 .toast.is-on{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* «Ver en español» для тих, хто обрав іспанську, але відкрив англійську адресу (components/LangHint) */
+.langhint{position:fixed;left:calc(50% + var(--side-w)/2);bottom:calc(20px + var(--bar-h, 0px));transform:translateX(-50%);z-index:2900;
+  display:flex;align-items:center;gap:4px;background:var(--ink);color:#fff;border-radius:999px;padding:4px 4px 4px 16px;box-shadow:var(--shadow-lg);font-weight:600}
+.langhint a{color:#fff}
+.langhint button{width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:#fff;font-size:20px;line-height:1;cursor:pointer}
+.langhint button:hover{background:rgba(255,255,255,.12)}
+
 /* ===== Адаптив ===== */
 @media (max-width:1200px){
   .grid--4{grid-template-columns:repeat(3,1fr)}
@@ -580,6 +587,7 @@ textarea.input{resize:vertical;min-height:96px}
   .gallery--n2 .gallery__tile:nth-child(2),.gallery--n4 .gallery__tile:nth-child(4){grid-column:span 2}
   .gallery--n1{grid-auto-rows:auto}
   .toast{left:50%}
+  .langhint{left:50%}
 }
 @media (max-width:560px){
   .section__head .btn{margin-left:0}

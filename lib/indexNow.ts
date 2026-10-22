@@ -17,6 +17,20 @@ const enabled = () => process.env.VERCEL_ENV === 'production' && SITE_URL.starts
 export async function submitUrls(paths: string[]) {
   const urlList = [...new Set(paths.flatMap((p) => Object.values(langAlternates(p))))].map((p) => `${SITE_URL}${p}`);
   if (!urlList.length) return;
+  await post(urlList);
+}
+
+/** Протокол бере до 10 000 адрес за запит. */
+const MAX_PER_REQUEST = 10_000;
+
+/** Повні адреси як є (скажімо, всі з карти сайту) — пачками по 10 000. Повертає, скільки відправлено. */
+export async function submitAbsolute(urls: string[]): Promise<number> {
+  const list = [...new Set(urls.filter((u) => u.startsWith(`${SITE_URL}/`) || u === SITE_URL))];
+  for (let i = 0; i < list.length; i += MAX_PER_REQUEST) await post(list.slice(i, i + MAX_PER_REQUEST));
+  return list.length;
+}
+
+async function post(urlList: string[]) {
   const res = await fetch('https://api.indexnow.org/indexnow', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json; charset=utf-8' },
@@ -26,9 +40,9 @@ export async function submitUrls(paths: string[]) {
       keyLocation: `${SITE_URL}/${INDEXNOW_KEY}.txt`,
       urlList,
     }),
-    signal: AbortSignal.timeout(5000),
+    signal: AbortSignal.timeout(15000),
   });
-  if (!res.ok && res.status !== 202) console.error('IndexNow:', res.status, await res.text().catch(() => ''));
+  if (!res.ok && res.status !== 202) throw new Error(`IndexNow: ${res.status} ${await res.text().catch(() => '')}`);
 }
 
 /** Сторінки оголошень (обидві мови) — після відповіді, щоб не тримати збереження форми. */

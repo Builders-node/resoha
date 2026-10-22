@@ -15,7 +15,8 @@ export async function generateMetadata({ params }: { params: Promise<{ topic: st
   const t = await getT();
   return localized(`/blog/topic/${topic.slug}`, {
     title: `${t(topic.name)}: ${t('Blog')} | ${SITE_NAME}`,
-    description: t(topic.blurb),
+    // одне речення рубрики коротке для сніпета — додаємо, про що й для кого ці статті
+    description: `${t(topic.blurb)} ${t('Articles from the Hogarli blog for buyers and renters in Honduras.')}`,
   });
 }
 

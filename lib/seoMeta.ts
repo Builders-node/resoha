@@ -5,11 +5,15 @@ import { langAlternates, localePath } from './i18n/paths';
 import { SITE_NAME } from './site';
 import { ES_META } from './i18n/es/meta';
 
+/** Межі сніпета: <title> до 65 знаків, meta description до 155 — довше Google обрізає. */
+export const TITLE_LIMIT = 65;
+export const DESCRIPTION_LIMIT = 155;
+
 /**
- * meta description до 160 знаків: довше Google обрізає посеред слова. Ріжемо по межі
+ * meta description до 155 знаків: довше Google обрізає посеред слова. Ріжемо по межі
  * речення, якщо воно не надто коротке, інакше по межі слова з «…».
  */
-export function metaDescription(text: string, max = 160): string {
+export function metaDescription(text: string, max = DESCRIPTION_LIMIT): string {
   const s = text.replace(/\s+/g, ' ').trim();
   if (s.length <= max) return s;
   const cut = s.slice(0, max);
@@ -30,6 +34,7 @@ export async function localized(path: string, meta: Metadata = {}, lang?: Lang):
   const l = lang ?? await getLang();
   const url = localePath(l, path);
   if (l === 'es' && ES_META[path]) meta = withText(meta, ES_META[path]);
+  meta = fitSnippet(meta);
   return {
     ...meta,
     alternates: { ...meta.alternates, canonical: url, languages: langAlternates(path) },
@@ -57,4 +62,18 @@ function withText(meta: Metadata, o: { title?: string; description?: string }): 
     ...(description ? { description } : {}),
     openGraph: { ...(meta.openGraph as object | undefined), ...(short ? { title: short } : {}), ...(description ? { description } : {}) },
   } as Metadata;
+}
+
+/**
+ * Довгий <title> втрачає « | Hogarli» (назва сайту однаково стоїть у сніпеті поруч з адресою),
+ * а description ріжемо до DESCRIPTION_LIMIT. og:* не чіпаємо: соцмережі показують більше.
+ */
+function fitSnippet(meta: Metadata): Metadata {
+  const out = { ...meta };
+  const suffix = ` | ${SITE_NAME}`;
+  if (typeof out.title === 'string' && out.title.length > TITLE_LIMIT && out.title.endsWith(suffix)) {
+    out.title = out.title.slice(0, -suffix.length);
+  }
+  if (typeof out.description === 'string') out.description = metaDescription(out.description);
+  return out;
 }

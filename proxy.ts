@@ -1,6 +1,8 @@
 import { type NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { LANG_HEADER, isLocalizedPath, localePath, stripLang } from '@/lib/i18n/paths';
+import { supabaseAnon } from '@/lib/supabase/anon';
+import { cloneMap } from '@/lib/clones';
 
 // те саме імʼя, що LANG_COOKIE у lib/i18n: сам модуль не тягнемо, бо з ним їде весь словник
 const LANG_COOKIE = 'lang';
@@ -8,9 +10,9 @@ const YEAR = 60 * 60 * 24 * 365;
 
 /**
  * Мова в адресі. /es/... — переписуємо на звичайний маршрут з мовою es у заголовку й
- * запамʼятовуємо вибір у кукі. Публічна сторінка без префікса — завжди англійська,
- * а хто обрав іспанську, того ведемо на /es-версію: так посилання без префікса
- * (старі закладки, листи, клієнтська навігація) не викидають людину з іспанської.
+ * запамʼятовуємо вибір у кукі. Публічна сторінка без префікса — завжди англійська, і кукі
+ * її не перенаправляє: інакше одна адреса віддавала б різні сторінки, а canonical і hreflang
+ * залежали б від кукі. Хто обрав іспанську, тому components/LangHint пропонує /es-версію.
  */
 function langRoute(req: NextRequest): { redirect?: URL; rewrite?: URL; lang?: 'en' | 'es' } {
   const { pathname } = req.nextUrl;
@@ -25,16 +27,32 @@ function langRoute(req: NextRequest): { redirect?: URL; rewrite?: URL; lang?: 'e
     return { rewrite: url, lang: 'es' };
   }
   if (!isLocalizedPath(pathname)) return {};
-  if (read && req.cookies.get(LANG_COOKIE)?.value === 'es') {
-    const url = req.nextUrl.clone();
-    url.pathname = localePath('es', pathname);
-    return { redirect: url };
-  }
   return { lang: 'en' };
+}
+
+const LISTING_PATH = /^\/listings\/([0-9a-f-]{36})$/;
+
+/** Однакова квартира ЖК без номера → 308 на головне оголошення групи (lib/clones.ts). */
+async function cloneRedirect(req: NextRequest): Promise<URL | null> {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return null;
+  const { lang, path } = stripLang(req.nextUrl.pathname);
+  const id = LISTING_PATH.exec(path)?.[1];
+  if (!id) return null;
+  try {
+    const primary = (await cloneMap(supabaseAnon())).get(id);
+    if (!primary) return null;
+    const url = req.nextUrl.clone();
+    url.pathname = localePath(lang ?? 'en', `/listings/${primary}`);
+    return url;
+  } catch {
+    return null;
+  }
 }
 
 /** Оновлює токен Supabase у кукі, щоб сесія не протухала між запитами, і розводить мовні адреси. */
 export async function proxy(req: NextRequest) {
+  const clone = await cloneRedirect(req);
+  if (clone) return NextResponse.redirect(clone, 308);
   const route = langRoute(req);
   if (route.redirect) {
     const res = NextResponse.redirect(route.redirect, 307);

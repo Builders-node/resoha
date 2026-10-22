@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { localized } from '@/lib/seoMeta';
+import { TITLE_LIMIT, localized } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Crumbs from '@/components/Crumbs';
@@ -28,9 +28,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!a) return {};
   const t = await getT();
   const region = areaRegion(a);
-  const title = a.name === region
+  const long = a.name === region
     ? t('{area}: homes, condos & land for sale', { area: t(a.name) })
     : t('{area}, {region}: homes, condos & land for sale', { area: t(a.name), region });
+  // «French Harbour & the central coast, Roatán: …» не влазить у сніпет — коротший варіант
+  const title = long.length <= TITLE_LIMIT ? long : t('{area}, {region}: property for sale', { area: t(a.name), region });
   const description = `${t(a.summary)}${a.priceRange ? ` ${t('Typical prices: {range}.', { range: a.priceRange })}` : ''}`;
   return localized(`/areas/${a.slug}`, {
     title: `${title} | ${SITE_NAME}`,

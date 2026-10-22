@@ -9,6 +9,7 @@ import JsonLd from '@/components/JsonLd';
 import GoogleAnalytics from '@/components/GoogleAnalytics';
 import Clarity from '@/components/Clarity';
 import GaSignup from '@/components/GaSignup';
+import LangHint from '@/components/LangHint';
 import { graph, organizationLd, websiteLd } from '@/lib/seo';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
 import LangProvider from '@/components/LangProvider';
@@ -50,6 +51,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <JsonLd data={graph(organizationLd(), websiteLd())} />
         {children}
         <Toaster />
+        <LangHint />
         <Motion />
         {/* useSearchParams усередині — тому власна межа Suspense */}
         <Suspense fallback={null}><AuthModal /></Suspense>

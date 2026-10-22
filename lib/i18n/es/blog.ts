@@ -177,6 +177,15 @@ export const ES_BLOG: Record<string, string> = {
   'Wherever you buy, the same title check at the Instituto de la Propiedad applies.':
     'Compre donde compre, se aplica la misma verificación del título en el Instituto de la Propiedad.',
   'At a glance': 'De un vistazo',
+  'What property costs in each city': 'Cuánto cuesta una propiedad en cada ciudad',
+  'Median asking prices of the properties listed on Hogarli, in US dollars. Half the listings are cheaper and half are dearer, so the median is not pulled up by a few luxury homes.':
+    'Precios medianos de oferta de las propiedades publicadas en Hogarli, en dólares estadounidenses. La mitad de los anuncios cuesta menos y la otra mitad más, así que unas pocas casas de lujo no inflan la mediana.',
+  'Condo for sale': 'Condominio en venta',
+  'House for sale': 'Casa en venta',
+  'Land for sale': 'Terreno en venta',
+  'Condo for rent, per month': 'Condominio en alquiler, por mes',
+  'As of October 2026, from listings on Hogarli. Asking prices, not sold prices.':
+    'Datos de octubre de 2026, según los anuncios en Hogarli. Son precios de oferta, no de venta cerrada.',
   'What it is': 'Qué es',
   'Caribbean island, Bay Islands': 'Isla del Caribe, Islas de la Bahía',
   'Industrial and business capital': 'Capital industrial y de negocios',
@@ -293,6 +302,11 @@ export const ES_BLOG: Record<string, string> = {
   'An area that looks perfect on a holiday can feel different in the rainy season, at rush hour or when the cruise ships are in. Renting lets you test the commute, the noise, the internet, the water supply and the neighbours. It also gives you time to meet agents in person and watch the market, so that when you buy, you know what a fair price looks like.':
     'Una zona que parece perfecta en vacaciones puede sentirse distinta en la temporada de lluvias, en hora pico o cuando llegan los cruceros. Alquilar le permite probar el trayecto, el ruido, el internet, el suministro de agua y los vecinos. También le da tiempo para conocer agentes en persona y observar el mercado, de modo que cuando compre sepa cuál es un precio justo.',
   'Where to look': 'Dónde buscar',
+  'What rent costs': 'Cuánto cuesta el alquiler',
+  'Median monthly rent of homes and condos listed for rent on Hogarli, in US dollars. A dash means there are too few listings of that size in the city to give a fair figure.':
+    'Alquiler mensual mediano de las casas y condominios publicados en alquiler en Hogarli, en dólares estadounidenses. Un guion significa que hay muy pocos anuncios de ese tamaño en la ciudad para dar una cifra justa.',
+  'As of October 2026, from listings on Hogarli. Asking rents; furnished units and short leases usually cost more.':
+    'Datos de octubre de 2026, según los anuncios en Hogarli. Son alquileres de oferta; las unidades amuebladas y los contratos cortos suelen costar más.',
   'Start with [long-term rentals on Hogarli](/listings?deal=rent), where you can filter by city, area, bedrooms and price on the map and contact the agent directly by WhatsApp. On Roatán, West End and Sandy Bay have the widest choice of long-term rentals; in the cities, look at the colonias near where you will work. Save a search and you will get an email when something new matches.':
     'Empiece por los [alquileres de largo plazo en Hogarli](/listings?deal=rent), donde puede filtrar por ciudad, zona, habitaciones y precio en el mapa y contactar al agente directamente por WhatsApp. En Roatán, West End y Sandy Bay tienen la mayor oferta de alquileres de largo plazo; en las ciudades, mire las colonias cerca de donde va a trabajar. Guarde una búsqueda y recibirá un correo cuando aparezca algo nuevo.',
   'What to check before you sign': 'Qué verificar antes de firmar',
@@ -435,4 +449,11 @@ export const ES_BLOG: Record<string, string> = {
     'Vivir aquí',
   'Living in Crawfish Rock means a quieter, newer part of the island with West Bay, West End and French Harbour all within a short drive, at prices well below beachfront West Bay. See the apartments, floor plans and construction progress on the [Duna Tower page](/developments/duna-tower), or browse [long-term rentals](/listings?deal=rent) if you would like to try the area first. Comparing areas? Start with [the best areas to live in Roatán](/guides/best-areas-to-live-in-roatan) and the [West Bay area guide](/areas/west-bay).':
     'Vivir en Crawfish Rock significa una parte de la isla más tranquila y nueva, con West Bay, West End y French Harbour a poca distancia en carro, a precios muy por debajo de la primera línea de playa en West Bay. Vea los apartamentos, los planos y el avance de obra en la [página de Duna Tower](/developments/duna-tower), o explore los [alquileres a largo plazo](/listings?deal=rent) si prefiere probar la zona primero. ¿Compara zonas? Empiece por [las mejores zonas para vivir en Roatán](/guides/best-areas-to-live-in-roatan) y la [guía de West Bay](/areas/west-bay).',
+  'Articles from the Hogarli blog for buyers and renters in Honduras.': 'Artículos del blog de Hogarli para compradores e inquilinos en Honduras.',
+  /* ---------- Короткі <title> для видачі (seoTitle) ---------- */
+  'Buying off-plan in Honduras: 10 questions for the developer': 'Preventa en Honduras: 10 preguntas para el desarrollador',
+  'Roatán, San Pedro Sula or Tegucigalpa: where to buy': 'Roatán, San Pedro Sula o Tegucigalpa: dónde comprar',
+  'Hurricane season: what to check before you buy in Honduras': 'Temporada de huracanes: qué revisar antes de comprar',
+  'Rent first, buy later: renting in Honduras': 'Alquile primero, compre después: alquilar en Honduras',
+  'How to spot a property scam in Honduras': 'Cómo detectar una estafa inmobiliaria en Honduras',
 };

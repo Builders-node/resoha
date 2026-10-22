@@ -345,10 +345,11 @@ export default function ListingsExplorer({
             </div>
           ) : (
             <div className="grid grid--list">
-              {items.map((l) => (
+              {items.map((l, i) => (
                 <div key={l.id} id={`card-${l.id}`}>
                   <ListingCard
                     listing={l}
+                    eager={i === 0}
                     isFav={favIds.includes(l.id)}
                     highlighted={activeId === l.id}
                     onMouseEnter={() => setActiveId(l.id)}

@@ -21,6 +21,8 @@ export const topicBySlug = (slug: string) => TOPICS.find((t) => t.slug === slug)
 export type Post = {
   slug: string;
   title: string;
+  /** коротший <title> для видачі, коли title (він же H1) довший за 65 знаків */
+  seoTitle?: string;
   description: string;
   topic: Topic;
   /** іконка на обкладинці; без неї — іконка рубрики */
@@ -149,6 +151,7 @@ export const POSTS: Post[] = [
   {
     slug: 'buying-off-plan-in-honduras-questions-for-the-developer',
     title: 'Buying off-plan in Honduras: 10 questions to ask the developer before you sign',
+    seoTitle: 'Buying off-plan in Honduras: 10 questions for the developer',
     description: 'Pre-construction condos can be the best value in Honduras, or the costliest mistake. Ten questions about title, permits, payments, delays and handover to ask any developer first.',
     topic: 'new-builds',
     icon: 'crane',
@@ -216,6 +219,7 @@ export const POSTS: Post[] = [
   {
     slug: 'how-to-spot-property-scams-in-honduras',
     title: 'How to spot a fake listing or property scam in Honduras',
+    seoTitle: 'How to spot a property scam in Honduras',
     description: 'The warning signs of fake listings, rental scams and fraudulent sellers in Honduras, and the simple checks that protect your deposit.',
     topic: 'buying',
     icon: 'flag',
@@ -289,11 +293,12 @@ export const POSTS: Post[] = [
   {
     slug: 'roatan-san-pedro-sula-or-tegucigalpa',
     title: 'Roatán, San Pedro Sula or Tegucigalpa: where to buy property in Honduras',
+    seoTitle: 'Roatán, San Pedro Sula or Tegucigalpa: where to buy',
     description: 'Island, business capital or political capital? How Roatán, San Pedro Sula and Tegucigalpa compare for buyers: who buys there, what you get, rental demand and what to check.',
     topic: 'market',
     icon: 'map',
     published: '2026-10-15',
-    updated: '2026-10-15',
+    updated: '2026-10-19',
     lead: 'Hogarli lists property in three very different places. Roatán is a Caribbean island priced in dollars for foreign buyers. San Pedro Sula is the country’s business engine. Tegucigalpa is the capital in the mountains. Which one fits depends far more on why you are buying than on price.',
     takeaways: [
       'Roatán: lifestyle, retirement and holiday-rental buyers; prices mostly in US dollars.',
@@ -316,6 +321,22 @@ export const POSTS: Post[] = [
               ['Foreign ownership', 'Coastal zone: 3,000 m² rule', 'Generally outside the coastal strip', 'Outside the coastal strip'],
             ],
           } },
+        ],
+      },
+      {
+        h: 'What property costs in each city',
+        body: [
+          'Median asking prices of the properties listed on Hogarli, in US dollars. Half the listings are cheaper and half are dearer, so the median is not pulled up by a few luxury homes.',
+          { table: {
+            head: ['', 'Roatán', 'San Pedro Sula', 'Tegucigalpa'],
+            rows: [
+              ['Condo for sale', '$149,500', '$234,000', '$169,950'],
+              ['House for sale', '$499,000', '$230,000', '$237,000'],
+              ['Land for sale', '$217,950', '$274,000', '$150,500'],
+              ['Condo for rent, per month', '$1,000', '$953', '$1,105'],
+            ],
+          } },
+          { note: 'As of October 2026, from listings on Hogarli. Asking prices, not sold prices.' },
         ],
       },
       {
@@ -358,6 +379,7 @@ export const POSTS: Post[] = [
   {
     slug: 'hurricane-season-and-property-on-the-bay-islands',
     title: 'Hurricane season and your property: what to check before you buy in Honduras',
+    seoTitle: 'Hurricane season: what to check before you buy in Honduras',
     description: 'The Atlantic hurricane season runs from June to November. What it means for property on Roatán and the mainland, and the building, site and insurance checks to make before buying.',
     topic: 'living',
     icon: 'wave',
@@ -425,11 +447,12 @@ export const POSTS: Post[] = [
   {
     slug: 'renting-in-honduras-before-you-buy',
     title: 'Rent first, buy later: a practical guide to renting in Honduras',
+    seoTitle: 'Rent first, buy later: renting in Honduras',
     description: 'Why renting for a few months is the smartest first step before buying in Honduras, and how to find a place, read the lease, handle utilities and avoid the common mistakes.',
     topic: 'living',
     icon: 'key',
     published: '2026-10-15',
-    updated: '2026-10-15',
+    updated: '2026-10-19',
     lead: 'The most common piece of advice from people who bought in Honduras is the same: rent first. A few months in a rented home show you which area suits you, what daily life costs and which agents you trust, before you commit to a purchase.',
     takeaways: [
       'Rent for three to six months, ideally through both the dry and the rainy season.',
@@ -448,6 +471,22 @@ export const POSTS: Post[] = [
         h: 'Where to look',
         body: [
           'Start with [long-term rentals on Hogarli](/listings?deal=rent), where you can filter by city, area, bedrooms and price on the map and contact the agent directly by WhatsApp. On Roatán, West End and Sandy Bay have the widest choice of long-term rentals; in the cities, look at the colonias near where you will work. Save a search and you will get an email when something new matches.',
+        ],
+      },
+      {
+        h: 'What rent costs',
+        body: [
+          'Median monthly rent of homes and condos listed for rent on Hogarli, in US dollars. A dash means there are too few listings of that size in the city to give a fair figure.',
+          { table: {
+            head: ['Bedrooms', 'Roatán', 'San Pedro Sula', 'Tegucigalpa'],
+            rows: [
+              ['Studio', '$1,000', '—', '—'],
+              ['2', '$1,500', '$838', '$1,000'],
+              ['3', '—', '$1,350', '$1,200'],
+              ['4', '—', '$1,700', '$1,750'],
+            ],
+          } },
+          { note: 'As of October 2026, from listings on Hogarli. Asking rents; furnished units and short leases usually cost more.' },
         ],
       },
       {

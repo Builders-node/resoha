@@ -1,5 +1,6 @@
 'use client';
 import { getImageProps } from 'next/image';
+import { preload } from 'react-dom';
 import { IMAGE_HOSTS } from '@/lib/imageHosts';
 
 /** Через оптимізатор — локальні шляхи й https з дозволених хостів; решта лишається як є. */
@@ -38,10 +39,13 @@ type Props = {
 export default function OptImg({ src, alt = '', className, sizes, width = 1080, eager }: Props) {
   const loading = eager ? 'eager' : 'lazy';
   if (!optimizable(src)) {
-    return <img className={className} src={src} alt={alt} loading={loading} />;
+    return <img className={className} src={src} alt={alt} loading={loading} fetchPriority={eager ? 'high' : undefined} />;
   }
   // fill і height — лише щоб next/image не вимагав розмірів; їхні атрибути й стилі не беремо
   const { props } = getImageProps(sizes ? { src, alt, fill: true, sizes } : { src, alt, width, height: width });
+  // як priority у next/image: <link rel="preload"> у <head>, щоб браузер почав тягнути фото
+  // ще до того, як дійде до <img> у розмітці
+  if (eager) preload(props.src, { as: 'image', imageSrcSet: props.srcSet, imageSizes: props.sizes, fetchPriority: 'high' });
   return (
     <img
       className={className}

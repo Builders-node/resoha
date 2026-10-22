@@ -14,6 +14,8 @@ export type Block =
 export type Guide = {
   slug: string;
   title: string;
+  /** коротший <title> для видачі, коли title (він же H1) довший за 65 знаків */
+  seoTitle?: string;
   /** коротка назва для карток і хлібних крихт */
   short: string;
   description: string;
@@ -34,6 +36,7 @@ export const GUIDES: Guide[] = [
   {
     slug: 'can-foreigners-buy-property-in-roatan',
     title: 'Can foreigners buy property in Roatán? The 3,000 m² rule explained',
+    seoTitle: 'Can foreigners buy property in Roatán? The 3,000 m² rule',
     short: 'Can foreigners buy property?',
     description: 'Yes, foreigners can own property on Roatán. Here is how the coastal-zone restriction, the 3,000 m² rule under Decree 90-90 and Honduran companies work in 2026.',
     published: '2026-10-03',
@@ -303,6 +306,7 @@ export const GUIDES: Guide[] = [
   {
     slug: 'roatan-rental-income',
     title: 'Roatán rental income: Airbnb occupancy and realistic yields in 2026',
+    seoTitle: 'Roatán rental income: Airbnb occupancy and yields in 2026',
     short: 'Rental income and yields',
     description: 'Honest numbers for Roatán holiday rentals: 1,002 active listings, 43% occupancy, $209 average nightly rate and 5–8% net yields quoted by local agents, with a worked example.',
     published: '2026-10-03',
@@ -366,6 +370,7 @@ export const GUIDES: Guide[] = [
   {
     slug: 'best-areas-to-live-in-roatan',
     title: 'Best areas to live in Roatán: neighbourhoods and prices compared',
+    seoTitle: 'Best areas to live in Roatán: neighbourhoods compared',
     short: 'Best areas to live',
     description: 'West Bay, West End, Sandy Bay, Coxen Hole, French Harbour, Oak Ridge and the East End compared: who each area suits and what property costs there in 2026.',
     published: '2026-10-03',

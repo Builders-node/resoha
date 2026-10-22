@@ -48,13 +48,15 @@ const SHORT: Record<Lang, { studio: string; beds: (n: number, what: string) => s
   es: { studio: 'Estudio', beds: (n, what) => `${what} de ${n} hab.`, deal: { sale: 'en venta', rent: 'en alquiler' } },
 };
 
-/** Скільки знаків <title> влазить у видачу до « | Hogarli». */
-const TITLE_MAX = 60;
+/** Скільки знаків <title> влазить у видачу (65) разом з « | Hogarli». */
+const TITLE_MAX = 55;
 
 /**
- * <title> за шаблоном «{тип} {угода}, {будинок}, {район} · {ціна}» — до ~60 знаків, щоб Google
- * не обрізав. Будинок — ЖК з номером квартири; у звичайного оголошення англійською — коротка
- * назва ріелтора, якщо влазить. Іспанською назву ріелтора не беремо: вона англійська.
+ * <title> за шаблоном «{тип} {угода}, {будинок}, {район} · {ціна}» — до ~55 знаків, щоб разом
+ * з « | Hogarli» Google не обрізав. Будинок — ЖК з номером квартири; у звичайного оголошення
+ * англійською — коротка назва ріелтора, якщо влазить. Іспанською назву ріелтора не беремо:
+ * вона англійська. Не влазить — у ЖК жертвуємо районом (будинок з номером квартири робить
+ * заголовок унікальним), у решти — назвою ріелтора.
  */
 export function listingMetaTitle(l: L & { address?: string }, lang: Lang) {
   const sh = SHORT[lang];
@@ -73,9 +75,13 @@ export function listingMetaTitle(l: L & { address?: string }, lang: Lang) {
   const fold2 = (s: string) => fold(s).replace(/[^a-z0-9]+/g, ' ').trim();
   // назва ріелтора, що лише повторює тип і угоду («Studio for rent»), нічого не додає
   const useful = building && !fold2(head).includes(fold2(building));
-  const full = `${head}, ${useful ? `${building}, ` : ''}${area} · ${price}`;
-  if (full.length <= TITLE_MAX || l.development) return full;
-  return `${head}, ${area} · ${price}`;
+  const options = [
+    `${head}, ${useful ? `${building}, ` : ''}${area} · ${price}`,
+    l.development && useful ? `${head}, ${building} · ${price}` : `${head}, ${area} · ${price}`,
+    // довга назва колонії («Colonia Jardines del Valle») — останній варіант з містом
+    ...(!l.development && city && city !== area ? [`${head}, ${city} · ${price}`] : []),
+  ];
+  return options.find((o) => o.length <= TITLE_MAX) ?? options.reduce((a, b) => (b.length < a.length ? b : a));
 }
 
 /**
@@ -110,13 +116,13 @@ export function listingSummary(l: L, lang: Lang) {
   return parts.join(' ');
 }
 
-/** meta description: довідка, потім початок опису ріелтора — до ~160 знаків, по межі слова. */
+/** meta description: довідка, потім початок опису ріелтора — до ~155 знаків, по межі слова. */
 export function listingMetaDescription(l: L & { text: string; textEs?: string }, lang: Lang) {
   // іспанською без body_es опис ріелтора не дописуємо: англійський хвіст у сніпеті /es ні до чого
   const body = (lang === 'es' ? l.textEs ?? '' : l.text).replace(/\s+/g, ' ').trim();
   const s = `${listingSummary(l, lang)} ${body}`.trim();
-  if (s.length <= 160) return s;
-  const cut = s.slice(0, 157);
+  if (s.length <= 155) return s;
+  const cut = s.slice(0, 152);
   return `${cut.slice(0, Math.max(cut.lastIndexOf(' '), 120))}…`;
 }
 

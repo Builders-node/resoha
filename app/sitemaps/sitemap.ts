@@ -7,7 +7,9 @@ import { MARKET_UPDATED } from '@/lib/content/market';
 import { SITE_URL } from '@/lib/site';
 import { fromParams, toQuery } from '@/lib/filters';
 import { catalogUrl, loadCatalogPage } from '@/lib/catalogSeo';
-import { both, sitemapCatalogCombos, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
+import { cloneMap } from '@/lib/clones';
+import { supabaseAnon } from '@/lib/supabase/anon';
+import { both, sitemapDevelopments, sitemapIds, sitemapListings } from '@/lib/sitemapData';
 
 /**
  * Карта сайту кількома файлами (/sitemaps/sitemap/<id>.xml), список файлів — у /sitemap.xml.
@@ -18,33 +20,30 @@ export async function generateSitemaps() {
   return (await sitemapIds()).map((id) => ({ id }));
 }
 
-/** Каталог з фільтрами — лише ті комбінації, які сторінка сама вважає індексованими. */
+/**
+ * Каталог з фільтрами в карті сайту — лише розділ і розділ × тип (продаж/оренда × кондо/будинок/земля).
+ * Міста, райони, спальні й «біля моря» лишаються індексованими сторінками, якщо не тонкі,
+ * але в карту не йдуть: їх знаходять за посиланнями з оголошень і сторінок районів.
+ */
 const CATALOG = [
   'deal=sale', 'deal=rent',
-  'deal=sale&type=house', 'deal=sale&type=condo', 'deal=sale&type=land', 'deal=sale&type=commercial',
-  'deal=rent&type=house', 'deal=rent&type=condo',
-  'deal=sale&oceanfront=1', 'deal=sale&type=land&ready=1',
+  'deal=sale&type=condo', 'deal=sale&type=house', 'deal=sale&type=land',
+  'deal=rent&type=condo', 'deal=rent&type=house', 'deal=rent&type=land',
 ].map((q) => catalogUrl(fromParams(new URLSearchParams(q))));
 
 export default async function sitemap({ id }: { id: Promise<string> }): Promise<MetadataRoute.Sitemap> {
   const key = String(await id);
 
   if (key === 'pages') {
-    // міста й райони — лише ті, де є оголошення; без бази лишаються загальні сторінки
-    const combos = await sitemapCatalogCombos().catch(() => []);
-    // порожня загальна добірка (скажімо, «готова до будівництва» земля) має noindex — у карту не йде
+    // порожня добірка (скажімо, земля в оренду) має noindex — у карту не йде
     const catalog = (await Promise.all(CATALOG.map(async (u) => {
       const f = fromParams(new URLSearchParams(u.split('?')[1] ?? ''));
       const { total } = await loadCatalogPage(toQuery(f), 1).catch(() => ({ total: 1 }));
       return total > 0 ? u : null;
     }))).filter((u): u is string => u !== null);
-    const local = combos
-      .map((c) => catalogUrl(fromParams(new URLSearchParams({ deal: c.deal, type: c.type, island: c.island, neighborhoods: c.neighborhood }))))
-      .filter((u) => !CATALOG.includes(u));
     return [
       ...both('/', { changeFrequency: 'daily', priority: 1 }),
       ...catalog.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.9 })),
-      ...local.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.8 })),
       ...both('/land-passport', { changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/market', { lastModified: new Date(MARKET_UPDATED), changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/areas', { changeFrequency: 'weekly', priority: 0.8 }),
@@ -88,8 +87,8 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 
   const chunk = /^listings-(\d+)$/.exec(key);
   if (!chunk) return [];
-  const listings = await sitemapListings(Number(chunk[1]));
-  return listings.flatMap((l) => both(`/listings/${l.id}`, {
+  const [listings, clones] = await Promise.all([sitemapListings(Number(chunk[1])), (async () => cloneMap(supabaseAnon()))().catch(() => new Map<string, string>())]);
+  return listings.filter((l) => !clones.has(l.id)).flatMap((l) => both(`/listings/${l.id}`, {
     lastModified: new Date(l.updatedAt), changeFrequency: 'weekly', priority: 0.8, images: l.photos,
   }));
 }
