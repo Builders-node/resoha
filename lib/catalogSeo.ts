@@ -5,7 +5,7 @@ import { EMPTY_FILTERS, fromParams, toListingQuery, toQuery, type Filters } from
 import { makeT, type Lang } from './i18n';
 import { localePath } from './i18n/paths';
 import { fmtNumber } from './format';
-import { catalogTitle } from './catalogTitle';
+import { catalogPlace, catalogTitle } from './catalogTitle';
 
 export { catalogTitle };
 import { OG_LOCALE, localized } from './seoMeta';
@@ -73,6 +73,23 @@ export function isIndexable(f: Filters) {
   return facets <= 3;
 }
 
+/**
+ * <title> добірки. Загальна добірка міста чи країни без типу й інших фасетів відповідає
+ * головному запиту («roatan real estate», «bienes raíces en Honduras», «casas en alquiler en
+ * Tegucigalpa»), тож заголовок починається з нього; решта — як H1.
+ */
+function seoTitle(f: Filters, lang: Lang) {
+  const t = makeT(lang);
+  const general = !f.type && !f.beds.length && !f.oceanfront;
+  const place = catalogPlace(f);
+  if (general && f.deal === 'sale') {
+    const s = t('{place} real estate: homes, condos & land for sale', { place });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+  if (general && f.deal === 'rent') return t('{place} rentals: houses & condos for rent', { place });
+  return catalogTitle(f, lang);
+}
+
 /** Метадані каталогу: заголовок з фільтрів, canonical на нормалізовану адресу, noindex для зайвого. */
 export async function catalogMetadata(sp: SP, lang: Lang): Promise<Metadata> {
   const t = makeT(lang);
@@ -80,7 +97,7 @@ export async function catalogMetadata(sp: SP, lang: Lang): Promise<Metadata> {
   const page = catalogPage(sp);
   const { total } = await loadCatalogPage(toQuery(f), page);
   const head = catalogTitle(f, lang);
-  const title = `${head}${page > 1 ? t(' — page {n}', { n: page }) : ''}`;
+  const title = `${seoTitle(f, lang)}${page > 1 ? t(' — page {n}', { n: page }) : ''}`;
   const description = t('{what}: {n} listings with photos, prices and a map. Contact local agencies directly on WhatsApp.', {
     what: head, n: fmtNumber(total),
   });

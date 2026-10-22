@@ -12,6 +12,9 @@ const NOUN: Record<string, string> = {
   commercial: 'commercial property',
 };
 
+/** Район, місто чи острів добірки; без них — уся країна. */
+export const catalogPlace = (f: Filters) => (f.neighborhoods.length === 1 ? f.neighborhoods[0] : f.island || 'Honduras');
+
 /** «3-bed houses for sale in West Bay» — зі складу фільтрів, перекладено шаблонами t(). */
 export function catalogTitle(f: Filters, lang: Lang) {
   const t = makeT(lang);
@@ -22,8 +25,7 @@ export function catalogTitle(f: Filters, lang: Lang) {
   if (f.ready && f.type === 'land') what = t('ready-to-build {what}', { what });
   if (f.deal === 'rent') what = t('{what} for rent', { what });
   else if (f.deal === 'sale') what = t('{what} for sale', { what });
-  const place = f.neighborhoods.length === 1 ? f.neighborhoods[0] : f.island || 'Honduras';
-  const s = t('{what} in {place}', { what, place });
+  const s = t('{what} in {place}', { what, place: catalogPlace(f) });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 

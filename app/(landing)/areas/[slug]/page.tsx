@@ -29,8 +29,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const t = await getT();
   const region = areaRegion(a);
   const title = a.name === region
-    ? t('{area}: homes, condos & land for sale', { area: t(a.name) })
-    : t('{area}, {region}: homes, condos & land for sale', { area: t(a.name), region });
+    ? t('{area} real estate: homes, condos & land for sale', { area: t(a.name) })
+    : t('{area}, {region} real estate: homes, condos & land for sale', { area: t(a.name), region });
   const description = `${t(a.summary)}${a.priceRange ? ` ${t('Typical prices: {range}.', { range: a.priceRange })}` : ''}`;
   return localized(`/areas/${a.slug}`, {
     title: `${title} | ${SITE_NAME}`,

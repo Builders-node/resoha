@@ -10,10 +10,10 @@ export const ES_SEO: Record<string, string> = {
   'Developments by {name} on Roatán: projects, available apartments and contacts.':
     'Proyectos de {name} en Roatán: desarrollos, apartamentos disponibles y contacto.',
   '{name}, realtor on Roatán: listings and contact details.': '{name}, agente inmobiliario en Roatán: anuncios y datos de contacto.',
-  'Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land':
-    'Bienes raíces en Roatán, San Pedro Sula y Tegucigalpa: casas, condominios y terrenos',
-  'Every property in Roatán, San Pedro Sula and Tegucigalpa in one checked place: homes, condos, rentals and land from local agencies, with a land passport on every lot and direct WhatsApp contact with agents.':
-    'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa en un solo lugar verificado: casas, condominios, alquileres y terrenos de agencias locales, con pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
+  'Honduras Real Estate: Homes, Condos & Land in Roatán, Tegucigalpa & San Pedro Sula':
+    'Bienes raíces en Honduras: casas, apartamentos y terrenos en venta y alquiler',
+  'Homes, condos, rentals and land for sale across Honduras: Roatán and the Bay Islands, Tegucigalpa and San Pedro Sula. Listings from local agencies, a land passport on every lot and direct WhatsApp contact with agents.':
+    'Casas en venta, apartamentos, alquileres y terrenos en Honduras: Roatán y las Islas de la Bahía, Tegucigalpa y San Pedro Sula. Anuncios de agencias locales, pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
   'Hogarli is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.':
     'Hogarli es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
   'Developers in Roatán': 'Desarrolladoras en Roatán',
@@ -39,8 +39,10 @@ export const ES_SEO: Record<string, string> = {
   'New developments in Roatán': 'Proyectos nuevos en Roatán',
   'Condo towers and new-build projects on Roatán with unit-by-unit prices from the developer.':
     'Torres de condominios y obra nueva en Roatán con precios unidad por unidad de la desarrolladora.',
-  '{area}, {region}: homes, condos & land for sale':
-    '{area}, {region}: casas, condominios y terrenos en venta',
+  // заголовок сторінки району: починається з головного запиту («casas en venta en Tegucigalpa», «west bay roatan real estate»)
+  '{area} real estate: homes, condos & land for sale': 'Casas en venta en {area}: apartamentos, terrenos y alquileres',
+  '{area}, {region} real estate: homes, condos & land for sale':
+    'Bienes raíces en {area}, {region}: casas, apartamentos y terrenos en venta',
   'real estate agency on Roatán': 'agencia inmobiliaria en Roatán',
   'realtor': 'agente inmobiliario',
   'developer in Roatán': 'desarrolladora en Roatán',
@@ -55,10 +57,13 @@ export const ES_SEO: Record<string, string> = {
 
   /* заголовок каталогу з фільтрів: «3-bed houses for sale in West Bay» */
   'houses': 'casas',
-  'condos': 'condominios',
+  // у Гондурасі шукають «apartamentos en venta», а не «condominios»
+  'condos': 'apartamentos',
   'land': 'terrenos',
   'commercial property': 'propiedades comerciales',
-  'homes, condos & land': 'casas, condominios y terrenos',
+  'homes, condos & land': 'casas, apartamentos y terrenos',
+  '{place} real estate: homes, condos & land for sale': 'Bienes raíces en {place}: casas, apartamentos y terrenos en venta',
+  '{place} rentals: houses & condos for rent': 'Casas y apartamentos en alquiler en {place}',
   '{n}-bed {what}': '{what} de {n} habitaciones',
   '1-bed {what}': '{what} de 1 habitación',
   '{n}+ bed {what}': '{what} de {n} o más habitaciones',
