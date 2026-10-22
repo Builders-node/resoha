@@ -26,10 +26,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return localized('/');
 }
 
-/** Район із бази веде на сторінку-гайд району, якщо така є; інакше — на фільтр. */
+/**
+ * Район із бази веде на сторінку-гайд, лише коли гайд саме про нього: Sandy Bay → /areas/sandy-bay,
+ * French Harbour → /areas/french-harbour. Інакше — на каталог з цим районом: Crawfish Rock не можна
+ * слати на гайд French Harbour, а колонію — на сторінку всього міста.
+ */
 function areaHref(name: string) {
   const area = areaForNeighborhood(name);
-  return area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(name)}`;
+  return area && !area.region && area.neighborhoods[0] === name
+    ? `/areas/${area.slug}`
+    : `/listings?neighborhoods=${encodeURIComponent(name)}`;
 }
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -147,7 +153,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           <div className="grid grid--4">
             {areas.map(([name, a]) => (
               <Link key={name} className="ov ov--area ov--plain"
-                href={areaHref(name)}>
+                href={lp(areaHref(name))}>
                 <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
