@@ -1235,6 +1235,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
   .table tr.group-row td{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;border-radius:var(--radius);padding:10px 14px}
 }
 .dev__title{font-size:24px;margin-bottom:14px}
+.dev__title-tag{font-weight:500;color:var(--ink-3);margin-left:4px}
 .dev__box{background:var(--bg-soft);border-radius:var(--radius-lg);overflow:hidden}
 .dev__boxhead{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:14px 24px;background:#ebebf0}
 .dev__by{color:var(--ink);font-size:18px;text-decoration:underline;text-underline-offset:3px}
@@ -1289,7 +1290,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .chess__floor{display:flex;align-items:stretch;gap:8px}
 .chess__label{width:22px;flex:none;display:flex;align-items:center;justify-content:flex-end;font-weight:700}
 .chess__units{display:flex;gap:6px}
-.chess__cell{width:76px;flex:none;display:flex;flex-direction:column;gap:1px;padding:6px 8px;border-radius:8px;font-size:12px;line-height:1.25;border:1px solid transparent}
+.chess__cell{min-width:76px;flex:none;white-space:nowrap;display:flex;flex-direction:column;gap:1px;padding:6px 8px;border-radius:8px;font-size:12px;line-height:1.25;border:1px solid transparent}
 .chess__cell b{font-size:13px}
 .chess__cell:hover{border-color:var(--ink)}
 .chess__cell--available,.chess__dot--available{background:#dff3e4}
@@ -1301,7 +1302,7 @@ a.dev-list__row:hover{background:var(--bg-soft)}
 .dev__pay{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:15px}
 @media (max-width:720px){
   .dev__specs{grid-template-columns:repeat(2,1fr)}
-  .chess__cell{width:64px;padding:6px}
+  .chess__cell{min-width:64px;padding:6px}
 }
 
 /* Доми ЖК: картки «статус будівництва» як у LUN */
