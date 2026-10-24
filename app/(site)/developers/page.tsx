@@ -10,8 +10,8 @@ import { getLp, getT } from '@/lib/i18n/server';
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getT();
   return localized('/developers', {
-    title: `${t('Developers in Roatán')} | ${SITE_NAME}`,
-    description: t('Property developers building on Roatán and their projects.'),
+    title: `${t('Developers in Honduras')} | ${SITE_NAME}`,
+    description: t('Property developers and builders in Roatán, San Pedro Sula and Tegucigalpa, and their projects.'),
   });
 }
 
@@ -24,7 +24,7 @@ export default async function DevelopersPage() {
     <div className="wrap" style={{ padding: '32px 32px 60px' }}>
       <h1 style={{ fontSize: 'var(--fs-h1)', marginBottom: 6 }}>{t('Developers')}</h1>
       <p className="muted" style={{ marginBottom: 24 }}>
-        {t('Companies building on Roatán.')} <Link className="link-accent" href="/developer">{t('Add your company')}</Link>
+        {t('Companies building in Honduras.')} <Link className="link-accent" href="/developer">{t('Add your company')}</Link>
       </p>
       {!devs.length && <p className="muted">{t('No developers listed yet.')}</p>}
       <div className="dev-list">

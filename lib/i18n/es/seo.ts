@@ -7,8 +7,8 @@ export const ES_SEO: Record<string, string> = {
   'Sales office address, opening hours, booking a visit, the agent and the developer.':
     'Dirección de la sala de ventas, horarios, cómo agendar una visita, el agente y el desarrollador.',
   '{name}: apartments for sale and rent in {area}, Roatán.': '{name}: apartamentos en venta y alquiler en {area}, Roatán.',
-  'Developments by {name} on Roatán: projects, available apartments and contacts.':
-    'Proyectos de {name} en Roatán: desarrollos, apartamentos disponibles y contacto.',
+  'Developments by {name} in Honduras: projects, available apartments and contacts.':
+    'Proyectos de {name} en Honduras: desarrollos, apartamentos disponibles y contacto.',
   '{name}, realtor on Roatán: listings and contact details.': '{name}, agente inmobiliario en Roatán: anuncios y datos de contacto.',
   'Real Estate in Roatán, San Pedro Sula & Tegucigalpa: Homes, Condos & Land':
     'Bienes raíces en Roatán, San Pedro Sula y Tegucigalpa: casas, condominios y terrenos',
@@ -16,8 +16,8 @@ export const ES_SEO: Record<string, string> = {
     'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa en un solo lugar verificado: casas, condominios, alquileres y terrenos de agencias locales, con pasaporte de terreno en cada lote y contacto directo por WhatsApp con los agentes.',
   'Hogarli is a property marketplace for Honduras: Roatán and the Bay Islands, San Pedro Sula and Tegucigalpa. Homes, condos, rentals and land from local agencies in one searchable map, with a land passport on every lot.':
     'Hogarli es un portal inmobiliario de Honduras: Roatán y las Islas de la Bahía, San Pedro Sula y Tegucigalpa. Casas, condominios, alquileres y terrenos de agencias locales en un solo mapa con buscador, con pasaporte de terreno en cada lote.',
-  'Developers in Roatán': 'Desarrolladoras en Roatán',
-  'Property developers building on Roatán and their projects.': 'Desarrolladoras inmobiliarias que construyen en Roatán y sus proyectos.',
+  'Developers in Honduras': 'Desarrolladoras en Honduras',
+  'Property developers and builders in Roatán, San Pedro Sula and Tegucigalpa, and their projects.': 'Desarrolladoras y constructoras en Roatán, San Pedro Sula y Tegucigalpa, y sus proyectos.',
   'About Hogarli: every property on Roatán in one checked place': 'Sobre Hogarli: todas las propiedades de Roatán, verificadas',
   'Straight answers about buying a home, condo or land on Roatán: foreign ownership and the 3,000 m² rule, prices, closing costs, taxes, title checks, rentals and how Hogarli works.':
     'Respuestas claras sobre comprar casa, condominio o terreno en Roatán: propiedad para extranjeros y la regla de los 3,000 m², precios, gastos de cierre, impuestos, revisión de títulos, alquileres y cómo funciona Hogarli.',
@@ -43,7 +43,7 @@ export const ES_SEO: Record<string, string> = {
     '{area}, {region}: casas, condominios y terrenos en venta',
   'real estate agency on Roatán': 'agencia inmobiliaria en Roatán',
   'realtor': 'agente inmobiliario',
-  'developer in Roatán': 'desarrolladora en Roatán',
+  'developer in Honduras': 'desarrolladora en Honduras',
   '{name} — new development in {area}, Roatán': '{name}: proyecto nuevo en {area}, Roatán',
   /* вкладки ЖК у заголовку сторінки */
   'Overview': 'Resumen',
