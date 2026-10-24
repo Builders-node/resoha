@@ -2,7 +2,7 @@
 export const ES_DEVELOPMENTS: Record<string, string> = {
   /* ---------- забудовники ---------- */
   'Developers': 'Desarrolladores',
-  'Companies building on Roatán.': 'Empresas que construyen en Roatán.',
+  'Companies building in Honduras.': 'Empresas que construyen en Honduras.',
   'Add your company': 'Agregue su empresa',
   'No developers listed yet.': 'Aún no hay desarrolladores publicados.',
   'since {year}': 'desde {year}',
