@@ -15,12 +15,24 @@ import type { Developer } from '@/lib/types';
 export default function DeveloperPanel() {
   const [items, setItems] = useState<Developer[] | null>(null);
   const [editing, setEditing] = useState<Developer | 'new' | null>(null);
+  const [q, setQ] = useState('');
+  const [links, setLinks] = useState<Record<string, string>>({});
 
   const load = useCallback(async () => {
     const d = await fetch('/api/developers?mine=1').then((r) => r.json()).catch(() => ({}));
     setItems(d.items ?? []);
   }, []);
   useEffect(() => { load(); }, [load]);
+
+  /** Одноразове посилання, за яким представник компанії забирає профіль собі */
+  async function handover(d: Developer) {
+    const res = await fetch(`/api/developers/${d.id}/handover`, { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) return toast(data.error ?? 'Could not create the link');
+    const url = `${location.origin}/developer/claim/${data.token}`;
+    setLinks((l) => ({ ...l, [d.id]: url }));
+    try { await navigator.clipboard.writeText(url); toast('Link copied — send it to the company'); } catch { toast('Link ready — copy it below'); }
+  }
 
   if (items === null) return <div className="panel muted">Loading…</div>;
 
@@ -47,10 +59,15 @@ export default function DeveloperPanel() {
       </div>
       <p className="muted small" style={{ margin: '4px 0 14px' }}>
         Your company page lists every development linked to it. Agents pick your company from the list when they add a development.
+        To give a page to the company itself, use <b>Hand over</b> and send them the link: whoever opens it and signs in becomes the owner.
       </p>
+      {items.length > 8 && (
+        <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
+          placeholder={`Search ${items.length} companies`} style={{ marginBottom: 12 }} />
+      )}
       <div className="dev-list">
-        {items.map((d) => (
-          <div key={d.id} className="dev-list__row">
+        {items.filter((d) => !q.trim() || d.name.toLowerCase().includes(q.trim().toLowerCase())).map((d) => (
+          <div key={d.id} className="dev-list__row" style={{ flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
               <Photo className="thumb" src={d.logo} label="" />
               <div>
@@ -60,8 +77,13 @@ export default function DeveloperPanel() {
             </div>
             <div className="chip-row">
               <Link className="btn btn--ghost btn--sm" href={`/developers/${d.slug}`} target="_blank">Open page</Link>
+              <button className="btn btn--ghost btn--sm" title="Create a link the company uses to take over this page" onClick={() => handover(d)}>Hand over</button>
               <button className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
             </div>
+            {links[d.id] && (
+              <input className="input small" readOnly value={links[d.id]} onFocus={(e) => e.currentTarget.select()}
+                aria-label={`Handover link for ${d.name}`} style={{ flexBasis: '100%', marginTop: 8 }} />
+            )}
           </div>
         ))}
       </div>

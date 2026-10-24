@@ -65,10 +65,11 @@ export async function developmentMetadata(slug: string, tab?: { path: string; la
   const d = await loadDevelopment(slug);
   if (!d) return { title: `Development not found — ${SITE_NAME}` };
   const [t, lang] = await Promise.all([getT(), getLang()]);
-  const title = tab ? `${d.name}: ${t(tab.label).toLowerCase()} — ${d.neighborhood}, Roatán`
-    : t('{name} — new development in {area}, Roatán', { name: d.name, area: d.neighborhood });
+  const city = d.island || 'Roatán';
+  const title = tab ? `${d.name}: ${t(tab.label).toLowerCase()} — ${d.neighborhood}, ${city}`
+    : t('{name} — new development in {area}, {city}', { name: d.name, area: d.neighborhood, city });
   // опис ЖК у базі англійський — на /es беремо перекладений шаблон, а не англійський текст
-  const fallback = t('{name}: apartments for sale and rent in {area}, Roatán.', { name: d.name, area: d.neighborhood });
+  const fallback = t('{name}: apartments for sale and rent in {area}, {city}.', { name: d.name, area: d.neighborhood, city });
   const description = metaDescription(tab ? `${d.name}: ${t(tab.about)}`
     : (lang === 'en' ? d.text : '') || fallback);
   const url = `/developments/${d.slug}${tab ? `/${tab.path}` : ''}`;

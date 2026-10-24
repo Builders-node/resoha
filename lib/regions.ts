@@ -64,6 +64,12 @@ export const REGIONS: Region[] = [
       'Colonia Jardines del Valle': [15.5520, -88.0100],
       'Barrio Guamilito': [15.5095, -88.0270],
       'Colonia Los Álamos': [15.5290, -88.0420],
+      'Colonia Figueroa': [15.5085, -88.0150],
+      'Sector Mackay': [15.5370, -88.0400],
+      'Boulevard Mario Catarino Rivas': [15.5335, -88.0160],
+      'Ciudad Maya': [15.5600, -88.0350],
+      'Ciudad Jaraguá': [15.5550, -88.0600],
+      'El Zapotal': [15.4750, -87.9900],
     },
   },
   {
@@ -85,6 +91,10 @@ export const REGIONS: Region[] = [
       'Santa Lucía': [14.1110, -87.1170],
       'Valle de Ángeles': [14.1550, -87.0380],
       'Comayagüela': [14.0950, -87.2150],
+      'Boulevard Morazán': [14.0935, -87.1865],
+      'Colonia Miraflores': [14.0870, -87.1700],
+      'Residencial La Cumbre': [14.1080, -87.1750],
+      'Anillo Periférico': [14.0600, -87.1850],
     },
   },
 ];
