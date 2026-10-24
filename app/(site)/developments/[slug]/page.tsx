@@ -15,7 +15,7 @@ import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
 import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
-import { fmtNumber } from '@/lib/format';
+import { DEAL_LABELS, fmtNumber } from '@/lib/format';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { getMoney } from '@/lib/currencyServer';
@@ -49,6 +49,14 @@ export default async function DevelopmentPage({ params, searchParams }: {
     ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
     { id: '', name: t('Other units'), units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
   ].filter((g) => g.units.some((u) => u.floor !== null));
+  const chessDeals = (['sale', 'rent'] as const)
+    .map((deal) => ({
+      deal,
+      groups: chessGroups
+        .map((g) => ({ ...g, units: g.units.filter((u) => u.deal === deal) }))
+        .filter((g) => g.units.some((u) => u.floor !== null)),
+    }))
+    .filter((d) => d.groups.length);
   // характеристики будинку: показуємо лише заповнене
   const facts = developmentFeatures(dev, buildings, units, money);
   const latest = progress.find((p) => p.photos.length);
@@ -112,18 +120,19 @@ export default async function DevelopmentPage({ params, searchParams }: {
         </section>
       )}
 
-      {units.some((u) => u.floor !== null) && (
-        <section className="dev" id="floors">
-          <h2 className="dev__title">{t('Availability by floor')}</h2>
+      {/* продаж і оренда — окремі шахматки, щоб ціни $126K і $1,000/mo не змішувались */}
+      {chessDeals.map(({ deal, groups }, i) => (
+        <section key={deal} className="dev" id={i ? `floors-${deal}` : 'floors'}>
+          <h2 className="dev__title">{t('Availability by floor')} <span className="dev__title-tag">{t(DEAL_LABELS[deal])}</span></h2>
           {/* у кожного дому своя шахматка; квартири без дому — окремим блоком наприкінці */}
-          {chessGroups.map((g) => (
-            <div key={g.id} id={g.id ? `bld-${g.id}` : undefined} className="chess-group">
-              {chessGroups.length > 1 && <h3 className="chess-group__title">{g.name}</h3>}
+          {groups.map((g) => (
+            <div key={g.id} id={g.id && !i ? `bld-${g.id}` : undefined} className="chess-group">
+              {groups.length > 1 && <h3 className="chess-group__title">{g.name}</h3>}
               <DevelopmentChess units={g.units} />
             </div>
           ))}
         </section>
-      )}
+      ))}
 
       {(facts.length > 0 || dev.amenities.length > 0) && (
         <section className="dev" id="features">
