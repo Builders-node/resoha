@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import Link from 'next/link';
 import Icon from './Icon';
@@ -37,17 +37,40 @@ function DevLogo({ src, name, className = '' }: { src: string; name: string; cla
   );
 }
 
+/** 24 ділиться на 2, 3, 4 і 6 колонок — остання лінійка сторінки без дірок */
+const PAGE = 24;
+
+/** Які номери сторінок показати: перша, остання і сусіди поточної; null — «…» (як у CatalogPager) */
+function pageList(current: number, last: number): (number | null)[] {
+  const want = new Set([1, last, current - 1, current, current + 1].filter((n) => n >= 1 && n <= last));
+  const out: (number | null)[] = [];
+  let prev = 0;
+  for (const n of [...want].sort((a, b) => a - b)) {
+    if (n - prev > 1) out.push(null);
+    out.push(n);
+    prev = n;
+  }
+  return out;
+}
+
 const fold = (s: string) => s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase();
 
 export default function DevelopersExplorer({ devs }: { devs: DevCard[] }) {
   const t = useT();
   const lp = useLp();
-  const [q, setQ] = useState('');
-  const [city, setCity] = useState('');
-  const [has, setHas] = useState(''); // '' | 'yes' | 'no'
+  const [q, setQRaw] = useState('');
+  const [city, setCityRaw] = useState('');
+  const [has, setHasRaw] = useState(''); // '' | 'yes' | 'no'
+  // показані сторінки списку «Усі забудовники»: «Показати ще» додає наступну, номер — переходить на неї
+  const [from, setFrom] = useState(1);
+  const [to, setTo] = useState(1);
+  const listTop = useRef<HTMLElement>(null);
+  // новий фільтр — знову з першої сторінки
+  const reset = <T,>(set: (v: T) => void) => (v: T) => { set(v); setFrom(1); setTo(1); };
+  const setQ = reset(setQRaw), setCity = reset(setCityRaw), setHas = reset(setHasRaw);
 
   // фільтр зсуває блоки вгору; без перерахунку ScrollTrigger (див. Motion) вони лишились би прихованими до прокрутки
-  useEffect(() => { ScrollTrigger.refresh(); }, [q, city, has]);
+  useEffect(() => { ScrollTrigger.refresh(); }, [q, city, has, from, to]);
 
   const cities = useMemo(() => [...new Set(devs.flatMap((d) => d.projects.map((p) => p.city)).filter(Boolean))].sort(), [devs]);
   const shown = devs.filter((d) => {
@@ -63,6 +86,12 @@ export default function DevelopersExplorer({ devs }: { devs: DevCard[] }) {
   const filtered = Boolean(q || city || has);
   const count = (n: number) => t(n === 1 ? '1 development' : '{n} developments', { n });
   const clear = () => { setQ(''); setCity(''); setHas(''); };
+  const pages = Math.ceil(shown.length / PAGE);
+  const page = shown.slice((from - 1) * PAGE, to * PAGE);
+  const go = (n: number) => {
+    setFrom(n); setTo(n);
+    listTop.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   return (
     <>
@@ -133,10 +162,10 @@ export default function DevelopersExplorer({ devs }: { devs: DevCard[] }) {
       )}
 
       {shown.length > 0 && !(has === 'yes') && (
-        <section className="section" style={building.length ? { paddingTop: 0 } : undefined}>
+        <section ref={listTop} className="section devs-list" style={building.length ? { paddingTop: 0 } : undefined}>
           <div className="section__head"><h2>{filtered ? t('Developers found: {n}', { n: shown.length }) : t('All developers')}</h2></div>
           <div className="devs-grid">
-            {shown.map((d) => (
+            {page.map((d) => (
               <Link key={d.id} href={lp(`/developers/${d.slug}`)} className="devc">
                 <DevLogo src={d.logo} name={d.name} />
                 <div className="devc__body">
@@ -152,6 +181,23 @@ export default function DevelopersExplorer({ devs }: { devs: DevCard[] }) {
               </Link>
             ))}
           </div>
+          {pages > 1 && (
+            <div className="cpager">
+              {to < pages && (
+                <button type="button" className="btn btn--ghost btn--lg" onClick={() => setTo(to + 1)}>
+                  {t('Show more — {n} left', { n: shown.length - to * PAGE })}
+                </button>
+              )}
+              <nav className="cpager__nav" aria-label={t('Pages')}>
+                {from > 1 && <button type="button" className="cpager__step" onClick={() => go(from - 1)}>← {t('Previous')}</button>}
+                {pageList(to, pages).map((n, i) => n === null
+                  ? <span key={`gap-${i}`} className="cpager__gap">…</span>
+                  : <button key={n} type="button" className={`cpager__num${n >= from && n <= to ? ' is-on' : ''}`}
+                      aria-current={n === to ? 'page' : undefined} onClick={() => go(n)}>{n}</button>)}
+                {to < pages && <button type="button" className="cpager__step" onClick={() => go(to + 1)}>{t('Next')} →</button>}
+              </nav>
+            </div>
+          )}
         </section>
       )}
     </>
