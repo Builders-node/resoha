@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import { timingSafeEqual } from 'node:crypto';
 import sitemap from '@/app/sitemaps/sitemap';
 import { sitemapIds } from '@/lib/sitemapData';
-import { submitAbsolute } from '@/lib/indexNow';
+import { enabled, submitAbsolute } from '@/lib/indexNow';
 
 export const maxDuration = 60;
+
+/** Щоденний прохід дивиться на два дні назад: з запасом, щоб пропущений запуск не губив змін. */
+const WINDOW_MS = 2 * 24 * 60 * 60 * 1000;
 
 function same(a: string, b: string) {
   const x = Buffer.from(a), y = Buffer.from(b);
@@ -15,22 +18,29 @@ function same(a: string, b: string) {
 const unxml = (s: string) => s.replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
 
 /**
- * Усі адреси з карти сайту (обидві мови) — в IndexNow одним заходом. Окремі оголошення
- * пінгуються самі при зміні (lib/indexNow.ts), а це — повна звірка: раз на місяць з Vercel Cron
- * (Authorization: Bearer CRON_SECRET) і вручну кнопкою Run у Vercel → Settings → Cron Jobs.
+ * IndexNow з карти сайту (Vercel Cron, Authorization: Bearer CRON_SECRET). У карті лише сторінки,
+ * відкриті для індексації, тож noindex сюди не потрапляє.
+ * Щодня — сторінки з lastmod за останні два дні: нові й оновлені статті блогу та гіди (вони живуть
+ * у коді й виходять з деплоєм), оголошення, змінені просто в базі чи імпортом. Окремі оголошення,
+ * ЖК і забудовники ще й пінгуються самі при зміні (lib/indexNow.ts).
+ * З ?all=1 — уся карта: раз на місяць і вручну кнопкою Run у Vercel → Settings → Cron Jobs.
  */
 async function run(req: Request) {
   const bearer = (req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, '');
   if (!process.env.CRON_SECRET || !bearer || !same(bearer, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'Not allowed' }, { status: 401 });
   }
-  if (process.env.VERCEL_ENV !== 'production') return NextResponse.json({ skipped: 'not production' });
+  if (!enabled()) return NextResponse.json({ skipped: 'not production' });
 
+  const all = new URL(req.url).searchParams.get('all') === '1';
+  const since = Date.now() - WINDOW_MS;
   const ids = await sitemapIds();
   const files = await Promise.all(ids.map((id) => sitemap({ id: Promise.resolve(id) })));
-  const urls = files.flat().map((e) => unxml(e.url));
+  const urls = files.flat()
+    .filter((e) => all || (e.lastModified && new Date(e.lastModified).getTime() >= since))
+    .map((e) => unxml(e.url));
   const submitted = await submitAbsolute(urls);
-  return NextResponse.json({ files: ids.length, submitted });
+  return NextResponse.json({ mode: all ? 'all' : 'recent', files: ids.length, submitted });
 }
 
 export const GET = run;

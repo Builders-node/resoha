@@ -11,7 +11,7 @@ import { islandFor } from './regions';
 import type { ImportedListing } from './listingImport';
 import type { ExistingUnit } from './priceList';
 import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
-import { pingListings } from './indexNow';
+import { pingDeveloper, pingDevelopment, pingListings } from './indexNow';
 
 /**
  * Дані живуть у Supabase. Права перевіряє RLS, тому всі запити йдуть
@@ -640,6 +640,7 @@ export async function createDevelopment(input: Record<string, unknown> & { agent
   const { data, error } = await client.from('developments')
     .insert({ ...row, slug, agent_id: input.agentId }).select('*').single();
   if (error) throw error;
+  pingDevelopment(data.slug);
   return mapDevelopment(data);
 }
 
@@ -654,12 +655,17 @@ export async function updateDevelopment(id: string, input: Record<string, unknow
     ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
   }
   if (error) throw error;
+  if (data) pingDevelopment(data.slug);
   return data ? mapDevelopment(data) : null;
 }
 
 export async function deleteDevelopment(id: string) {
-  const { error, count } = await (await db()).from('developments').delete({ count: 'exact' }).eq('id', id);
+  const client = await db();
+  // адресу знаємо лише до видалення — щоб сказати пошуковикам, що сторінки більше немає
+  const { data: gone } = await client.from('developments').select('slug').eq('id', id).maybeSingle();
+  const { error, count } = await client.from('developments').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
+  if (count) pingDevelopment(gone?.slug);
   return (count ?? 0) > 0;
 }
 
@@ -714,6 +720,7 @@ export async function createDeveloper(input: Record<string, unknown> & { ownerId
   const { data, error } = await client.from('developers')
     .insert({ ...row, slug, owner_id: input.ownerId }).select('*').single();
   if (error) throw error;
+  pingDeveloper(data.slug);
   return mapDeveloper(data);
 }
 
@@ -724,12 +731,16 @@ export async function updateDeveloper(id: string, input: Record<string, unknown>
   if (!Object.keys(row).length) return getDeveloper(id);
   const { data, error } = await (await db()).from('developers').update(row).eq('id', id).select('*').maybeSingle();
   if (error) throw error;
+  if (data) pingDeveloper(data.slug);
   return data ? mapDeveloper(data) : null;
 }
 
 export async function deleteDeveloper(id: string) {
-  const { error, count } = await (await db()).from('developers').delete({ count: 'exact' }).eq('id', id);
+  const client = await db();
+  const { data: gone } = await client.from('developers').select('slug').eq('id', id).maybeSingle();
+  const { error, count } = await client.from('developers').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
+  if (count) pingDeveloper(gone?.slug);
   return (count ?? 0) > 0;
 }
 
@@ -1279,6 +1290,7 @@ export async function adminDeleteListing(id: string) {
 
   const { error, count } = await client.from('listings').delete({ count: 'exact' }).eq('id', id);
   if (error) throw error;
+  if (count) pingListings([id]);
   return (count ?? 0) > 0;
 }
 
