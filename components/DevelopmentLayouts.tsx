@@ -28,7 +28,7 @@ const ROOMS = [0, 1, 2, 3, 4] as const;
 
 const isOpen = (u: Listing) => OPEN_STATUSES.includes(u.status);
 const m2 = (u: Listing) => (u.sqft ? toM2(u.sqft) : 0);
-const ppm = (u: Listing) => (u.sqft ? Math.round((u.price / u.sqft) * SQFT_PER_M2) : 0);
+const ppm = (u: Listing) => (u.sqft && u.price > 0 ? Math.round((u.price / u.sqft) * SQFT_PER_M2) : 0);
 
 /** Одне планування: квартири одного типу (з документації забудовника) або однієї кімнатності й площі */
 type Layout = {
@@ -53,7 +53,8 @@ function buildLayouts(units: Listing[]): Layout[] {
   }
   return [...groups.entries()].map(([key, g]) => {
     const open = g.filter(isOpen);
-    const lead = [...(open.length ? open : g)].sort((a, b) => a.price - b.price)[0];
+    // без ціни («за запитом») — в кінець, щоб «від» бралося з прайсу
+    const lead = [...(open.length ? open : g)].sort((a, b) => (a.price || Infinity) - (b.price || Infinity))[0];
     const areas = g.map(m2).filter(Boolean);
     return {
       key, beds: lead.beds, type: g.find((u) => u.details.layout)?.details.layout ?? '',
@@ -274,7 +275,7 @@ export default function DevelopmentLayouts({ units, buildings, dev, agent, me, f
       </div>
 
       {groups.map(([r, list]) => {
-        const prices = list.flatMap((l) => l.open).filter((u) => u.deal === 'sale' && unitOk(u)).map((u) => u.price);
+        const prices = list.flatMap((l) => l.open).filter((u) => u.deal === 'sale' && u.price > 0 && unitOk(u)).map((u) => u.price);
         return (
           <section key={r} className="lay__group">
             <h2 className="lay__kind">
@@ -330,15 +331,15 @@ function LayoutCard({ l, t, buildings, dev, fav, onOpen }: {
     <article className="lay__card" role="button" tabIndex={0} onClick={onOpen}
       onKeyDown={(e) => e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ') && (e.preventDefault(), onOpen())}>
       <div className={`lay__img${l.plan ? ' is-plan' : ''}`}>
-        <Photo src={l.plan || l.lead.photos[0] || ''} alt={`${kind(t, l.beds)} ${l.area[0]} m²`} label="Plan coming soon" />
+        <Photo src={l.plan || l.lead.photos[0] || ''} alt={`${kind(t, l.beds)}${l.area[1] ? ` ${l.area[0]} m²` : ''}`} label="Plan coming soon" />
         <FavButton listingId={l.lead.id} initial={fav} className="fav lay__fav" />
         {l.type && <span className="lay__type">{t('Type {type}', { type: l.type })}</span>}
       </div>
       <div className="lay__body">
         <div className="lay__price">
-          {l.open.length ? (per ? <>{per} <span>{t('per m²')}</span></> : money.amount(l.lead.price)) : t('Sold out')}
+          {l.open.length ? (per ? <>{per} <span>{t('per m²')}</span></> : (l.lead.price > 0 ? money.amount(l.lead.price) : t('Price on request'))) : t('Sold out')}
         </div>
-        {l.open.length > 0 && (
+        {l.open.length > 0 && l.lead.price > 0 && (
           <div className="lay__sub">
             {t('from {price}', { price: money.amount(l.lead.price) })} · <span className="lay__avail">{t('{n} of {total} available', { n: l.open.length, total: l.units.length })}</span>
           </div>
@@ -408,9 +409,9 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
               </div>
 
               <div className="lm__price">
-                {l.open.length ? (per ? <>{per}<span>/m²</span></> : money.amount(l.lead.price)) : t('Sold out')}
+                {l.open.length ? (per ? <>{per}<span>/m²</span></> : (l.lead.price > 0 ? money.amount(l.lead.price) : t('Price on request'))) : t('Sold out')}
               </div>
-              {l.open.length > 0 && <div className="lm__from">{t('from {price}', { price: money.amount(l.lead.price) })}</div>}
+              {l.open.length > 0 && l.lead.price > 0 && <div className="lm__from">{t('from {price}', { price: money.amount(l.lead.price) })}</div>}
               <h4 className="lm__name">{title}</h4>
               <ul className="lm__facts">
                 {facts(l, t, buildings, dev).map(([icon, v]) => <li key={icon}><Icon name={icon} size={20} /><span>{v}</span></li>)}
@@ -425,7 +426,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
                     <b>{u.unitNo || '—'}</b>
                     <span>{u.floor ?? '—'}</span>
                     <span>{m2(u) ? `${m2(u)} m²` : '—'}</span>
-                    <span><b>{money.amount(u.price)}</b>{ppm(u) > 0 && <em>{money.amount(ppm(u))}/m²</em>}</span>
+                    <span><b>{u.price > 0 ? money.amount(u.price) : t('On request')}</b>{ppm(u) > 0 && <em>{money.amount(ppm(u))}/m²</em>}</span>
                     <span className={`lm__st is-${u.status}`}>{t(statusLabel(u.status))}</span>
                   </Link>
                 ))}
@@ -465,7 +466,7 @@ function LayoutModal({ l, all, t, buildings, dev, agent, me, favIds, levelPlans,
             </div>
 
             <aside className="lm__side" id="lay-contact">
-              <AgentContact agent={agent} listing={l.lead} topic={`${dev.name}, ${title}`} fromPrice={l.open.length ? l.lead.price : null} isFav={favIds.includes(l.lead.id)}
+              <AgentContact agent={agent} listing={l.lead} topic={`${dev.name}, ${title}`} fromPrice={l.open.length && l.lead.price > 0 ? l.lead.price : null} isFav={favIds.includes(l.lead.id)}
                 listingUrl={`${SITE_URL}/developments/${dev.slug}/layouts?layout=${encodeURIComponent(l.key)}`}
                 me={me} visitHref={visitHref} />
             </aside>

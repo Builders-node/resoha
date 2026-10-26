@@ -188,6 +188,9 @@ export interface Development {
   developer: string;           // назва забудовника (дзеркало developers.name, якщо обрано профіль)
   developerId: string | null;
   completion: string;
+  /** Стадія будівництва ЖК цілком і готовність у відсотках, якщо забудовник її називає */
+  stage: BuildingStage;
+  progress: number | null;
   sales: SalesStatus;
   website: string;
   island: string;

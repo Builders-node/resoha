@@ -48,6 +48,16 @@ export const cleanStage = (s: unknown): BuildingStage => (STAGE_KEYS.has(String(
 export const stageLabel = (s: string) => BUILDING_STAGES.find(([k]) => k === s)?.[1] ?? 'Under construction';
 export const stageIndex = (s: string) => Math.max(0, BUILDING_STAGES.findIndex(([k]) => k === s));
 
+/** Що покупець бачить у каталозі ЖК: уже здано, будується чи лише проєкт */
+export const STAGE_GROUPS = [
+  ['ready', 'Ready to move in'],
+  ['building', 'Under construction'],
+  ['planned', 'Planned'],
+] as const;
+export type StageGroup = (typeof STAGE_GROUPS)[number][0];
+export const stageGroup = (s: string): StageGroup =>
+  (s === 'built' || s === 'delivered' ? 'ready' : s === 'planned' ? 'planned' : 'building');
+
 /** Документи ЖК — групи, як на LUN: земля, дозволи, введення в експлуатацію, учасники */
 export const DOC_KINDS = [
   ['unit', 'Unit plan'],
@@ -158,9 +168,10 @@ const range = (xs: number[]): [number, number] | null => (xs.length ? [Math.min(
 
 /** Найдешевша вільна квартира (або просто найдешевша, якщо вільних нема) */
 export function fromPrice(units: UnitLike[]): number | null {
-  if (!units.length) return null;
-  const open = units.filter((u) => u.status === 'available');
-  return Math.min(...(open.length ? open : units).map((u) => u.price));
+  const priced = units.filter((u) => u.price > 0);
+  if (!priced.length) return null;
+  const open = priced.filter((u) => u.status === 'available');
+  return Math.min(...(open.length ? open : priced).map((u) => u.price));
 }
 
 /** Зведення «як у забудовника»: рядок на тип квартири з діапазонами площ і цін. */
@@ -177,7 +188,7 @@ export function groupUnits<U extends UnitLike>(units: U[]): UnitGroup<U>[] {
       available: list.filter((u) => u.status === 'available').length,
       m2: range(sized.map((u) => toM2(u.sqft))),
       sqft: range(sized.map((u) => u.sqft)),
-      perM2: range(sized.map((u) => Math.round(u.price / toM2(u.sqft)))),
+      perM2: range(sized.filter((u) => u.price > 0).map((u) => Math.round(u.price / toM2(u.sqft)))),
       from: fromPrice(list) ?? 0,
     };
   });
