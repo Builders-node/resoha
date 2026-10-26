@@ -71,9 +71,11 @@ export function makeMoney(cur: Currency = 'USD', rate = 1): Money {
     amount,
     bare,
     range: (lo, hi) => `${amount(lo)}–${bare(hi)}`,
-    price: (usd, deal, lang = 'en') => (deal === 'rent' ? `${amount(usd)}${translate(lang, '/mo')}` : amount(usd)),
+    // ціна 0 — «за запитом» (типові планування від забудовника без прайсу)
+    price: (usd, deal, lang = 'en') => (!(usd > 0) ? translate(lang, 'Price on request')
+      : deal === 'rent' ? `${amount(usd)}${translate(lang, '/mo')}` : amount(usd)),
     short: (usd, deal = 'sale', lang = 'en') =>
-      deal === 'rent' ? `${amount(usd)}${translate(lang, '/mo')}` : `${converted ? '≈' : ''}${compact(usd)}`,
+      !(usd > 0) ? translate(lang, 'On request') : deal === 'rent' ? `${amount(usd)}${translate(lang, '/mo')}` : `${converted ? '≈' : ''}${compact(usd)}`,
     perArea: (usd, sqft, sep = ' · ') =>
       `${amount(Math.round((usd / sqft) * SQFT_PER_M2))}/m²${sep}${bare(Math.round(usd / sqft))}/ft²`,
   };

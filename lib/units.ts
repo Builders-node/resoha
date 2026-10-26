@@ -168,9 +168,10 @@ const range = (xs: number[]): [number, number] | null => (xs.length ? [Math.min(
 
 /** Найдешевша вільна квартира (або просто найдешевша, якщо вільних нема) */
 export function fromPrice(units: UnitLike[]): number | null {
-  if (!units.length) return null;
-  const open = units.filter((u) => u.status === 'available');
-  return Math.min(...(open.length ? open : units).map((u) => u.price));
+  const priced = units.filter((u) => u.price > 0);
+  if (!priced.length) return null;
+  const open = priced.filter((u) => u.status === 'available');
+  return Math.min(...(open.length ? open : priced).map((u) => u.price));
 }
 
 /** Зведення «як у забудовника»: рядок на тип квартири з діапазонами площ і цін. */
@@ -187,7 +188,7 @@ export function groupUnits<U extends UnitLike>(units: U[]): UnitGroup<U>[] {
       available: list.filter((u) => u.status === 'available').length,
       m2: range(sized.map((u) => toM2(u.sqft))),
       sqft: range(sized.map((u) => u.sqft)),
-      perM2: range(sized.map((u) => Math.round(u.price / toM2(u.sqft)))),
+      perM2: range(sized.filter((u) => u.price > 0).map((u) => Math.round(u.price / toM2(u.sqft)))),
       from: fromPrice(list) ?? 0,
     };
   });

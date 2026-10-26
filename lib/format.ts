@@ -39,11 +39,12 @@ export const fmtPerArea = (price: number, sqft: number, sep = ' · ') =>
   `${usd.format(Math.round((price / sqft) * SQFT_PER_M2))}/m²${sep}${usd.format(Math.round(price / sqft))}/ft²`;
 
 export const fmtPrice = (v: number, deal: Deal, lang: Lang = 'en') =>
-  deal === 'rent' ? `${usd.format(v)}${translate(lang, '/mo')}` : usd.format(v);
+  !(v > 0) ? translate(lang, 'Price on request') : deal === 'rent' ? `${usd.format(v)}${translate(lang, '/mo')}` : usd.format(v);
 
 /** Compact label for map pins: $1.45M, $649K, $2.4K/mo */
 export const fmtPriceShort = (v: number, deal: Deal = 'sale', lang: Lang = 'en') => {
   // оренда — точна сума ($2,400/mo), продаж — компактно ($1.45M, $649K)
+  if (!(v > 0)) return translate(lang, 'On request');
   if (deal === 'rent') return `${usd.format(v)}${translate(lang, '/mo')}`;
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(v % 1_000_000 ? 2 : 1).replace(/\.?0+$/, '')}M`;
   return v >= 1_000 ? `$${Math.round(v / 1_000)}K` : `$${v}`;

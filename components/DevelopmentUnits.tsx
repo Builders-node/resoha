@@ -29,7 +29,7 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
   const lp = await getLp();
   const deals = (['sale', 'rent'] as Deal[]).filter((d) => units.some((u) => u.deal === d));
   /** $107K, $1.2M — у рядках зведення, як «від 2.4 млн» у забудовників */
-  const price = (v: number, deal: Deal) => (deal === 'rent' ? `${money.amount(v)}${t('/mo')}` : money.amount(v));
+  const price = (v: number, deal: Deal) => (!(v > 0) ? t('On request') : deal === 'rent' ? `${money.amount(v)}${t('/mo')}` : money.amount(v));
   /** ціна за m² у валюті показу, без символу — символ стоїть у заголовку колонки */
   const per = (usd: number) => fmtNumber(Math.round(money.fromUsd(usd)));
   const perUnit = `${money.symbol.trim()}/m²`;
@@ -86,7 +86,7 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
                     </span>
                     <span className="dev__per">{deal === 'sale' ? span(g.perM2, per, ` ${perUnit}`) : ''}</span>
                     <b className="dev__from">
-                      {t('from {price}', { price: deal === 'sale' ? money.short(g.from) : price(g.from, deal) })}
+                      {g.from > 0 ? t('from {price}', { price: deal === 'sale' ? money.short(g.from) : price(g.from, deal) }) : t('Price on request')}
                     </b>
                     <span className="dev__count tiny muted">{t('{n} of {total} open', { n: g.available, total: g.units.length })}</span>
                     <svg className="dev__chev" width="20" height="20" viewBox="0 0 24 24" aria-hidden>
