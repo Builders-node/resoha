@@ -14,7 +14,8 @@ import { ProgressPhotos } from '@/components/DevelopmentProgress';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
-import { fmtDay, fmtMonth, toM2 } from '@/lib/units';
+import { fmtDay, fmtMonth, stageGroup, stageLabel, toM2 } from '@/lib/units';
+import StageTrack from '@/components/StageTrack';
 import { DEAL_LABELS, fmtNumber } from '@/lib/format';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
@@ -44,7 +45,6 @@ export default async function DevelopmentPage({ params, searchParams }: {
     ? [...new Set([Math.min(...beds), Math.max(...beds)])].map((b) => (b ? t('{n} bd', { n: b }) : t('Studio'))).join(' – ')
     : '—';
   const sizes = units.filter((u) => u.sqft > 0).map((u) => u.sqft);
-  const floors = units.flatMap((u) => (u.floor !== null ? [u.floor] : []));
   const chessGroups = [
     ...buildings.map((b) => ({ id: b.id, name: b.name, units: units.filter((u) => u.buildingId === b.id) })),
     { id: '', name: t('Other units'), units: units.filter((u) => !u.buildingId || !buildings.some((b) => b.id === u.buildingId)) },
@@ -76,8 +76,11 @@ export default async function DevelopmentPage({ params, searchParams }: {
         <div className="spec"><span className="muted small">{t('Sizes')}</span>
           <b>{sizes.length ? `${Math.round(toM2(Math.min(...sizes)))} – ${Math.round(toM2(Math.max(...sizes)))} m²` : '—'}</b>
           {sizes.length > 0 && <span className="muted small">{fmtNumber(Math.min(...sizes))} – {fmtNumber(Math.max(...sizes))} ft²</span>}</div>
-        <div className="spec"><span className="muted small">{t(dev.completion ? 'Completion' : 'Floors')}</span>
-          <b>{dev.completion || (floors.length ? `${Math.min(...floors)}–${Math.max(...floors)}` : '—')}</b></div>
+        {/* стадія ЖК: здано чи ще будується, і термін здачі під нею */}
+        <div className="spec"><span className="muted small">{t('Construction')}</span>
+          <b>{t(stageLabel(dev.stage))}{dev.progress !== null && stageGroup(dev.stage) === 'building' ? ` · ${dev.progress}%` : ''}</b>
+          {dev.completion && <span className="muted small">{t(stageGroup(dev.stage) === 'ready' ? 'Delivered' : 'Completion')} {dev.completion}</span>}
+          <StageTrack stage={dev.stage} label={t(stageLabel(dev.stage))} light /></div>
       </div>
 
       <section className="dev" id="units">

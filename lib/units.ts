@@ -48,6 +48,16 @@ export const cleanStage = (s: unknown): BuildingStage => (STAGE_KEYS.has(String(
 export const stageLabel = (s: string) => BUILDING_STAGES.find(([k]) => k === s)?.[1] ?? 'Under construction';
 export const stageIndex = (s: string) => Math.max(0, BUILDING_STAGES.findIndex(([k]) => k === s));
 
+/** Що покупець бачить у каталозі ЖК: уже здано, будується чи лише проєкт */
+export const STAGE_GROUPS = [
+  ['ready', 'Ready to move in'],
+  ['building', 'Under construction'],
+  ['planned', 'Planned'],
+] as const;
+export type StageGroup = (typeof STAGE_GROUPS)[number][0];
+export const stageGroup = (s: string): StageGroup =>
+  (s === 'built' || s === 'delivered' ? 'ready' : s === 'planned' ? 'planned' : 'building');
+
 /** Документи ЖК — групи, як на LUN: земля, дозволи, введення в експлуатацію, учасники */
 export const DOC_KINDS = [
   ['unit', 'Unit plan'],

@@ -34,6 +34,8 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
   'Booklet (PDF)': 'Folleto (PDF)',
   'Buildings': 'Edificios',
   'Construction status': 'Estado de la construcción',
+  'Any stage': 'Cualquier etapa',
+  'Ready to move in': 'Listo para habitar',
   'Availability by floor': 'Disponibilidad por piso',
   'Project features': 'Características del proyecto',
   'As stated by the developer.': 'Según el desarrollador.',

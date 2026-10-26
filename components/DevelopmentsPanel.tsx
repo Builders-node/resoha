@@ -203,6 +203,12 @@ function NewDevelopment({ onCancel, onCreated }: { onCancel: () => void; onCreat
           </select></div>
         <div className="field"><label>Completion</label>
           <input className="input" name="completion" maxLength={40} placeholder="Q4 2026" /></div>
+        <div className="field"><label>Construction stage</label>
+          <select className="input" name="stage" defaultValue="construction">
+            {BUILDING_STAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select></div>
+        <div className="field"><label>Built, %</label>
+          <input className="input" name="progress" type="number" min={0} max={100} placeholder="e.g. 60" /></div>
         <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
           <button className="btn btn--primary" disabled={saving}>{saving ? 'Creating…' : 'Create development'}</button>
           <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>
@@ -389,6 +395,14 @@ function OverviewSection({ dev, patch, onDelete, onGo }: {
           </select></div>
         <div className="field"><label>Completion</label>
           <input className="input" name="completion" maxLength={40} defaultValue={dev.completion} placeholder="Q4 2026" /></div>
+        <div className="field"><label>Construction stage</label>
+          <select className="input" name="stage" defaultValue={dev.stage}>
+            {BUILDING_STAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+          </select>
+          <span className="tiny muted">The whole project; buildings keep their own stage.</span></div>
+        <div className="field"><label>Built, %</label>
+          <input className="input" name="progress" type="number" min={0} max={100} defaultValue={dev.progress ?? ''} placeholder="e.g. 60" />
+          <span className="tiny muted">Shown while under construction. Leave empty if unknown.</span></div>
         <div className="field full"><label>Description</label>
           <textarea className="input" name="text" rows={7} maxLength={8000} defaultValue={dev.text}
             placeholder="What makes this project special: location, views, finishes, who it suits…" /></div>

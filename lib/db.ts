@@ -551,6 +551,8 @@ export async function bumpViewsAfterResponse(id: string) {
 const mapDevelopment = (r: Row): Development => ({
   id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', developerId: r.developer_id ?? null,
   completion: r.completion ?? '',
+  // до міграції 0064 колонок немає
+  stage: cleanStage(r.stage), progress: r.progress ?? null,
   sales: cleanSales(r.sales), website: r.website ?? '', island: r.island, neighborhood: r.neighborhood,
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
   floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
@@ -606,6 +608,11 @@ function developmentRow(input: Record<string, unknown>): Row {
     row.website = safeUrl(w) || (w && !/^[a-z]+:/i.test(w) ? safeUrl(`https://${w}`) : '');
   }
   if (input.sales !== undefined) row.sales = cleanSales(input.sales);
+  if (input.stage !== undefined) row.stage = cleanStage(input.stage);
+  if (input.progress !== undefined) {
+    const n = intOrNull(input.progress);
+    row.progress = n === null ? null : Math.min(100, Math.max(0, n));
+  }
   // профіль забудовника; без нього назва лишається вільним текстом
   if (input.developerId !== undefined) {
     const id = String(input.developerId ?? '');
