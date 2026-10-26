@@ -42,7 +42,7 @@ export default async function DevelopersPage() {
             {devs.length > 0 && <> {t('{n} companies, {m} with projects on Hogarli.', { n: devs.length, m: building })}</>}
           </p>
         </div>
-        <Link className="btn btn--primary" href="/developer">{t('Add your company')} <Icon name="arrowRight" size={18} /></Link>
+        <Link className="btn btn--primary" href="/developer"><Icon name="plus" size={18} /> {t('Add your company')}</Link>
       </header>
 
       {!devs.length
