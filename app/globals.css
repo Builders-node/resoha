@@ -231,6 +231,13 @@ textarea.input{resize:vertical;min-height:96px}
    а карта праворуч займає всю висоту вікна. */
 .split__list:has(> .filters){padding-top:0}
 .split__list > .filters{margin:0 -24px 16px;padding:12px 24px}
+/* Заголовок «New developments» з фільтрами: на десктопі прилипає до верху колонки списку.
+   На телефоні він високий (пʼять фільтрів), тож там лишається звичайним. */
+@media (min-width:1081px){
+  .split__list:has(> .split__head){padding-top:0}
+  .split__list > .split__head{position:sticky;top:0;z-index:800;background:#fff;margin:0 -24px 16px;padding:20px 24px 4px;
+    border-bottom:1px solid var(--line)}
+}
 @media (min-width:1081px){.split__list > .filters .filters__q{flex:1 1 240px}}
 .split__map{position:relative;z-index:0;background:var(--bg-soft)}
 #map{position:absolute;inset:0}
