@@ -84,50 +84,53 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
     <>
       <div className={`split split--${mobileView}`}>
         <div className="split__list">
-          <div className="list-head">
-            <h1>{t('New developments')}</h1>
-          </div>
-          <p className="muted" style={{ margin: '-6px 0 18px' }}>
-            {t('New buildings in Roatán, San Pedro Sula and Tegucigalpa in one place.')}{' '}
-            <Link className="link-accent" href={lp('/developers')}>{t('Browse developers')}</Link>
-          </p>
-          {all.length > 0 && (
-            <div className="fsel-row">
-              {cities.length > 1 && (
-                <label>{t('City')}
-                  <select className="input" value={city} onChange={(e) => { setCity(e.target.value); setArea(''); }}>
-                    <option value="">{t('All cities')}</option>
-                    {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+          {/* заголовок і фільтри прилипають до верху списку, як панель фільтрів у каталозі */}
+          <div className="split__head">
+            <div className="list-head">
+              <h1>{t('New developments')}</h1>
+            </div>
+            <p className="muted" style={{ margin: '-6px 0 18px' }}>
+              {t('New buildings in Roatán, San Pedro Sula and Tegucigalpa in one place.')}{' '}
+              <Link className="link-accent" href={lp('/developers')}>{t('Browse developers')}</Link>
+            </p>
+            {all.length > 0 && (
+              <div className="fsel-row">
+                {cities.length > 1 && (
+                  <label>{t('City')}
+                    <select className="input" value={city} onChange={(e) => { setCity(e.target.value); setArea(''); }}>
+                      <option value="">{t('All cities')}</option>
+                      {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </label>
+                )}
+                <label>{t('Completion')}
+                  <select className="input" value={year} onChange={(e) => setYear(e.target.value)}>
+                    <option value="">{t('Any year')}</option>
+                    <option value="ready">{t('Completed')}</option>
+                    {years.map((y) => <option key={y} value={y}>{y}</option>)}
                   </select>
                 </label>
-              )}
-              <label>{t('Completion')}
-                <select className="input" value={year} onChange={(e) => setYear(e.target.value)}>
-                  <option value="">{t('Any year')}</option>
-                  <option value="ready">{t('Completed')}</option>
-                  {years.map((y) => <option key={y} value={y}>{y}</option>)}
-                </select>
-              </label>
-              <label>{t('Area')}
-                <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
-                  <option value="">{t('All areas')}</option>
-                  {areas.map((a) => <option key={a} value={a}>{a}</option>)}
-                </select>
-              </label>
-              <label>{t('Prices from')}
-                <select className="input" value={cap} onChange={(e) => setCap(e.target.value)}>
-                  <option value="">{t('Any price')}</option>
-                  {PRICE_CAPS.map((p) => <option key={p} value={p}>{t('under {price}', { price: money.amount(p) })}</option>)}
-                </select>
-              </label>
-              <label>{t('Sales')}
-                <select className="input" value={sales} onChange={(e) => setSales(e.target.value)}>
-                  <option value="">{t('Any status')}</option>
-                  {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
-                </select>
-              </label>
-            </div>
-          )}
+                <label>{t('Area')}
+                  <select className="input" value={area} onChange={(e) => setArea(e.target.value)}>
+                    <option value="">{t('All areas')}</option>
+                    {areas.map((a) => <option key={a} value={a}>{a}</option>)}
+                  </select>
+                </label>
+                <label>{t('Prices from')}
+                  <select className="input" value={cap} onChange={(e) => setCap(e.target.value)}>
+                    <option value="">{t('Any price')}</option>
+                    {PRICE_CAPS.map((p) => <option key={p} value={p}>{t('under {price}', { price: money.amount(p) })}</option>)}
+                  </select>
+                </label>
+                <label>{t('Sales')}
+                  <select className="input" value={sales} onChange={(e) => setSales(e.target.value)}>
+                    <option value="">{t('Any status')}</option>
+                    {SALES_STATUSES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
+                  </select>
+                </label>
+              </div>
+            )}
+          </div>
           {!all.length && <p className="muted">{t('No developments listed yet.')}</p>}
           {all.length > 0 && !items.length && (
             <p className="muted">

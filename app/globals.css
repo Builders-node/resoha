@@ -231,6 +231,13 @@ textarea.input{resize:vertical;min-height:96px}
    а карта праворуч займає всю висоту вікна. */
 .split__list:has(> .filters){padding-top:0}
 .split__list > .filters{margin:0 -24px 16px;padding:12px 24px}
+/* Заголовок «New developments» з фільтрами: на десктопі прилипає до верху колонки списку.
+   На телефоні він високий (пʼять фільтрів), тож там лишається звичайним. */
+@media (min-width:1081px){
+  .split__list:has(> .split__head){padding-top:0}
+  .split__list > .split__head{position:sticky;top:0;z-index:800;background:#fff;margin:0 -24px 16px;padding:20px 24px 4px;
+    border-bottom:1px solid var(--line)}
+}
 @media (min-width:1081px){.split__list > .filters .filters__q{flex:1 1 240px}}
 .split__map{position:relative;z-index:0;background:var(--bg-soft)}
 #map{position:absolute;inset:0}
@@ -1193,7 +1200,7 @@ textarea.input{resize:vertical;min-height:96px}
 .devc__logo--ini span{flex:none;width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--orange);color:#fff;
   font-size:22px;font-weight:800;letter-spacing:-.02em}
 .devc__cover{position:relative;aspect-ratio:16/9;background:var(--bg-soft)}
-.devc__cover > img,.devc__cover > .nophoto{width:100%;height:100%;object-fit:cover}
+.devc__cover > img,.devc__cover > .nophoto{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .devc__cover > .nophoto{background:linear-gradient(160deg,#2a2a31,#16161a);color:rgba(255,255,255,.45)}
 .devc__logo.devc__badge{position:absolute;left:16px;bottom:-28px;width:128px;height:64px;padding:10px 12px;border:1px solid var(--line);
   border-radius:var(--radius);box-shadow:var(--shadow)}
@@ -1202,6 +1209,10 @@ textarea.input{resize:vertical;min-height:96px}
 .devc__body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:4px;flex:1}
 .devc__name{font-size:16px;font-weight:700;line-height:1.3;display:flex;align-items:flex-start;gap:6px}
 .devc__name .ico{flex:none;margin-top:2px}
+.devc__clip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.devs-filters{margin-top:20px;margin-bottom:0}
+.devs-list{scroll-margin-top:16px}
+.devs-filters label.devs-filters__q{flex:2 1 260px}
 .devc__count{font-weight:600}
 .devc__projects{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .devc__tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto;padding-top:8px}
@@ -2495,7 +2506,7 @@ html{scroll-behavior:smooth}
 .cpager{display:grid;justify-items:center;gap:14px;padding:24px 0 6px}
 .cpager__more[aria-disabled=true]{opacity:.6;pointer-events:none}
 .cpager__nav{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:6px;font-size:14px}
-.cpager__num,.cpager__step{min-width:36px;height:36px;padding:0 10px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--chip);color:var(--ink);font-weight:600;text-decoration:none}
+.cpager__num,.cpager__step{border:0;cursor:pointer;font:inherit;min-width:36px;height:36px;padding:0 10px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;background:var(--chip);color:var(--ink);font-weight:600;text-decoration:none}
 .cpager__num:hover,.cpager__step:hover{background:#e6e6ec}
 .cpager__num.is-on{background:var(--ink);color:#fff}
 .cpager__gap{color:var(--ink-3);padding:0 2px}
