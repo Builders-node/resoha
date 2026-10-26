@@ -20,10 +20,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const [t, lang] = await Promise.all([getT(), getLang()]);
   // «про компанію» в базі англійською — на /es шаблон, а не англійський текст
   const about = lang === 'en' ? (dev.about ?? '').trim() : '';
+  // без жодного ЖК сторінка тонка — noindex, доки не з'явиться перший проєкт (так само й у карті сайту)
+  const projects = await listDevelopments({ developerId: dev.id });
   return localized(`/developers/${dev.slug}`, {
     title: `${dev.name} — ${t('developer in Honduras')} | ${SITE_NAME}`,
     description: metaDescription(about.length >= 70 ? about
       : t('Developments by {name} in Honduras: projects, available apartments and contacts.', { name: dev.name })),
+    ...(projects.length ? {} : { robots: { index: false, follow: true } }),
   });
 }
 

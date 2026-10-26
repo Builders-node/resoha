@@ -7,6 +7,7 @@ import { currentUser } from './session';
 import { fromPrice } from './units';
 import type { Listing } from './types';
 import { SITE_NAME } from './site';
+import { regionByName, regionOfArea } from './regions';
 import { getLang, getLp, getT } from './i18n/server';
 
 /**
@@ -65,7 +66,8 @@ export async function developmentMetadata(slug: string, tab?: { path: string; la
   const d = await loadDevelopment(slug);
   if (!d) return { title: `Development not found — ${SITE_NAME}` };
   const [t, lang] = await Promise.all([getT(), getLang()]);
-  const city = d.island || 'Roatán';
+  // місто ЖК з колонки island, а якщо там порожньо — з району (не «Roatán» за замовчуванням)
+  const city = regionByName(d.island)?.name ?? regionOfArea(d.neighborhood)?.name ?? d.island;
   const title = tab ? `${d.name}: ${t(tab.label).toLowerCase()} — ${d.neighborhood}, ${city}`
     : t('{name} — new development in {area}, {city}', { name: d.name, area: d.neighborhood, city });
   // опис ЖК у базі англійський — на /es беремо перекладений шаблон, а не англійський текст

@@ -82,17 +82,17 @@ export async function sitemapListings(chunk: number): Promise<SitemapListing[]> 
   return out;
 }
 
-export type SitemapDevelopment = { slug: string; createdAt: string; photos: string[]; units: number };
+export type SitemapDevelopment = { slug: string; createdAt: string; photos: string[]; units: number; developerId: string | null };
 
 /** Усі активні ЖК (без обмеження в 200, як у каталозі). */
 export async function sitemapDevelopments(): Promise<SitemapDevelopment[]> {
   const db = await supabaseServer();
   const out: (SitemapDevelopment & { id: string })[] = [];
   for (let off = 0; ; off += BATCH) {
-    const { data, error } = await db.from('developments').select('id, slug, created_at, photos')
+    const { data, error } = await db.from('developments').select('id, slug, created_at, photos, developer_id')
       .eq('active', true).order('created_at', { ascending: true }).range(off, off + BATCH - 1);
     if (error) throw error;
-    out.push(...(data ?? []).map((r) => ({ id: r.id as string, slug: r.slug as string, createdAt: r.created_at as string, photos: sitemapImages(r.photos), units: 0 })));
+    out.push(...(data ?? []).map((r) => ({ id: r.id as string, slug: r.slug as string, createdAt: r.created_at as string, photos: sitemapImages(r.photos), units: 0, developerId: (r.developer_id as string | null) ?? null })));
     if ((data ?? []).length < BATCH) break;
   }
   // вкладка «Планування» без квартир — 404, у карту сайту її не даємо: рахуємо живі квартири кожного ЖК
@@ -102,7 +102,7 @@ export async function sitemapDevelopments(): Promise<SitemapDevelopment[]> {
     const d = out.find((x) => x.id === u.development_id);
     if (d) d.units += 1;
   }
-  return out.map((d) => ({ slug: d.slug, createdAt: d.createdAt, photos: d.photos, units: d.units }));
+  return out.map((d) => ({ slug: d.slug, createdAt: d.createdAt, photos: d.photos, units: d.units, developerId: d.developerId }));
 }
 
 /** Імена файлів карти: сторінки, ЖК, люди й агенції, оголошення частинами по тисячі. */

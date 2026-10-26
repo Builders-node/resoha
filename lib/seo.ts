@@ -10,7 +10,7 @@ import { EMPTY_FILTERS, type Filters } from './filters';
 import { PAGE_SIZE } from './db';
 import { catalogTitle, catalogUrl, isIndexable } from './catalogSeo';
 import { IN_UNIT } from './details';
-import { REGIONS, regionByName } from './regions';
+import { REGIONS, regionByName, regionOfArea } from './regions';
 
 /**
  * schema.org-обʼєкти для JSON-LD. Пошуковики й AI-асистенти читають їх як довідку
@@ -260,7 +260,7 @@ export function developmentLd(d: Development, units: Listing[]) {
     '@id': `${url}#listing`,
     url,
     name: d.name,
-    description: (d.text || `${d.name}, ${d.neighborhood}, Roatán`).slice(0, 500),
+    description: (d.text || [d.name, d.neighborhood, (regionByName(d.island) ?? regionOfArea(d.neighborhood))?.name].filter(Boolean).join(', ')).slice(0, 500),
     datePosted: d.createdAt,
     mainEntity: complex,
     ...(priced.length ? {
