@@ -15,10 +15,12 @@ const MapView = dynamic(() => import('@/components/MapView'));
 
 type Props = { params: Promise<{ slug: string }> };
 
+// контакти повторюють сторінку ЖК — тонка сторінка: noindex і поза картою сайту, посилання лишаються
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return developmentMetadata((await params).slug, {
+  const meta = await developmentMetadata((await params).slug, {
     path: 'contacts', label: 'Contacts', about: 'Sales office address, opening hours, booking a visit, the agent and the developer.',
   });
+  return { ...meta, robots: { index: false, follow: true } };
 }
 
 /**

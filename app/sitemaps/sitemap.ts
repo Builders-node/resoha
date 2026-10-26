@@ -64,15 +64,18 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
 
   if (key === 'developments') {
     const [developments, developers] = await Promise.all([sitemapDevelopments(), listDevelopers()]);
+    const withProjects = new Set(developments.map((d) => d.developerId));
     return [
       ...both('/developments', { changeFrequency: 'weekly', priority: 0.8 }),
       ...developments.flatMap((d) => [
         ...both(`/developments/${d.slug}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly', priority: 0.9, images: d.photos }),
-        // вкладки, які є в кожного ЖК; решта (стройка, документи, новини) — лише коли заповнені
-        ...(d.units ? ['layouts', 'contacts'] : ['contacts']).flatMap((t) => both(`/developments/${d.slug}/${t}`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly' as const, priority: 0.6 })),
+        // «Планування» — лише коли є квартири; «Контакти» повторюють сторінку ЖК і мають noindex
+        ...(d.units ? both(`/developments/${d.slug}/layouts`, { lastModified: new Date(d.createdAt), changeFrequency: 'weekly', priority: 0.6 }) : []),
       ]),
       ...both('/developers', { changeFrequency: 'weekly', priority: 0.6 }),
-      ...developers.flatMap((d) => both(`/developers/${d.slug}`, { changeFrequency: 'weekly', priority: 0.6 })),
+      // забудовник без жодного ЖК — тонка сторінка з noindex; з'явиться в карті з першим проєктом
+      ...developers.filter((d) => withProjects.has(d.id))
+        .flatMap((d) => both(`/developers/${d.slug}`, { changeFrequency: 'weekly', priority: 0.6 })),
     ];
   }
 
