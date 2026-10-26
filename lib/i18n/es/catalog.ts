@@ -55,7 +55,7 @@ export const ES_CATALOG: Record<string, string> = {
   'All areas compared': 'Comparar todas las zonas',
   'from {price}': 'desde {price}',
   'From {price}': 'Desde {price}',
-  'Buildings on Roatán with every unit and price in one place.': 'Edificios en Roatán con cada unidad y su precio en un solo lugar.',
+  'New buildings in Roatán, San Pedro Sula and Tegucigalpa in one place.': 'Edificios nuevos en Roatán, San Pedro Sula y Tegucigalpa en un solo lugar.',
   'Browse developers': 'Ver desarrolladores',
   'No developments listed yet.': 'Aún no hay proyectos publicados.',
   'Just listed': 'Recién publicados',

@@ -6,7 +6,7 @@ export const ES_SEO: Record<string, string> = {
     'Planos de los apartamentos, tamaños, precio por m² y disponibilidad.',
   'Sales office address, opening hours, booking a visit, the agent and the developer.':
     'Dirección de la sala de ventas, horarios, cómo agendar una visita, el agente y el desarrollador.',
-  '{name}: apartments for sale and rent in {area}, Roatán.': '{name}: apartamentos en venta y alquiler en {area}, Roatán.',
+  '{name}: apartments for sale and rent in {area}, {city}.': '{name}: apartamentos en venta y alquiler en {area}, {city}.',
   'Developments by {name} in Honduras: projects, available apartments and contacts.':
     'Proyectos de {name} en Honduras: desarrollos, apartamentos disponibles y contacto.',
   '{name}, realtor on Roatán: listings and contact details.': '{name}, agente inmobiliario en Roatán: anuncios y datos de contacto.',
@@ -36,15 +36,15 @@ export const ES_SEO: Record<string, string> = {
   'Roatán neighbourhoods: where to buy property': 'Zonas de Roatán: dónde comprar propiedad',
   'Compare Roatán’s areas from West Bay to Camp Bay: typical prices, who each area suits and the homes, condos and land listed there now.':
     'Compara las zonas de Roatán, de West Bay a Camp Bay: precios típicos, para quién es cada zona y las casas, condominios y terrenos publicados ahora.',
-  'New developments in Roatán': 'Proyectos nuevos en Roatán',
-  'Condo towers and new-build projects on Roatán with unit-by-unit prices from the developer.':
-    'Torres de condominios y obra nueva en Roatán con precios unidad por unidad de la desarrolladora.',
+  'New developments in Honduras': 'Proyectos nuevos en Honduras',
+  'Condo towers and new-build projects in Roatán, San Pedro Sula and Tegucigalpa, straight from the developer.':
+    'Torres de condominios y obra nueva en Roatán, San Pedro Sula y Tegucigalpa, directo de la desarrolladora.',
   '{area}, {region}: homes, condos & land for sale':
     '{area}, {region}: casas, condominios y terrenos en venta',
   'real estate agency on Roatán': 'agencia inmobiliaria en Roatán',
   'realtor': 'agente inmobiliario',
   'developer in Honduras': 'desarrolladora en Honduras',
-  '{name} — new development in {area}, Roatán': '{name}: proyecto nuevo en {area}, Roatán',
+  '{name} — new development in {area}, {city}': '{name}: proyecto nuevo en {area}, {city}',
   /* вкладки ЖК у заголовку сторінки */
   'Overview': 'Resumen',
   'Layouts': 'Distribuciones',

@@ -2802,3 +2802,24 @@ html{scroll-behavior:smooth}
 }
 .lp .wrap.prose{max-width:844px}
 .lp .lp-side a.btn::before{content:none}
+
+/* SEO-текст унизу головної: видно заголовок і перший абзац, решта — під «Read more» */
+.seo-text{max-width:900px;color:var(--ink-2);font-size:15px;line-height:1.65}
+.seo-text h2{font-size:clamp(26px,3.4vw,40px);line-height:1.15;letter-spacing:-.02em;color:var(--ink)}
+.seo-text h2 span{display:block;background:linear-gradient(180deg,var(--ink-2),var(--ink-3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.seo-text__lead{margin:16px 0 20px}
+.seo-text a{display:inline;font-weight:600}
+.seo-text summary{list-style:none;cursor:pointer;width:max-content}
+.seo-text summary::-webkit-details-marker{display:none}
+.seo-text summary svg{transform:rotate(90deg);transition:transform .2s}
+.seo-text details[open] summary svg{transform:rotate(-90deg)}
+.seo-text__less,.seo-text details[open] .seo-text__more{display:none}
+.seo-text details[open] .seo-text__less{display:inline}
+.seo-text__body{padding-top:20px}
+.seo-text__body h3{color:var(--ink);font-size:20px;letter-spacing:-.01em;margin:28px 0 10px}
+.seo-text__body p{margin:0 0 12px}
+.seo-text__body ul{margin:0 0 12px;padding-left:20px;display:grid;gap:8px}
+.seo-text__body b{color:var(--ink)}
+.seo-text__faq{display:grid;gap:14px;margin:0}
+.seo-text__faq dt{color:var(--ink);font-weight:700}
+.seo-text__faq dd{margin:4px 0 0}

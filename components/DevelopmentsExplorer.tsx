@@ -12,7 +12,7 @@ import { useLp } from './useLp';
 
 /** ЖК для списку й карти: усе пораховано на сервері. */
 export type DevItem = {
-  id: string; slug: string; name: string; developer: string; neighborhood: string;
+  id: string; slug: string; name: string; developer: string; neighborhood: string; city: string;
   completion: string; photo?: string; featured: boolean; sales: string; salesKey: string;
   units: number; from: string | null; fromValue: number | null; lat: number; lng: number;
 };
@@ -34,19 +34,23 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
   const t = useT();
   const money = useMoney();
   const [year, setYear] = useState('');
+  const [city, setCity] = useState('');
   const [area, setArea] = useState('');
   const [cap, setCap] = useState('');
   const [sales, setSales] = useState('');
 
   const years = useMemo(() => [...new Set(all.map((d) => yearOf(d.completion)).filter(Boolean) as number[])].sort(), [all]);
-  const areas = useMemo(() => [...new Set(all.map((d) => d.neighborhood).filter(Boolean))].sort(), [all]);
+  const cities = useMemo(() => [...new Set(all.map((d) => d.city).filter(Boolean))].sort(), [all]);
+  const areas = useMemo(() => [...new Set(all.filter((d) => !city || d.city === city)
+    .map((d) => d.neighborhood).filter(Boolean))].sort(), [all, city]);
   const items = useMemo(() => all.filter((d) =>
-    (!year || (year === 'ready' ? (yearOf(d.completion) ?? 0) <= new Date().getFullYear() && Boolean(yearOf(d.completion)) : yearOf(d.completion) === Number(year)))
+    (!city || d.city === city)
+    && (!year || (year === 'ready' ? (yearOf(d.completion) ?? 0) <= new Date().getFullYear() && Boolean(yearOf(d.completion)) : yearOf(d.completion) === Number(year)))
     && (!area || d.neighborhood === area)
     && (!cap || (d.fromValue !== null && d.fromValue <= Number(cap)))
     && (!sales || d.salesKey === sales),
-  ), [all, year, area, cap, sales]);
-  const filtered = Boolean(year || area || cap || sales);
+  ), [all, city, year, area, cap, sales]);
+  const filtered = Boolean(city || year || area || cap || sales);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
 
@@ -84,11 +88,19 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
             <h1>{t('New developments')}</h1>
           </div>
           <p className="muted" style={{ margin: '-6px 0 18px' }}>
-            {t('Buildings on Roatán with every unit and price in one place.')}{' '}
+            {t('New buildings in Roatán, San Pedro Sula and Tegucigalpa in one place.')}{' '}
             <Link className="link-accent" href={lp('/developers')}>{t('Browse developers')}</Link>
           </p>
           {all.length > 0 && (
             <div className="fsel-row">
+              {cities.length > 1 && (
+                <label>{t('City')}
+                  <select className="input" value={city} onChange={(e) => { setCity(e.target.value); setArea(''); }}>
+                    <option value="">{t('All cities')}</option>
+                    {cities.map((c) => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </label>
+              )}
               <label>{t('Completion')}
                 <select className="input" value={year} onChange={(e) => setYear(e.target.value)}>
                   <option value="">{t('Any year')}</option>
@@ -122,7 +134,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
               {t('No developments match these filters.')}{' '}
               {filtered && (
                 <button type="button" className="link-accent" style={{ background: 'none', border: 0, padding: 0, cursor: 'pointer' }}
-                  onClick={() => { setYear(''); setArea(''); setCap(''); setSales(''); }}>{t('Clear filters')}</button>
+                  onClick={() => { setCity(''); setYear(''); setArea(''); setCap(''); setSales(''); }}>{t('Clear filters')}</button>
               )}
             </p>
           )}

@@ -8,6 +8,7 @@ import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import HomeBlog from '@/components/HomeBlog';
+import HomeSeoText from '@/components/HomeSeoText';
 import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, priceStatsRows, queryListings } from '@/lib/db';
 import { CityPriceStats } from '@/components/PriceStats';
 import { cityStats, statsPeriod, yearAgo } from '@/lib/priceStats';
@@ -268,6 +269,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </div>
         </div>
       </section>
+
+      <HomeSeoText lang={lang} lp={lp} />
     </>
   );
 }
