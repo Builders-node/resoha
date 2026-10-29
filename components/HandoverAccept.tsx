@@ -35,6 +35,10 @@ export default function HandoverAccept({ token, info, signedIn }: {
       <p className="muted" style={{ margin: '10px 0 24px' }}>
         {info.from ? `${info.from} is handing over` : 'You are invited to take over'} the company page of <b>{name}</b>.
         After that you edit the logo, contacts and description yourself.
+        {!!info.projects && (
+          <> Its {plural(info.projects, 'project')}{info.units ? ` and ${plural(info.units, 'unit')} in them` : ''} move
+            to your account too.</>
+        )}
       </p>
 
       {info.mine ? (
@@ -61,3 +65,5 @@ export default function HandoverAccept({ token, info, signedIn }: {
     </>
   );
 }
+
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? '' : 's'}`;
