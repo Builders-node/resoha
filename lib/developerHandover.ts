@@ -8,6 +8,9 @@ export type HandoverInfo = {
   from: string;
   /** профіль уже належить тому, хто відкрив посилання */
   mine: boolean;
+  /** ЖК і юніти в них, що перейдуть разом із профілем */
+  projects?: number;
+  units?: number;
   status: 'pending' | 'accepted' | 'revoked' | 'expired';
 };
 
