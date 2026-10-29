@@ -7,6 +7,13 @@ export const TYPE_LABELS: Record<PropertyType, string> = {
 };
 export const DEAL_LABELS: Record<Deal, string> = { sale: 'For sale', rent: 'For rent' };
 
+/** Telegram приймає і @username, і номер телефону. */
+export function telegramHref(v: string) {
+  const s = v.trim().replace(/^@/, '');
+  if (!s) return '';
+  return /^\+?[\d\s()-]+$/.test(s) ? `https://t.me/+${s.replace(/[^\d]/g, '')}` : `https://t.me/${s}`;
+}
+
 /**
  * Райони та їхні центри — з усіх регіонів (lib/regions.ts). Форма ставить пін у центр
  * обраного району, щоб ріелтору не доводилось знати широту з довготою напамʼять.

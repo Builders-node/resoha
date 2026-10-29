@@ -13,7 +13,7 @@ export function catalogHref(qs: string, page: number) {
 }
 
 /** Які номери сторінок показати: перша, остання і сусіди поточної; null — «…» */
-function pageList(current: number, last: number): (number | null)[] {
+export function pageList(current: number, last: number): (number | null)[] {
   const want = new Set([1, last, current - 1, current, current + 1].filter((n) => n >= 1 && n <= last));
   const out: (number | null)[] = [];
   let prev = 0;
