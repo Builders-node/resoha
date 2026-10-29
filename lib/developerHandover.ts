@@ -14,11 +14,12 @@ export type HandoverInfo = {
   status: 'pending' | 'accepted' | 'revoked' | 'expired';
 };
 
-/** Посилання на передачу профілю забудовника: лише власник профілю або адмін */
-export async function createHandover(developerId: string) {
-  const { data, error } = await (await supabaseServer()).rpc('create_developer_handover', { p_developer: developerId });
+/** Посилання на передачу профілю забудовника: лише власник профілю або адмін. З email — ще й лист (0065) */
+export async function createHandover(developerId: string, email?: string) {
+  const { data, error } = await (await supabaseServer()).rpc('create_developer_handover',
+    email ? { p_developer: developerId, p_email: email } : { p_developer: developerId });
   if (error) return { error: missingSchema(error) ? NEEDS_UPDATE : error.message };
-  return { handover: data as { token: string; expiresAt: string } };
+  return { handover: data as { token: string; expiresAt: string; email?: string } };
 }
 
 export async function handoverInfo(token: string): Promise<HandoverInfo | null> {

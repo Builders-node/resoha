@@ -24,14 +24,18 @@ export default function DeveloperPanel() {
   }, []);
   useEffect(() => { load(); }, [load]);
 
-  /** Одноразове посилання, за яким представник компанії забирає профіль собі */
-  async function handover(d: Developer) {
-    const res = await fetch(`/api/developers/${d.id}/handover`, { method: 'POST' });
+  /** Одноразове посилання, за яким представник компанії забирає профіль собі; з email — ще й лист */
+  async function handover(d: Developer, email?: string) {
+    const res = await fetch(`/api/developers/${d.id}/handover`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(email ? { email } : {}),
+    });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(data.error ?? 'Could not create the link');
+    if (!res.ok) { toast(data.error ?? 'Could not create the link'); return false; }
     const url = `${location.origin}/developer/claim/${data.token}`;
     setLinks((l) => ({ ...l, [d.id]: url }));
+    if (email) { toast(`Sent to ${email}`); return true; }
     try { await navigator.clipboard.writeText(url); toast('Link copied — send it to the company'); } catch { toast('Link ready — copy it below'); }
+    return true;
   }
 
   if (items === null) return <div className="panel muted">Loading…</div>;
@@ -59,7 +63,7 @@ export default function DeveloperPanel() {
       </div>
       <p className="muted small" style={{ margin: '4px 0 14px' }}>
         Your company page lists every development linked to it. Agents pick your company from the list when they add a development.
-        To give a page to the company itself, use <b>Hand over</b> and send them the link: whoever opens it and signs in becomes the owner.
+        To give a page to the company itself, use <b>Hand over</b> and send them the link, or email it right from here: whoever opens it and signs in becomes the owner, together with the developments and units you added for it.
       </p>
       {items.length > 8 && (
         <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
@@ -81,8 +85,11 @@ export default function DeveloperPanel() {
               <button className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
             </div>
             {links[d.id] && (
-              <input className="input small" readOnly value={links[d.id]} onFocus={(e) => e.currentTarget.select()}
-                aria-label={`Handover link for ${d.name}`} style={{ flexBasis: '100%', marginTop: 8 }} />
+              <div style={{ flexBasis: '100%', marginTop: 8, display: 'grid', gap: 8 }}>
+                <input className="input small" readOnly value={links[d.id]} onFocus={(e) => e.currentTarget.select()}
+                  aria-label={`Handover link for ${d.name}`} />
+                <HandoverEmail name={d.name} onSend={(email) => handover(d, email)} />
+              </div>
             )}
           </div>
         ))}
@@ -90,6 +97,25 @@ export default function DeveloperPanel() {
     </div>
     <EmbedSnippets companyIds={items.map((d) => d.id)} />
     </>
+  );
+}
+
+/** Надіслати посилання на передачу листом; нове посилання замінює показане вище */
+function HandoverEmail({ name, onSend }: { name: string; onSend: (email: string) => Promise<boolean> }) {
+  const [email, setEmail] = useState('');
+  const [busy, setBusy] = useState(false);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    if (await onSend(email.trim())) setEmail('');
+    setBusy(false);
+  }
+  return (
+    <form onSubmit={submit} style={{ display: 'flex', gap: 8 }}>
+      <input className="input small" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+        placeholder="Or email it to the company" aria-label={`Email for the ${name} handover`} style={{ flex: 1 }} />
+      <button className="btn btn--sm" disabled={busy}>{busy ? 'Sending…' : 'Send'}</button>
+    </form>
   );
 }
 
