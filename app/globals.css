@@ -1619,7 +1619,9 @@ a.lm__urow:hover{background:var(--bg-soft)}
 .contacts{list-style:none;margin:0;padding:0;border:1px solid var(--line);border-radius:var(--radius)}
 .contacts li{display:flex;gap:14px;align-items:center;padding:14px 20px}
 .contacts li + li{border-top:1px solid var(--line)}
-.contacts li > .ico{flex:none;color:var(--ink-2)}
+.contacts li > .ico{flex:none;color:var(--ink-2);margin:0 9px}
+/* аватар у рядку — як іконка: колонка 40px, текст усіх рядків з одного краю */
+.contacts li > .ava{flex:none;width:40px;height:40px;border-radius:50%;object-fit:cover}
 .contacts li > div{display:flex;flex-direction:column;gap:2px}
 
 /* Документи ЖК */
