@@ -3,11 +3,11 @@
 -- запрошення в агенцію. Прийняти, як і раніше, може будь-хто, хто відкрив посилання й увійшов.
 alter table public.developer_handovers add column if not exists email text not null default '';
 
--- Стара версія з одним аргументом інакше конфліктувала б із новою (обидві підходять під виклик з id).
-drop function if exists public.create_developer_handover(uuid);
-
-/** Нове посилання на передачу; попереднє невикористане скасовується. З email — ще й лист на цю адресу. */
-create or replace function public.create_developer_handover(p_developer uuid, p_email text default null)
+/**
+ * Нове посилання на передачу з листом на цю адресу; попереднє невикористане скасовується.
+ * Окреме перевантаження без default: версія з одним аргументом (0063) лишається для простого посилання.
+ */
+create or replace function public.create_developer_handover(p_developer uuid, p_email text)
 returns jsonb language plpgsql security definer set search_path = public as $$
 declare v public.developers; h public.developer_handovers; v_email text := lower(btrim(coalesce(p_email, '')));
 begin
