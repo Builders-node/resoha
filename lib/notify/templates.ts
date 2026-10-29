@@ -145,6 +145,22 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
         telegram: '',
       };
     }
+    case 'developer_handover': {
+      const url = `${SITE_URL}/developer/claim/${p.token}`;
+      const subject = `Take over the ${p.developer} page on ${SITE_NAME}`;
+      const projects = Number(p.projects) || 0;
+      const body = `${p.inviter || 'The current owner'} is handing over the company page of ${p.developer} to you. `
+        + (projects ? `Its ${projects} project${projects === 1 ? '' : 's'} and their units come along. ` : '')
+        + 'Sign in or create an account and take it over — the link works for 30 days.';
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px">${esc(body)}</p><p style="margin:0 0 12px">${button(url, 'Take over the page')}</p>`
+          + `<p style="margin:0;color:#777;font-size:13px">If you didn’t expect this, ignore this email.</p>`,
+          esc('You get this because someone sent this email address a developer page handover on Hogarli.')),
+        text: plain([subject, '', body, url]),
+        telegram: '',
+      };
+    }
     case 'price_drop': {
       const c = p as unknown as Card;
       const was = Number(p.oldPrice) || 0;
