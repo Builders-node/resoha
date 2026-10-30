@@ -299,7 +299,7 @@ function DevelopmentManager({ initial, section: start, onBack, onDeleted, onUnit
           {section === 'overview' && <OverviewSection dev={dev} patch={patch} onDelete={remove} onGo={setSection} />}
           {section === 'units' && (
             <>
-              <BuildingsEditor devId={dev.id} items={buildings} onChange={loadBuildings} />
+              <BuildingsEditor devId={dev.id} items={buildings} units={units} onChange={loadBuildings} />
               <PriceListImport dev={dev} buildings={buildings} onAdded={() => { loadUnits(); onUnitsAdded(); }} />
             </>
           )}
@@ -539,7 +539,7 @@ function MediaSection({ dev, patch }: { dev: Development; patch: Patch }) {
 }
 
 /** Доми ЖК: список, додавання й правка в рядку. Квартири привʼязуються при заливці прайсу або у формі квартири. */
-function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Building[]; onChange: () => void }) {
+function BuildingsEditor({ devId, items, units, onChange }: { devId: string; items: Building[]; units: Listing[]; onChange: () => void }) {
   const [editing, setEditing] = useState<Building | 'new' | null>(null);
   const [photo, setPhoto] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -575,6 +575,8 @@ function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Bui
   }
 
   const b = editing === 'new' ? null : editing;
+  const ids = new Set(items.map((x) => x.id));
+  const loose = units.filter((u) => !u.buildingId || !ids.has(u.buildingId)).length;
   return (
     <div className="units-form" style={{ marginTop: 24 }}>
       <div className="fgroup__head">
@@ -583,23 +585,50 @@ function BuildingsEditor({ devId, items, onChange }: { devId: string; items: Bui
       </div>
       <span className="tiny muted">Each building gets its own card with construction status and its own floor grid on the page.</span>
       {!editing && (
-        <div className="dev-list">
-          {!items.length && <p className="muted small">No buildings yet — units without a building are shown together.</p>}
-          {items.map((x) => (
-            <div key={x.id} className="dev-list__row">
-              <div>
-                <b>{x.name}</b>
-                <div className="small muted">
-                  {stageLabel(x.stage)}{x.floors ? ` · ${x.floors} floors` : ''}{x.completion && ` · ${x.completion}`}
+        <div className="bld-admin">
+          {items.map((x) => {
+            const own = units.filter((u) => u.buildingId === x.id);
+            const free = own.filter((u) => u.status === 'available').length;
+            return (
+              <div key={x.id} className="bld-admin__card">
+                <button type="button" className="bld-admin__photo" onClick={() => open(x)} aria-label={`Edit ${x.name}`}>
+                  <Photo className="bld-admin__img" src={x.photo} sizes="(max-width: 560px) 100vw, 320px" label="No photo" />
+                  <span className={`pill bld-admin__stage bld-admin__stage--${x.stage}`}>{stageLabel(x.stage)}</span>
+                </button>
+                <div className="bld-admin__body">
+                  <b className="bld-admin__name">{x.name}</b>
+                  <div className="bld-admin__facts small muted">
+                    {x.floors ? <span><Icon name="stairs" size={14} /> {x.floors} floors</span> : null}
+                    {x.completion && <span><Icon name="crane" size={14} /> {x.completion}</span>}
+                    {x.address && <span><Icon name="pin" size={14} /> {x.address}</span>}
+                  </div>
+                  <div className="bld-admin__units">
+                    {own.length ? (
+                      <>
+                        <div className="small"><b>{free}</b> <span className="muted">of {own.length} units available</span></div>
+                        <i className="bld-admin__bar"><i style={{ width: `${(free / own.length) * 100}%` }} /></i>
+                      </>
+                    ) : <div className="small muted">No units linked yet</div>}
+                  </div>
+                </div>
+                <div className="bld-admin__actions">
+                  <button type="button" className="btn btn--ghost btn--sm with-ico" onClick={() => open(x)}><Icon name="pencil" size={14} /> Edit</button>
+                  <button type="button" className="btn btn--ghost btn--sm btn--icon bld-admin__del" title="Delete" aria-label={`Delete ${x.name}`} onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
                 </div>
               </div>
-              <div className="chip-row">
-                <button type="button" className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => open(x)}><Icon name="pencil" size={16} /></button>
-                <button type="button" className="btn btn--danger btn--sm btn--icon" title="Delete" aria-label="Delete" onClick={() => remove(x)}><Icon name="trash" size={16} /></button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
+          <button type="button" className="bld-admin__add" onClick={() => open('new')}>
+            <Icon name="plus" size={20} />
+            <b>Add building</b>
+            {!items.length && <span className="tiny muted">No buildings yet — units without a building are shown together.</span>}
+          </button>
         </div>
+      )}
+      {!editing && items.length > 0 && loose > 0 && (
+        <p className="tiny muted" style={{ margin: '10px 0 0' }}>
+          {loose} {loose === 1 ? 'unit isn’t' : 'units aren’t'} linked to a building yet — choose one when you upload the price list or in the unit form.
+        </p>
       )}
       {editing && (
         <form className="form-grid" onSubmit={save} key={b?.id ?? 'new'}>
