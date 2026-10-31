@@ -7,12 +7,14 @@ import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import EmbedSnippets from './EmbedSnippets';
 import type { Developer } from '@/lib/types';
+import { useT } from './LangProvider';
 
 /**
  * Профіль забудовника, який веде сам акаунт: назва, лого, контакти, опис.
  * Публічна сторінка — /developers/<slug>, там же всі ЖК, привʼязані до профілю.
  */
 export default function DeveloperPanel() {
+  const t = useT();
   const [items, setItems] = useState<Developer[] | null>(null);
   const [editing, setEditing] = useState<Developer | 'new' | null>(null);
   const [q, setQ] = useState('');
@@ -30,15 +32,15 @@ export default function DeveloperPanel() {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(email ? { email } : {}),
     });
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) { toast(data.error ?? 'Could not create the link'); return false; }
+    if (!res.ok) { toast(data.error ?? t('Could not create the link')); return false; }
     const url = `${location.origin}/developer/claim/${data.token}`;
     setLinks((l) => ({ ...l, [d.id]: url }));
-    if (email) { toast(`Sent to ${email}`); return true; }
-    try { await navigator.clipboard.writeText(url); toast('Link copied — send it to the company'); } catch { toast('Link ready — copy it below'); }
+    if (email) { toast(t('Sent to {email}', { email })); return true; }
+    try { await navigator.clipboard.writeText(url); toast(t('Link copied — send it to the company')); } catch { toast(t('Link ready — copy it below')); }
     return true;
   }
 
-  if (items === null) return <div className="panel muted">Loading…</div>;
+  if (items === null) return <div className="panel muted">{t('Loading…')}</div>;
 
   if (editing || !items.length) {
     return (
@@ -58,16 +60,16 @@ export default function DeveloperPanel() {
     <>
     <div className="panel">
       <div className="fgroup__head">
-        <h3>Developer profile</h3>
-        <button className="btn" onClick={() => setEditing('new')}>+ Another company</button>
+        <h3>{t('Developer profile')}</h3>
+        <button className="btn" onClick={() => setEditing('new')}>{t('+ Another company')}</button>
       </div>
       <p className="muted small" style={{ margin: '4px 0 14px' }}>
-        Your company page lists every development linked to it. Agents pick your company from the list when they add a development.
-        To give a page to the company itself, use <b>Hand over</b> and send them the link, or email it right from here: whoever opens it and signs in becomes the owner, together with the developments and units you added for it.
+        {t('Your company page lists every development linked to it. Agents pick your company from the list when they add a development.')}{' '}
+        {t('To give a page to the company itself, use Hand over and send them the link, or email it right from here: whoever opens it and signs in becomes the owner, together with the developments and units you added for it.')}
       </p>
       {items.length > 8 && (
         <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
-          placeholder={`Search ${items.length} companies`} style={{ marginBottom: 12 }} />
+          placeholder={t('Search {n} companies', { n: items.length })} style={{ marginBottom: 12 }} />
       )}
       <div className="dev-list">
         {items.filter((d) => !q.trim() || d.name.toLowerCase().includes(q.trim().toLowerCase())).map((d) => (
@@ -76,18 +78,18 @@ export default function DeveloperPanel() {
               <Photo className="thumb" src={d.logo} label="" />
               <div>
                 <b className="with-ico">{d.name}{d.verified && <Icon name="verified" size={15} className="ico ico--ok" />}</b>
-                <div className="small muted">{[d.website.replace(/^https?:\/\/(www\.)?/, ''), d.phone].filter(Boolean).join(' · ') || 'No contacts yet'}</div>
+                <div className="small muted">{[d.website.replace(/^https?:\/\/(www\.)?/, ''), d.phone].filter(Boolean).join(' · ') || t('No contacts yet')}</div>
               </div>
             </div>
             <div className="chip-row">
-              <Link className="btn btn--ghost btn--sm" href={`/developers/${d.slug}`} target="_blank">Open page</Link>
-              <button className="btn btn--ghost btn--sm" title="Create a link the company uses to take over this page" onClick={() => handover(d)}>Hand over</button>
-              <button className="btn btn--ghost btn--sm btn--icon" title="Edit" aria-label="Edit" onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
+              <Link className="btn btn--ghost btn--sm" href={`/developers/${d.slug}`} target="_blank">{t('Open page')}</Link>
+              <button className="btn btn--ghost btn--sm" title={t('Create a link the company uses to take over this page')} onClick={() => handover(d)}>{t('Hand over')}</button>
+              <button className="btn btn--ghost btn--sm btn--icon" title={t('Edit')} aria-label={t('Edit')} onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
             </div>
             {links[d.id] && (
               <div style={{ flexBasis: '100%', marginTop: 8, display: 'grid', gap: 8 }}>
                 <input className="input small" readOnly value={links[d.id]} onFocus={(e) => e.currentTarget.select()}
-                  aria-label={`Handover link for ${d.name}`} />
+                  aria-label={t('Handover link for {name}', { name: d.name })} />
                 <HandoverEmail name={d.name} onSend={(email) => handover(d, email)} />
               </div>
             )}
@@ -102,6 +104,7 @@ export default function DeveloperPanel() {
 
 /** Надіслати посилання на передачу листом; нове посилання замінює показане вище */
 function HandoverEmail({ name, onSend }: { name: string; onSend: (email: string) => Promise<boolean> }) {
+  const t = useT();
   const [email, setEmail] = useState('');
   const [busy, setBusy] = useState(false);
   async function submit(e: React.FormEvent) {
@@ -113,8 +116,8 @@ function HandoverEmail({ name, onSend }: { name: string; onSend: (email: string)
   return (
     <form onSubmit={submit} style={{ display: 'flex', gap: 8 }}>
       <input className="input small" type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-        placeholder="Or email it to the company" aria-label={`Email for the ${name} handover`} style={{ flex: 1 }} />
-      <button className="btn btn--sm" disabled={busy}>{busy ? 'Sending…' : 'Send'}</button>
+        placeholder={t('Or email it to the company')} aria-label={t('Email for the {name} handover', { name })} style={{ flex: 1 }} />
+      <button className="btn btn--sm" disabled={busy}>{t(busy ? 'Sending…' : 'Send')}</button>
     </form>
   );
 }
@@ -124,6 +127,7 @@ function DeveloperForm({ dev, onCancel, onSaved }: {
   onCancel?: () => void;
   onSaved: () => void;
 }) {
+  const t = useT();
   const [logo, setLogo] = useState<string[]>(dev?.logo ? [dev.logo] : []);
   const [saving, setSaving] = useState(false);
 
@@ -138,46 +142,46 @@ function DeveloperForm({ dev, onCancel, onSaved }: {
     });
     setSaving(false);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(data.error ?? 'Could not save');
-    toast(dev ? 'Company profile saved' : 'Company page created');
+    if (!res.ok) return toast(data.error ?? t('Could not save'));
+    toast(t(dev ? 'Company profile saved' : 'Company page created'));
     onSaved();
   }
 
   async function remove() {
-    if (!dev || !confirm(`Delete the ${dev.name} page? Developments stay, they just lose the link.`)) return;
+    if (!dev || !confirm(t('Delete the {name} page? Developments stay, they just lose the link.', { name: dev.name }))) return;
     const res = await fetch(`/api/developers/${dev.id}`, { method: 'DELETE' });
-    toast(res.ok ? 'Company page deleted' : 'Not allowed');
+    toast(t(res.ok ? 'Company page deleted' : 'Not allowed'));
     if (res.ok) onSaved();
   }
 
   return (
     <div className="panel">
-      <h3 style={{ marginBottom: 4 }}>{dev ? `Edit ${dev.name}` : 'Developer profile'}</h3>
+      <h3 style={{ marginBottom: 4 }}>{dev ? t('Edit {name}', { name: dev.name }) : t('Developer profile')}</h3>
       {!dev && (
         <p className="muted small" style={{ marginBottom: 14 }}>
-          Building on the island? Create your company page — buyers see your projects, contacts and track record in one place.
+          {t('Building in Honduras? Create your company page — buyers see your projects, contacts and track record in one place.')}
         </p>
       )}
       <form className="form-grid" onSubmit={submit}>
-        <div className="field full"><label>Company name</label>
-          <input className="input" name="name" required maxLength={120} defaultValue={dev?.name} placeholder="Darien Village Development" /></div>
-        <div className="field full"><label>Logo</label>
+        <div className="field full"><label>{t('Company name')}</label>
+          <input className="input" name="name" required maxLength={120} defaultValue={dev?.name} placeholder={t('Darien Village Development')} /></div>
+        <div className="field full"><label>{t('Logo')}</label>
           <PhotoUploader value={logo} onChange={(v) => setLogo(v.slice(-1))} max={1} /></div>
-        <div className="field"><label>Website</label>
+        <div className="field"><label>{t('Website')}</label>
           <input className="input" name="website" defaultValue={dev?.website} placeholder="example.com" /></div>
-        <div className="field"><label>Founded</label>
+        <div className="field"><label>{t('Founded')}</label>
           <input className="input" name="founded" type="number" min={1900} max={2100} defaultValue={dev?.founded ?? ''} placeholder="2015" /></div>
-        <div className="field"><label>Phone</label>
+        <div className="field"><label>{t('Phone')}</label>
           <input className="input" name="phone" maxLength={40} defaultValue={dev?.phone} placeholder="+504 9999 0000" /></div>
-        <div className="field"><label>Email</label>
+        <div className="field"><label>{t('Email')}</label>
           <input className="input" name="email" type="email" maxLength={120} defaultValue={dev?.email} /></div>
-        <div className="field full"><label>About the company</label>
+        <div className="field full"><label>{t('About the company')}</label>
           <textarea className="input" name="about" maxLength={4000} defaultValue={dev?.about}
-            placeholder="Projects delivered, construction standards, warranty…" /></div>
+            placeholder={t('Projects delivered, construction standards, warranty…')} /></div>
         <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : dev ? 'Save' : 'Create company page'}</button>
-          {onCancel && <button type="button" className="btn btn--ghost" onClick={onCancel}>Cancel</button>}
-          {dev && <button type="button" className="btn btn--danger btn--icon" title="Delete" aria-label="Delete company page" style={{ marginLeft: 'auto' }} onClick={remove}><Icon name="trash" size={16} /></button>}
+          <button className="btn btn--primary" disabled={saving}>{t(saving ? 'Saving…' : dev ? 'Save' : 'Create company page')}</button>
+          {onCancel && <button type="button" className="btn btn--ghost" onClick={onCancel}>{t('Cancel')}</button>}
+          {dev && <button type="button" className="btn btn--danger btn--icon" title={t('Delete')} aria-label={t('Delete company page')} style={{ marginLeft: 'auto' }} onClick={remove}><Icon name="trash" size={16} /></button>}
         </div>
       </form>
     </div>

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from './LangProvider';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import Icon from './Icon';
@@ -24,6 +25,7 @@ const dayTitle = (d: string) => new Intl.DateTimeFormat('en-US', { timeZone: 'UT
  * Тут же відмітка «прийшов / не прийшов» і скасування (покупцю піде лист).
  */
 export default function VisitsCalendar({ meId }: { meId: string }) {
+  const t = useT();
   const today = officeToday();
   const [start, setStart] = useState(() => addDays(today, -weekdayOf(today)));
   const [items, setItems] = useState<TeamVisit[] | null>(null);
@@ -38,12 +40,12 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
   useEffect(() => { load(); }, [load]);
 
   async function setStatus(v: TeamVisit, status: VisitStatus) {
-    if (status === 'cancelled' && !confirm(`Cancel the visit of ${v.name}? ${v.email ? 'They get an email about it.' : ''}`)) return;
+    if (status === 'cancelled' && !confirm(`${t('Cancel the visit of {name}?', { name: v.name })} ${v.email ? t('They get an email about it.') : ''}`)) return;
     const res = await fetch(`/api/visits/${v.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status }),
     });
     const d = await res.json().catch(() => ({}));
-    toast(res.ok ? `Marked as ${VISIT_STATUS_LABEL[status].toLowerCase()}` : d.error ?? 'Not allowed');
+    toast(res.ok ? t('Marked as {status}', { status: t(VISIT_STATUS_LABEL[status]).toLowerCase() }) : d.error ?? t('Not allowed'));
     load();
   }
 
@@ -56,11 +58,11 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
   return (
     <div className="panel vteam">
       <div className="fgroup__head">
-        <h3>Sales office visits</h3>
+        <h3>{t('Sales office visits')}</h3>
         <div className="chip-row">
-          <button className="chip-btn" onClick={() => setStart(addDays(start, -7))} aria-label="Previous week"><Icon name="arrowLeft" size={16} /></button>
-          <button className={`chip-btn ${days.includes(today) ? 'is-on' : ''}`} onClick={() => setStart(addDays(today, -weekdayOf(today)))}>This week</button>
-          <button className="chip-btn" onClick={() => setStart(addDays(start, 7))} aria-label="Next week"><Icon name="arrowRight" size={16} /></button>
+          <button className="chip-btn" onClick={() => setStart(addDays(start, -7))} aria-label={t('Previous week')}><Icon name="arrowLeft" size={16} /></button>
+          <button className={`chip-btn ${days.includes(today) ? 'is-on' : ''}`} onClick={() => setStart(addDays(today, -weekdayOf(today)))}>{t('This week')}</button>
+          <button className="chip-btn" onClick={() => setStart(addDays(start, 7))} aria-label={t('Next week')}><Icon name="arrowRight" size={16} /></button>
         </div>
       </div>
       <p className="muted small" style={{ margin: '0 0 12px' }}>
@@ -70,19 +72,19 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
         <label className="tiny"><input type="checkbox" checked={showCancelled} onChange={(e) => setShowCancelled(e.target.checked)} /> show cancelled</label>
       </p>
 
-      {items === null ? <div className="muted">Loading visits…</div> : (
+      {items === null ? <div className="muted">{t('Loading visits…')}</div> : (
         <div className="vteam__week">
           {days.map((d, i) => {
             const list = byDay(d);
             return (
               <section key={d} className={`vteam__day${d === today ? ' is-today' : ''}${list.length ? '' : ' is-empty'}`}>
-                <h4>{WEEKDAYS[i]} <span className="muted">{Number(d.slice(8))}</span></h4>
-                {list.length === 0 && <span className="tiny muted">No visits</span>}
+                <h4>{t(WEEKDAYS[i])} <span className="muted">{Number(d.slice(8))}</span></h4>
+                {list.length === 0 && <span className="tiny muted">{t('No visits')}</span>}
                 {list.map((v) => (
                   <article key={v.id} className={`vteam__visit is-${v.status}`}>
                     <div className="vteam__time">
                       <b>{timeOf(v.visitAt)}</b>
-                      <span className={`pill ${STATUS_PILL[v.status]}`}>{VISIT_STATUS_LABEL[v.status]}</span>
+                      <span className={`pill ${STATUS_PILL[v.status]}`}>{t(VISIT_STATUS_LABEL[v.status])}</span>
                     </div>
                     <div className="vteam__who">
                       <b>{v.name}</b>
@@ -93,22 +95,22 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
                         ? <Link href={`/developments/${v.developmentSlug}`}>{v.developmentName}</Link>
                         : <Link href={`/listings/${v.listingId}`}>{v.listingTitle || 'the listing'}</Link>}
                       {v.agentId !== meId && v.agentName && ` · ${v.agentName}`}
-                      {v.contactVia && ` · prefers ${contactPrefShort(v.contactVia)}`}
-                      {v.status === 'cancelled' && v.cancelledBy && ` · by ${v.cancelledBy === 'buyer' ? 'the buyer' : 'the team'}`}
+                      {v.contactVia && ` · ${t('prefers {via}', { via: t(contactPrefShort(v.contactVia)) })}`}
+                      {v.status === 'cancelled' && v.cancelledBy && ` · ${t(v.cancelledBy === 'buyer' ? 'by the buyer' : 'by the team')}`}
                     </div>
                     {v.interests.length > 0 && <div className="tiny muted">{v.interests.join(', ')}</div>}
                     <div className="vteam__acts">
                       {v.status === 'booked' && past(v) && (
                         <>
-                          <button className="btn btn--sm" onClick={() => setStatus(v, 'attended')}>Came</button>
-                          <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'no_show')}>No-show</button>
+                          <button className="btn btn--sm" onClick={() => setStatus(v, 'attended')}>{t('Came')}</button>
+                          <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'no_show')}>{t('No-show')}</button>
                         </>
                       )}
                       {v.status === 'booked' && !past(v) && (
-                        <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'cancelled')}>Cancel</button>
+                        <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'cancelled')}>{t('Cancel')}</button>
                       )}
                       {v.status !== 'booked' && (
-                        <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'booked')}>Undo</button>
+                        <button className="btn btn--sm btn--ghost" onClick={() => setStatus(v, 'booked')}>{t('Undo')}</button>
                       )}
                     </div>
                   </article>
@@ -119,7 +121,7 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
         </div>
       )}
       <p className="tiny muted" style={{ marginTop: 12 }}>
-        Buyers get reminders 24 hours and 1 hour before the visit, with a link to move or cancel it. You get the same reminders.
+        {t('Buyers get reminders 24 hours and 1 hour before the visit, with a link to move or cancel it. You get the same reminders.')}
       </p>
     </div>
   );

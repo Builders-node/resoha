@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
 import { fmtNumber, fmtPriceShort, fmtUsd, photoUrl } from '@/lib/format';
 import { WEEKDAYS, fmtHours, hourLabel, type Analytics, type ListingStat } from '@/lib/analytics';
+import { useT } from './LangProvider';
 
 /**
  * Вкладка «Analytics» у кабінеті ріелтора / агенції. Дані рахує /api/analytics,
@@ -84,6 +85,7 @@ export function Kpi({ label, value, cur, prev, spark, color, suffix, hint }: {
 /* ---------- графік у часі: лінії переглядів і відвідувачів ---------- */
 
 export function TrendChart({ series }: { series: Data['series'] }) {
+  const t = useT();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const H = 240, padL = 36, padR = 12, padT = 14, padB = 26;
@@ -91,7 +93,7 @@ export function TrendChart({ series }: { series: Data['series'] }) {
   const max = niceMax(Math.max(1, ...series.map((d) => d.views)));
   const x = (i: number) => padL + (series.length > 1 ? (i / (series.length - 1)) * (W - padL - padR) : 0);
   const y = (v: number) => padT + (1 - v / max) * (H - padT - padB);
-  const line = (k: 'views' | 'visitors') => series.map((d, i) => `${i ? 'L' : 'M'}${x(i)},${y(d[k])}`).join('');
+  const line = (k: 'views' | 'visitors') => series.map((d, i) => `${t(i ? 'L' : 'M')}${x(i)},${y(d[k])}`).join('');
   const area = `${line('views')}L${x(series.length - 1)},${y(0)}L${x(0)},${y(0)}Z`;
   const ticks = [0, max / 2, max];
   const every = Math.ceil(series.length / Math.max(2, Math.floor(W / 80)));
@@ -105,17 +107,17 @@ export function TrendChart({ series }: { series: Data['series'] }) {
 
   return (
     <div className="an-chart" ref={ref}>
-      <svg width={W} height={H} role="img" aria-label="Views and unique visitors per day">
+      <svg width={W} height={H} role="img" aria-label={t('Views and unique visitors per day')}>
         <defs>
           <linearGradient id="an-area" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0" stopColor={C.views} stopOpacity=".18" />
             <stop offset="1" stopColor={C.views} stopOpacity="0" />
           </linearGradient>
         </defs>
-        {ticks.map((t) => (
-          <g key={t}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="an-grid" />
-            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="an-axis">{fmtNumber(t)}</text>
+        {ticks.map((x) => (
+          <g key={x}>
+            <line x1={padL} x2={W - padR} y1={y(x)} y2={y(x)} className="an-grid" />
+            <text x={padL - 8} y={y(x) + 4} textAnchor="end" className="an-axis">{fmtNumber(x)}</text>
           </g>
         ))}
         {series.map((s, i) => (i % every === 0 || i === series.length - 1) && (
@@ -139,9 +141,9 @@ export function TrendChart({ series }: { series: Data['series'] }) {
       {d && hover !== null && (
         <div className="an-tip" style={{ left: Math.min(Math.max(x(hover), 70), W - 70), top: 6 }}>
           <b>{shortDay(d.date)}</b>
-          <span><i style={{ background: C.views }} />Views <b>{d.views}</b></span>
-          <span><i style={{ background: C.visitors }} />Visitors <b>{d.visitors}</b></span>
-          <span><i style={{ background: C.leads }} />Leads <b>{d.leads}</b></span>
+          <span><i style={{ background: C.views }} />{t('Views')} <b>{d.views}</b></span>
+          <span><i style={{ background: C.visitors }} />{t('Visitors')} <b>{d.visitors}</b></span>
+          <span><i style={{ background: C.leads }} />{t('Leads')} <b>{d.leads}</b></span>
         </div>
       )}
     </div>
@@ -161,6 +163,7 @@ export function DayBars({ points, color, label, tip }: {
   points: { date: string; value: number }[]; color: string; label: string;
   tip?: (i: number) => React.ReactNode;
 }) {
+  const t = useT();
   const [ref, width] = useWidth<HTMLDivElement>();
   const [hover, setHover] = useState<number | null>(null);
   const H = 120, padL = 36, padR = 12, padT = 10, padB = 8;
@@ -172,11 +175,11 @@ export function DayBars({ points, color, label, tip }: {
   const d = hover !== null ? points[hover] : null;
   return (
     <div className="an-chart" ref={ref}>
-      <svg width={W} height={H} role="img" aria-label={`${label} per day`}>
-        {[0, max].map((t) => (
-          <g key={t}>
-            <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} className="an-grid" />
-            <text x={padL - 8} y={y(t) + 4} textAnchor="end" className="an-axis">{fmtNumber(t)}</text>
+      <svg width={W} height={H} role="img" aria-label={t('{label} per day', { label })}>
+        {[0, max].map((x) => (
+          <g key={x}>
+            <line x1={padL} x2={W - padR} y1={y(x)} y2={y(x)} className="an-grid" />
+            <text x={padL - 8} y={y(x) + 4} textAnchor="end" className="an-axis">{fmtNumber(x)}</text>
           </g>
         ))}
         {points.map((s, i) => {
@@ -206,15 +209,17 @@ export function DayBars({ points, color, label, tip }: {
 }
 
 function LeadBars({ series }: { series: Data['series'] }) {
+  const t = useT();
   return (
-    <DayBars points={series.map((s) => ({ date: s.date, value: s.leads }))} color={C.leads} label="Leads"
-      tip={(i) => <span>Contacts opened <b>{series[i].contacts}</b></span>} />
+    <DayBars points={series.map((s) => ({ date: s.date, value: s.leads }))} color={C.leads} label={t('Leads')}
+      tip={(i) => <span>{t('Contacts opened')} <b>{series[i].contacts}</b></span>} />
   );
 }
 
 /* ---------- воронка ---------- */
 
 export function Funnel({ steps }: { steps: Data['funnel'] }) {
+  const t = useT();
   const top = Math.max(1, steps[0]?.value ?? 1);
   const shades = [BLUE[6], BLUE[5], BLUE[4], C.leads];
   return (
@@ -225,7 +230,7 @@ export function Funnel({ steps }: { steps: Data['funnel'] }) {
         return (
           <div key={s.key} className="an-funnel__row">
             <div className="an-funnel__label">
-              <span>{s.label}</span>
+              <span>{t(s.label)}</span>
               <b>{fmtNumber(s.value)}</b>
             </div>
             <div className="an-funnel__track">
@@ -242,15 +247,16 @@ export function Funnel({ steps }: { steps: Data['funnel'] }) {
 /* ---------- горизонтальні смуги ---------- */
 
 export function BarList({ items, color, empty }: { items: { key: string; label: string; value: number }[]; color: string; empty: string }) {
+  const t = useT();
   const total = items.reduce((s, i) => s + i.value, 0);
   const max = Math.max(1, ...items.map((i) => i.value));
   if (!items.length) return <p className="muted small">{empty}</p>;
   return (
     <div className="an-bars">
       {items.map((i) => (
-        <div key={i.key} className="an-bars__row" title={`${i.label}: ${i.value}`}>
+        <div key={i.key} className="an-bars__row" title={`${t(i.label)}: ${i.value}`}>
           <div className="an-bars__head">
-            <span>{i.label}</span>
+            <span>{t(i.label)}</span>
             <span><b>{fmtNumber(i.value)}</b> <span className="muted tiny">{total ? Math.round((i.value / total) * 100) : 0}%</span></span>
           </div>
           <div className="an-bars__track"><div style={{ width: `${(i.value / max) * 100}%`, background: color }} /></div>
@@ -263,6 +269,7 @@ export function BarList({ items, color, empty }: { items: { key: string; label: 
 /* ---------- теплова карта: день тижня × година ---------- */
 
 export function Heatmap({ grid }: { grid: number[][] }) {
+  const t = useT();
   const max = Math.max(1, ...grid.flat());
   const [hover, setHover] = useState<{ d: number; h: number } | null>(null);
   return (
@@ -274,7 +281,7 @@ export function Heatmap({ grid }: { grid: number[][] }) {
         ))}
         {grid.map((row, d) => (
           <div key={d} style={{ display: 'contents' }}>
-            <span className="an-heat__day">{WEEKDAYS[d].slice(0, 3)}</span>
+            <span className="an-heat__day">{t(WEEKDAYS[d]).slice(0, 3)}</span>
             {row.map((v, h) => {
               const step = v === 0 ? 0 : 1 + Math.min(6, Math.floor((v / max) * 6.999));
               return (
@@ -288,9 +295,9 @@ export function Heatmap({ grid }: { grid: number[][] }) {
       </div>
       <div className="an-heat__foot tiny muted">
         {hover
-          ? <span><b>{WEEKDAYS[hover.d]}, {hourLabel(hover.h)}–{hourLabel((hover.h + 1) % 24)}</b>: {grid[hover.d][hover.h]} views</span>
-          : <span>Roatán time. Hover a cell for the count.</span>}
-        <span className="an-heat__legend">Fewer {BLUE.slice(1).map((c) => <i key={c} style={{ background: c }} />)} More</span>
+          ? <span><b>{t(WEEKDAYS[hover.d])}, {hourLabel(hover.h)}–{hourLabel((hover.h + 1) % 24)}</b>: {t('{n} views', { n: grid[hover.d][hover.h] })}</span>
+          : <span>{t('Honduras time. Hover a cell for the count.')}</span>}
+        <span className="an-heat__legend">{t('Fewer')} {BLUE.slice(1).map((c) => <i key={c} style={{ background: c }} />)} {t('More')}</span>
       </div>
     </div>
   );
@@ -313,6 +320,7 @@ const SORTS: [SortKey, string][] = [
 ];
 
 export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentName?: (id: string) => string }) {
+  const t = useT();
   const [sort, setSort] = useState<SortKey>('views');
   const [onlyIssues, setOnlyIssues] = useState(false);
   const [limit, setLimit] = useState(10);
@@ -322,7 +330,7 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
   }, [rows, sort, onlyIssues]);
 
   const th = (k: SortKey, label: string, title?: string) => (
-    <th className={`an-th ${sort === k ? 'is-on' : ''}`} onClick={() => setSort(k)} title={title}>{label}{sort === k ? ' ↓' : ''}</th>
+    <th className={`an-th ${sort === k ? 'is-on' : ''}`} onClick={() => setSort(k)} title={title && t(title)}>{t(label)}{sort === k ? ' ↓' : ''}</th>
   );
 
   return (
@@ -330,22 +338,22 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
       <div className="an-sub">
         {/* на телефоні заголовків колонок немає — сортуємо списком */}
         <label className="an-sort">
-          Sort by
+          {t('Sort by')}
           <select value={sort} onChange={(e) => setSort(e.target.value as SortKey)}>
-            {SORTS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            {SORTS.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
           </select>
         </label>
         <label className="an-check">
-          <input type="checkbox" checked={onlyIssues} onChange={(e) => setOnlyIssues(e.target.checked)} /> Only listings that need attention
+          <input type="checkbox" checked={onlyIssues} onChange={(e) => setOnlyIssues(e.target.checked)} /> {t('Only listings that need attention')}
         </label>
       </div>
       <div className="an-scroll">
         <table className="table an-table">
           <thead>
             <tr>
-              <th>Listing</th>
+              <th>{t('Listing')}</th>
               {th('views', 'Views')}
-              <th>Trend</th>
+              <th>{t('Trend')}</th>
               {th('visitors', 'Visitors')}
               {th('contacts', 'Contacts', 'Unique buyers who opened the phone, a messenger or the viewing form')}
               {th('leads', 'Leads')}
@@ -370,20 +378,20 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
                       </div>
                       {l.flags.length > 0 && (
                         <div className="an-flags">
-                          {l.flags.map((f) => <span key={f} className={`an-flag an-flag--${FLAG_LABEL[f].tone}`}>{FLAG_LABEL[f].text}</span>)}
+                          {l.flags.map((f) => <span key={f} className={`an-flag an-flag--${FLAG_LABEL[f].tone}`}>{t(FLAG_LABEL[f].text)}</span>)}
                         </div>
                       )}
                     </div>
                   </div>
                 </td>
-                <td data-label="Views"><b>{fmtNumber(l.views)}</b><div className="tiny muted">{fmtNumber(l.allTimeViews)} total</div></td>
-                <td data-label="Trend" className="an-td-trend"><Spark data={l.trend} color={C.views} w={72} h={24} /></td>
-                <td data-label="Visitors">{fmtNumber(l.visitors)}</td>
-                <td data-label="Contacts">{fmtNumber(l.contacts)}</td>
-                <td data-label="Leads"><b>{l.leads}</b></td>
-                <td data-label="Conv.">{l.visitors ? `${l.conversion}%` : '—'}</td>
-                <td data-label="Saved">{l.favorites}</td>
-                <td data-label="vs area">
+                <td data-label={t('Views')}><b>{fmtNumber(l.views)}</b><div className="tiny muted">{fmtNumber(l.allTimeViews)} total</div></td>
+                <td data-label={t('Trend')} className="an-td-trend"><Spark data={l.trend} color={C.views} w={72} h={24} /></td>
+                <td data-label={t('Visitors')}>{fmtNumber(l.visitors)}</td>
+                <td data-label={t('Contacts')}>{fmtNumber(l.contacts)}</td>
+                <td data-label={t('Leads')}><b>{l.leads}</b></td>
+                <td data-label={t('Conv.')}>{l.visitors ? `${l.conversion}%` : '—'}</td>
+                <td data-label={t('Saved')}>{l.favorites}</td>
+                <td data-label={t('vs area')}>
                   {l.priceDelta === null ? <span className="muted">—</span> : (
                     <span className={l.priceDelta >= 20 ? 'an-bad' : l.priceDelta <= -10 ? 'an-good' : ''}>
                       {l.priceDelta > 0 ? '+' : ''}{l.priceDelta}%
@@ -391,7 +399,7 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
                     </span>
                   )}
                 </td>
-                <td data-label="Days">{l.daysOnMarket}</td>
+                <td data-label={t('Days')}>{l.daysOnMarket}</td>
               </tr>
             ))}
           </tbody>
@@ -402,7 +410,7 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
           Show more ({sorted.length - limit})
         </button>
       )}
-      {sorted.length === 0 && <p className="muted small" style={{ marginTop: 10 }}>Nothing needs attention right now.</p>}
+      {sorted.length === 0 && <p className="muted small" style={{ marginTop: 10 }}>{t('Nothing needs attention right now.')}</p>}
     </>
   );
 }
@@ -410,12 +418,13 @@ export function ListingTable({ rows, agentName }: { rows: ListingStat[]; agentNa
 /* ---------- райони: мої $/ft² проти ринку ---------- */
 
 export function AreaCompare({ areas }: { areas: Data['areas'] }) {
+  const t = useT();
   const max = Math.max(1, ...areas.flatMap((a) => [a.mine, a.market])) * 1.08;
   return (
     <div className="an-areas">
       <div className="an-legend tiny">
-        <span><i style={{ background: C.views }} />Your median</span>
-        <span><i className="an-legend__ring" />Market median</span>
+        <span><i style={{ background: C.views }} />{t('Your median')}</span>
+        <span><i className="an-legend__ring" />{t('Market median')}</span>
       </div>
       {areas.map((a) => {
         const diff = a.market ? Math.round(((a.mine - a.market) / a.market) * 100) : 0;
@@ -440,6 +449,7 @@ export function AreaCompare({ areas }: { areas: Data['areas'] }) {
 /* ---------- сама вкладка ---------- */
 
 export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boolean; agencyName?: string }) {
+  const t = useT();
   const [days, setDays] = useState(30);
   const [scope, setScope] = useState<'own' | 'agency'>(isOwner ? 'agency' : 'own');
   const [data, setData] = useState<Data | null>(null);
@@ -472,8 +482,8 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
       </div>
       {isOwner && (
         <div className="chip-row">
-          <button className={`chip-btn ${scope === 'own' ? 'is-on' : ''}`} onClick={() => setScope('own')}>Mine</button>
-          <button className={`chip-btn ${scope === 'agency' ? 'is-on' : ''}`} onClick={() => setScope('agency')}>{agencyName ?? 'Whole agency'}</button>
+          <button className={`chip-btn ${scope === 'own' ? 'is-on' : ''}`} onClick={() => setScope('own')}>{t('Mine')}</button>
+          <button className={`chip-btn ${scope === 'agency' ? 'is-on' : ''}`} onClick={() => setScope('agency')}>{agencyName ?? t('Whole agency')}</button>
         </div>
       )}
     </div>
@@ -483,7 +493,7 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
     return (
       <div className="panel an">
         {filters}
-        <div className="empty">{loading ? 'Crunching the numbers…' : 'Could not load analytics. Try again in a minute.'}</div>
+        <div className="empty">{t(loading ? 'Crunching the numbers…' : 'Could not load analytics. Try again in a minute.')}</div>
       </div>
     );
   }
@@ -497,9 +507,9 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
     <div className={`an ${loading ? 'is-loading' : ''}`}>
       <div className="an-top">
         <div>
-          <h3>Analytics</h3>
+          <h3>{t('Analytics')}</h3>
           <p className="muted small">
-            {data.scope === 'agency' ? `${agencyName ?? 'Agency'}, all agents` : 'Your listings'} · last {data.days} days, compared with the {data.days} days before
+            {data.scope === 'agency' ? t('{name}, all agents', { name: agencyName ?? t('Agency') }) : t('Your listings')} · {t('last {n} days, compared with the {n} days before', { n: data.days })}
           </p>
         </div>
         {filters}
@@ -508,29 +518,29 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
       {!data.tracked && (
         <div className="note-ok an-note">
           <Icon name="sparkle" size={18} />
-          <span>Detailed tracking (visitors, sources, contact clicks) starts now, so charts fill up over the next days. Total views and leads below already include history.</span>
+          <span>{t('Detailed tracking (visitors, sources, contact clicks) starts now, so charts fill up over the next days. Total views and leads below already include history.')}</span>
         </div>
       )}
 
       <div className="an-kpis">
-        <Kpi label="Views" value={fmtNumber(totals.views)} cur={totals.views} prev={prev.views} spark={spark('views')} color={C.views} />
-        <Kpi label="Unique visitors" value={fmtNumber(totals.visitors)} cur={totals.visitors} prev={prev.visitors} spark={spark('visitors')} color={C.visitors} />
-        <Kpi label="Opened contacts" value={fmtNumber(totals.contacts)} cur={totals.contacts} prev={prev.contacts} spark={spark('contacts')} color={C.leads}
-          hint="Unique buyers who revealed the phone, tapped a messenger or opened the viewing form" />
-        <Kpi label="Leads" value={fmtNumber(totals.leads)} cur={totals.leads} prev={prev.leads} spark={spark('leads')} color={C.leads} />
-        <Kpi label="Conversion" value={`${totals.conversion}%`} cur={totals.conversion} prev={prev.conversion} suffix="pp" hint="Leads ÷ unique visitors" />
-        <Kpi label="Reply time" value={data.responseHours === null ? '—' : fmtHours(data.responseHours)} cur={0} prev={0}
-          hint="Median time from a lead arriving to “Mark handled”" />
+        <Kpi label={t('Views')} value={fmtNumber(totals.views)} cur={totals.views} prev={prev.views} spark={spark('views')} color={C.views} />
+        <Kpi label={t('Unique visitors')} value={fmtNumber(totals.visitors)} cur={totals.visitors} prev={prev.visitors} spark={spark('visitors')} color={C.visitors} />
+        <Kpi label={t('Opened contacts')} value={fmtNumber(totals.contacts)} cur={totals.contacts} prev={prev.contacts} spark={spark('contacts')} color={C.leads}
+          hint={t('Unique buyers who revealed the phone, tapped a messenger or opened the viewing form')} />
+        <Kpi label={t('Leads')} value={fmtNumber(totals.leads)} cur={totals.leads} prev={prev.leads} spark={spark('leads')} color={C.leads} />
+        <Kpi label={t('Conversion')} value={`${totals.conversion}%`} cur={totals.conversion} prev={prev.conversion} suffix="pp" hint={t('Leads ÷ unique visitors')} />
+        <Kpi label={t('Reply time')} value={data.responseHours === null ? '—' : fmtHours(data.responseHours)} cur={0} prev={0}
+          hint={t('Median time from a lead arriving to “Mark handled”')} />
       </div>
 
       {data.insights.length > 0 && (
         <div className="panel an-insights">
-          <h4><Icon name="sparkle" size={18} /> What to do next</h4>
+          <h4><Icon name="sparkle" size={18} /> {t('What to do next')}</h4>
           <ul>
             {data.insights.map((i) => (
               <li key={i.text} className={`an-ins an-ins--${i.tone}`}>
                 <span className="an-ins__ico">{i.tone === 'good' ? '▲' : i.tone === 'warn' ? '!' : 'i'}</span>
-                {i.text}
+                {i.tpl ? t(i.tpl, { ...i.vars, ...(i.vars?.day ? { day: t(String(i.vars.day)) } : {}) }) : i.text}
               </li>
             ))}
           </ul>
@@ -539,20 +549,20 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
 
       <div className="panel">
         <div className="an-head">
-          <h4>Traffic</h4>
+          <h4>{t('Traffic')}</h4>
           <div className="an-legend tiny">
-            <span><i style={{ background: C.views }} />Views</span>
-            <span><i style={{ background: C.visitors }} />Unique visitors</span>
-            <button className="an-link" onClick={() => setShowTable((v) => !v)}>{showTable ? 'Show chart' : 'Show as table'}</button>
+            <span><i style={{ background: C.views }} />{t('Views')}</span>
+            <span><i style={{ background: C.visitors }} />{t('Unique visitors')}</span>
+            <button className="an-link" onClick={() => setShowTable((v) => !v)}>{t(showTable ? 'Show chart' : 'Show as table')}</button>
           </div>
         </div>
         {showTable ? (
           <div className="an-scroll" style={{ maxHeight: 320 }}>
             <table className="table an-table">
-              <thead><tr><th>Day</th><th>Views</th><th>Visitors</th><th>Contacts</th><th>Leads</th></tr></thead>
+              <thead><tr><th>{t('Day')}</th><th>{t('Views')}</th><th>{t('Visitors')}</th><th>{t('Contacts')}</th><th>{t('Leads')}</th></tr></thead>
               <tbody>
                 {[...series].reverse().map((d) => (
-                  <tr key={d.date}><td>{shortDay(d.date)}</td><td data-label="Views">{d.views}</td><td data-label="Visitors">{d.visitors}</td><td data-label="Contacts">{d.contacts}</td><td data-label="Leads">{d.leads}</td></tr>
+                  <tr key={d.date}><td>{shortDay(d.date)}</td><td data-label={t('Views')}>{d.views}</td><td data-label={t('Visitors')}>{d.visitors}</td><td data-label={t('Contacts')}>{d.contacts}</td><td data-label={t('Leads')}>{d.leads}</td></tr>
                 ))}
               </tbody>
             </table>
@@ -561,7 +571,7 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
           <>
             <TrendChart series={series} />
             <div className="an-head" style={{ marginTop: 20 }}>
-              <h4 className="small">Leads per day</h4>
+              <h4 className="small">{t('Leads per day')}</h4>
             </div>
             <LeadBars series={series} />
           </>
@@ -570,21 +580,21 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
 
       <div className="an-grid2">
         <div className="panel">
-          <h4>Funnel</h4>
-          <p className="muted tiny an-cap">From seeing a listing to sending an enquiry</p>
+          <h4>{t('Funnel')}</h4>
+          <p className="muted tiny an-cap">{t('From seeing a listing to sending an enquiry')}</p>
           <Funnel steps={data.funnel} />
         </div>
         <div className="panel">
-          <h4>How buyers reach you</h4>
-          <p className="muted tiny an-cap">Contact actions and leads by channel</p>
+          <h4>{t('How buyers reach you')}</h4>
+          <p className="muted tiny an-cap">{t('Contact actions and leads by channel')}</p>
           <BarList items={data.channels} color={C.leads} empty="No contacts yet in this period." />
         </div>
       </div>
 
       <div className="an-grid2">
         <div className="panel">
-          <h4>Where visitors come from</h4>
-          <p className="muted tiny an-cap">Share links with <code>?utm_source=facebook</code> to see your own campaigns here</p>
+          <h4>{t('Where visitors come from')}</h4>
+          <p className="muted tiny an-cap">{t('Share links with')} <code>?utm_source=facebook</code> to see your own campaigns here</p>
           <BarList items={data.sources} color={C.views} empty="No tracked visits yet." />
           {devTotal > 0 && (
             <div className="an-device">
@@ -600,9 +610,9 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
           )}
         </div>
         <div className="panel">
-          <h4>When buyers look</h4>
+          <h4>{t('When buyers look')}</h4>
           <p className="muted tiny an-cap">
-            {data.peak ? `Peak: ${WEEKDAYS[data.peak.day]}s around ${hourLabel(data.peak.hour)}` : 'Views by weekday and hour'}
+            {data.peak ? t('Peak: {day} around {hour}', { day: t(WEEKDAYS[data.peak.day]), hour: hourLabel(data.peak.hour) }) : t('Views by weekday and hour')}
           </p>
           <Heatmap grid={data.heatmap} />
         </div>
@@ -610,12 +620,12 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
 
       {data.agents.length > 0 && data.scope === 'agency' && (
         <div className="panel">
-          <h4>Team leaderboard</h4>
-          <p className="muted tiny an-cap">Ranked by leads, then views</p>
+          <h4>{t('Team leaderboard')}</h4>
+          <p className="muted tiny an-cap">{t('Ranked by leads, then views')}</p>
           <div className="an-scroll">
             <table className="table an-table">
               <thead>
-                <tr><th>#</th><th>Agent</th><th>Listings</th><th>Views</th><th>Contacts</th><th>Leads</th><th>Conv.</th><th>Reply time</th><th>Handled</th></tr>
+                <tr><th>#</th><th>{t('Agent')}</th><th>{t('Listings')}</th><th>{t('Views')}</th><th>{t('Contacts')}</th><th>{t('Leads')}</th><th>{t('Conv.')}</th><th>{t('Reply time')}</th><th>{t('Handled')}</th></tr>
               </thead>
               <tbody>
                 {data.agents.map((a, i) => {
@@ -624,18 +634,18 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
                     <tr key={a.id}>
                       <td className="an-td-rank">{i < 3 && a.leads > 0 ? ['🥇', '🥈', '🥉'][i] : i + 1}</td>
                       <td><Link href={`/agents/${a.id}`}><b>{a.name}</b></Link></td>
-                      <td data-label="Listings">{a.active}<span className="muted tiny"> / {a.listings}</span></td>
-                      <td data-label="Views">{fmtNumber(a.views)}</td>
-                      <td data-label="Contacts">{fmtNumber(a.contacts)}</td>
-                      <td data-label="Leads">
+                      <td data-label={t('Listings')}>{a.active}<span className="muted tiny"> / {a.listings}</span></td>
+                      <td data-label={t('Views')}>{fmtNumber(a.views)}</td>
+                      <td data-label={t('Contacts')}>{fmtNumber(a.contacts)}</td>
+                      <td data-label={t('Leads')}>
                         <div className="an-inline">
                           <b>{a.leads}</b>
                           <span className="an-inline__bar"><span style={{ width: `${(a.leads / top) * 100}%`, background: C.leads }} /></span>
                         </div>
                       </td>
-                      <td data-label="Conv.">{a.conversion}%</td>
-                      <td data-label="Reply time">{a.responseHours === null ? '—' : fmtHours(a.responseHours)}</td>
-                      <td data-label="Handled">{a.leads ? `${a.handledShare}%` : '—'}</td>
+                      <td data-label={t('Conv.')}>{a.conversion}%</td>
+                      <td data-label={t('Reply time')}>{a.responseHours === null ? '—' : fmtHours(a.responseHours)}</td>
+                      <td data-label={t('Handled')}>{a.leads ? `${a.handledShare}%` : '—'}</td>
                     </tr>
                   );
                 })}
@@ -646,17 +656,17 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
       )}
 
       <div className="panel">
-        <h4>Listing performance</h4>
-        <p className="muted tiny an-cap">Click a column to sort. Price is compared with the median $/ft² of the same property type in the same area.</p>
+        <h4>{t('Listing performance')}</h4>
+        <p className="muted tiny an-cap">{t('Click a column to sort. Price is compared with the median $/ft² of the same property type in the same area.')}</p>
         {data.listings.length ? (
           <ListingTable rows={data.listings} agentName={data.scope === 'agency' ? memberName : undefined} />
-        ) : <p className="muted small">No listings yet.</p>}
+        ) : <p className="muted small">{t('No listings yet.')}</p>}
       </div>
 
       {data.developments.length > 0 && (
         <div className="panel">
-          <h4>Developments</h4>
-          <p className="muted tiny an-cap">Page views of the development plus views of its units</p>
+          <h4>{t('Developments')}</h4>
+          <p className="muted tiny an-cap">{t('Page views of the development plus views of its units')}</p>
           <div className="an-devs">
             {data.developments.map((d) => {
               const soldPct = d.units ? Math.round((d.sold / d.units) * 100) : 0;
@@ -683,8 +693,8 @@ export default function AnalyticsPanel({ isOwner, agencyName }: { isOwner: boole
 
       {data.areas.length > 0 && (
         <div className="panel">
-          <h4>Your prices vs the market</h4>
-          <p className="muted tiny an-cap">Median asking price per ft² for sale listings, by area</p>
+          <h4>{t('Your prices vs the market')}</h4>
+          <p className="muted tiny an-cap">{t('Median asking price per ft² for sale listings, by area')}</p>
           <AreaCompare areas={data.areas} />
         </div>
       )}

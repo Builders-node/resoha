@@ -9,6 +9,7 @@ import { lifecycle } from '@/lib/lifecycle';
 import { listingScore, scoreTone } from '@/lib/listingScore';
 import { UNIT_STATUSES, statusLabel } from '@/lib/units';
 import type { Listing, PropertyType } from '@/lib/types';
+import { useT } from './LangProvider';
 
 type Sort = 'new' | 'price_asc' | 'price_desc' | 'views' | 'unit';
 type Group = { key: string; name: string; slug: string | null; items: Listing[] };
@@ -40,6 +41,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
   /** Відкрити вкладку Promote з цим оголошенням */
   onPromote?: (l: Listing) => void;
 }) {
+  const t = useT();
   const [q, setQ] = useState('');
   const [dev, setDev] = useState('');
   const [deal, setDeal] = useState('');
@@ -58,9 +60,9 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
 
   const devs = useMemo(() => {
     const m = new Map<string, string>();
-    for (const l of listings) if (l.developmentId) m.set(l.developmentId, l.development?.name ?? 'Development');
+    for (const l of listings) if (l.developmentId) m.set(l.developmentId, l.development?.name ?? t('Development'));
     return [...m].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [listings]);
+  }, [listings, t]);
   const types = useMemo(() => [...new Set(listings.map((l) => l.type))], [listings]);
   const agents = useMemo(() => (agentName ? [...new Set(listings.map((l) => l.agentId))] : []), [listings, agentName]);
   const hasStandalone = listings.some((l) => !l.developmentId);
@@ -102,15 +104,15 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
       const key = l.developmentId ?? STANDALONE;
       if (!m.has(key)) {
         m.set(key, l.developmentId
-          ? { key, name: l.development?.name ?? 'Development', slug: l.development?.slug ?? null, items: [] }
-          : { key, name: 'Standalone listings', slug: null, items: [] });
+          ? { key, name: l.development?.name ?? t('Development'), slug: l.development?.slug ?? null, items: [] }
+          : { key, name: t('Standalone listings'), slug: null, items: [] });
       }
       m.get(key)!.items.push(l);
     }
     // ЖК за абеткою, окремі обʼєкти в кінці
     return [...m.values()].sort((a, b) =>
       (a.key === STANDALONE ? 1 : 0) - (b.key === STANDALONE ? 1 : 0) || a.name.localeCompare(b.name));
-  }, [shown]);
+  }, [shown, t]);
 
   const isOpen = (g: Group) => open[g.key] ?? (filtering || groups.length === 1 || g.items.length <= COLLAPSE_OVER);
 
@@ -171,58 +173,58 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
         <div className="dash-filters__search">
           <Icon name="search" size={17} />
           <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by title, unit number or area" aria-label="Search listings" />
+            placeholder={t('Search by title, unit number or area')} aria-label={t('Search listings')} />
         </div>
         {(devs.length > 0) && (
-          <select className="input" value={dev} onChange={(e) => setDev(e.target.value)} aria-label="Development">
-            <option value="">All developments</option>
+          <select className="input" value={dev} onChange={(e) => setDev(e.target.value)} aria-label={t('Development')}>
+            <option value="">{t('All developments')}</option>
             {devs.map(([id, name]) => <option key={id} value={id}>{name}</option>)}
-            {hasStandalone && <option value={STANDALONE}>Standalone only</option>}
+            {hasStandalone && <option value={STANDALONE}>{t('Standalone only')}</option>}
           </select>
         )}
-        <select className="input" value={deal} onChange={(e) => setDeal(e.target.value)} aria-label="Deal">
+        <select className="input" value={deal} onChange={(e) => setDeal(e.target.value)} aria-label={t('Deal')}>
           <option value="">Sale &amp; rent</option>
-          <option value="sale">{DEAL_LABELS.sale}</option>
-          <option value="rent">{DEAL_LABELS.rent}</option>
+          <option value="sale">{t(DEAL_LABELS.sale)}</option>
+          <option value="rent">{t(DEAL_LABELS.rent)}</option>
         </select>
         {types.length > 1 && (
-          <select className="input" value={type} onChange={(e) => setType(e.target.value)} aria-label="Type">
-            <option value="">All types</option>
-            {types.map((t) => <option key={t} value={t}>{TYPE_LABELS[t as PropertyType]}</option>)}
+          <select className="input" value={type} onChange={(e) => setType(e.target.value)} aria-label={t('Type')}>
+            <option value="">{t('All types')}</option>
+            {types.map((x) => <option key={x} value={x}>{t(TYPE_LABELS[x as PropertyType])}</option>)}
           </select>
         )}
-        <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} aria-label="Status">
-          <option value="">Any status</option>
-          <option value="live">Live</option>
-          <option value="hidden">Hidden</option>
+        <select className="input" value={status} onChange={(e) => setStatus(e.target.value)} aria-label={t('Status')}>
+          <option value="">{t('Any status')}</option>
+          <option value="live">{t('Live')}</option>
+          <option value="hidden">{t('Hidden')}</option>
           <option value="review">Drafts &amp; review</option>
-          <option value="expiring">Expiring or expired</option>
-          <option value="lowq">Quality under 70%</option>
+          <option value="expiring">{t('Expiring or expired')}</option>
+          <option value="lowq">{t('Quality under 70%')}</option>
           {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
         </select>
         {agentName && agents.length > 1 && (
-          <select className="input" value={agent} onChange={(e) => setAgent(e.target.value)} aria-label="Agent">
-            <option value="">All agents</option>
+          <select className="input" value={agent} onChange={(e) => setAgent(e.target.value)} aria-label={t('Agent')}>
+            <option value="">{t('All agents')}</option>
             {agents.map((id) => <option key={id} value={id}>{agentName(id)}</option>)}
           </select>
         )}
-        <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label="Sort">
-          <option value="new">Newest first</option>
-          <option value="price_asc">Price: low to high</option>
-          <option value="price_desc">Price: high to low</option>
-          <option value="views">Most viewed</option>
-          <option value="unit">Unit number</option>
+        <select className="input" value={sort} onChange={(e) => setSort(e.target.value as Sort)} aria-label={t('Sort')}>
+          <option value="new">{t('Newest first')}</option>
+          <option value="price_asc">{t('Price: low to high')}</option>
+          <option value="price_desc">{t('Price: high to low')}</option>
+          <option value="views">{t('Most viewed')}</option>
+          <option value="unit">{t('Unit number')}</option>
         </select>
       </div>
       <div className="dash-filters__sum small muted">
-        {filtering ? `${shown.length} of ${listings.length} listings` : `${listings.length} listings`}
+        {filtering ? t('{n} of {total} listings', { n: shown.length, total: listings.length }) : t('{total} listings', { total: listings.length })}
         {groups.length > 1 && ` in ${groups.length} groups`}
-        {filtering && <> · <button type="button" className="link-btn" onClick={reset}>Clear filters</button></>}
+        {filtering && <> · <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></>}
         {listings.length > 0 && <> · average quality <b className={`q-txt q-txt--${scoreTone(avg)}`}>{avg}%</b></>}
         {groups.length > 1 && (
           <> · <button type="button" className="link-btn"
             onClick={() => setOpen(Object.fromEntries(groups.map((g) => [g.key, !groups.every(isOpen)])))}>
-            {groups.every(isOpen) ? 'Collapse all' : 'Expand all'}</button></>
+            {t(groups.every(isOpen) ? 'Collapse all' : 'Expand all')}</button></>
         )}
       </div>
 
@@ -233,7 +235,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
 
       {shown.length === 0 ? (
         <div className="empty"><div className="empty__ico"><Icon name="search" size={40} /></div>
-          Nothing matches these filters. <button type="button" className="link-btn" onClick={reset}>Clear filters</button></div>
+          Nothing matches these filters. <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></div>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table className="table">
@@ -241,14 +243,14 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
               <tr>
                 {bulk && (
                   <th className="td--pick">
-                    <input type="checkbox" checked={allShown} aria-label={`Select all ${shown.length} shown`}
-                      title={`Select all ${shown.length} shown`}
+                    <input type="checkbox" checked={allShown} aria-label={t('Select all {n} shown', { n: shown.length })}
+                      title={t('Select all {n} shown', { n: shown.length })}
                       onChange={(e) => toggle(shown.map((l) => l.id), e.target.checked)} />
                   </th>
                 )}
-                <th>Property</th>
-                {agentName && <th>Agent</th>}
-                <th>Price</th><th>Views</th><th>Status</th><th>Quality</th><th></th>
+                <th>{t('Property')}</th>
+                {agentName && <th>{t('Agent')}</th>}
+                <th>{t('Price')}</th><th>{t('Views')}</th><th>{t('Status')}</th><th>{t('Quality')}</th><th></th>
               </tr>
             </thead>
             <tbody>
@@ -273,7 +275,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                               </span>
                             </span>
                           </button>
-                          {g.slug && <Link className="small link-accent" href={`/developments/${g.slug}`} target="_blank">Open page</Link>}
+                          {g.slug && <Link className="small link-accent" href={`/developments/${g.slug}`} target="_blank">{t('Open page')}</Link>}
                         </td>
                       </tr>
                     ) : null}
@@ -281,45 +283,45 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
                       <tr key={l.id} className={picked.has(l.id) ? 'is-picked' : undefined}>
                         {bulk && (
                           <td className="td--pick">
-                            <input type="checkbox" checked={picked.has(l.id)} aria-label={`Select ${l.title}`}
+                            <input type="checkbox" checked={picked.has(l.id)} aria-label={t('Select {title}', { title: l.title })}
                               onChange={(e) => toggle([l.id], e.target.checked)} />
                           </td>
                         )}
-                        <td data-label="Property">
+                        <td data-label={t('Property')}>
                           <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                             <Photo className="thumb" src={l.photos[0]} label="" />
                             <div>
                               <Link href={`/listings/${l.id}`} style={{ fontWeight: 600 }}>{l.title}</Link>
                               <div className="tiny muted">
-                                {l.unitNo && `Unit ${l.unitNo} · `}{DEAL_LABELS[l.deal]} · {l.neighborhood} · {fmtDate(l.createdAt)}
+                                {l.unitNo && `${t('Unit {n}', { n: l.unitNo })} · `}{t(DEAL_LABELS[l.deal])} · {l.neighborhood} · {fmtDate(l.createdAt)}
                               </div>
                             </div>
                           </div>
                         </td>
-                        {agentName && <td className="small" data-label="Agent">{agentName(l.agentId)}</td>}
-                        <td data-label="Price" style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
-                        <td data-label="Views">{fmtNumber(l.views)}</td>
-                        <td data-label="Status">
+                        {agentName && <td className="small" data-label={t('Agent')}>{agentName(l.agentId)}</td>}
+                        <td data-label={t('Price')} style={{ fontWeight: 700, whiteSpace: 'nowrap' }}>{fmtPrice(l.price, l.deal)}</td>
+                        <td data-label={t('Views')}>{fmtNumber(l.views)}</td>
+                        <td data-label={t('Status')}>
                           <StatusCell l={l} onRenew={onRenew} onSubmit={onSubmit} />
                         </td>
-                        <td data-label="Quality">
+                        <td data-label={t('Quality')}>
                           <QualityCell score={scores.get(l.id)!} onEdit={() => onEdit(l)} />
                         </td>
                         <td className="td--act" style={{ whiteSpace: 'nowrap' }}>
-                          <button className="btn btn--sm btn--ghost btn--icon" title="Edit" aria-label="Edit" onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
+                          <button className="btn btn--sm btn--ghost btn--icon" title={t('Edit')} aria-label={t('Edit')} onClick={() => onEdit(l)}><Icon name="pencil" size={16} /></button>{' '}
                           {/* просувати можна лише те, що бачать покупці */}
                           {onPromote && l.active && l.review === 'approved' && (
                             <><button className={`btn btn--sm btn--ghost btn--icon ${l.featured ? 'is-promoted' : ''}`}
-                              title={l.featured ? 'Promoted — extend or add more' : 'Promote'} aria-label={`Promote ${l.title}`}
+                              title={t(l.featured ? 'Promoted — extend or add more' : 'Promote')} aria-label={t('Promote {title}', { title: l.title })}
                               onClick={() => onPromote(l)}><Icon name="sparkle" size={16} /></button>{' '}</>
                           )}
                           {/* чернетку й те, що на перевірці, публікує «Publish» у колонці статусу */}
                           {!['draft', 'pending', 'rejected'].includes(l.review) && (
                             <><button className="btn btn--sm btn--ghost" onClick={() => onToggle(l)}>
-                              {l.active ? 'Unpublish' : 'Publish'}
+                              {t(l.active ? 'Unpublish' : 'Publish')}
                             </button>{' '}</>
                           )}
-                          <button className="btn btn--sm btn--danger btn--icon" title="Delete" aria-label="Delete" onClick={() => onDelete(l)}><Icon name="trash" size={16} /></button>
+                          <button className="btn btn--sm btn--danger btn--icon" title={t('Delete')} aria-label={t('Delete')} onClick={() => onDelete(l)}><Icon name="trash" size={16} /></button>
                         </td>
                       </tr>
                     ))}
@@ -337,25 +339,26 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
 
 /** Стан у життєвому циклі + продаж; під ним — що зробити далі (продовжити, надіслати, примітка модератора) */
 function StatusCell({ l, onRenew, onSubmit }: { l: Listing; onRenew?: (l: Listing) => void; onSubmit?: (l: Listing) => void }) {
+  const t = useT();
   const lc = lifecycle(l);
   const tone = lc.key === 'live' ? 'pill--on' : lc.key === 'rejected' || lc.key === 'expired' ? 'pill--warn' : 'pill--off';
   return (
     <div className="lc-cell">
       <div style={{ whiteSpace: 'nowrap' }}>
-        <span className={`pill ${tone}`}>{lc.label}</span>
-        {l.status !== 'available' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{statusLabel(l.status)}</span>}
+        <span className={`pill ${tone}`}>{t(lc.label)}</span>
+        {l.status !== 'available' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t(statusLabel(l.status))}</span>}
       </div>
-      {lc.key === 'pending' && <span className="tiny muted">Visible to buyers after a quick check</span>}
+      {lc.key === 'pending' && <span className="tiny muted">{t('Visible to buyers after a quick check')}</span>}
       {lc.key === 'rejected' && l.reviewNote && <span className="tiny lc-note">{l.reviewNote}</span>}
       {lc.daysLeft !== null && lc.daysLeft <= 30 && lc.key !== 'expired' && (
-        <span className="tiny muted">Expires in {lc.daysLeft} {lc.daysLeft === 1 ? 'day' : 'days'}</span>
+        <span className="tiny muted">{t(lc.daysLeft === 1 ? 'Expires in {n} day' : 'Expires in {n} days', { n: lc.daysLeft })}</span>
       )}
       {lc.canRenew && onRenew && (
-        <button type="button" className="link-btn tiny" onClick={() => onRenew(l)}>Renew for 90 days</button>
+        <button type="button" className="link-btn tiny" onClick={() => onRenew(l)}>{t('Renew for 90 days')}</button>
       )}
       {lc.canSubmit && onSubmit && (
         <button type="button" className="link-btn tiny" onClick={() => onSubmit(l)}>
-          {lc.key === 'draft' ? 'Publish' : 'Send for review again'}
+          {t(lc.key === 'draft' ? 'Publish' : 'Send for review again')}
         </button>
       )}
     </div>
@@ -364,6 +367,7 @@ function StatusCell({ l, onRenew, onSubmit }: { l: Listing; onRenew?: (l: Listin
 
 /** Повнота оголошення: відсоток зі смужкою, по кліку — що додати */
 function QualityCell({ score, onEdit }: { score: { pct: number; hints: string[] }; onEdit: () => void }) {
+  const t = useT();
   const tone = scoreTone(score.pct);
   const bar = (
     <span className="q-meter" aria-hidden><span className={`q-meter__fill q-meter__fill--${tone}`} style={{ width: `${score.pct}%` }} /></span>
@@ -371,11 +375,11 @@ function QualityCell({ score, onEdit }: { score: { pct: number; hints: string[] 
   if (!score.hints.length) return <span className="q-cell">{bar}<b className={`q-txt q-txt--${tone}`}>{score.pct}%</b></span>;
   return (
     <details className="q-cell q-cell--hints">
-      <summary title="What to improve">{bar}<b className={`q-txt q-txt--${tone}`}>{score.pct}%</b></summary>
+      <summary title={t('What to improve')}>{bar}<b className={`q-txt q-txt--${tone}`}>{score.pct}%</b></summary>
       <div className="q-pop">
-        <b className="small">To reach 100%</b>
-        <ul>{score.hints.map((h) => <li key={h}>{h}</li>)}</ul>
-        <button type="button" className="link-btn small" onClick={onEdit}>Edit listing</button>
+        <b className="small">{t('To reach 100%')}</b>
+        <ul>{score.hints.map((h) => <li key={h}>{t(h)}</li>)}</ul>
+        <button type="button" className="link-btn small" onClick={onEdit}>{t('Edit listing')}</button>
       </div>
     </details>
   );
@@ -383,19 +387,20 @@ function QualityCell({ score, onEdit }: { score: { pct: number; hints: string[] 
 
 /** Номери сторінок: до 7 — усі, далі перша, остання і сусіди поточної, решта — «…» */
 function Pager({ page, count, onGo }: { page: number; count: number; onGo: (p: number) => void }) {
+  const t = useT();
   const nums: (number | '…')[] = [];
   for (let p = 1; p <= count; p++) {
     if (count <= 7 || p === 1 || p === count || Math.abs(p - page) <= 1) nums.push(p);
     else if (nums[nums.length - 1] !== '…') nums.push('…');
   }
   return (
-    <nav className="pager" aria-label="Pages">
-      <button type="button" className="pager__btn" disabled={page === 1} onClick={() => onGo(page - 1)} aria-label="Previous page">‹</button>
+    <nav className="pager" aria-label={t('Pages')}>
+      <button type="button" className="pager__btn" disabled={page === 1} onClick={() => onGo(page - 1)} aria-label={t('Previous page')}>‹</button>
       {nums.map((p, i) => p === '…'
         ? <span key={`gap${i}`} className="pager__gap">…</span>
         : <button key={p} type="button" className={`pager__btn ${p === page ? 'is-on' : ''}`}
             aria-current={p === page ? 'page' : undefined} onClick={() => onGo(p)}>{p}</button>)}
-      <button type="button" className="pager__btn" disabled={page === count} onClick={() => onGo(page + 1)} aria-label="Next page">›</button>
+      <button type="button" className="pager__btn" disabled={page === count} onClick={() => onGo(page + 1)} aria-label={t('Next page')}>›</button>
     </nav>
   );
 }

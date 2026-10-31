@@ -1,12 +1,14 @@
 'use client';
 import { useRef } from 'react';
 import { googleTranslateUrl } from './ListingDescription';
+import { useT } from './LangProvider';
 
 /**
  * Поле «Description (Spanish)» у формі оголошення. Кнопка лише відкриває Google Translate
  * з англійським описом у новій вкладці — переклад ріелтор вставляє сам і за потреби править.
  */
 export default function DescriptionEs({ defaultValue }: { defaultValue?: string }) {
+  const t = useT();
   const ref = useRef<HTMLTextAreaElement>(null);
 
   function openTranslate() {
@@ -19,16 +21,16 @@ export default function DescriptionEs({ defaultValue }: { defaultValue?: string 
   return (
     <div className="field">
       <div className="desc-es__head">
-        <label htmlFor="lf-text-es">Description in Spanish <span className="muted">(optional)</span></label>
+        <label htmlFor="lf-text-es">{t('Description in Spanish')} <span className="muted">(optional)</span></label>
         <button type="button" className="btn btn--ghost btn--sm" onClick={openTranslate}
-          title="Opens Google Translate with your English description in a new tab">
-          Translate in Google ↗
+          title={t('Opens Google Translate with your English description in a new tab')}>
+          {t('Translate in Google ↗')}
         </button>
       </div>
       <textarea ref={ref} id="lf-text-es" className="input" name="textEs" rows={5} defaultValue={defaultValue} lang="es"
-        placeholder="Descripción en español…" />
+        placeholder={t('Descripción en español…')} />
       <span className="tiny muted">
-        Spanish-speaking visitors see this instead of the English description. Leave it empty and they see the English text with a note.
+        {t('Spanish-speaking visitors see this instead of the English description. Leave it empty and they see the English text with a note.')}
       </span>
     </div>
   );
