@@ -428,6 +428,11 @@ textarea.input{resize:vertical;min-height:96px}
 .cc__link:hover{color:var(--ink-2)}
 .cc__form{margin-top:16px;padding:20px}
 .cc__form .input{background:#fff}
+.cc__quick{display:flex;flex-wrap:wrap;gap:6px}
+.cc__q{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;
+  color:var(--ink-2);cursor:pointer}
+.cc__q:hover{border-color:var(--ink-3);color:var(--ink)}
+.cc__alerts{display:grid;justify-items:center;gap:10px;margin-top:16px}
 .rating{display:inline-flex;gap:4px;align-items:center;font-weight:800}
 #miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
 
@@ -463,6 +468,7 @@ textarea.input{resize:vertical;min-height:96px}
 .form-grid .full{grid-column:1/-1}
 .empty{text-align:center;padding:60px 20px;color:var(--ink-2)}
 .empty__ico{display:flex;justify-content:center;color:var(--ink-3);margin-bottom:12px}
+.empty__acts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
 .lead{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
 .lead:last-child{border-bottom:0;padding-bottom:0}
 .cta{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
@@ -2454,7 +2460,7 @@ html{scroll-behavior:smooth}
 
 /* друк сторінки обʼєкта: лише зміст і контакт, без навігації й кнопок */
 @media print{
-  .sidebar,.footer,.mbar,.no-print,.cmp-tray,.back-btn,.prop__acts,.cc__acts,.cc__links,.cc__form,
+  .sidebar,.footer,.mbar,.no-print,.cmp-tray,.back-btn,.prop__acts,.cc__acts,.cc__links,.cc__form,.cc__alerts,
   .gallery__all,.gallery__more,#miniMap,.lightbox,.crumbs--foot,.view-toggle{display:none !important}
   .shell{margin-left:0 !important;padding-bottom:0 !important}
   body{background:#fff}

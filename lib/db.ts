@@ -1,4 +1,5 @@
 import { after } from 'next/server';
+import { serverRpc } from './serverRpc';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
@@ -333,6 +334,8 @@ export async function searchListings(query: ListingQuery = {}, page = 0, pageSiz
   if (error && NEW_SORTS.includes(q.sort ?? '') && (error.code === '42703' || /price_per_sqft|price_cut_pct/.test(error.message))) {
     ({ data, error, count } = await run(undefined, false));
   }
+  // сторінка за межами видачі (?page=99 зі старого посилання) — порожня сторінка, а не 500
+  if (error && error.code === 'PGRST103') return { items: page === 0 ? sponsored : [], total: sponsored.length, hasMore: false };
   if (error) throw error;
   const organic = (data ?? []).map(mapListing);
   const items = page === 0 ? [...sponsored, ...organic] : organic;
@@ -531,7 +534,7 @@ export async function deleteListing(id: string) {
 }
 
 export async function bumpViews(id: string) {
-  await (await db()).rpc('bump_views', { p_listing: id });
+  await serverRpc(await db(), 'bump_views', { p_listing: id });
 }
 
 /**
@@ -542,7 +545,7 @@ export async function bumpViews(id: string) {
 export async function bumpViewsAfterResponse(id: string) {
   const client = await db();
   after(async () => {
-    const { error } = await client.rpc('bump_views', { p_listing: id });
+    const { error } = await serverRpc(client, 'bump_views', { p_listing: id });
     if (error) console.error('bump_views failed:', error.message);
   });
 }
@@ -1017,7 +1020,7 @@ export async function createLead(input: {
 
 /** Лічильник запитів у базі: true — ще в межах ліміту. Див. lib/guard.ts. */
 export async function rateLimitHit(key: string, max: number, windowSeconds: number): Promise<boolean> {
-  const { data, error } = await (await db()).rpc('rate_limit_hit', {
+  const { data, error } = await serverRpc(await db(), 'rate_limit_hit', {
     p_key: key, p_max: max, p_window_seconds: windowSeconds,
   });
   if (error) throw error;

@@ -340,8 +340,24 @@ export default function ListingsExplorer({
                 : active > 0
                 ? t('Nothing matches these filters. Drop one of them and try again.')
                 : filters.deal === 'rent'
-                  ? t('Nothing on Roatán for rent in this section yet.')
-                  : t('Nothing on Roatán for sale in this section yet.')}
+                  ? t('Nothing for rent in {place} in this section yet.', { place: filters.island || 'Honduras' })
+                  : t('Nothing for sale in {place} in this section yet.', { place: filters.island || 'Honduras' })}
+              {/* пуста видача — найкращий момент попросити email: людина вже сказала, що шукає */}
+              <div className="empty__acts">
+                <button className="btn btn--primary" onClick={saveSearch}>
+                  <Icon name="bell" size={17} /> {t('Email me when something matches')}
+                </button>
+                {active > 0 && (
+                  <button className="btn btn--ghost" onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal, island: filters.island })}>
+                    {t('Clear filters')}
+                  </button>
+                )}
+                {filters.island && (
+                  <button className="btn btn--ghost" onClick={() => set({ island: '', neighborhoods: [], bbox: '' })}>
+                    {t('Search all cities')}
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid--list">

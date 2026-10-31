@@ -373,7 +373,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                     <td colSpan={4} style={{ background: 'var(--bg-soft)' }}>
                       <form className="form-grid" onSubmit={(e) => saveMember(m.id, e)} style={{ padding: '6px 2px 10px' }}>
                         <div className="field"><label>Name</label><input className="input" name="name" defaultValue={m.name} /></div>
-                        <div className="field"><label>Years on island</label>
+                        <div className="field"><label>Years of experience</label>
                           <input className="input" name="experience" type="number" defaultValue={m.experience} /></div>
                         <div className="field"><label>Phone</label><input className="input" name="phone" defaultValue={m.phone} /></div>
                         <div className="field"><label>WhatsApp</label><input className="input" name="whatsapp" defaultValue={m.whatsapp} /></div>

@@ -103,8 +103,10 @@ export const ES_CATALOG: Record<string, string> = {
     'No hay nada en esta parte del mapa. Aleje o mueva el mapa.',
   'Nothing matches these filters. Drop one of them and try again.':
     'Ningún anuncio coincide con estos filtros. Quite alguno e intente de nuevo.',
-  'Nothing on Roatán for rent in this section yet.': 'Aún no hay nada en alquiler en Roatán en esta sección.',
-  'Nothing on Roatán for sale in this section yet.': 'Aún no hay nada en venta en Roatán en esta sección.',
+  'Nothing for rent in {place} in this section yet.': 'Aún no hay nada en alquiler en {place} en esta sección.',
+  'Nothing for sale in {place} in this section yet.': 'Aún no hay nada en venta en {place} en esta sección.',
+  'Email me when something matches': 'Avisarme por correo cuando haya algo',
+  'Search all cities': 'Buscar en todas las ciudades',
   'Loading…': 'Cargando…',
   'Show more — {n} left': 'Ver más: quedan {n}',
   'Search this area': 'Buscar en esta zona',

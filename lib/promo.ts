@@ -1,4 +1,5 @@
 import { after } from 'next/server';
+import { serverRpc } from './serverRpc';
 import { headers } from 'next/headers';
 import { supabaseServer } from './supabase/server';
 import type { Agent } from './types';
@@ -177,7 +178,7 @@ export async function trackPromo(
     if (!ua || BOT.test(ua) || h.get('next-router-prefetch') || h.get('purpose') === 'prefetch') return;
     const client = await supabaseServer();
     after(async () => {
-      const { error } = await client.rpc('promo_track', { p_kind: kind, p_ids: ids, p_field: field });
+      const { error } = await serverRpc(client, 'promo_track', { p_kind: kind, p_ids: ids, p_field: field });
       if (error && !/promo_track/.test(error.message)) console.error('promo_track failed:', error.message);
     });
   } catch {

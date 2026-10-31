@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { after } from 'next/server';
 import { headers } from 'next/headers';
 import { supabaseServer } from './supabase/server';
+import { serverRpc } from './serverRpc';
 
 /**
  * Події для аналітики кабінету (міграція 0043). Пише функція track_event у базі:
@@ -71,10 +72,10 @@ export async function trackAfterResponse(target: Target, kind: EventKind, opts: 
     p_visitor: visitorOf(h),
   };
   after(async () => {
-    const { error } = await client.rpc('track_event', row);
+    const { error } = await serverRpc(client, 'track_event', row);
     if (!error) return;
     // база ще без міграції 0043 — хоча б старий лічильник переглядів не має зупинитись
-    if (kind === 'view' && row.p_listing) await client.rpc('bump_views', { p_listing: row.p_listing });
+    if (kind === 'view' && row.p_listing) await serverRpc(client, 'bump_views', { p_listing: row.p_listing });
     console.error('track_event failed:', error.message);
   });
 }
@@ -99,7 +100,7 @@ export async function trackSearchAfterResponse(f: SearchFacts, results: number, 
   const sig = createHash('sha256').update(JSON.stringify(facts)).digest('hex').slice(0, 32);
   const client = await supabaseServer();
   after(async () => {
-    const { error } = await client.rpc('track_search', {
+    const { error } = await serverRpc(client, 'track_search', {
       ...facts, p_results: results, p_device: deviceOf(ua), p_visitor: visitorOf(h), p_sig: sig,
     });
     // до міграції 0045 функції немає — пошук від цього не страждає

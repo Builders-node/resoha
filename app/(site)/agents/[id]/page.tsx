@@ -66,7 +66,7 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       value: <>{agent.rating}<Icon name="star" size={18} className="agent-hero__star" /></>,
       note: t(agent.reviews === 1 ? '{n} review' : '{n} reviews', { n: agent.reviews }),
     },
-    agent.experience > 0 && { label: t('Years on island'), value: agent.experience },
+    agent.experience > 0 && { label: t('Years of experience'), value: agent.experience },
     areas.length > 0 && (areas.length <= 2
       ? { label: t('Areas'), value: <span className="agent-hero__place">{areas.join(', ')}</span> }
       : { label: t('Areas'), value: areas.length }),
