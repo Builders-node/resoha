@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { Map as MLMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { BUILDINGS_LAYER, FILL_LAYERS, SATELLITE_LAYER, mapStyle } from '@/lib/mapStyle';
+import { useT } from './LangProvider';
 
 const round = (n: number) => Number(n.toFixed(6));
 
@@ -17,6 +18,7 @@ export default function LocationPicker({
   onChange: (next: [number, number]) => void;
   hint?: string;
 }) {
+  const t = useT();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const marker = useRef<Marker | null>(null);
@@ -91,10 +93,10 @@ export default function LocationPicker({
   return (
     <div className="loc-pick">
       <div className="loc-pick__bar">
-        <span className="small">{hint ?? 'Click the map or drag the pin to the exact spot.'}</span>
+        <span className="small">{hint ?? t('Click the map or drag the pin to the exact spot.')}</span>
         <button type="button" className="btn btn--ghost btn--sm" onClick={() => setSatellite((s) => !s)}
           aria-pressed={satellite}>
-          {satellite ? 'Map' : 'Satellite'}
+          {t(satellite ? 'Map' : 'Satellite')}
         </button>
       </div>
       <div ref={el} className="loc-pick__map" />

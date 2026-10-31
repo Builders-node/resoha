@@ -4,7 +4,7 @@ import { fmtPrice, photoUrl, specLine } from '@/lib/format';
 import Logo from '@/components/Logo';
 import { SITE_URL } from '@/lib/site';
 
-export const alt = 'Property on Hogarli Roatán';
+export const alt = 'Property on Hogarli';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
 
@@ -17,8 +17,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
   const { id } = await params;
   const l = await getListing(id);
 
-  const raw = l ? photoUrl(l.photos[0]) : '';
-  const photo = raw.startsWith('/') ? `${SITE_URL}${raw}` : raw;
+  const photo = l ? await pickPhoto(l.photos) : '';
 
   return new ImageResponse(
     (
@@ -43,7 +42,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
             <Logo size={62} />
-            <div style={{ display: 'flex', fontSize: 30, fontWeight: 800, letterSpacing: 4 }}>HOGARLI ROATÁN</div>
+            <div style={{ display: 'flex', fontSize: 30, fontWeight: 800, letterSpacing: 4 }}>HOGARLI</div>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
@@ -51,7 +50,7 @@ export default async function Image({ params }: { params: Promise<{ id: string }
               {l ? `${l.deal === 'rent' ? 'For rent' : 'For sale'} · ${l.neighborhood}` : 'Honduras'}
             </div>
             <div style={{ display: 'flex', fontSize: 60, fontWeight: 800, lineHeight: 1.1, letterSpacing: -1.5 }}>
-              {l ? l.title : 'Property on Roatán'}
+              {l ? l.title : 'Property in Honduras'}
             </div>
             {l && (
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 26 }}>
@@ -65,4 +64,31 @@ export default async function Image({ params }: { params: Promise<{ id: string }
     ),
     size,
   );
+}
+
+/** Генератор превʼю читає лише JPEG, PNG і GIF — avif і webp валили картку (див. помилки Vercel). */
+const READABLE = /^image\/(jpeg|png|gif)/;
+
+/**
+ * Перше фото, яке генератор зможе прочитати, — одразу як data URL, щоб не качати двічі.
+ * Encuentra24 (Cloudinary) з f_auto віддає avif — просимо JPEG. Нічого не підійшло — картка без фото.
+ */
+async function pickPhoto(photos: string[]): Promise<string> {
+  for (const src of photos.slice(0, 4)) {
+    let url = photoUrl(src);
+    if (!url) continue;
+    if (url.startsWith('/')) url = `${SITE_URL}${url}`;
+    url = url.replace('/f_auto/', '/f_jpg/');
+    try {
+      const res = await fetch(url, { headers: { Accept: 'image/jpeg,image/png,image/gif' }, signal: AbortSignal.timeout(4000) });
+      const type = res.headers.get('content-type') ?? '';
+      if (!res.ok || !READABLE.test(type)) continue;
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length > 4_000_000) continue;
+      return `data:${type.split(';')[0]};base64,${buf.toString('base64')}`;
+    } catch {
+      // фото недоступне — пробуємо наступне
+    }
+  }
+  return '';
 }

@@ -1,4 +1,5 @@
 'use client';
+import { useT } from './LangProvider';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from './Icon';
 import { toast } from './Toaster';
@@ -35,6 +36,7 @@ function decodeXml(buf: ArrayBuffer) {
  * порціями через звичайне збереження оголошення (модерація й пошук дублів працюють).
  */
 export default function ImportPanel({ onDone }: { onDone: () => void }) {
+  const t = useT();
   const [source, setSource] = useState<Source>('csv');
   // кабінет рендериться лише в браузері (спершу «Loading dashboard…»), тож localStorage тут доступний
   const [feedUrl, setFeedUrl] = useState(() => {
@@ -53,10 +55,10 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
   const loadExisting = () => fetch('/api/listings/import')
     .then(async (res) => {
       const d = await res.json().catch(() => ({}));
-      if (!res.ok) setSetupError(d.error ?? 'Import is not available');
+      if (!res.ok) setSetupError(d.error ?? t('Import is not available'));
       else setExisting(d.existing);
     })
-    .catch(() => setSetupError('Import is not available'));
+    .catch(() => setSetupError(t('Import is not available')));
   useEffect(() => { loadExisting(); }, []);
 
   const plans = useMemo(() => (loaded && existing ? planImport(loaded.rows, existing) : []), [loaded, existing]);
@@ -74,15 +76,15 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
 
   function showRows(name: string, rows: ImportRow[], full: boolean, note?: string) {
     setResults(null); setFilter('all'); setUnpublish(false);
-    if (!rows.length) { setLoaded(null); return toast('No listings found in this file'); }
+    if (!rows.length) { setLoaded(null); return toast(t('No listings found in this file')); }
     setLoaded({ name, rows, full, note });
   }
 
   function readXml(text: string, name: string) {
     const doc = new DOMParser().parseFromString(text, 'application/xml');
-    if (doc.getElementsByTagName('parsererror').length) return toast('This is not a valid XML file');
+    if (doc.getElementsByTagName('parsererror').length) return toast(t('This is not a valid XML file'));
     const { rows, currencyErrors } = rowsFromKyero(doc);
-    showRows(name, rows, true, currencyErrors ? `${currencyErrors} listings are priced in another currency — only USD prices are imported.` : undefined);
+    showRows(name, rows, true, currencyErrors ? t('{n} listings are priced in another currency — only USD prices are imported.', { n: currencyErrors }) : undefined);
   }
 
   async function pickFile(file: File) {
@@ -90,23 +92,23 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
       const buf = await file.arrayBuffer();
       if (/\.xml$/i.test(file.name)) return readXml(decodeXml(buf), file.name);
       const { rows, columns } = rowsFromTable(parseCsv(new TextDecoder().decode(buf)));
-      if (!columns.includes('externalId')) return toast('The CSV needs an external_id (or ref / reference) column');
+      if (!columns.includes('externalId')) return toast(t('The CSV needs an external_id (or ref / reference) column'));
       showRows(file.name, rows, false);
     } catch (e) {
-      toast(`Could not read ${file.name}: ${(e as Error).message}`);
+      toast(`${t('Could not read {name}', { name: file.name })}: ${(e as Error).message}`);
     }
   }
 
   async function loadFeed() {
     const url = feedUrl.trim();
-    if (!/^https?:\/\//i.test(url)) return toast('Paste the full link to the feed, starting with https://');
+    if (!/^https?:\/\//i.test(url)) return toast(t('Paste the full link to the feed, starting with https://'));
     try { localStorage.setItem(FEED_KEY, url); } catch { /* приватне вікно */ }
     setBusy(true);
     const res = await fetch(`/api/listings/import/feed?url=${encodeURIComponent(url)}`).catch(() => null);
     if (!res?.ok) {
       setBusy(false);
       const d = await res?.json().catch(() => ({}));
-      return toast(d?.error ?? 'Could not download the feed');
+      return toast(d?.error ?? t('Could not download the feed'));
     }
     const text = decodeXml(await res.arrayBuffer());
     setBusy(false);
@@ -128,7 +130,7 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
       }).catch(() => null);
       const d = await res?.json().catch(() => ({}));
       if (!res?.ok) {
-        out.push(...chunk.map((r) => ({ line: r.line, externalId: r.externalId, ok: false, action: 'error' as const, error: d?.error ?? 'Request failed' })));
+        out.push(...chunk.map((r) => ({ line: r.line, externalId: r.externalId, ok: false, action: 'error' as const, error: d?.error ?? t('Request failed') })));
       } else out.push(...d.results);
       setProgress({ done: Math.min(todo.length, i + chunk.length), total: todo.length });
     }
@@ -142,8 +144,8 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
     }
     setBusy(false); setProgress(null); setResults(out);
     const ok = out.filter((r) => r.ok);
-    toast(`Import finished: ${ok.filter((r) => r.action === 'new').length} new, ${ok.filter((r) => r.action === 'update').length} updated`
-      + (unpublished ? `, ${unpublished} unpublished` : ''));
+    toast(t('Import finished: {n} new, {u} updated', { n: ok.filter((r) => r.action === 'new').length, u: ok.filter((r) => r.action === 'update').length })
+      + (unpublished ? `, ${t('{n} unpublished', { n: unpublished })}` : ''));
     await loadExisting();
     onDone();
   }
@@ -155,7 +157,7 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  if (setupError) return <div className="panel"><h3>Import listings</h3><p className="muted">{setupError}</p></div>;
+  if (setupError) return <div className="panel"><h3>{t('Import listings')}</h3><p className="muted">{setupError}</p></div>;
 
   const shown = plans.filter((p) => filter === 'all' || p.kind === filter).slice(0, 500);
   const pending = counts.new + counts.update;
@@ -164,32 +166,29 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="panel imp">
-      <h3 style={{ marginBottom: 4 }}>Import listings</h3>
+      <h3 style={{ marginBottom: 4 }}>{t('Import listings')}</h3>
       <p className="muted small" style={{ marginBottom: 14 }}>
-        Load your listings from a CSV export or a Kyero v3 XML feed. Each listing is matched by its reference
-        (external ID): new references become new listings, known ones are updated. Run it again any time — nothing is duplicated.
-        {existing && existing.length > 0 && ` You have ${existing.length} imported listings.`}
+        {t('Load your listings from a CSV export or a Kyero v3 XML feed. Each listing is matched by its reference (external ID): new references become new listings, known ones are updated. Run it again any time — nothing is duplicated.')}
+        {existing && existing.length > 0 && ` ${t('You have {n} imported listings.', { n: existing.length })}`}
       </p>
 
       <div className="chip-row" style={{ marginBottom: 12 }}>
-        <button type="button" className={`chip-btn ${source === 'csv' ? 'is-on' : ''}`} onClick={() => setSource('csv')}>CSV or XML file</button>
-        <button type="button" className={`chip-btn ${source === 'feed' ? 'is-on' : ''}`} onClick={() => setSource('feed')}>Feed link (Kyero XML)</button>
+        <button type="button" className={`chip-btn ${source === 'csv' ? 'is-on' : ''}`} onClick={() => setSource('csv')}>{t('CSV or XML file')}</button>
+        <button type="button" className={`chip-btn ${source === 'feed' ? 'is-on' : ''}`} onClick={() => setSource('feed')}>{t('Feed link (Kyero XML)')}</button>
       </div>
 
       {source === 'csv' ? (
         <div className="imp-source">
           <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => fileInput.current?.click()}>
-            <Icon name="plus" size={16} /> Choose file
+            <Icon name="plus" size={16} /> {t('Choose file')}
           </button>
           <button type="button" className="link-btn small" onClick={downloadTemplate}>
-            <Icon name="download" size={14} /> CSV template
+            <Icon name="download" size={14} /> {t('CSV template')}
           </button>
           <input ref={fileInput} type="file" hidden accept=".csv,.xml,text/csv,text/xml,application/xml"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) pickFile(f); e.target.value = ''; }} />
           <span className="tiny muted" style={{ flexBasis: '100%' }}>
-            CSV columns: external_id, title, deal (sale / rent), type (condo, house, land, commercial), price, beds, baths,
-            m2 or sqft, lot_acres, neighborhood, address, latitude, longitude, description, photos (links separated by |).
-            Empty cells leave the current value alone.
+            {t('CSV columns: external_id, title, deal (sale / rent), type (condo, house, land, commercial), price, beds, baths, m2 or sqft, lot_acres, neighborhood, address, latitude, longitude, description, photos (links separated by |). Empty cells leave the current value alone.')}
           </span>
         </div>
       ) : (
@@ -197,10 +196,10 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
           <input className="input" type="url" value={feedUrl} onChange={(e) => setFeedUrl(e.target.value)}
             placeholder="https://your-crm.com/feeds/kyero.xml" style={{ flex: 1, minWidth: 220 }} />
           <button type="button" className="btn" disabled={busy || !feedUrl.trim()} onClick={loadFeed}>
-            {busy && !progress ? 'Loading…' : 'Load feed'}
+            {t(busy && !progress ? 'Loading…' : 'Load feed')}
           </button>
           <span className="tiny muted" style={{ flexBasis: '100%' }}>
-            Kyero v3 format (most CRMs export it). Prices must be in USD. Photos stay on your server and are shown from the feed links.
+            {t('Kyero v3 format (most CRMs export it). Prices must be in USD. Photos stay on your server and are shown from the feed links.')}
           </span>
         </div>
       )}
@@ -211,7 +210,7 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
             <b className="small">{loaded.name}</b>
             {(['all', 'new', 'update', 'same', 'error'] as const).map((k) => (
               <button key={k} type="button" className={`chip-btn ${filter === k ? 'is-on' : ''}`} onClick={() => setFilter(k)}>
-                {k === 'all' ? `All ${plans.length}` : `${KIND_LABEL[k]} ${counts[k]}`}
+                {k === 'all' ? t('All {n}', { n: plans.length }) : `${t(KIND_LABEL[k])} ${counts[k]}`}
               </button>
             ))}
           </div>
@@ -219,7 +218,7 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
 
           <div className="imp-table-wrap">
             <table className="table imp-table">
-              <thead><tr><th>Ref</th><th>Listing</th><th>Price</th><th>Result</th></tr></thead>
+              <thead><tr><th>{t('Ref')}</th><th>{t('Listing')}</th><th>{t('Price')}</th><th>{t('Result')}</th></tr></thead>
               <tbody>
                 {shown.map((p) => (
                   <tr key={`${p.row.line}-${p.row.externalId}`}>
@@ -227,16 +226,16 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
                     <td>
                       <div className="imp-title">{p.row.title || '—'}</div>
                       <div className="tiny muted">
-                        {[p.row.neighborhood, p.row.type, p.row.deal, p.row.photos && `${p.row.photos.length} photos`].filter(Boolean).join(' · ')}
+                        {[p.row.neighborhood, p.row.type, p.row.deal, p.row.photos && t('{n} photos', { n: p.row.photos.length })].filter(Boolean).join(' · ')}
                       </div>
                     </td>
                     <td className="small">{p.row.price ? fmtUsd(p.row.price) : '—'}</td>
                     <td>
-                      <span className={`pill ${KIND_PILL[p.kind]}`}>{KIND_LABEL[p.kind]}</span>
+                      <span className={`pill ${KIND_PILL[p.kind]}`}>{t(KIND_LABEL[p.kind])}</span>
                       {p.kind === 'update' && (
                         <div className="tiny muted">{[...new Set(p.fields.map((f) => FIELD_LABEL[f]))].join(', ')}</div>
                       )}
-                      {p.kind === 'error' && <div className="tiny imp-err">{p.message}</div>}
+                      {p.kind === 'error' && <div className="tiny imp-err">{p.message && t(p.message)}</div>}
                     </td>
                   </tr>
                 ))}
@@ -252,15 +251,14 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
           )}
 
           <p className="tiny muted">
-            New listings go through the usual check: verified agents publish straight away, others after a quick review.
-            Rows with errors are skipped.
+            {t('New listings go through the usual check: verified agents publish straight away, others after a quick review. Rows with errors are skipped.')}
           </p>
           <div className="chip-row">
             <button type="button" className="btn btn--primary" disabled={busy || (!pending && !(unpublish && missing.length))} onClick={apply}>
-              {progress ? `Saving ${progress.done} of ${progress.total}…`
-                : pending ? `Import ${pending} ${pending === 1 ? 'listing' : 'listings'}` : unpublish && missing.length ? 'Unpublish' : 'Nothing to import'}
+              {progress ? t('Saving {done} of {total}…', { done: progress.done, total: progress.total })
+                : pending ? t(pending === 1 ? 'Import {n} listing' : 'Import {n} listings', { n: pending }) : t(unpublish && missing.length ? 'Unpublish' : 'Nothing to import')}
             </button>
-            <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => { setLoaded(null); setResults(null); }}>Clear</button>
+            <button type="button" className="btn btn--ghost" disabled={busy} onClick={() => { setLoaded(null); setResults(null); }}>{t('Clear')}</button>
           </div>
           {progress && (
             <div className="imp-bar" role="progressbar" aria-valuenow={progress.done} aria-valuemax={progress.total}>
@@ -273,13 +271,13 @@ export default function ImportPanel({ onDone }: { onDone: () => void }) {
       {results && (
         <div className="imp-result">
           <p className="small">
-            <b>Done.</b> {results.filter((r) => r.ok && r.action === 'new').length} created
-            {sentForReview > 0 && ` (${sentForReview} waiting for review)`}, {results.filter((r) => r.ok && r.action === 'update').length} updated
-            {failed.length > 0 && `, ${failed.length} failed`}.
+            <b>{t('Done.')}</b> {t('{n} created', { n: results.filter((r) => r.ok && r.action === 'new').length })}
+            {sentForReview > 0 && ` (${t('{n} waiting for review', { n: sentForReview })})`}, {t('{n} updated', { n: results.filter((r) => r.ok && r.action === 'update').length })}
+            {failed.length > 0 && `, ${t('{n} failed', { n: failed.length })}`}.
           </p>
           {failed.length > 0 && (
             <ul className="imp-errors small">
-              {failed.slice(0, 100).map((r, i) => <li key={i}><b>{r.externalId || `row ${r.line}`}</b>: {r.error}</li>)}
+              {failed.slice(0, 100).map((r, i) => <li key={i}><b>{r.externalId || t('row {n}', { n: r.line })}</b>: {r.error}</li>)}
             </ul>
           )}
         </div>

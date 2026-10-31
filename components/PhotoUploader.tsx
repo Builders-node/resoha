@@ -4,6 +4,7 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { ROOMS, type PhotoRooms, type RoomKey } from '@/lib/rooms';
+import { useT } from './LangProvider';
 
 /**
  * Завантаження фото обʼєкта: файли стискаються в браузері й одразу летять у Storage, у формі лишаються URL.
@@ -17,6 +18,7 @@ export default function PhotoUploader({
   value: string[]; onChange: (urls: string[]) => void; max?: number;
   rooms?: PhotoRooms; onRoomsChange?: (rooms: PhotoRooms) => void; watermark?: boolean;
 }) {
+  const t = useT();
   const [busy, setBusy] = useState('');
   const [over, setOver] = useState(false);
   const [dragged, setDragged] = useState<string | null>(null);
@@ -26,12 +28,12 @@ export default function PhotoUploader({
   async function upload(files: FileList | File[]) {
     const list = Array.from(files);
     if (!list.length) return;
-    if (value.length + list.length > max) return toast(`Up to ${max} photos per listing`);
+    if (value.length + list.length > max) return toast(t('Up to {n} photos per listing', { n: max }));
 
-    setBusy(list.length > 1 ? `Preparing 0 of ${list.length}…` : 'Preparing…');
+    setBusy(list.length > 1 ? t('Preparing {n} of {total}…', { n: 0, total: list.length }) : t('Preparing…'));
     const data = await uploadPhotos(list, {
       watermark,
-      onProgress: (stage, n) => setBusy(stage === 'upload' ? 'Uploading…' : list.length > 1 ? `Preparing ${n} of ${list.length}…` : 'Preparing…'),
+      onProgress: (stage, n) => setBusy(stage === 'upload' ? t('Uploading…') : list.length > 1 ? t('Preparing {n} of {total}…', { n, total: list.length }) : t('Preparing…')),
     });
     setBusy('');
 
@@ -77,8 +79,8 @@ export default function PhotoUploader({
       >
         <Icon name="plus" size={22} />
         <div>
-          <b>{busy || 'Drop photos here or click to choose'}</b>
-          <div className="tiny muted">JPEG, PNG, WebP or AVIF · resized in your browser before upload · first photo is the cover · drag to reorder</div>
+          <b>{busy || t('Drop photos here or click to choose')}</b>
+          <div className="tiny muted">{t('JPEG, PNG, WebP or AVIF · resized in your browser before upload · first photo is the cover · drag to reorder')}</div>
         </div>
         <input
           ref={input} type="file" accept="image/jpeg,image/png,image/webp,image/avif" multiple hidden
@@ -97,19 +99,19 @@ export default function PhotoUploader({
               onDragLeave={() => setTarget((t) => (t === url ? null : t))}
               onDrop={(e) => { if (!isPhotoDrag(e)) return; e.preventDefault(); dropOn(url); setDragged(null); setTarget(null); }}>
               <img src={url} alt="" draggable={false} />
-              {i === 0 && <span className="badge badge--brand shot__cover">Cover</span>}
+              {i === 0 && <span className="badge badge--brand shot__cover">{t('Cover')}</span>}
               {rooms && (
                 <select className={`shot__room ${rooms[url] ? 'is-set' : ''}`} value={rooms[url] ?? ''}
-                  onChange={(e) => setRoom(url, e.target.value)} aria-label="Room in this photo">
-                  <option value="">Room…</option>
+                  onChange={(e) => setRoom(url, e.target.value)} aria-label={t('Room in this photo')}>
+                  <option value="">{t('Room…')}</option>
                   {ROOMS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
                 </select>
               )}
               <div className="shot__bar">
-                <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, -1)} disabled={i === 0} aria-label="Move left">←</button>
-                {i !== 0 && <button type="button" className="btn btn--sm btn--ghost" onClick={() => makeCover(url)}>Cover</button>}
-                <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, 1)} disabled={i === value.length - 1} aria-label="Move right">→</button>
-                <button type="button" className="btn btn--sm btn--danger btn--icon" title="Remove photo" aria-label="Remove photo" onClick={() => remove(url)}><Icon name="trash" size={16} /></button>
+                <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, -1)} disabled={i === 0} aria-label={t('Move left')}>←</button>
+                {i !== 0 && <button type="button" className="btn btn--sm btn--ghost" onClick={() => makeCover(url)}>{t('Cover')}</button>}
+                <button type="button" className="btn btn--sm btn--ghost" onClick={() => move(url, 1)} disabled={i === value.length - 1} aria-label={t('Move right')}>→</button>
+                <button type="button" className="btn btn--sm btn--danger btn--icon" title={t('Remove photo')} aria-label={t('Remove photo')} onClick={() => remove(url)}><Icon name="trash" size={16} /></button>
               </div>
             </figure>
           ))}
@@ -118,9 +120,9 @@ export default function PhotoUploader({
 
       <p className="tiny muted" style={{ marginTop: 8 }}>
         {value.length
-          ? `${value.length} of ${max} photos`
-          : 'No photos yet — the listing will show a placeholder until you add some.'}
-        {rooms && value.length > 0 && ' · Pick the room on each photo to build a photo tour on the listing page.'}
+          ? t('{n} of {max} photos', { n: value.length, max })
+          : t('No photos yet — the listing will show a placeholder until you add some.')}
+        {rooms && value.length > 0 && ` · ${t('Pick the room on each photo to build a photo tour on the listing page.')}`}
       </p>
     </div>
   );

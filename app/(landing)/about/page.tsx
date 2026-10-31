@@ -74,7 +74,7 @@ export default async function AboutPage() {
             <ol className="steps-list">
               <li>{t('Island agencies and agents publish their listings, or we load them on their behalf.')}</li>
               <li>{t('Each listing keeps a link to its source, and land gets a land passport.')}</li>
-              <li>{t('You search the whole island, save listings and searches, and contact agents directly.')}</li>
+              <li>{t('You search every listing, save listings and searches, and contact agents directly.')}</li>
               <li>{t('The agent handles the viewing and the sale; your own attorney checks the title.')}</li>
             </ol>
           </div>

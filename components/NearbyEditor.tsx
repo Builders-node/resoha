@@ -5,6 +5,7 @@ import type { Map as MLMap, Marker } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { mapStyle } from '@/lib/mapStyle';
 import { EMPTY_PLACE, NEARBY_CATEGORIES, NEARBY_MAX, NEARBY_UNITS, type NearbyPlace } from '@/lib/nearby';
+import { useT } from './LangProvider';
 
 /**
  * Секція форми «What's nearby»: ріелтор сам перелічує кафе, пляжі, парки.
@@ -18,6 +19,7 @@ export default function NearbyEditor({
   /** координати самого обʼєкта — від них відкриваємо карту */
   pin: [number, number];
 }) {
+  const t = useT();
   // рядок, якому зараз ставимо точку; null — карта закрита
   const [picking, setPicking] = useState<number | null>(null);
 
@@ -38,17 +40,17 @@ export default function NearbyEditor({
 
       {value.map((p, i) => (
         <div key={i} className="nearby-row">
-          <input className="input nearby-row__name" placeholder="Name, e.g. Sundowners Beach Bar" value={p.name}
-            maxLength={80} onChange={(e) => set(i, { name: e.target.value })} aria-label="Place name" />
-          <select className="input" value={p.category} aria-label="Category"
+          <input className="input nearby-row__name" placeholder={t('Name, e.g. Sundowners Beach Bar')} value={p.name}
+            maxLength={80} onChange={(e) => set(i, { name: e.target.value })} aria-label={t('Place name')} />
+          <select className="input" value={p.category} aria-label={t('Category')}
             onChange={(e) => set(i, { category: e.target.value as NearbyPlace['category'] })}>
             {NEARBY_CATEGORIES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
           </select>
           <div className="nearby-row__dist">
-            <input className="input" type="number" min="0" step="any" placeholder="—" aria-label="Distance"
+            <input className="input" type="number" min="0" step="any" placeholder="—" aria-label={t('Distance')}
               value={p.distance ?? ''}
               onChange={(e) => set(i, { distance: e.target.value === '' ? null : Number(e.target.value) })} />
-            <select className="input" value={p.unit} aria-label="Unit"
+            <select className="input" value={p.unit} aria-label={t('Unit')}
               onChange={(e) => set(i, { unit: e.target.value as NearbyPlace['unit'] })}>
               {NEARBY_UNITS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
             </select>
@@ -56,14 +58,14 @@ export default function NearbyEditor({
           <div className="nearby-row__act">
             <button type="button" className={`btn btn--ghost btn--sm${picking === i ? ' is-on' : ''}`}
               onClick={() => setPicking(picking === i ? null : i)}>
-              {p.lat !== null ? 'Move pin' : 'Pin on map'}
+              {t(p.lat !== null ? 'Move pin' : 'Pin on map')}
             </button>
             {p.lat !== null && (
               <button type="button" className="btn btn--ghost btn--sm" onClick={() => set(i, { lat: null, lng: null })}>
-                Clear pin
+                {t('Clear pin')}
               </button>
             )}
-            <button type="button" className="btn btn--danger btn--sm btn--icon" onClick={() => remove(i)} aria-label="Remove place" title="Remove place">
+            <button type="button" className="btn btn--danger btn--sm btn--icon" onClick={() => remove(i)} aria-label={t('Remove place')} title={t('Remove place')}>
               <Icon name="trash" size={16} />
             </button>
           </div>
@@ -100,6 +102,7 @@ function PointPicker({
   onPick: (lat: number, lng: number) => void;
   onDone: () => void;
 }) {
+  const t = useT();
   const el = useRef<HTMLDivElement>(null);
   const map = useRef<MLMap | null>(null);
   const lib = useRef<typeof import('maplibre-gl') | null>(null);
@@ -162,8 +165,8 @@ function PointPicker({
   return (
     <div className="nearby-pick">
       <div className="nearby-pick__bar">
-        <span className="small">Click the map where <b>{name}</b> is. The orange dot is the property.</span>
-        <button type="button" className="btn btn--primary btn--sm" onClick={onDone}>Done</button>
+        <span className="small">{t('Click the map where')} <b>{name}</b> is. The orange dot is the property.</span>
+        <button type="button" className="btn btn--primary btn--sm" onClick={onDone}>{t('Done')}</button>
       </div>
       <div ref={el} className="nearby-pick__map" />
     </div>

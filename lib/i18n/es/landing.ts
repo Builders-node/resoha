@@ -68,7 +68,7 @@ export const ES_LANDING: Record<string, string> = {
   'How Hogarli works': 'Cómo funciona Hogarli',
   'Island agencies and agents publish their listings, or we load them on their behalf.': 'Las agencias y agentes de la isla publican sus anuncios, o nosotros los cargamos por ellos.',
   'Each listing keeps a link to its source, and land gets a land passport.': 'Cada anuncio conserva un enlace a su fuente, y los terrenos reciben un pasaporte del terreno.',
-  'You search the whole island, save listings and searches, and contact agents directly.': 'Usted busca en toda la isla, guarda anuncios y búsquedas, y contacta a los agentes directamente.',
+  'You search every listing, save listings and searches, and contact agents directly.': 'Usted busca en todos los anuncios, guarda anuncios y búsquedas, y contacta a los agentes directamente.',
   'The agent handles the viewing and the sale; your own attorney checks the title.': 'El agente se encarga de la visita y la venta; su propio abogado revisa el título.',
   'The company': 'La empresa',
   '{site} is operated by {operator}. We are a listing platform, not a real-estate broker: listing details are published by the agency holding each property, and we never handle deposits or purchase funds.':

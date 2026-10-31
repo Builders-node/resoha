@@ -1,12 +1,14 @@
 'use client';
 import { useState } from 'react';
 import { fmtNumber, m2ToSqft, sqftToM2 } from '@/lib/format';
+import { useT } from './LangProvider';
 
 /**
  * Площа з перемикачем m² / ft². Вводити можна в будь-якій одиниці — під полем
  * одразу видно перерахунок, а на сервер завжди йде ft² (колонка sqft).
  */
 export default function AreaInput({ name, label, defaultSqft }: { name: string; label: string; defaultSqft?: number }) {
+  const t = useT();
   // за замовчуванням m² — так звикли рахувати власник і забудовники
   const [unit, setUnit] = useState<'ft2' | 'm2'>('m2');
   const [sqft, setSqft] = useState(defaultSqft ? Math.round(defaultSqft) : 0);
@@ -28,7 +30,7 @@ export default function AreaInput({ name, label, defaultSqft }: { name: string; 
     <div className="field">
       <label className="area-in__label">
         {label}
-        <span className="area-in__units" role="group" aria-label="Unit">
+        <span className="area-in__units" role="group" aria-label={t('Unit')}>
           {(['m2', 'ft2'] as const).map((u) => (
             <button key={u} type="button" className={unit === u ? 'is-on' : ''} aria-pressed={unit === u}
               onClick={() => switchTo(u)}>{u === 'ft2' ? 'ft²' : 'm²'}</button>

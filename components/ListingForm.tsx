@@ -18,6 +18,7 @@ import type { PhotoRooms } from '@/lib/rooms';
 import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import DescriptionEs from './DescriptionEs';
+import { useT } from './LangProvider';
 
 /** Кроки форми: одна тема на екран, щоб ріелтор не губився в сорока полях */
 const STEPS = [
@@ -53,6 +54,7 @@ export default function ListingForm({
   onSaved: () => void;
   onCancel?: () => void;
 }) {
+  const t = useT();
   const formRef = useRef<HTMLFormElement>(null);
   const [step, setStep] = useState(0);
   // кроки, які ріелтор уже пройшов — у степері вони з галочкою
@@ -73,7 +75,7 @@ export default function ListingForm({
   // угода керована: поле «Pets» і підпис ціни залежать від оренди
   const [deal, setDeal] = useState<Listing['deal']>(listing?.deal ?? 'sale');
   // Пін за замовчуванням — центр обраного району: широту з довготою ріелтор напамʼять не знає
-  const [area, setArea] = useState(listing?.neighborhood ?? 'West Bay');
+  const [area, setArea] = useState(listing?.neighborhood ?? t('West Bay'));
   const [pin, setPin] = useState<[number, number]>(
     listing ? [listing.lat, listing.lng] : AREA_CENTRES['West Bay'],
   );
@@ -186,7 +188,7 @@ export default function ListingForm({
     if (!d) return;
     if (sig(d) === baseline.current) { clearDraft(storeKey); return; }
     saveDraft(storeKey, d);
-    if (!serverDraft) setAutoNote(`Autosaved on this device · ${clock()}`);
+    if (!serverDraft) setAutoNote(`${t('Autosaved on this device')} · ${clock()}`);
   }
 
   async function saveServer() {
@@ -197,14 +199,14 @@ export default function ListingForm({
     if (form.querySelector('[data-step="0"] :invalid')) return;
     const d = snapshot();
     if (!d || sig(d) === baseline.current) return;
-    setAutoNote('Saving draft…');
+    setAutoNote(t('Saving draft…'));
     const res = await fetch(`/api/listings/${listing.id}`, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(collect(form)),
     }).catch(() => null);
-    if (!res?.ok) { setAutoNote('Couldn’t save the draft to the server. Your changes are kept on this device.'); return; }
+    if (!res?.ok) { setAutoNote(t('Couldn’t save the draft to the server. Your changes are kept on this device.')); return; }
     // копію в браузері лишаємо: якщо кабінет покаже старі дані, форма запропонує відновити свіжіші
     baseline.current = sig(d);
-    setAutoNote(`Draft saved · ${clock()}`);
+    setAutoNote(`${t('Draft saved')} · ${clock()}`);
   }
 
   function scheduleSave() {
@@ -389,14 +391,14 @@ export default function ListingForm({
     setSaving(false);
 
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(d.error ?? 'Something went wrong');
+    if (!res.ok) return toast(d.error ?? t('Something went wrong'));
     // збережено на сервері — копія в браузері більше не потрібна
     clearDraft(storeKey);
     setAutoNote('');
     const review = d.listing?.review;
-    toast(review === 'draft' ? 'Draft saved — only you can see it'
+    toast(t(review === 'draft' ? 'Draft saved — only you can see it'
       : review === 'pending' ? 'Saved. Buyers will see it once a moderator checks it'
-        : editing ? 'Listing updated' : 'Listing published');
+        : editing ? 'Listing updated' : 'Listing published'));
     if (!editing) {
       // скинута форма — нова точка відліку, а не зміна, яку треба зберігати
       resetBase.current = true;
@@ -421,34 +423,34 @@ export default function ListingForm({
   return (
     <div className="panel lf">
       <div className="lf__head">
-        <h3>{editing ? 'Edit listing' : 'New listing'}</h3>
+        <h3>{t(editing ? 'Edit listing' : 'New listing')}</h3>
         <p className="muted small">
           {asAdmin
             ? editing
-              ? <>Editing as an admin — the listing stays with its own realtor and agency.</>
-              : <>Adding as an admin — the listing is published under the realtor you pick, with their agency and contacts.</>
+              ? <>{t('Editing as an admin — the listing stays with its own realtor and agency.')}</>
+              : <>{t('Adding as an admin — the listing is published under the realtor you pick, with their agency and contacts.')}</>
             : agencyName
-              ? <>Published under <b>{agencyName}</b> — the agency name shows on the card and on the map.</>
-              : <>Published under your own name. Join or open an agency in the <b>Agency</b> tab to list under a brand.</>}
+              ? <>{t('Published under')} <b>{agencyName}</b> — {t('the agency name shows on the card and on the map.')}</>
+              : <>{t('Published under your own name. Join or open an agency in the Agency tab to list under a brand.')}</>}
         </p>
       </div>
 
       {listing?.review === 'rejected' && (
         <div className="lc-banner is-warn">
           <Icon name="flag" size={18} />
-          <div><b>The moderator sent this listing back.</b>{listing.reviewNote && <> “{listing.reviewNote}”</>} Fix it and press “Send for review”.</div>
+          <div><b>{t('The moderator sent this listing back.')}</b>{listing.reviewNote && <> “{listing.reviewNote}”</>} Fix it and press “Send for review”.</div>
         </div>
       )}
       {listing?.review === 'pending' && (
         <div className="lc-banner">
           <Icon name="clock" size={18} />
-          <div><b>In review.</b> Buyers will see this listing once a moderator checks it. You can keep editing.</div>
+          <div><b>{t('In review.')}</b> {t('Buyers will see this listing once a moderator checks it. You can keep editing.')}</div>
         </div>
       )}
       {listing?.review === 'draft' && (
         <div className="lc-banner">
           <Icon name="pencil" size={18} />
-          <div><b>Draft.</b> Only you can see it. Press “Publish” when it’s ready.</div>
+          <div><b>{t('Draft.')}</b> {t('Only you can see it. Press “Publish” when it’s ready.')}</div>
         </div>
       )}
 
@@ -456,19 +458,20 @@ export default function ListingForm({
         <div className="lc-banner lf__restore">
           <Icon name="clock" size={18} />
           <div>
-            <b>Unsaved changes found.</b> You were {editing ? 'editing this listing' : 'filling in a new listing'} on{' '}
-            {new Date(offer.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}.
-            Restore them?
+            <b>{t('Unsaved changes found.')}</b>{' '}
+            {t(editing ? 'You were editing this listing on {when}. Restore them?' : 'You were filling in a new listing on {when}. Restore them?', {
+              when: new Date(offer.at).toLocaleString([], { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }),
+            })}
           </div>
           <div className="lf__restore-btns">
-            <button type="button" className="btn btn--sm btn--primary" onClick={restore}>Restore</button>
-            <button type="button" className="btn btn--sm btn--ghost" onClick={discard}>Discard</button>
+            <button type="button" className="btn btn--sm btn--primary" onClick={restore}>{t('Restore')}</button>
+            <button type="button" className="btn btn--sm btn--ghost" onClick={discard}>{t('Discard')}</button>
           </div>
         </div>
       )}
 
       {/* Степер: кожен крок клікабельний — при редагуванні можна одразу стрибнути до фото */}
-      <ol className="lf__steps" aria-label="Steps">
+      <ol className="lf__steps" aria-label={t('Steps')}>
         {STEPS.map((s, i) => (
           <li key={s.key}>
             <button type="button" onClick={() => goTo(i)}
@@ -476,7 +479,7 @@ export default function ListingForm({
               aria-current={i === step ? 'step' : undefined}>
               <span className="lf__num">{seen.has(i) && i !== step ? <Icon name="check" size={14} /> : i + 1}</span>
               <span className="lf__label">
-                {s.title}
+                {t(s.title)}
                 {s.key === 'photos' && photos.length > 0 && <span className="lf__count">{photos.length}</span>}
               </span>
             </button>
@@ -487,15 +490,15 @@ export default function ListingForm({
       <form ref={formRef} className="lf__form" onSubmit={submit} noValidate
         onChange={() => { resetBase.current = false; scheduleSave(); }}>
         <div className="lf__intro">
-          <span className="lf__kicker">Step {step + 1} of {STEPS.length}</span>
-          <h4>{STEPS[step].title}</h4>
-          <p className="muted small">{STEPS[step].hint}</p>
+          <span className="lf__kicker">{t('Step {n} of {total}', { n: step + 1, total: STEPS.length })}</span>
+          <h4>{t(STEPS[step].title)}</h4>
+          <p className="muted small">{t(STEPS[step].hint)}</p>
         </div>
 
         {/* 1. Основне */}
         <section data-step={0} hidden={show(0)} className="lf__sec">
           {asAdmin && !editing && (
-            <div className="field"><label>Listed by</label>
+            <div className="field"><label>{t('Listed by')}</label>
               <select className="input" name="agentId" required defaultValue={owners?.[0]?.id ?? ''}>
                 {(owners ?? []).map((o) => (
                   <option key={o.id} value={o.id}>{o.name}{o.agency ? ` — ${o.agency}` : ''}</option>
@@ -503,68 +506,68 @@ export default function ListingForm({
               </select></div>
           )}
 
-          <div className="field"><label>Listing type</label>
-            <div className="lf__choice lf__choice--2" role="radiogroup" aria-label="Listing type">
+          <div className="field"><label>{t('Listing type')}</label>
+            <div className="lf__choice lf__choice--2" role="radiogroup" aria-label={t('Listing type')}>
               {DEALS.map((d) => (
                 <button key={d.value} type="button" role="radio" aria-checked={deal === d.value}
                   className={`lf__opt ${deal === d.value ? 'is-on' : ''}`} onClick={() => setDeal(d.value)}>
-                  <Icon name={d.icon} size={20} /> {d.label}
+                  <Icon name={d.icon} size={20} /> {t(d.label)}
                 </button>
               ))}
             </div>
             <input type="hidden" name="deal" value={deal} /></div>
 
-          <div className="field"><label>Property type</label>
-            <div className="lf__choice" role="radiogroup" aria-label="Property type">
-              {TYPES.map((t) => (
-                <button key={t.value} type="button" role="radio" aria-checked={type === t.value}
-                  className={`lf__opt ${type === t.value ? 'is-on' : ''}`} onClick={() => setType(t.value)}>
-                  <Icon name={t.icon} size={20} /> {t.label}
+          <div className="field"><label>{t('Property type')}</label>
+            <div className="lf__choice" role="radiogroup" aria-label={t('Property type')}>
+              {TYPES.map((x) => (
+                <button key={x.value} type="button" role="radio" aria-checked={type === x.value}
+                  className={`lf__opt ${type === x.value ? 'is-on' : ''}`} onClick={() => setType(x.value)}>
+                  <Icon name={x.icon} size={20} /> {t(x.label)}
                 </button>
               ))}
             </div>
             <input type="hidden" name="type" value={type} /></div>
 
-          <div className="field"><label>Title</label>
+          <div className="field"><label>{t('Title')}</label>
             <input className="input" name="title" required defaultValue={v?.title}
               placeholder="2BR oceanfront condo at West Bay" />
-            <span className="tiny muted">Shown on the card and in search. Rooms, type and place work best.</span></div>
+            <span className="tiny muted">{t('Shown on the card and in search. Rooms, type and place work best.')}</span></div>
 
           <div className="lf__row">
-            <div className="field"><label>{deal === 'rent' ? 'Rent, USD per month' : 'Price, USD'}</label>
+            <div className="field"><label>{t(deal === 'rent' ? 'Rent, USD per month' : 'Price, USD')}</label>
               <input className="input" name="price" type="number" min={0} required defaultValue={v?.price}
                 placeholder={deal === 'rent' ? '1800' : '649000'} /></div>
-            <div className={hideIf(isLand)}><label>HOA, USD/mo</label>
+            <div className={hideIf(isLand)}><label>{t('HOA, USD/mo')}</label>
               <input className="input" name="hoa" type="number" min={0} defaultValue={v?.hoa ?? 0} /></div>
           </div>
 
           {/* Продане чи здане зникає з пошуку, але лишається на сторінці ЖК */}
-          <div className="field"><label>Status</label>
+          <div className="field"><label>{t('Status')}</label>
             <select className="input" name="status" defaultValue={v?.status ?? 'available'}>
-              {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+              {UNIT_STATUSES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
             </select></div>
         </section>
 
         {/* 2. Де */}
         <section data-step={1} hidden={show(1)} className="lf__sec">
           <div className="lf__row">
-            <div className="field"><label>City</label>
+            <div className="field"><label>{t('City')}</label>
               <select className="input" name="island" value={city} onChange={(e) => pickCity(e.target.value)}>
                 {REGIONS.map((r) => <option key={r.slug} value={r.name}>{r.name}</option>)}
               </select></div>
-            <div className="field"><label>Area</label>
+            <div className="field"><label>{t('Area')}</label>
               <select className="input" name="neighborhood" value={area} onChange={(e) => pickArea(e.target.value)}>
                 {areas.filter((a) => a.island === city || a.name === area).map((a) => <option key={a.name} value={a.name}>{a.name}</option>)}
               </select></div>
-            <div className="field"><label>Address</label>
+            <div className="field"><label>{t('Address')}</label>
               <input className="input" name="address" defaultValue={v?.address} placeholder={city === 'Roatán' ? 'West Bay Beach Rd' : 'Blvd. Morazán'} /></div>
           </div>
 
-          <div className="field"><label>Pin on the map</label>
+          <div className="field"><label>{t('Pin on the map')}</label>
             {/* карту монтуємо лише на її кроці: у прихованому блоці вона не знає свого розміру */}
             {step === 1 && (
               <LocationPicker value={pin} onChange={setPin}
-                hint={`The pin starts in the middle of ${area}. Click the map or drag the pin to the exact spot.`} />
+                hint={t('The pin starts in the middle of {area}. Click the map or drag the pin to the exact spot.', { area })} />
             )}
             <input type="hidden" name="lat" value={pin[0]} />
             <input type="hidden" name="lng" value={pin[1]} />
@@ -574,17 +577,17 @@ export default function ListingForm({
           {developments.length > 0 && (
             <div className="lf__group">
               <div className="lf__group-head">
-                <b>Part of a development?</b>
-                <span className="tiny muted">Link the unit to its building so it shows on the development page.</span>
+                <b>{t('Part of a development?')}</b>
+                <span className="tiny muted">{t('Link the unit to its building so it shows on the development page.')}</span>
               </div>
               <div className="lf__row">
-                <div className="field"><label>Development</label>
+                <div className="field"><label>{t('Development')}</label>
                   <select className="input" value={developmentId}
                     onChange={(e) => { setDevelopmentId(e.target.value); setBuildings([]); setBuildingId(''); }}>
-                    <option value="">— Standalone property —</option>
+                    <option value="">— {t('Standalone property')} —</option>
                     {/* ЖК згруповані за забудовником — так легше знайти потрібний */}
                     {[...new Set(developments.map((d) => d.developer))].sort((a, b) => (a ? (b ? a.localeCompare(b) : -1) : 1)).map((by) => (
-                      <optgroup key={by || '—'} label={by || 'Developer not specified'}>
+                      <optgroup key={by || '—'} label={by || t('Developer not specified')}>
                         {developments.filter((d) => d.developer === by).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
                       </optgroup>
                     ))}
@@ -595,26 +598,26 @@ export default function ListingForm({
                     </span>
                   )}</div>
                 {developmentId && buildings.length > 0 && (
-                  <div className="field"><label>Building</label>
+                  <div className="field"><label>{t('Building')}</label>
                     <select className="input" value={buildingId} onChange={(e) => setBuildingId(e.target.value)}>
                       <option value="">—</option>
                       {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                     </select></div>
                 )}
                 {developmentId && (
-                  <div className="field"><label>Unit number</label>
+                  <div className="field"><label>{t('Unit number')}</label>
                     <input className="input" name="unitNo" maxLength={20} defaultValue={v?.unitNo} placeholder="303" /></div>
                 )}
               </div>
               {developmentId && (
-                <div className="field"><label>Floor plan</label>
+                <div className="field"><label>{t('Floor plan')}</label>
                   <PhotoUploader value={floorplan} onChange={setFloorplan} max={1} />
-                  <span className="tiny muted">Shown on the development&apos;s Layouts page for every unit of the same type and size — one upload per layout is enough.</span></div>
+                  <span className="tiny muted">{t('Shown on the development’s Layouts page for every unit of the same type and size — one upload per layout is enough.')}</span></div>
               )}
               {developmentId && (
-                <div className="field"><label>Layout type</label>
+                <div className="field"><label>{t('Layout type')}</label>
                   <input className="input" name="layout" maxLength={16} defaultValue={v?.details.layout ?? ''} placeholder="B" />
-                  <span className="tiny muted">As in the developer&apos;s plans. Units of one type share a card on the Layouts page.</span></div>
+                  <span className="tiny muted">{t('As in the developer’s plans. Units of one type share a card on the Layouts page.')}</span></div>
               )}
             </div>
           )}
@@ -624,52 +627,52 @@ export default function ListingForm({
         <section data-step={2} hidden={show(2)} className="lf__sec">
           {/* одна сітка: сховані для цього типу поля просто випадають, без дірок */}
           <div className="lf__row lf__row--3">
-            <div className={hideIf(isLand)}><label>Bedrooms</label>
+            <div className={hideIf(isLand)}><label>{t('Bedrooms')}</label>
               <input className="input" name="beds" type="number" min={0} defaultValue={v?.beds ?? 2} /></div>
-            <div className={hideIf(isLand)}><label>Bathrooms</label>
+            <div className={hideIf(isLand)}><label>{t('Bathrooms')}</label>
               <input className="input" name="baths" type="number" min={0} step="0.5" defaultValue={v?.baths ?? 2} /></div>
             <div style={{ display: isLand ? 'none' : 'contents' }}>
-              <AreaInput key={areaKey} name="sqft" label="Interior" defaultSqft={sqftOverride ?? v?.sqft} />
+              <AreaInput key={areaKey} name="sqft" label={t('Interior')} defaultSqft={sqftOverride ?? v?.sqft} />
             </div>
-            <div className={hideIf(type === 'condo')}><label>Lot, acres</label>
+            <div className={hideIf(type === 'condo')}><label>{t('Lot, acres')}</label>
               <input className="input" name="lotAcres" type="number" min={0} step="0.01" defaultValue={v?.lotAcres ?? 0} /></div>
-            <div className={hideIf(isLand)}><label>Year built</label>
+            <div className={hideIf(isLand)}><label>{t('Year built')}</label>
               <input className="input" name="year" type="number" defaultValue={v?.year || ''} placeholder="2019" /></div>
-            <div className={hideIf(isLand)}><label>Floor</label>
+            <div className={hideIf(isLand)}><label>{t('Floor')}</label>
               <input className="input" name="floor" type="number" defaultValue={v?.floor ?? ''} placeholder="3" /></div>
-            <div className={hideIf(isLand)}><label>Floors in the building</label>
+            <div className={hideIf(isLand)}><label>{t('Floors in the building')}</label>
               <input className="input" name="floorsTotal" type="number" min={1} max={200}
                 defaultValue={v?.details.floorsTotal ?? ''} placeholder="8" /></div>
           </div>
 
-          <div className="field"><label>Highlights</label>
+          <div className="field"><label>{t('Highlights')}</label>
             <div className="lf__checks">
-              <label className="lf__check"><input type="checkbox" name="oceanfront" defaultChecked={v?.oceanfront} /> Oceanfront</label>
+              <label className="lf__check"><input type="checkbox" name="oceanfront" defaultChecked={v?.oceanfront} /> {t('Oceanfront')}</label>
               {/* Титул — найчутливіше твердження в оголошенні, тому ставиться вручну, а не за замовчуванням */}
               <label className="lf__check"><input type="checkbox" name="titled" defaultChecked={v?.titled ?? false} /> Free &amp; clear title</label>
-              <label className="lf__check"><input type="checkbox" name="ownerFinancing" defaultChecked={v?.ownerFinancing} /> Owner financing</label>
+              <label className="lf__check"><input type="checkbox" name="ownerFinancing" defaultChecked={v?.ownerFinancing} /> {t('Owner financing')}</label>
             </div></div>
 
           {/* Характеристики — таблиця на сторінці обʼєкта; порожнє поле там не показується */}
           <div className={`lf__group ${isLand ? 'is-hidden' : ''}`}>
             <div className="lf__group-head">
-              <b>Features</b>
-              <span className="tiny muted">Leave a field on “—” if you are not sure — empty ones are not shown.</span>
+              <b>{t('Features')}</b>
+              <span className="tiny muted">{t('Leave a field on “—” if you are not sure — empty ones are not shown.')}</span>
             </div>
             <div className="lf__row lf__row--3">
               {DETAIL_FIELDS.filter((f) => !f.rentOnly || deal === 'rent').map((f) => (
-                <div key={f.key} className="field"><label>{f.label}</label>
+                <div key={f.key} className="field"><label>{t(f.label)}</label>
                   <select className="input" name={`detail_${f.key}`} defaultValue={v?.details[f.key] ?? ''}>
                     <option value="">—</option>
-                    {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                    {f.options.map(([val, label]) => <option key={val} value={val}>{t(label)}</option>)}
                   </select></div>
               ))}
             </div>
-            <div className="field full" style={{ marginTop: 12 }}><label>In the apartment</label>
+            <div className="field full" style={{ marginTop: 12 }}><label>{t('In the apartment')}</label>
               <div className="lf__checks">
                 {IN_UNIT.map(([key, label]) => (
                   <label key={key} className="lf__check">
-                    <input type="checkbox" name="inUnit" value={key} defaultChecked={v?.details.inUnit?.includes(key)} /> {label}
+                    <input type="checkbox" name="inUnit" value={key} defaultChecked={v?.details.inUnit?.includes(key)} /> {t(label)}
                   </label>
                 ))}
               </div></div>
@@ -679,17 +682,16 @@ export default function ListingForm({
           {isLand && (
             <div className="lf__group">
               <div className="lf__group-head">
-                <b>Land passport</b>
+                <b>{t('Land passport')}</b>
                 <span className="tiny muted">
-                  What a buyer asks first. Leave a field on “Not confirmed” rather than guessing —
-                  title, road, electricity and water make up the “Ready to build” badge.
+                  {t('What a buyer asks first. Leave a field on “Not confirmed” rather than guessing — title, road, electricity and water make up the “Ready to build” badge.')}
                 </span>
               </div>
               <div className="lf__row lf__row--3">
                 {LAND_FIELDS.map((f) => (
-                  <div key={f.key} className="field"><label>{f.label}</label>
+                  <div key={f.key} className="field"><label>{t(f.label)}</label>
                     <select className="input" name={`land_${f.key}`} defaultValue={v?.land?.[f.key] ?? EMPTY_LAND[f.key]}>
-                      {f.options.map(([val, label]) => <option key={val} value={val}>{label}</option>)}
+                      {f.options.map(([val, label]) => <option key={val} value={val}>{t(label)}</option>)}
                     </select></div>
                 ))}
               </div>
@@ -704,29 +706,29 @@ export default function ListingForm({
 
         {/* 5. Опис */}
         <section data-step={4} hidden={show(4)} className="lf__sec">
-          <div className="field"><label>Description</label>
+          <div className="field"><label>{t('Description')}</label>
             <textarea className="input" name="text" rows={7} defaultValue={v?.text}
-              placeholder="What makes this property worth the flight…" /></div>
+              placeholder={t('What makes this property worth the flight…')} /></div>
 
           <DescriptionEs defaultValue={v?.textEs} />
 
-          <div className="field"><label>Tags</label>
-            <input className="input" name="tags" defaultValue={v?.tags.join(', ')} placeholder="Pool, Turnkey, Rental income" />
-            <span className="tiny muted">Separate with commas.</span></div>
+          <div className="field"><label>{t('Tags')}</label>
+            <input className="input" name="tags" defaultValue={v?.tags.join(', ')} placeholder={t('Pool, Turnkey, Rental income')} />
+            <span className="tiny muted">{t('Separate with commas.')}</span></div>
 
           {step === 4 && <NearbyEditor value={nearby} onChange={setNearby} pin={pin} />}
 
           {/* Провенанс потрібен лише там, де оголошення завела платформа з чужого джерела */}
           {asAdmin && (
             <div className="lf__group">
-              <div className="lf__group-head"><b>Source</b>
-                <span className="tiny muted">Where these facts came from.</span></div>
-              <div className="field"><label>Source name</label>
-                <input className="input" name="sourceName" defaultValue={v?.sourceName} placeholder="Century 21 Roatan" /></div>
+              <div className="lf__group-head"><b>{t('Source')}</b>
+                <span className="tiny muted">{t('Where these facts came from.')}</span></div>
+              <div className="field"><label>{t('Source name')}</label>
+                <input className="input" name="sourceName" defaultValue={v?.sourceName} placeholder={t('Century 21 Roatan')} /></div>
               <div className="lf__row">
-                <div className="field"><label>Reference</label>
-                  <input className="input" name="sourceRef" defaultValue={v?.sourceRef} placeholder="MLS 24-382" /></div>
-                <div className="field"><label>Link to the original</label>
+                <div className="field"><label>{t('Reference')}</label>
+                  <input className="input" name="sourceRef" defaultValue={v?.sourceRef} placeholder={t('MLS 24-382')} /></div>
+                <div className="field"><label>{t('Link to the original')}</label>
                   <input className="input" name="sourceUrl" type="url" defaultValue={v?.sourceUrl} placeholder="https://…" /></div>
               </div>
             </div>
@@ -738,28 +740,28 @@ export default function ListingForm({
         {/* Панель дій липне до низу: «Далі» і «Зберегти» завжди під рукою */}
         <div className="lf__bar">
           {step > 0
-            ? <button type="button" className="btn btn--ghost btn--lg" onClick={() => goTo(step - 1)}>Back</button>
-            : onCancel && <button type="button" className="btn btn--ghost btn--lg" onClick={onCancel}>Cancel</button>}
+            ? <button type="button" className="btn btn--ghost btn--lg" onClick={() => goTo(step - 1)}>{t('Back')}</button>
+            : onCancel && <button type="button" className="btn btn--ghost btn--lg" onClick={onCancel}>{t('Cancel')}</button>}
           <span className="lf__spacer" />
           {step < last && (
             <button type="button" className={`btn btn--lg ${editing ? 'btn--ghost' : 'btn--primary'}`} onClick={next}>
-              Next: {STEPS[step + 1].title}
+              {t('Next:')} {t(STEPS[step + 1].title)}
             </button>
           )}
           {/* чернетку можна зберегти з будь-якого кроку: заповнити решту — потім */}
           {!editing && !asAdmin && (
             <button type="submit" name="intent" value="draft" className="btn btn--ghost btn--lg" disabled={saving}>
-              Save draft
+              {t('Save draft')}
             </button>
           )}
           {(editing || step === last) && (
             <button type="submit" className={`btn btn--lg ${unpublished ? 'btn--ghost' : 'btn--primary'}`} disabled={saving}>
-              {saving ? 'Saving…' : editing ? 'Save changes' : 'Publish listing'}
+              {t(saving ? 'Saving…' : editing ? 'Save changes' : 'Publish listing')}
             </button>
           )}
           {unpublished && (
             <button type="submit" name="intent" value="publish" className="btn btn--primary btn--lg" disabled={saving}>
-              {listing?.review === 'rejected' ? 'Send for review' : 'Publish'}
+              {t(listing?.review === 'rejected' ? 'Send for review' : 'Publish')}
             </button>
           )}
         </div>
