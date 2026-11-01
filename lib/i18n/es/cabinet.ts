@@ -779,4 +779,5 @@ export const ES_CABINET: Record<string, string> = {
   '{total} listings': '{total} anuncios',
   '{n} of {total} enquiries': '{n} de {total} consultas',
   '{total} enquiries': '{total} consultas',
+  'One step per line. Start a step with its percent (“30% on signing”) and buyers see the amounts for each unit price.': 'Un paso por línea. Empiece cada paso con su porcentaje («30% a la firma») y los compradores verán los montos según el precio.',
 };

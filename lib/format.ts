@@ -82,3 +82,11 @@ export function specLine(
   if (l.lotAcres) parts.push(t('{n} ac', { n: l.lotAcres }));
   return parts.join(' · ');
 }
+
+/** «Обычно отвечает…»: грубі сходинки читаються краще за точні години (0.4 год → «within an hour») */
+export function replyLabel(hours: number): { en: string; n?: number } {
+  if (hours <= 1) return { en: 'within an hour' };
+  if (hours <= 12) return { en: 'within {n} hours', n: Math.ceil(hours) };
+  if (hours <= 24) return { en: 'within a day' };
+  return { en: 'within {n} days', n: Math.ceil(hours / 24) };
+}

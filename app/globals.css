@@ -211,7 +211,13 @@ textarea.input{resize:vertical;min-height:96px}
 .ov__title{font-size:15px;font-weight:600;letter-spacing:-.02em;margin:2px 0 4px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ov__meta{font-size:13px;opacity:.88}
-.ov__price{font-size:20px;font-weight:800;margin-top:4px}
+.ov__price{font-size:20px;font-weight:800;margin-top:4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ov__old{font-size:13px;font-weight:500;opacity:.7}
+.ov__ppm{font-size:12px;font-weight:600;opacity:.85}
+.ov__photos{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;
+  padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+.badge--cut{background:#16a34a;color:#fff}
+.badge--new{background:#2563eb;color:#fff}
 .ov .card__badges{z-index:2}
 .ov .fav{z-index:2;background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
 .ov .fav.is-on{color:#ff4d6d;background:rgba(255,255,255,.92)}
@@ -2963,3 +2969,10 @@ html{scroll-behavior:smooth}
 .seo-text__faq{display:grid;gap:14px;margin:0}
 .seo-text__faq dt{color:var(--ink);font-weight:700}
 .seo-text__faq dd{margin:4px 0 0}
+.grid__full{grid-column:1/-1}
+.empty__near{margin-top:14px;display:grid;gap:8px;justify-items:center}
+.dev__plan{width:100%;border-collapse:collapse;font-size:15px}
+.dev__plan th{text-align:left;font-size:12px;font-weight:600;color:var(--muted,#777);padding:0 8px 6px 0}
+.dev__plan td{padding:8px 8px 8px 0;border-top:1px solid rgba(0,0,0,.08)}
+.dev__plan td:nth-child(2){white-space:nowrap}
+.dev__follow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}

@@ -11,6 +11,8 @@ export const SITE_URL = (
 
 /** Куди писати з питань даних і умов. Без адреси сторінки відсилають до форми на обʼєкті. */
 export const CONTACT_EMAIL = process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? '';
+/** Номер WhatsApp команди Hogarli, лише цифри; порожньо — кнопка «напишіть нам» веде на пошту */
+export const CONTACT_WHATSAPP = (process.env.NEXT_PUBLIC_CONTACT_WHATSAPP ?? '').replace(/\D/g, '');
 /** Хто юридично стоїть за сайтом — підставляється в політику й умови. */
 export const OPERATOR = process.env.NEXT_PUBLIC_OPERATOR ?? 'Hogarli Roatán';
 export const LEGAL_UPDATED = '2 October 2026';

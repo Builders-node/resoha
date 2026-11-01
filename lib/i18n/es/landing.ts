@@ -34,6 +34,8 @@ export const ES_LANDING: Record<string, string> = {
 
   // Про нас
   'About Hogarli': 'Acerca de Hogarli',
+  'Property in Roatán, San Pedro Sula and Tegucigalpa, with the facts to check before you buy':
+    'Propiedades en Roatán, San Pedro Sula y Tegucigalpa, con los datos para revisar antes de comprar',
   'Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy':
     'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa, verificadas antes de comprar',
   'Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Hogarli brings the island’s listings into one place and makes the facts that protect your money visible.':

@@ -152,6 +152,16 @@ export async function getAgent(id: string): Promise<Agent | null> {
   return data ? mapAgent(data) : null;
 }
 
+/**
+ * Медіана часу відповіді на заявки, годин (міграція 0068): від 3 оброблених заявок за пів року.
+ * До міграції функції немає — тоді просто порожньо.
+ */
+export async function agentReplyHours(agentId?: string): Promise<Map<string, number>> {
+  const { data, error } = await (await db()).rpc('agent_reply_stats', agentId ? { p_agent: agentId } : {});
+  if (error) return new Map();
+  return new Map(((data ?? []) as { agent_id: string; hours: number }[]).map((r) => [r.agent_id, Number(r.hours)]));
+}
+
 export async function listAgents(): Promise<Agent[]> {
   const { data } = await (await db()).from('profiles').select(AGENT_PUBLIC_COLS).eq('role', 'agent').order('reviews', { ascending: false });
   return (data ?? []).map(mapAgent);

@@ -40,10 +40,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const inCity = (neighborhood: string, island?: string) => !city || islandFor(neighborhood, island) === city.name;
   const cityQ = city ? `&island=${encodeURIComponent(city.name)}` : '';
   // раніше ці шість запитів ішли один за одним — сторінка чекала на суму всіх затримок
-  const [session, all, newest, board, allDevs, allBuildings, lang, allStatRows] = await Promise.all([
+  const [session, all, board, allDevs, allBuildings, lang, allStatRows] = await Promise.all([
     getSession(),
+    // каталог вантажимо один раз: «нові» — той самий список, відсортований за датою
     queryListings(city ? { island: city.name } : {}),
-    queryListings({ sort: 'new', ...(city ? { island: city.name } : {}) }),
     agencyBoard(),
     listDevelopments(),
     listFeaturedBuildings(),
@@ -68,6 +68,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
     || (a.featured ? a.featuredRank - b.featuredRank : 0)).slice(0, 4);
   // на невеликому каталозі обидва блоки показували майже одні й ті самі картки
   const featuredIds = new Set(featured.map((l) => l.id));
+  const newest = [...all].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   const fresh = newest.filter((l) => !featuredIds.has(l.id)).slice(0, 4);
 
   // рахуємо і оренду теж, інакше район без продажу зникає з блоку;
@@ -108,7 +109,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
 
         <aside className="promo">
           {/* єдиний h1 головної: позиціювання з маркетингової стратегії */}
-          <h1>{t('Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy')}</h1>
+          <h1>{t('Property in Roatán, San Pedro Sula and Tegucigalpa, with the facts to check before you buy')}</h1>
           <p>
             {t('Homes, condos, rentals and land from local agencies in one place. Every listing links back to the agency that holds it, and every lot carries a land passport: title, road, power and water, confirmed or not.')}
           </p>

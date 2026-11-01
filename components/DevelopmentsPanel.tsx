@@ -442,7 +442,7 @@ function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
       <div className="field full"><label>{t('Payment plan')}</label>
         <textarea className="input" name="payment" rows={4} maxLength={2000} defaultValue={dev.payment}
           placeholder={'10% reservation deposit\n40% on signing\n50% on delivery'} />
-        <span className="tiny muted">{t('One step per line.')}</span></div>
+        <span className="tiny muted">{t('One step per line. Start a step with its percent (“30% on signing”) and buyers see the amounts for each unit price.')}</span></div>
     </SectionForm>
   );
 }

@@ -38,7 +38,7 @@ export default async function AboutPage() {
 
       <section className="hero hero--dark">
         <span className="hero__eyebrow">{t('About Hogarli')}</span>
-        <h1>{t('Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy')}</h1>
+        <h1>{t('Property in Roatán, San Pedro Sula and Tegucigalpa, with the facts to check before you buy')}</h1>
         <p className="hero__sub">
           {t('Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Hogarli brings the island’s listings into one place and makes the facts that protect your money visible.')}
         </p>

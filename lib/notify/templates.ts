@@ -260,6 +260,36 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
     case 'promo_ending':
     case 'promo_ended':
       return promoMessage(kind === 'promo_ended', p, unsub);
+    case 'review_request': {
+      // через тиждень після звернення (міграція 0068): один лист на пару покупець–агент
+      const agent = String(p.agentName || 'your agent');
+      const url = `${SITE_URL}/agents/${encodeURIComponent(String(p.agentId ?? ''))}#reviews`;
+      const subject = `How was ${agent}? Leave a short review`;
+      const about = p.listingTitle ? ` about “${p.listingTitle}”` : '';
+      const body = `A week ago you contacted ${agent}${about} on Hogarli. Did they answer, show the property, tell the truth about it? Two lines from you help the next buyer pick the right agent.`;
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 16px">${esc(body)}</p>${button(url, 'Leave a review')}`, footer('alerts', unsub)),
+        text: plain([subject, '', body, '', url]),
+        telegram: '',
+      };
+    }
+    case 'dev_news': {
+      // нова новина ЖК для тих, хто стежить (0068)
+      const url = `${SITE_URL}/developments/${encodeURIComponent(String(p.slug ?? ''))}/news`;
+      const subject = `${p.development}: ${p.title}`;
+      const photo = typeof p.photo === 'string' && /^https?:\/\//.test(p.photo)
+        ? `<img src="${esc(p.photo)}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:12px;margin:0 0 12px">`
+        : '';
+      return {
+        subject,
+        html: layout(`${photo}<div style="font-weight:700;font-size:17px;margin:0 0 8px">${esc(p.title)}</div>`
+          + (p.body ? `<p style="margin:0 0 16px;white-space:pre-line">${esc(p.body)}</p>` : '')
+          + button(url, `Open ${p.development} news`), footer('alerts', unsub)),
+        text: plain([subject, '', p.body, '', url]),
+        telegram: '',
+      };
+    }
     default:
       return null;
   }
