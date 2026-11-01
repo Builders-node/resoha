@@ -47,69 +47,73 @@ export default function CompareTable() {
   const bestPerArea = perArea.length > 1 ? Math.min(...perArea) : null;
 
   return (
-    <div className="wrap page-top section">
-      <div className="section__head">
-        <h1 style={{ fontSize: 'var(--fs-h1)' }}>{t('Compare listings')}</h1>
+    <div className="wrap">
+      <header className="page-top devs-head">
+        <div>
+          <h1 style={{ fontSize: 'var(--fs-h1)' }}>{t('Compare listings')}</h1>
+          <p className="muted" style={{ marginTop: 8 }}>{t('Up to {n} listings side by side. Add them with the compare button on any card or listing page.', { n: COMPARE_MAX })}</p>
+        </div>
         {ids.length > 0 && <button className="btn btn--ghost btn--sm" onClick={() => writeIds(COMPARE_KEY, [])}>{t('Clear all')}</button>}
-        <p>{t('Up to {n} listings side by side. Add them with the compare button on any card or listing page.', { n: COMPARE_MAX })}</p>
-      </div>
+      </header>
 
-      {ids.length === 0 ? (
-        <div className="empty">
-          <div className="empty__ico"><Icon name="compare" size={40} /></div>
-          <p>{t('Nothing to compare yet.')}</p>
-          <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the listings')}</Link>
-        </div>
-      ) : loading && items.length === 0 ? (
-        <p className="muted">{t('Loading…')}</p>
-      ) : items.length === 0 ? (
-        <div className="empty">
-          <p>{t('These listings are no longer on the market.')}</p>
-          <button className="btn btn--primary" onClick={() => writeIds(COMPARE_KEY, [])}>{t('Clear all')}</button>
-        </div>
-      ) : (
-        <div className="cmp-table-wrap">
-          <table className="cmp-table">
-            <thead>
-              <tr>
-                <th scope="col"><span className="sr-only">{t('Listing')}</span></th>
-                {items.map((l) => (
-                  <th key={l.id} scope="col">
-                    <div className="cmp-table__card">
-                      <Link href={lp(`/listings/${l.id}`)} className="cmp-table__photo"><Photo src={l.photos[0]} alt={l.title} /></Link>
-                      <button className="cmp-table__rm" onClick={() => remove(l.id)} aria-label={t('Remove from compare')} title={t('Remove from compare')}>
-                        <Icon name="close" size={16} />
-                      </button>
-                      <Link href={lp(`/listings/${l.id}`)} className="cmp-table__title">{l.title}</Link>
-                    </div>
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {ROWS.map(([label, value]) => (
-                <tr key={label}>
-                  <th scope="row">{t(label)}</th>
-                  {items.map((l) => {
-                    const v = value(l, t, lang, money);
-                    const best = label === 'Price per area' && bestPerArea !== null && l.deal === 'sale' && l.sqft > 0
-                      && l.price / l.sqft === bestPerArea;
-                    return <td key={l.id} className={best ? 'is-best' : ''}>{v || '—'}</td>;
-                  })}
+      <section className="section">
+        {ids.length === 0 ? (
+          <div className="empty">
+            <div className="empty__ico"><Icon name="compare" size={40} /></div>
+            <p>{t('Nothing to compare yet.')}</p>
+            <Link className="btn btn--primary" href={lp('/listings?deal=sale')}>{t('Browse the listings')}</Link>
+          </div>
+        ) : loading && items.length === 0 ? (
+          <p className="muted">{t('Loading…')}</p>
+        ) : items.length === 0 ? (
+          <div className="empty">
+            <p>{t('These listings are no longer on the market.')}</p>
+            <button className="btn btn--primary" onClick={() => writeIds(COMPARE_KEY, [])}>{t('Clear all')}</button>
+          </div>
+        ) : (
+          <div className="cmp-table-wrap">
+            <table className="cmp-table">
+              <thead>
+                <tr>
+                  <th scope="col"><span className="sr-only">{t('Listing')}</span></th>
+                  {items.map((l) => (
+                    <th key={l.id} scope="col">
+                      <div className="cmp-table__card">
+                        <Link href={lp(`/listings/${l.id}`)} className="cmp-table__photo"><Photo src={l.photos[0]} alt={l.title} /></Link>
+                        <button className="cmp-table__rm" onClick={() => remove(l.id)} aria-label={t('Remove from compare')} title={t('Remove from compare')}>
+                          <Icon name="close" size={16} />
+                        </button>
+                        <Link href={lp(`/listings/${l.id}`)} className="cmp-table__title">{l.title}</Link>
+                      </div>
+                    </th>
+                  ))}
                 </tr>
-              ))}
-              <tr>
-                <th scope="row"><span className="sr-only">{t('Open listing')}</span></th>
-                {items.map((l) => (
-                  <td key={l.id}>
-                    <Link className="btn btn--primary btn--sm" href={lp(`/listings/${l.id}`)}>{t('Open listing')} <Icon name="arrowRight" size={15} /></Link>
-                  </td>
+              </thead>
+              <tbody>
+                {ROWS.map(([label, value]) => (
+                  <tr key={label}>
+                    <th scope="row">{t(label)}</th>
+                    {items.map((l) => {
+                      const v = value(l, t, lang, money);
+                      const best = label === 'Price per area' && bestPerArea !== null && l.deal === 'sale' && l.sqft > 0
+                        && l.price / l.sqft === bestPerArea;
+                      return <td key={l.id} className={best ? 'is-best' : ''}>{v || '—'}</td>;
+                    })}
+                  </tr>
                 ))}
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      )}
+                <tr>
+                  <th scope="row"><span className="sr-only">{t('Open listing')}</span></th>
+                  {items.map((l) => (
+                    <td key={l.id}>
+                      <Link className="btn btn--primary btn--sm" href={lp(`/listings/${l.id}`)}>{t('Open listing')} <Icon name="arrowRight" size={15} /></Link>
+                    </td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
