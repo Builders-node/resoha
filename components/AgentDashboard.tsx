@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import AgencyPanel from './AgencyPanel';
 import AnalyticsPanel from './AnalyticsPanel';
@@ -35,7 +35,28 @@ type NavItem = { tab: Tab; icon: string; label: string; count?: number; alert?: 
  * Меню кабінету за розділами: що продаю, хто звернувся, як просуваю, хто я.
  * «Add listing» сюди не входить — це окрема кнопка над меню.
  */
-function navGroups({ agency, total, newLeads }: { agency: boolean; total: number; newLeads: number }): { title: string; items: NavItem[] }[] {
+function navGroups({ agency, total, newLeads, developer }: { agency: boolean; total: number; newLeads: number; developer: boolean }): { title: string; items: NavItem[] }[] {
+  // у забудовника той самий кабінет, але мовою його роботи: проєкти, квартири, компанія
+  if (developer) {
+    return [
+      { title: 'Sales', items: [
+        { tab: 'developments', icon: 'building', label: 'Projects' },
+        { tab: 'listings', icon: 'home', label: 'Units', count: total },
+        { tab: 'leads', icon: 'inbox', label: 'Leads', count: newLeads || undefined, alert: true },
+        { tab: 'visits', icon: 'calendar', label: 'Visits' },
+      ] },
+      { title: 'Growth', items: [
+        { tab: 'analytics', icon: 'chart', label: 'Analytics' },
+        { tab: 'import', icon: 'download', label: 'Import' },
+        { tab: 'promote', icon: 'sparkle', label: 'Promote' },
+      ] },
+      { title: 'Account', items: [
+        { tab: 'developer', icon: 'briefcase', label: 'Company' },
+        { tab: 'team', icon: 'users', label: agency ? 'Team' : 'Agency' },
+        { tab: 'profile', icon: 'user', label: 'Profile' },
+      ] },
+    ];
+  }
   return [
     { title: 'Sales', items: [
       { tab: 'listings', icon: 'home', label: 'Listings', count: total },
@@ -69,17 +90,27 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   const [leads, setLeads] = useState<Lead[]>([]);
   const [members, setMembers] = useState<Member[]>([]);
   const [teams, setTeams] = useState<Team[]>([]);
+  // є профіль забудовника — кабінет говорить «проєкти / квартири / компанія»
+  const landed = useRef(false);
+  const [developer, setDeveloper] = useState(initialTab === 'developer' || initialTab === 'developments');
   const [editing, setEditing] = useState<Listing | null>(null);
   const [promoPick, setPromoPick] = useState<PromoPick | null>(null);
   const promote = (p: PromoPick) => { setPromoPick(p); setTab('promote'); };
 
   const load = useCallback(async () => {
-    const [a, l, tr, tm] = await Promise.all([
+    const [a, l, tr, tm, dv] = await Promise.all([
       fetch(`/api/agents/${session.id}?scope=${scope}`).then((r) => r.json()),
       fetch('/api/leads').then((r) => r.json()),
       fetch('/api/agency/members').then((r) => r.json()),
       fetch('/api/agency/teams').then((r) => r.json()),
+      fetch('/api/developers?mine=1').then((r) => r.json()).catch(() => ({})),
     ]);
+    if ((dv.items ?? []).length > 0) {
+      setDeveloper(true);
+      // забудовник починає з проєктів, а не зі списку квартир — лише при першому відкритті
+      if (!initialTab && !landed.current) setTab((x) => (x === 'listings' ? 'developments' : x));
+    }
+    landed.current = true;
     setTeams(tm.teams ?? []);
     setAgent(a.agent); setAgency(a.agency); setListings(a.listings); setStats(a.stats);
     setLeads(l.items ?? []);
@@ -100,7 +131,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
     window.addEventListener('cabinet:go', go);
     return () => window.removeEventListener('cabinet:go', go);
   }, []);
-  useEffect(() => { announceCabinet({ tab, newLeads: stats?.newLeads ?? 0 }); }, [tab, stats?.newLeads]);
+  useEffect(() => { announceCabinet({ tab, newLeads: stats?.newLeads ?? 0, developer }); }, [tab, stats?.newLeads, developer]);
 
   // вкладка живе в адресі: після оновлення сторінки чи «Назад» лишаєшся там, де був
   useEffect(() => {
@@ -166,7 +197,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
           <Icon name={editing && tab === 'new' ? 'pencil' : 'plus'} size={18} />
           <span className="sidenav__add-label">{t(editing && tab === 'new' ? 'Edit listing' : 'Add listing')}</span>
         </a>
-        {navGroups({ agency: !!agency, total: stats.total, newLeads: stats.newLeads }).map((g) => (
+        {navGroups({ agency: !!agency, total: stats.total, newLeads: stats.newLeads, developer }).map((g) => (
           <div key={g.title} className="sidenav__group" role="group" aria-label={t(g.title)}>
             <span className="sidenav__title">{t(g.title)}</span>
             {g.items.map((it) => (
@@ -229,7 +260,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         {tab === 'listings' && (
           <div className="panel">
             <div className="fgroup__head">
-              <h3>{scope === 'agency' ? t('{name} listings', { name: agency?.name ?? '' }) : t('My listings')}</h3>
+              <h3>{developer ? t('Units') : scope === 'agency' ? t('{name} listings', { name: agency?.name ?? '' }) : t('My listings')}</h3>
               {canListings && (
                 <div className="chip-row">
                   <button className={`chip-btn ${scope === 'own' ? 'is-on' : ''}`} onClick={() => setScope('own')}>{t('Mine')}</button>

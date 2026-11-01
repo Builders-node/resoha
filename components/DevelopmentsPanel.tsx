@@ -7,6 +7,7 @@ import LocationPicker from './LocationPicker';
 import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
 import PriceListImport from './PriceListImport';
+import UnitBoard from './UnitBoard';
 import { toast } from './Toaster';
 import { uploadPhotos } from '@/lib/uploadPhotos';
 import { WEEKDAYS } from '@/lib/visits';
@@ -304,6 +305,7 @@ function DevelopmentManager({ initial, section: start, onBack, onDeleted, onUnit
           {section === 'overview' && <OverviewSection dev={dev} patch={patch} onDelete={remove} onGo={setSection} />}
           {section === 'units' && (
             <>
+              <UnitBoard units={units} buildings={buildings} onChanged={() => { loadUnits(); onUnitsAdded(); }} />
               <BuildingsEditor devId={dev.id} items={buildings} units={units} onChange={loadBuildings} />
               <PriceListImport dev={dev} buildings={buildings} onAdded={() => { loadUnits(); onUnitsAdded(); }} />
             </>
@@ -415,7 +417,12 @@ function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
   );
   return (
     <SectionForm title={t('Features')} hint={t('Shown in the features grid on the page and on every unit. Empty fields are hidden.')}
-      onSave={(fd) => patch(entries(fd))}>
+      onSave={(fd) => {
+        const all = entries(fd) as Record<string, unknown>;
+        const finance = { downPct: all.f_down, months: all.f_months, rate: all.f_rate, banks: all.f_banks };
+        for (const k of ['f_down', 'f_months', 'f_rate', 'f_banks']) delete all[k];
+        return patch({ ...all, finance });
+      }}>
       <div className="field"><label>{t('Floors')}</label>
         <input className="input" name="floors" type="number" min={1} max={200} defaultValue={dev.floors ?? ''} /></div>
       {text('projectClass', 'Class', 'Luxury', 60)}
@@ -443,6 +450,19 @@ function FeaturesSection({ dev, patch }: { dev: Development; patch: Patch }) {
         <textarea className="input" name="payment" rows={4} maxLength={2000} defaultValue={dev.payment}
           placeholder={'10% reservation deposit\n40% on signing\n50% on delivery'} />
         <span className="tiny muted">{t('One step per line. Start a step with its percent (“30% on signing”) and buyers see the amounts for each unit price.')}</span></div>
+      <div className="field full">
+        <b className="small">{t('Financing in numbers')}</b>
+        <span className="tiny muted">{t('Buyers ask about the down payment first. With these numbers every unit page shows a payment calculator.')}</span>
+      </div>
+      <div className="field"><label>{t('Down payment, %')}</label>
+        <input className="input" name="f_down" type="number" min={0} max={100} step="0.5" defaultValue={dev.finance.downPct ?? ''} placeholder="30" /></div>
+      <div className="field"><label>{t('Developer installments, months')}</label>
+        <input className="input" name="f_months" type="number" min={1} max={240} defaultValue={dev.finance.months ?? ''} placeholder="24" /></div>
+      <div className="field"><label>{t('Interest on installments, % a year')}</label>
+        <input className="input" name="f_rate" type="number" min={0} max={40} step="0.1" defaultValue={dev.finance.rate ?? ''} placeholder={t('0 if interest-free')} /></div>
+      <div className="field"><label>{t('Partner banks')}</label>
+        <input className="input" name="f_banks" maxLength={400} defaultValue={dev.finance.banks.join(', ')} placeholder="BAC Credomatic, Banco Atlántida, Ficohsa" />
+        <span className="tiny muted">{t('Comma-separated.')}</span></div>
     </SectionForm>
   );
 }

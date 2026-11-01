@@ -1,22 +1,23 @@
-import DeveloperPanel from '@/components/DeveloperPanel';
+import { redirect } from 'next/navigation';
+import BecomeRealtor from '@/components/BecomeRealtor';
 import LoginGate from '@/components/LoginGate';
 import { getSession } from '@/lib/session';
 
-/** Кабінет забудовника: будь-який акаунт заводить і веде сторінку своєї компанії */
+/**
+ * Вхід для забудовника. Кабінет один — /agent: проєкти, квартири, заявки, візити й компанія.
+ * Сюди ведуть старі посилання й лист передачі профілю, тож просто відправляємо в потрібну вкладку.
+ */
 export default async function DeveloperPage() {
   const session = await getSession();
   if (!session) {
     return (
       <LoginGate
         role="agent"
-        title="Developer profile"
-        text="Create your company page: logo, contacts and every project you build on the island, in one place."
+        title="Developer cabinet"
+        text="Projects, units, buyer enquiries, office visits and your company page, in one place."
       />
     );
   }
-  return (
-    <div className="wrap" style={{ padding: '32px 32px 60px', maxWidth: 900 }}>
-      <DeveloperPanel />
-    </div>
-  );
+  if (session.role !== 'agent') return <BecomeRealtor name={session.name} developer />;
+  redirect('/agent?tab=developer');
 }

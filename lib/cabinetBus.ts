@@ -4,7 +4,7 @@ import type { Tab } from './agentTabs';
  * Нижня панель кабінету на телефоні живе в сайдбарі, а вкладки — у клієнтському кабінеті.
  * Звʼязуємо їх подіями вікна, щоб не тягнути спільний стан через layout.
  */
-export type CabinetState = { tab: Tab; newLeads: number };
+export type CabinetState = { tab: Tab; newLeads: number; developer?: boolean };
 
 export const goCabinetTab = (tab: Tab) => window.dispatchEvent(new CustomEvent<Tab>('cabinet:go', { detail: tab }));
 

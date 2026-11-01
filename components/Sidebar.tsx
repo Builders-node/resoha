@@ -23,6 +23,21 @@ const CAB_BAR: { tab: Tab; ico: string; cap: string }[] = [
   { tab: 'new', ico: 'plus', cap: 'Add' },
   { tab: 'visits', ico: 'calendar', cap: 'Visits' },
 ];
+// забудовнику: проєкти замість «оголошень», компанія замість «developer company»
+const CAB_BAR_DEV: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'leads', ico: 'inbox', cap: 'Leads' },
+  { tab: 'developments', ico: 'building', cap: 'Projects' },
+  { tab: 'listings', ico: 'home', cap: 'Units' },
+  { tab: 'visits', ico: 'calendar', cap: 'Visits' },
+];
+const CAB_MORE_DEV: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'new', ico: 'plus', cap: 'Add listing' },
+  { tab: 'analytics', ico: 'chart', cap: 'Analytics' },
+  { tab: 'import', ico: 'download', cap: 'Import' },
+  { tab: 'developer', ico: 'briefcase', cap: 'Company' },
+  { tab: 'team', ico: 'users', cap: 'Team' },
+  { tab: 'profile', ico: 'user', cap: 'Profile' },
+];
 const CAB_MORE: { tab: Tab; ico: string; cap: string }[] = [
   { tab: 'analytics', ico: 'chart', cap: 'Analytics' },
   { tab: 'developments', ico: 'building', cap: 'Developments' },
@@ -107,7 +122,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
           </Link>
         ))}
 
-        {inCabinet && CAB_BAR.map((c) => (
+        {inCabinet && (cab?.developer ? CAB_BAR_DEV : CAB_BAR).map((c) => (
           <button key={c.tab} type="button" onClick={() => goTab(c.tab)}
             className={`sidelink mob-only ${c.tab === 'new' ? 'sidelink--add' : ''} ${cab?.tab === c.tab ? 'is-active' : ''}`}>
             <span className="sidebar__ico">
@@ -175,7 +190,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
             )}
             {session && <AccountSwitcher onDone={() => setMore(false)} />}
 
-            {inCabinet && CAB_MORE.map((c) => (
+            {inCabinet && (cab?.developer ? CAB_MORE_DEV : CAB_MORE).map((c) => (
               <button key={c.tab} type="button" className={`sheet__item ${cab?.tab === c.tab ? 'is-active' : ''}`} onClick={() => goTab(c.tab)}>
                 <Icon name={c.ico} size={19} /> {t(c.cap)}
               </button>

@@ -272,6 +272,32 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
     case 'promo_ending':
     case 'promo_ended':
       return promoMessage(kind === 'promo_ended', p, unsub);
+    case 'weekly_report': {
+      // понеділковий звіт ріелтору чи забудовнику (0068) — таке пересилають керівнику
+      const n = (k: string) => Number(p[k] ?? 0);
+      const delta = (now: number, prev: number) => (prev > 0 ? ` (${now >= prev ? '+' : ''}${Math.round(((now - prev) / prev) * 100)}% vs previous week)` : '');
+      const subject = `Your week on ${SITE_NAME}: ${n('views')} views, ${n('leads')} enquiries`;
+      const details: [string, unknown][] = [
+        ['Views', `${n('views')}${delta(n('views'), n('viewsPrev'))}`],
+        ['Phone and messenger taps', n('contacts')],
+        ['Enquiries', `${n('leads')}${delta(n('leads'), n('leadsPrev'))}`],
+        ['Office visits booked', n('visits')],
+        ['Enquiries still waiting for a reply', n('unanswered') || ''],
+      ];
+      const top = (Array.isArray(p.top) ? p.top : []) as { title: string; views: number }[];
+      const topHtml = top.length
+        ? `<p style="margin:16px 0 6px"><b>Most viewed</b></p><table style="border-collapse:collapse;font-size:14px">${rows(top.map((x) => [x.title, `${x.views} views`]))}</table>`
+        : '';
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px"><b>${esc(p.from)} – ${esc(p.to)}</b></p>`
+          + `<table style="border-collapse:collapse;font-size:14px">${rows(details)}</table>${topHtml}`
+          + button(`${SITE_URL}/agent?tab=analytics`, 'Open analytics'), footer('agent', unsub)),
+        text: plain([subject, `${p.from} – ${p.to}`, '', ...details.filter(([, v]) => v !== '').map(([k, v]) => `${k}: ${v}`),
+          ...top.map((x) => `${x.title}: ${x.views} views`), '', `${SITE_URL}/agent?tab=analytics`]),
+        telegram: '',
+      };
+    }
     case 'review_request': {
       // через тиждень після звернення (міграція 0068): один лист на пару покупець–агент
       const agent = String(p.agentName || 'your agent');

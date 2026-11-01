@@ -190,3 +190,72 @@ begin
 end $$;
 revoke all on function public.notify_claim(text, int) from public;
 grant execute on function public.notify_claim(text, int) to anon, authenticated;
+
+/* ---------- розстрочка ЖК у цифрах: внесок %, місяців, ставка, банки-партнери ---------- */
+alter table public.developments add column if not exists finance jsonb not null default '{}'::jsonb;
+
+/* ---------- щотижневий звіт ріелтору й забудовнику: перегляди, контакти, заявки, візити ---------- */
+create or replace function public.weekly_report_tick()
+returns int language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  with ev as (
+    select e.agent_id,
+      count(*) filter (where e.kind in ('view', 'dev_view') and e.created_at >= now() - interval '7 days') as views,
+      count(*) filter (where e.kind in ('view', 'dev_view') and e.created_at <  now() - interval '7 days') as views_prev,
+      count(*) filter (where e.kind in ('phone', 'whatsapp', 'viber', 'telegram') and e.created_at >= now() - interval '7 days') as contacts
+    from public.listing_events e
+    where e.created_at >= now() - interval '14 days'
+    group by e.agent_id
+  ), ld as (
+    select l.agent_id,
+      count(*) filter (where l.created_at >= now() - interval '7 days') as leads,
+      count(*) filter (where l.created_at >= now() - interval '14 days' and l.created_at < now() - interval '7 days') as leads_prev,
+      count(*) filter (where l.channel = 'visit' and l.created_at >= now() - interval '7 days') as visits,
+      count(*) filter (where l.status = 'new') as unanswered
+    from public.leads l
+    where l.created_at >= now() - interval '14 days' or l.status = 'new'
+    group by l.agent_id
+  ), top as (
+    select x.agent_id, jsonb_agg(jsonb_build_object('title', x.title, 'views', x.n) order by x.n desc) as items
+    from (
+      select e.agent_id, coalesce(li.title, d.name) as title, count(*) as n,
+        row_number() over (partition by e.agent_id order by count(*) desc) as rk
+      from public.listing_events e
+      left join public.listings li on li.id = e.listing_id
+      left join public.developments d on d.id = e.development_id
+      where e.kind in ('view', 'dev_view') and e.created_at >= now() - interval '7 days'
+      group by e.agent_id, coalesce(li.title, d.name)
+    ) x
+    where x.rk <= 3
+    group by x.agent_id
+  ), who as (
+    select p.id, coalesce(ev.views, 0) views, coalesce(ev.views_prev, 0) views_prev, coalesce(ev.contacts, 0) contacts,
+      coalesce(ld.leads, 0) leads, coalesce(ld.leads_prev, 0) leads_prev, coalesce(ld.visits, 0) visits,
+      coalesce(ld.unanswered, 0) unanswered, coalesce(top.items, '[]'::jsonb) top
+    from public.profiles p
+    left join ev on ev.agent_id = p.id
+    left join ld on ld.agent_id = p.id
+    left join top on top.agent_id = p.id
+    where p.role = 'agent' and p.active and (coalesce(ev.views, 0) + coalesce(ld.leads, 0) + coalesce(ld.unanswered, 0)) > 0
+  ), ins as (
+    insert into public.notify_outbox (kind, user_id, payload)
+    select 'weekly_report', w.id, jsonb_build_object(
+      'from', to_char(now() - interval '7 days', 'YYYY-MM-DD'), 'to', to_char(now(), 'YYYY-MM-DD'),
+      'views', w.views, 'viewsPrev', w.views_prev, 'contacts', w.contacts, 'leads', w.leads, 'leadsPrev', w.leads_prev,
+      'visits', w.visits, 'unanswered', w.unanswered, 'top', w.top)
+    from who w
+    returning 1
+  )
+  select count(*) into n from ins;
+  return n;
+end $$;
+revoke all on function public.weekly_report_tick() from public, anon, authenticated;
+
+do $$
+begin
+  -- понеділок, 13:00 UTC — 7:00 у Гондурасі, до початку робочого дня
+  perform cron.schedule('weekly-report', '0 13 * * 1', 'select public.weekly_report_tick()');
+exception when others then
+  raise notice 'pg_cron unavailable (%)', sqlerrm;
+end $$;

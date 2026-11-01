@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import DevelopmentFollow from '@/components/DevelopmentFollow';
+import DevPaymentCalc from '@/components/DevPaymentCalc';
 import dynamic from 'next/dynamic';
 import BackButton from '@/components/BackButton';
 import DevelopmentBuildings from '@/components/DevelopmentBuildings';
@@ -186,10 +187,14 @@ export default async function DevelopmentPage({ params, searchParams }: {
         </section>
       )}
 
-      {dev.payment && (
+      {(dev.payment || dev.finance.downPct !== null || dev.finance.months !== null) && (
         <section className="dev">
           <h2 className="dev__title">{t('Payment plan')}</h2>
-          {(() => {
+          {(dev.finance.downPct !== null || dev.finance.months !== null) && (
+            <DevPaymentCalc finance={dev.finance}
+              prices={units.filter((u) => u.deal === 'sale' && (u.status === 'available' || u.status === 'reserved')).map((u) => u.price)} />
+          )}
+          {dev.payment && (() => {
             const plan = paymentSteps(dev.payment);
             // кроки з відсотками — таблицею з сумами для найдешевшої квартири; решту — списком як є
             if (plan.pct.length >= 2 && from) {

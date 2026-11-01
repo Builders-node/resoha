@@ -136,7 +136,7 @@ export function RemindButton({ lead: l, onChanged }: { lead: Lead; onChanged: ()
       body: JSON.stringify({ remindAt: when ? when.toISOString() : null }),
     });
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(d.error ?? t('Not allowed'));
+    if (!res.ok) return toast(t(d.error ?? 'Not allowed'));
     setOpen(false);
     toast(when ? t('We will remind you {when}', { when: when.toLocaleString(undefined, { weekday: 'short', hour: '2-digit', minute: '2-digit' }) }) : t('Reminder removed'));
     onChanged();

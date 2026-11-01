@@ -11,7 +11,7 @@ import { cleanSchedule } from './visits';
 import { islandFor } from './regions';
 import type { ImportedListing } from './listingImport';
 import type { ExistingUnit } from './priceList';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, DevFinance, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
 import { pingDeveloper, pingDevelopment, pingListings } from './indexNow';
 
 /**
@@ -563,6 +563,22 @@ export async function bumpViewsAfterResponse(id: string) {
 }
 
 /* ---------- developments (ЖК) ---------- */
+const numIn = (v: unknown, min: number, max: number) => {
+  const n = Number(v);
+  return v === '' || v === null || v === undefined || !Number.isFinite(n) ? null : Math.min(max, Math.max(min, n));
+};
+/** Розстрочка: числа в межах, банки — список до 8 назв. До міграції 0068 колонки немає — порожньо. */
+export function cleanFinance(v: unknown): DevFinance {
+  const o = (v && typeof v === 'object' ? v : {}) as Row;
+  const banks = Array.isArray(o.banks) ? o.banks : String(o.banks ?? '').split(',');
+  return {
+    downPct: numIn(o.downPct, 0, 100),
+    months: numIn(o.months, 1, 240) === null ? null : Math.round(numIn(o.months, 1, 240)!),
+    rate: numIn(o.rate, 0, 40),
+    banks: banks.map((b: unknown) => String(b).trim().slice(0, 60)).filter(Boolean).slice(0, 8),
+  };
+}
+
 const mapDevelopment = (r: Row): Development => ({
   id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', developerId: r.developer_id ?? null,
   completion: r.completion ?? '',
@@ -570,6 +586,7 @@ const mapDevelopment = (r: Row): Development => ({
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
   floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
   hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
+  finance: cleanFinance(r.finance),
   projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
@@ -633,6 +650,7 @@ function developmentRow(input: Record<string, unknown>): Row {
   for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
   if (input.payment !== undefined) row.payment = String(input.payment).trim().slice(0, 2000);
+  if (input.finance !== undefined) row.finance = cleanFinance(input.finance);
   if (input.amenities !== undefined) row.amenities = splitList(input.amenities);
   if (input.floors !== undefined) row.floors = intOrNull(input.floors);
   if (input.hoa !== undefined) row.hoa = intOrNull(input.hoa);
@@ -665,6 +683,12 @@ export async function updateDevelopment(id: string, input: Record<string, unknow
   const client = await db();
   let { data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle();
   // до міграції 0047 колонки графіка немає — зберігаємо решту
+  if (error && 'finance' in row && /finance/.test(error.message ?? '')) {
+    // до міграції 0068 розстрочки в цифрах немає — решту зберігаємо, а про це кажемо явно
+    delete row.finance;
+    if (!Object.keys(row).length) throw new Error('Payment plan numbers need a database update (migration 0068)');
+    ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
+  }
   if (error && 'schedule' in row && /schedule/.test(error.message ?? '')) {
     delete row.schedule;
     ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
