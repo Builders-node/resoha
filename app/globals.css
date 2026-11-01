@@ -443,7 +443,7 @@ textarea.input{resize:vertical;min-height:96px}
 #miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
 
 /* ===== Кабінети ===== */
-.dash{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding:28px 0 72px;align-items:start}
+.dash{display:grid;grid-template-columns:250px minmax(0,1fr);gap:32px;padding-top:28px;padding-bottom:72px;align-items:start}
 .sidenav{background:var(--bg-soft);border-radius:var(--radius-lg);padding:10px;position:sticky;top:20px}
 .sidenav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;font-weight:600;color:var(--ink-2);cursor:pointer;user-select:none}
 .sidenav a:hover{background:#e9e9ef}
@@ -481,7 +481,7 @@ textarea.input{resize:vertical;min-height:96px}
 
 /* ===== Футер ===== */
 /* правові сторінки: вузька колонка, читається як документ */
-.legal{max-width:720px;padding:36px 0 64px}
+.legal{max-width:720px;padding-top:36px;padding-bottom:64px}
 .legal h1{font-size:var(--fs-h1);margin-bottom:12px}
 .legal__lead{font-size:16px;color:var(--ink-2);margin-bottom:28px}
 .legal section{margin-bottom:28px}
