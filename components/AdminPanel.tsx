@@ -16,6 +16,7 @@ import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
 import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
+import RehostPhotos from './RehostPhotos';
 
 type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
 type Quality = Record<QualityKey, number>;
@@ -269,6 +270,7 @@ export default function AdminPanel({ session }: { session: Session }) {
               </div>
 
               <SiteSettingsAdmin />
+              <RehostPhotos />
             </>
           ) : <div className="panel">Loading…</div>
         )}
