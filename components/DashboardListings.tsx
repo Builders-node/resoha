@@ -220,7 +220,7 @@ export default function DashboardListings({ listings, agentName, onEdit, onToggl
         {filtering ? t('{n} of {total} listings', { n: shown.length, total: listings.length }) : t('{total} listings', { total: listings.length })}
         {groups.length > 1 && ` in ${groups.length} groups`}
         {filtering && <> · <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></>}
-        {listings.length > 0 && <> · average quality <b className={`q-txt q-txt--${scoreTone(avg)}`}>{avg}%</b></>}
+        {listings.length > 0 && <> · {t('average quality')} <b className={`q-txt q-txt--${scoreTone(avg)}`}>{avg}%</b></>}
         {groups.length > 1 && (
           <> · <button type="button" className="link-btn"
             onClick={() => setOpen(Object.fromEntries(groups.map((g) => [g.key, !groups.every(isOpen)])))}>

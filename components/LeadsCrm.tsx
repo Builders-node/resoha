@@ -9,6 +9,7 @@ import { contactPrefShort, fmtVisit } from '@/lib/visits';
 import type { Agent, Lead, LeadEvent, LeadStatus } from '@/lib/types';
 import { useT } from './LangProvider';
 import type { T } from '@/lib/i18n';
+import { QuickReply, RemindButton, RemindPill } from './LeadQuickActions';
 
 const PER_PAGE = 30;
 const DAY = 24 * 60 * 60 * 1000;
@@ -19,9 +20,10 @@ const CHANNELS: [Lead['channel'], string][] = [['form', 'Form'], ['whatsapp', 'W
  * перепризначення в агенції та вивантаження в CSV. Фільтрує на клієнті — кабінет і так
  * вантажить усі заявки (RLS віддає ріелтору його, власнику — по агенції).
  */
-export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onChanged }: {
+export default function LeadsCrm({ leads, meId, meName = '', isOwner, agencyId, members, onChanged }: {
   leads: Lead[];
   meId: string;
+  meName?: string;
   isOwner: boolean;
   /** активна команда: перепризначати можна лише її заявки і лише на її ріелторів */
   agencyId: string | null;
@@ -39,6 +41,10 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
   const [since, setSince] = useState(0);
   const [limit, setLimit] = useState(PER_PAGE);
   const [openId, setOpenId] = useState<string | null>(null);
+  // «перезвонить сегодня»: нагадування до кінця дня, ще не закриті заявки
+  const [dueOnly, setDueOnly] = useState(false);
+  const [dayEnd] = useState(() => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); });
+  const isDue = (l: Lead) => !!l.remindAt && l.status !== 'deal' && l.status !== 'lost' && Date.parse(l.remindAt) <= dayEnd;
 
   const agentName = (id: string) =>
     id === meId ? t('Me') : members.find((m) => m.id === id)?.name || leads.find((l) => l.agentId === id)?.agentName || '—';
@@ -60,12 +66,14 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
     return [...m].sort((a, b) => a[1].localeCompare(b[1]));
   }, [leads, t]);
 
-  const filtering = Boolean(q || stage || channel || agent || object || period);
+  const filtering = Boolean(q || stage || channel || agent || object || period || dueOnly);
+  const dueCount = leads.filter(isDue).length;
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const digits = needle.replace(/[^\d]/g, '');
     return leads.filter((l) => {
+      if (dueOnly && !isDue(l)) return false;
       if (stage === 'open' ? l.status === 'deal' || l.status === 'lost' : stage && l.status !== stage) return false;
       if (channel && l.channel !== channel) return false;
       if (agent && l.agentId !== agent) return false;
@@ -78,10 +86,11 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
       }
       return true;
     });
-  }, [leads, q, stage, channel, agent, object, period, since]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leads, q, stage, channel, agent, object, period, since, dueOnly, dayEnd]);
 
   function reset() {
-    setQ(''); setStage(''); setChannel(''); setAgent(''); setObject(''); setPeriod('');
+    setQ(''); setStage(''); setChannel(''); setAgent(''); setObject(''); setPeriod(''); setDueOnly(false);
   }
 
   function exportCsv() {
@@ -129,6 +138,12 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
             ))}
           </div>
 
+          {dueCount > 0 && (
+            <button type="button" className={`crm-due ${dueOnly ? 'is-on' : ''}`} onClick={() => setDueOnly(!dueOnly)}>
+              <Icon name="bell" size={16} /> {t(dueCount === 1 ? '{n} call back today' : '{n} call backs today', { n: dueCount })}
+            </button>
+          )}
+
           <div className="dash-filters">
             <div className="dash-filters__search">
               <Icon name="search" size={17} />
@@ -147,7 +162,7 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
             {objects.length > 1 && (
               <select className="input" value={object} onChange={(e) => setObject(e.target.value)} aria-label={t('Property')}>
                 <option value="">{t('All properties')}</option>
-                {objects.map(([k, name]) => <option key={k} value={k}>{k.startsWith('d:') ? `${name} (development)` : name}</option>)}
+                {objects.map(([k, name]) => <option key={k} value={k}>{k.startsWith('d:') ? t('{name} (development)', { name }) : name}</option>)}
               </select>
             )}
             {agents.length > 1 && (
@@ -171,9 +186,9 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
 
           {shown.length === 0 ? (
             <div className="empty"><div className="empty__ico"><Icon name="search" size={40} /></div>
-              Nothing matches these filters. <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></div>
+              {t('Nothing matches these filters.')} <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></div>
           ) : shown.slice(0, limit).map((l) => (
-            <LeadRow key={l.id} lead={l} meId={meId} agentName={agentName}
+            <LeadRow key={l.id} lead={l} meId={meId} meName={meName} agentName={agentName}
               canAssign={isOwner && !!agencyId && l.agencyId === agencyId}
               members={members} expanded={openId === l.id}
               onToggle={() => setOpenId(openId === l.id ? null : l.id)} onChanged={onChanged} />
@@ -181,7 +196,7 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
           {shown.length > limit && (
             <div style={{ textAlign: 'center', marginTop: 16 }}>
               <button type="button" className="btn btn--ghost" onClick={() => setLimit(limit + PER_PAGE)}>
-                Show more ({shown.length - limit} left)
+                {t('Show more ({n} left)', { n: shown.length - limit })}
               </button>
             </div>
           )}
@@ -200,8 +215,8 @@ async function patchLead(id: string, patch: Record<string, unknown>, t: T) {
   return res.ok;
 }
 
-function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onToggle, onChanged }: {
-  lead: Lead; meId: string; agentName: (id: string) => string; canAssign: boolean; members: Agent[];
+function LeadRow({ lead: l, meId, meName, agentName, canAssign, members, expanded, onToggle, onChanged }: {
+  lead: Lead; meId: string; meName: string; agentName: (id: string) => string; canAssign: boolean; members: Agent[];
   expanded: boolean; onToggle: () => void; onChanged: () => void;
 }) {
   const t = useT();
@@ -223,14 +238,15 @@ function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onTog
           {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('WhatsApp')}</span>}
           {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('Website widget')}</span>}
           {l.status === 'lost' && l.lostReason && <span className="tiny muted" style={{ marginLeft: 6 }}>{l.lostReason}</span>}
+          {l.remindAt && l.status !== 'deal' && l.status !== 'lost' && <RemindPill at={l.remindAt} />}
           {l.visitAt && <VisitLine lead={l} />}
           {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
           <div className="tiny muted" style={{ marginTop: 6 }}>
             {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
               ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
-              : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>}
+              : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || t('the listing')}</Link>}
             {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
-            {l.agentId !== meId && ` · agent: ${agentName(l.agentId)}`}
+            {l.agentId !== meId && ` · ${t('agent: {name}', { name: agentName(l.agentId) })}`}
           </div>
         </div>
         <div className="crm-lead__act">
@@ -241,15 +257,13 @@ function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onTog
           {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
           {l.phone && (
             <>
-              <a className="btn btn--sm btn--ghost btn--icon" title={t('WhatsApp')} aria-label={t('WhatsApp')}
-                href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-                <Icon name="chat" size={16} />
-              </a>
+              <QuickReply lead={l} agentName={agentName(l.agentId) === t('Me') ? meName : agentName(l.agentId)} />
               <a className="btn btn--sm btn--primary btn--icon" title={t('Call')} aria-label={t('Call')} href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
                 <Icon name="phone" size={16} />
               </a>
             </>
           )}
+          <RemindButton lead={l} onChanged={onChanged} />
           <button type="button" className="btn btn--sm btn--ghost" aria-expanded={expanded} onClick={onToggle}>
             {t(expanded ? 'Close' : 'Notes & history')}
           </button>

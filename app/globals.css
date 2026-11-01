@@ -2976,3 +2976,53 @@ html{scroll-behavior:smooth}
 .dev__plan td{padding:8px 8px 8px 0;border-top:1px solid rgba(0,0,0,.08)}
 .dev__plan td:nth-child(2){white-space:nowrap}
 .dev__follow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+/* Кабінет на телефоні: нижня панель (Sidebar) замість ряду вкладок, цифри — одним рядком */
+.sidebar__dot{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  background:var(--orange);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center}
+.sidebar__ico{position:relative}
+.sheet__item.is-active{color:var(--orange)}
+@media (max-width:860px){
+  .sidebar button.sidelink.is-active{opacity:1}
+  .sidebar button.sidelink.is-active::before{
+    content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:26px;height:3px;border-radius:0 0 4px 4px;background:var(--orange)}
+  .sidebar button.sidelink.is-active .sidebar__cap,.sidebar button.sidelink.is-active .sidebar__ico{color:var(--orange)}
+  .sidebar button.sidelink--add{opacity:1}
+  .sidebar button.sidelink--add .sidebar__ico{width:40px;height:28px;border-radius:10px;background:var(--orange);color:#fff}
+  .sidebar button.sidelink--add.is-active .sidebar__ico{color:#fff}
+  .dash > .sidenav{display:none}
+  .dash{padding-top:16px}
+  .stats.stats--dash{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:14px}
+  .stats--dash .stat{padding:8px 10px;border-radius:12px}
+  .stats--dash .stat .small{font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stats--dash .stat b{font-size:17px;margin-top:0}
+}
+
+/* Швидкі дії по заявці: готові відповіді й нагадування */
+.qa{position:relative;display:inline-flex}
+.qa__pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;
+  display:grid;gap:6px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.14)}
+.qa__pop--narrow{width:240px}
+.qa__head{font-weight:700;font-size:14px}
+.qa__item{display:block;text-align:left;padding:8px 10px;border:0;border-radius:10px;background:var(--bg-soft);font:inherit;font-size:13px;line-height:1.4;color:var(--ink);cursor:pointer}
+.qa__item:hover{background:#e9e9ef}
+.qa__item--plain{background:none;color:var(--ink-2)}
+.qa__custom{display:flex;gap:6px}
+.qa__custom .input{flex:1;min-width:0}
+.btn.is-set{color:var(--orange);border-color:var(--orange)}
+.pill--due{background:var(--orange);color:#fff}
+.pill .ico,.pill svg{vertical-align:-2px}
+.crm-due{display:inline-flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 14px;border-radius:999px;border:1px solid var(--orange);
+  background:#fff4ee;color:#b23a00;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.crm-due.is-on{background:var(--orange);color:#fff}
+@media (max-width:560px){ .qa__label{display:none} }
+
+
+/* Живий показник повноти у формі оголошення */
+.lf__quality{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 16px;background:#fff}
+.lf__quality summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer;font-weight:700;list-style:none}
+.lf__quality summary::-webkit-details-marker{display:none}
+.lf__quality .q-meter{flex:1;min-width:100px}
+.lf__quality-next{flex-basis:100%;font-weight:500}
+.lf__quality ul{margin:8px 0 0;padding-left:18px;color:var(--ink-2)}

@@ -116,6 +116,41 @@ drop trigger if exists development_news_notify on public.development_news;
 create trigger development_news_notify after insert on public.development_news
   for each row execute function public.development_news_notify();
 
+/* ---------- «перезвонить завтра»: нагадування по заявці ріелтору (лист і Telegram) ---------- */
+alter table public.leads add column if not exists remind_at timestamptz;
+alter table public.leads add column if not exists remind_sent_at timestamptz;
+create index if not exists leads_remind_idx on public.leads (remind_at) where remind_at is not null;
+
+create or replace function public.lead_remind_tick()
+returns int language plpgsql security definer set search_path = public as $$
+declare n int;
+begin
+  with due as (
+    update public.leads l set remind_sent_at = now()
+    where l.remind_at is not null and l.remind_at <= now()
+      and (l.remind_sent_at is null or l.remind_sent_at < l.remind_at)
+      and l.status not in ('lost', 'deal')
+    returning l.id, l.agent_id, l.name, l.phone, l.email, l.listing_id
+  ), ins as (
+    insert into public.notify_outbox (kind, user_id, payload)
+    select 'lead_remind_agent', d.agent_id, jsonb_build_object(
+      'leadId', d.id, 'name', d.name, 'phone', d.phone, 'email', coalesce(d.email, ''),
+      'listingId', d.listing_id, 'listingTitle', coalesce(li.title, ''))
+    from due d left join public.listings li on li.id = d.listing_id
+    returning 1
+  )
+  select count(*) into n from ins;
+  return n;
+end $$;
+revoke all on function public.lead_remind_tick() from public, anon, authenticated;
+
+do $$
+begin
+  perform cron.schedule('lead-remind', '*/10 * * * *', 'select public.lead_remind_tick()');
+exception when others then
+  raise notice 'pg_cron unavailable (%)', sqlerrm;
+end $$;
+
 /* ---------- черга: нові листи покупцям — за налаштуванням «добірки» ---------- */
 create or replace function public.notify_claim(p_secret text, p_limit int default 25)
 returns table (id bigint, kind text, email text, name text, telegram_chat_id bigint, unsub_token text, payload jsonb)
@@ -144,7 +179,7 @@ begin
       else coalesce(p.email, '')
     end,
     coalesce(p.name, u.payload->>'name', ''),
-    case when u.kind in ('lead_agent', 'visit_reminder_agent', 'expiring', 'review_result', 'moderation', 'report')
+    case when u.kind in ('lead_agent', 'lead_remind_agent', 'visit_reminder_agent', 'expiring', 'review_result', 'moderation', 'report')
       and coalesce(p.active, false) then s.telegram_chat_id end,
     case when u.user_id is not null then s.unsub_token end,
     u.payload

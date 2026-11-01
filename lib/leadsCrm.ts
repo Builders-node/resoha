@@ -13,7 +13,7 @@ type Row = Record<string, any>;
 /** Нема колонки чи таблиці — міграція 0053 ще не застосована */
 const missing = (e: { code?: string } | null) => Boolean(e && ['PGRST204', 'PGRST205', '42703', '42P01'].includes(e.code ?? ''));
 
-export type LeadPatch = { status?: LeadStatus; lostReason?: string; agentId?: string };
+export type LeadPatch = { status?: LeadStatus; lostReason?: string; agentId?: string; remindAt?: string | null };
 
 export class LeadError extends Error {
   constructor(message: string, public status = 400) { super(message); }
@@ -32,6 +32,14 @@ export function parseLeadPatch(body: Row): LeadPatch {
   if (body.agentId !== undefined) {
     if (typeof body.agentId !== 'string' || !body.agentId) throw new LeadError('Choose an agent');
     out.agentId = body.agentId;
+  }
+  if (body.remindAt !== undefined) {
+    if (body.remindAt === null || body.remindAt === '') out.remindAt = null;
+    else {
+      const d = new Date(String(body.remindAt));
+      if (Number.isNaN(d.getTime())) throw new LeadError('Pick a reminder time');
+      out.remindAt = d.toISOString();
+    }
   }
   return out;
 }
@@ -60,11 +68,13 @@ export async function updateLead(id: string, patch: LeadPatch) {
   if (patch.status) row.status = patch.status;
   if (patch.lostReason !== undefined) row.lost_reason = patch.status && patch.status !== 'lost' ? '' : patch.lostReason;
   if (patch.agentId) row.agent_id = patch.agentId;
+  if (patch.remindAt !== undefined) row.remind_at = patch.remindAt;
   if (!Object.keys(row).length) throw new LeadError('Nothing to change');
 
   let res = await supabase.from('leads').update(row).eq('id', id).select('id').maybeSingle();
   // до міграції 0053: лише new/done і без причини програшу
   if (res.error && (missing(res.error) || res.error.code === '23514')) {
+    if ('remind_at' in row) throw new LeadError('Reminders need a database update — ask the admin to apply migration 0068', 503);
     delete row.lost_reason;
     if (row.status) row.status = row.status === 'new' ? 'new' : 'done';
     if (Object.keys(row).length) res = await supabase.from('leads').update(row).eq('id', id).select('id').maybeSingle();

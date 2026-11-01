@@ -18,6 +18,8 @@ import type { PhotoRooms } from '@/lib/rooms';
 import { UNIT_STATUSES } from '@/lib/units';
 import type { Listing } from '@/lib/types';
 import DescriptionEs from './DescriptionEs';
+import DescriptionHelp from './DescriptionHelp';
+import { listingScore, scoreTone, type ListingScore } from '@/lib/listingScore';
 import { useT } from './LangProvider';
 
 /** Кроки форми: одна тема на екран, щоб ріелтор не губився в сорока полях */
@@ -117,6 +119,8 @@ export default function ListingForm({
   const [areaKey, setAreaKey] = useState(0);
   const [sqftOverride, setSqftOverride] = useState<number | undefined>(undefined);
   const [restoreTick, setRestoreTick] = useState(0);
+  const [score, setScore] = useState<ListingScore | null>(null);
+  const scoreTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const pendingFields = useRef<FieldValues | null>(null);
   const baseline = useRef('');
   const ready = useRef(false);
@@ -209,7 +213,23 @@ export default function ListingForm({
     setAutoNote(`${t('Draft saved')} · ${clock()}`);
   }
 
+  /** Живий показник повноти: те саме, що колонка Quality у списку, але поки форму заповнюють */
+  function rescore() {
+    const form = formRef.current;
+    if (!form) return;
+    const b = collect(form) as Record<string, unknown>;
+    const num = (k: string) => Number(b[k]) || 0;
+    setScore(listingScore({
+      type, deal, photos, text: String(b.text ?? ''), price: num('price'), sqft: num('sqft'), lotAcres: num('lotAcres'),
+      beds: num('beds'), baths: num('baths'), lat: pin[0], lng: pin[1], neighborhood: area,
+      titled: Boolean(b.titled), land: (b.land as Listing['land']) ?? null, details: (b.details ?? {}) as Listing['details'],
+      photoRooms, developmentId: developmentId || null, floorplan: floorplan[0] ?? '', sourceName: String(b.sourceName ?? ''),
+    }));
+  }
+
   function scheduleSave() {
+    clearTimeout(scoreTimer.current);
+    scoreTimer.current = setTimeout(() => rescoreRef.current(), 300);
     if (!ready.current) return;
     clearTimeout(localTimer.current);
     localTimer.current = setTimeout(() => saveLocalRef.current(), 700);
@@ -221,7 +241,10 @@ export default function ListingForm({
   // таймери живуть довше за рендер — кличемо свіжу версію функції, а не ту, що була при їх запуску
   const saveLocalRef = useRef(saveLocal);
   const saveServerRef = useRef(saveServer);
-  useEffect(() => { saveLocalRef.current = saveLocal; saveServerRef.current = saveServer; });
+  const rescoreRef = useRef(rescore);
+  useEffect(() => { saveLocalRef.current = saveLocal; saveServerRef.current = saveServer; rescoreRef.current = rescore; });
+  // перший підрахунок — коли форма вже на екрані; далі — з кожною зміною
+  useEffect(() => { const id = setTimeout(() => rescoreRef.current(), 0); return () => clearTimeout(id); }, [stateSig]);
 
   // при відкритті: базова точка (форма як є) і, якщо є свіжіша копія в браузері, — пропозиція відновити
   useEffect(() => {
@@ -243,6 +266,20 @@ export default function ListingForm({
   useEffect(() => () => {
     clearTimeout(serverTimer.current);
     if (localTimer.current) { clearTimeout(localTimer.current); saveLocalRef.current(); }
+  }, []);
+
+  // закрили вкладку чи згорнули браузер на телефоні — React не встигає розмонтуватись,
+  // тож дописуємо копію на pagehide / visibilitychange, навіть якщо таймер ще не спрацював
+  useEffect(() => {
+    const flush = () => {
+      if (!ready.current) return;
+      clearTimeout(localTimer.current);
+      saveLocalRef.current();
+    };
+    const onHide = () => { if (document.visibilityState === 'hidden') flush(); };
+    window.addEventListener('pagehide', flush);
+    document.addEventListener('visibilitychange', onHide);
+    return () => { window.removeEventListener('pagehide', flush); document.removeEventListener('visibilitychange', onHide); };
   }, []);
 
   // зміни стану (фото, тип, пін…) — теж привід зберегти
@@ -489,6 +526,17 @@ export default function ListingForm({
 
       <form ref={formRef} className="lf__form" onSubmit={submit} noValidate
         onChange={() => { resetBase.current = false; scheduleSave(); }}>
+        {score && (
+          <details className={`lf__quality lf__quality--${scoreTone(score.pct)}`}>
+            <summary>
+              <span>{t('Listing quality: {n}% complete', { n: score.pct })}</span>
+              <span className="q-meter" aria-hidden><span className={`q-meter__fill q-meter__fill--${scoreTone(score.pct)}`} style={{ width: `${score.pct}%` }} /></span>
+              {score.hints.length > 0 && <span className="small muted lf__quality-next">{t(score.hints[0])}</span>}
+            </summary>
+            {score.hints.length > 1 && <ul className="small">{score.hints.slice(1, 5).map((h) => <li key={h}>{t(h)}</li>)}</ul>}
+          </details>
+        )}
+
         <div className="lf__intro">
           <span className="lf__kicker">{t('Step {n} of {total}', { n: step + 1, total: STEPS.length })}</span>
           <h4>{t(STEPS[step].title)}</h4>
@@ -706,7 +754,9 @@ export default function ListingForm({
 
         {/* 5. Опис */}
         <section data-step={4} hidden={show(4)} className="lf__sec">
-          <div className="field"><label>{t('Description')}</label>
+          <div className="field">
+            <div className="desc-es__head"><label>{t('Description')}</label>
+              <DescriptionHelp extra={{ area, city, type, deal, photos: String(photos.length) }} /></div>
             <textarea className="input" name="text" rows={7} defaultValue={v?.text}
               placeholder={t('What makes this property worth the flight…')} /></div>
 

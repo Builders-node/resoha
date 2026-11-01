@@ -125,6 +125,8 @@ const mapLead = (r: Row): Lead => ({
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
   developmentName: r.listing?.development?.name ?? '', developmentSlug: r.listing?.development?.slug ?? '',
   source: r.source ?? '',   // до міграції 0056 колонки немає
+  remindAt: r.remind_at ?? null,
+  listingPrice: Number(r.listing?.price ?? 0), listingDeal: r.listing?.deal === 'rent' ? 'rent' : 'sale',
 });
 
 /**
@@ -984,7 +986,7 @@ export async function listLeads(): Promise<Lead[]> {
   // RLS сама віддає потрібний зріз: ріелтору — його заявки, власнику — по всій агенції,
   // покупцеві — ті, що він надіслав. Тягнемо назву обʼєкта й імʼя ріелтора одним запитом.
   const { data } = await (await db()).from('leads')
-    .select('*, listing:listings(title, development:developments(name, slug)), agent:profiles!leads_agent_id_fkey(name)')
+    .select('*, listing:listings(title, price, deal, development:developments(name, slug)), agent:profiles!leads_agent_id_fkey(name)')
     .order('created_at', { ascending: false });
   return (data ?? []).map(mapLead);
 }

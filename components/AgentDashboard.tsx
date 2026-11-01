@@ -23,6 +23,7 @@ import { useT } from './LangProvider';
 import TabStrip from './TabStrip';
 import VisitsCalendar from './VisitsCalendar';
 import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
+import { announceCabinet } from '@/lib/cabinetBus';
 
 type Stats = { total: number; active: number; views: number; leads: number; newLeads: number };
 type Member = Agent & { listings?: number };
@@ -59,7 +60,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   const router = useRouter();
   const t = useT();
   const [tab, setTab] = useState<Tab>(initialTab ?? 'listings');
-  const [scope, setScope] = useState<'own' | 'agency'>('own');
+  // власнику й менеджеру одразу вся агенція: «Mine» з 2 з 77 оголошень виглядав як зникнення решти
+  const [scope, setScope] = useState<'own' | 'agency'>(agencyCan(session, 'listings') ? 'agency' : 'own');
   const [agent, setAgent] = useState<Agent | null>(null);
   const [agency, setAgency] = useState<Agency | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
@@ -85,6 +87,20 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
   }, [session.id, scope]);
 
   useEffect(() => { load(); }, [load]);
+
+  // нижня панель кабінету на телефоні (Sidebar) перемикає вкладки подією і підсвічує активну
+  useEffect(() => {
+    const go = (e: Event) => {
+      const next = (e as CustomEvent<Tab>).detail;
+      if (next === 'new') setEditing(null);
+      setPromoPick(null);
+      setTab(next);
+      window.scrollTo({ top: 0 });
+    };
+    window.addEventListener('cabinet:go', go);
+    return () => window.removeEventListener('cabinet:go', go);
+  }, []);
+  useEffect(() => { announceCabinet({ tab, newLeads: stats?.newLeads ?? 0 }); }, [tab, stats?.newLeads]);
 
   // вкладка живе в адресі: після оновлення сторінки чи «Назад» лишаєшся там, де був
   useEffect(() => {
@@ -132,7 +148,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
     const d = await res.json();
     if (!res.ok) return toast(d.error ?? t('Could not switch'));
     toast(t('Now working in {name}', { name: teams.find((x) => x.agency.id === agencyId)?.agency.name ?? t('the team') }));
-    setScope('own'); load(); router.refresh();
+    setScope(agencyCan(session, 'listings') ? 'agency' : 'own'); load(); router.refresh();
   }
 
   if (!agent || !stats) return <div className="wrap" style={{ padding: 60 }}>{t('Loading dashboard…')}</div>;
@@ -194,7 +210,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         )}
 
         {/* цифри потрібні поруч з оголошеннями й заявками; у профілі чи команді вони лише відсувають форму */}
-        {(tab === 'listings' || tab === 'leads') && <div className="stats">
+        {(tab === 'listings' || tab === 'leads') && <div className="stats stats--dash">
           <div className="stat"><span className="muted small">{t('Listings')}</span><b>{stats.total}</b></div>
           <div className="stat"><span className="muted small">{t('Published')}</span><b>{stats.active}</b></div>
           <div className="stat"><span className="muted small">{t('Views')}</span><b>{fmtNumber(stats.views)}</b></div>
@@ -243,7 +259,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         )}
 
         {tab === 'leads' && (
-          <LeadsCrm leads={leads} meId={agent.id} isOwner={isOwner} agencyId={agency?.id ?? null}
+          <LeadsCrm leads={leads} meId={agent.id} meName={agent.name} isOwner={isOwner} agencyId={agency?.id ?? null}
             members={members} onChanged={load} />
         )}
 

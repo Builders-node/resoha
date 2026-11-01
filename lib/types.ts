@@ -319,6 +319,9 @@ export interface Lead {
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
   source?: string;            // 'widget' — з віджета ЖК на сайті забудовника; '' — з Hogarli
+  remindAt?: string | null;   // «перезвонить»: коли нагадати ріелтору (міграція 0068)
+  listingPrice?: number;      // для готової відповіді в WhatsApp
+  listingDeal?: Deal;
 }
 
 export interface SavedSearch {

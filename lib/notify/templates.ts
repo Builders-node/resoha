@@ -102,6 +102,18 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
           p.email, visit && when(p.visitAt), p.message && `“${String(p.message).slice(0, 300)}”`, listingUrl(c)]),
       };
     }
+    case 'lead_remind_agent': {
+      const subject = `Reminder: get back to ${p.name}`;
+      const details: [string, unknown][] = [['Phone', p.phone], ['Email', p.email], ['Listing', p.listingTitle]];
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px"><b>You asked to be reminded about this enquiry.</b></p>`
+          + `<table style="border-collapse:collapse;font-size:14px">${rows(details)}</table>`
+          + button(`${SITE_URL}/agent?tab=leads`, 'Open enquiries'), footer('agent', unsub)),
+        text: plain([subject, '', ...details.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '', `${SITE_URL}/agent?tab=leads`]),
+        telegram: plain(['Reminder: get back to', `${p.name} · ${p.phone}`, p.listingTitle, `${SITE_URL}/agent?tab=leads`]),
+      };
+    }
     case 'lead_receipt': {
       const c = p.listing as Card;
       const visit = p.channel === 'visit' && p.visitAt;
