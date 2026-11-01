@@ -5,7 +5,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'or': 'o',
   'Could not sign in': 'No se pudo iniciar sesión',
   'Signed in as {name}': 'Sesión iniciada como {name}',
-  'Welcome back to Hogarli Roatán.': 'Bienvenido de nuevo a Hogarli Roatán.',
+  'Welcome back to Hogarli.': 'Bienvenido de nuevo a Hogarli.',
   'Email': 'Correo electrónico',
   'Password': 'Contraseña',
   'Signing in…': 'Iniciando sesión…',
@@ -27,8 +27,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Your account is created. Open the confirmation link sent to':
     'Su cuenta ya está creada. Abra el enlace de confirmación enviado a',
   'and then sign in.': 'y luego inicie sesión.',
-  'Nothing arrived? This site has no mail service connected yet — ask the Hogarli admin to confirm the account by hand.':
-    '¿No le llegó nada? Este sitio aún no tiene un servicio de correo conectado: pida al administrador de Hogarli que confirme la cuenta manualmente.',
+  'Nothing arrived? Check the spam folder, or continue with Google instead.':
+    '¿No le llegó nada? Revise la carpeta de spam o continúe con Google.',
   'Go to sign in': 'Ir a iniciar sesión',
   'With Google you get a realtor account first — open the agency from the':
     'Con Google primero obtiene una cuenta de agente: abra la agencia desde la pestaña',
@@ -149,7 +149,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   '{n} listings': '{n} propiedades',
   'agent': 'agente',
   'agents': 'agentes',
-  'Agents & agencies on Roatán': 'Agentes y agencias en Roatán',
+  'Real-estate agents and agencies in Honduras': 'Agentes y agencias inmobiliarias en Honduras',
   'Everyone publishing on Hogarli. Open a card to see what they have listed and how to reach them.':
     'Todos los que publican en Hogarli. Abra una tarjeta para ver lo que tienen publicado y cómo contactarlos.',
   'Agencies': 'Agencias',
@@ -165,7 +165,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
     'No hay teléfono registrado: use el formulario de consulta de una propiedad',
   'Speaks {langs}': 'Habla {langs}',
   'Listings': 'Propiedades',
-  'Years on island': 'Años en la isla',
+  'Years of experience': 'Años de experiencia',
   'Rating': 'Calificación',
   'Areas': 'Zonas',
   'Areas covered': 'Zonas que cubre',
@@ -178,7 +178,7 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Nothing listed right now': 'No hay propiedades publicadas por ahora',
   'Roatán real-estate agency on Hogarli.': 'Agencia inmobiliaria de Roatán en Hogarli.',
   'The team': 'El equipo',
-  '{n} yrs on island': '{n} años en la isla',
+  '{n} yrs of experience': '{n} años de experiencia',
 
   // аватар
   'Could not save the photo': 'No se pudo guardar la foto',
@@ -223,8 +223,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Could not save': 'No se pudo guardar',
   'Name': 'Nombre',
   'Phone / WhatsApp': 'Teléfono / WhatsApp',
-  'Email is managed by your login — change it from Supabase Auth.':
-    'El correo depende de su inicio de sesión: cámbielo desde Supabase Auth.',
+  'This is the email you sign in with.':
+    'Es el correo con el que inicia sesión.',
   'Save': 'Guardar',
   'Saved homes and searches': 'Propiedades y búsquedas guardadas',
 };

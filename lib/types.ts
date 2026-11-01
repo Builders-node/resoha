@@ -181,6 +181,13 @@ export interface PricePoint {
 }
 
 /** ЖК (новобудова): окрема сторінка, а квартири в ньому — звичайні оголошення */
+export interface DevFinance {
+  downPct: number | null;      // перший внесок, %
+  months: number | null;       // строк розстрочки від забудовника, місяців
+  rate: number | null;         // річна ставка розстрочки, %; 0 — без відсотків
+  banks: string[];             // банки-партнери для іпотеки
+}
+
 export interface Development {
   id: string;
   slug: string;
@@ -205,6 +212,8 @@ export interface Development {
   hoa: number | null;          // $ на місяць
   rentals: RentalRule;
   payment: string;             // умови оплати, вільним текстом по рядках
+  /** Розстрочка в цифрах для калькулятора (міграція 0068): внесок %, місяців, ставка, банки-партнери */
+  finance: DevFinance;
   /* «Характеристики проєкту»: вільний текст, порожнє не показуємо */
   projectClass: string;
   walls: string;
@@ -319,6 +328,9 @@ export interface Lead {
   listingTitle: string;       // підтягується джойном для списків
   agentName: string;
   source?: string;            // 'widget' — з віджета ЖК на сайті забудовника; '' — з Hogarli
+  remindAt?: string | null;   // «перезвонить»: коли нагадати ріелтору (міграція 0068)
+  listingPrice?: number;      // для готової відповіді в WhatsApp
+  listingDeal?: Deal;
 }
 
 export interface SavedSearch {

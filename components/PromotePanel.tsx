@@ -11,6 +11,7 @@ import {
 } from '@/lib/promoShared';
 import { DailyBars, EffectCell, PaymentHistory } from './PromoExtras';
 import PromoPreview from './PromoPreview';
+import { useT } from './LangProvider';
 
 type Payments = 'stripe' | 'stripe-test' | 'manual';
 type Data = {
@@ -33,12 +34,13 @@ export function targetHref(kind: PromoKind, id: string) {
 }
 
 export function StatusPill({ c }: { c: PromoCampaign }) {
-  if (c.refundedAt) return <span className="pill pill--off">Refunded</span>;
-  if (c.status === 'pending') return <span className="badge badge--warn">Awaiting payment</span>;
-  if (c.status === 'cancelled') return <span className="pill pill--off">Cancelled</span>;
-  if (c.status === 'ended') return <span className="pill pill--off">Ended</span>;
+  const t = useT();
+  if (c.refundedAt) return <span className="pill pill--off">{t('Refunded')}</span>;
+  if (c.status === 'pending') return <span className="badge badge--warn">{t('Awaiting payment')}</span>;
+  if (c.status === 'cancelled') return <span className="pill pill--off">{t('Cancelled')}</span>;
+  if (c.status === 'ended') return <span className="pill pill--off">{t('Ended')}</span>;
   return isLive(c)
-    ? <span className="pill pill--on">Live</span>
+    ? <span className="pill pill--on">{t('Live')}</span>
     : <span className="badge badge--ok">Starts {fmtDate(c.startsAt!)}</span>;
 }
 
@@ -53,6 +55,7 @@ export type PromoPick = { kind: PromoKind; id: string };
  * строк — і оплатити. Нижче — свої кампанії з показами й переходами.
  */
 export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
+  const t = useT();
   const [data, setData] = useState<Data | null>(null);
   const [error, setError] = useState('');
   const [kind, setKind] = useState<PromoKind>(pick?.kind ?? 'listing');
@@ -69,7 +72,7 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   const load = useCallback(async () => {
     const res = await fetch('/api/promo');
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) { setError(d.unavailable ? 'Promotions are being set up — check back soon.' : d.error ?? 'Could not load'); return; }
+    if (!res.ok) { setError(d.unavailable ? t('Promotions are being set up — check back soon.') : d.error ?? t('Could not load')); return; }
     setData(d);
     const r = (d as Data).campaigns.find((c) => c.id === renewId.current);
     renewId.current = '';
@@ -83,9 +86,9 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   useEffect(() => {
     const sp = new URLSearchParams(window.location.search);
     const paid = sp.get('paid');
-    if (paid === '1') toast('Payment received — your promotion is live');
-    else if (paid === 'pending') toast('Payment is being confirmed — the promotion turns on in a minute');
-    else if (paid === '0' || sp.get('canceled')) toast('Payment was not completed');
+    if (paid === '1') toast(t('Payment received — your promotion is live'));
+    else if (paid === 'pending') toast(t('Payment is being confirmed — the promotion turns on in a minute'));
+    else if (paid === '0' || sp.get('canceled')) toast(t('Payment was not completed'));
     const k = sp.get('kind') as PromoKind | null;
     if (k && PROMO_KINDS.includes(k)) { setKind(k); setTargetId(sp.get('id') ?? ''); }
     const r = sp.get('renew');
@@ -94,9 +97,9 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
       ['paid', 'canceled', 'kind', 'id', 'renew'].forEach((p) => sp.delete(p));
       window.history.replaceState(null, '', `${window.location.pathname}?${sp.toString()}`);
     }
-  }, []);
+  }, [t]);
 
-  const kinds = useMemo(() => PROMO_KINDS.filter((k) => data?.targets.some((t) => t.kind === k)), [data]);
+  const kinds = useMemo(() => PROMO_KINDS.filter((k) => data?.targets.some((x) => x.kind === k)), [data]);
   // вкладка відкрилась на типі, якого в людини немає, — перемикаємо на перший наявний
   useEffect(() => {
     if (data && kinds.length && !kinds.includes(kind)) setKind(kinds[0]);
@@ -113,14 +116,14 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
     return m;
   }, [data]);
 
-  const targets = useMemo(() => (data?.targets ?? []).filter((t) => t.kind === kind), [data, kind]);
+  const targets = useMemo(() => (data?.targets ?? []).filter((x) => x.kind === kind), [data, kind]);
   // види, для яких є пакети цього типу обʼєкта (до міграції 0060 — лише Featured)
   const products = useMemo(() => PROMO_PRODUCT_KEYS.filter((p) => PROMO_PRODUCTS[p].kinds.includes(kind)
     && (data?.packages ?? []).some((pk) => pk.kind === kind && pk.product === p)), [data, kind]);
   // обраний вид недоступний для цього типу — беремо перший наявний
   const product = products.includes(pickedProduct) ? pickedProduct : products[0] ?? 'featured';
   const packages = useMemo(() => (data?.packages ?? []).filter((p) => p.kind === kind && p.product === product), [data, kind, product]);
-  const target = targets.find((t) => t.id === targetId) ?? null;
+  const target = targets.find((x) => x.id === targetId) ?? null;
   const pkg = packages.find((p) => p.id === packageId) ?? null;
 
   // поки дані не прийшли, список порожній — не затираємо обʼєкт, переданий з іншої вкладки
@@ -139,10 +142,10 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
       body: JSON.stringify({ kind, targetId: target.id, packageId: pkg.id }),
     });
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) { setBusy(false); toast(d.error ?? 'Could not start the promotion'); return; }
+    if (!res.ok) { setBusy(false); toast(d.error ?? t('Could not start the promotion')); return; }
     if (d.checkoutUrl) { window.location.assign(d.checkoutUrl); return; }
     setBusy(false);
-    toast('Request sent — we will contact you with payment details');
+    toast(t('Request sent — we will contact you with payment details'));
     load();
   }
 
@@ -157,14 +160,14 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
   }
 
   async function cancel(c: PromoCampaign) {
-    if (!confirm(`Cancel the request for “${c.targetName}”?`)) return;
+    if (!confirm(t('Cancel the request for “{name}”?', { name: c.targetName }))) return;
     const res = await fetch(`/api/promo/${c.id}`, { method: 'DELETE' });
-    toast(res.ok ? 'Request cancelled' : 'Not allowed');
+    toast(t(res.ok ? 'Request cancelled' : 'Not allowed'));
     load();
   }
 
   if (error) return <div className="panel"><p className="muted">{error}</p></div>;
-  if (!data) return <div className="panel"><p className="muted">Loading…</p></div>;
+  if (!data) return <div className="panel"><p className="muted">{t('Loading…')}</p></div>;
 
   const { campaigns, payments } = data;
   const live = campaigns.filter((c) => isLive(c));
@@ -198,10 +201,9 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
       <div className="panel promo-buy" ref={buyRef}>
         <div className="promo__head">
           <div>
-            <h3 className="with-ico"><Icon name="sparkle" size={20} /> Promote on Hogarli</h3>
+            <h3 className="with-ico"><Icon name="sparkle" size={20} /> {t('Promote on Hogarli')}</h3>
             <p className="muted small" style={{ marginTop: 4 }}>
-              Pick what to promote and how: a Featured badge, a Sponsored place above search results,
-              a coloured card, a home page spot, a one-time bump or Premium agent on the listing page.
+              {t('Pick what to promote and how: a Featured badge, a Sponsored place above search results, a coloured card, a home page spot, a one-time bump or Premium agent on the listing page.')}
             </p>
           </div>
         </div>
@@ -209,18 +211,18 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
         {kinds.length === 0 ? (
           <div className="empty">
             <div className="empty__ico"><Icon name="sparkle" size={40} /></div>
-            Add a listing or a development first — then you can promote it here.
+            {t('Add a listing or a development first — then you can promote it here.')}
           </div>
         ) : (
           <div className="promo__steps">
             <div className="promo__step">
               <span className="promo__num">1</span>
               <div className="promo__body">
-                <b>What to promote</b>
+                <b>{t('What to promote')}</b>
                 <div className="chip-row" style={{ margin: '10px 0' }}>
                   {kinds.map((k) => (
                     <button key={k} type="button" className={`chip-btn with-ico ${kind === k ? 'is-on' : ''}`} onClick={() => setKind(k)}>
-                      <Icon name={KIND_ICON[k]} size={16} /> {KIND_LABEL[k]}
+                      <Icon name={KIND_ICON[k]} size={16} /> {t(KIND_LABEL[k])}
                     </button>
                   ))}
                 </div>
@@ -237,13 +239,13 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
             <div className="promo__step">
               <span className="promo__num">2</span>
               <div className="promo__body">
-                <b>How to promote</b>
+                <b>{t('How to promote')}</b>
                 <div className="promo__products">
                   {products.map((p) => (
                     <button key={p} type="button" className={`promo__product ${p === product ? 'is-on' : ''}`}
                       aria-pressed={p === product} onClick={() => setProduct(p)}>
-                      <span className="with-ico"><Icon name={PROMO_PRODUCTS[p].icon} size={16} /> <b>{PROMO_PRODUCTS[p].label}</b></span>
-                      <span className="tiny muted">{PROMO_PRODUCTS[p].blurb}</span>
+                      <span className="with-ico"><Icon name={PROMO_PRODUCTS[p].icon} size={16} /> <b>{t(PROMO_PRODUCTS[p].label)}</b></span>
+                      <span className="tiny muted">{t(PROMO_PRODUCTS[p].blurb)}</span>
                     </button>
                   ))}
                 </div>
@@ -254,18 +256,18 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
             <div className="promo__step">
               <span className="promo__num">3</span>
               <div className="promo__body">
-                <b>{PROMO_PRODUCTS[product].once ? 'Price' : 'How long'}</b>
+                <b>{t(PROMO_PRODUCTS[product].once ? 'Price' : 'How long')}</b>
                 {packages.length === 0 ? (
-                  <p className="muted small" style={{ marginTop: 8 }}>No packages for this type yet.</p>
+                  <p className="muted small" style={{ marginTop: 8 }}>{t('No packages for this type yet.')}</p>
                 ) : (
                   <div className="promo__pkgs">
                     {packages.map((p) => (
                       <button key={p.id} type="button" className={`promo__pkg ${p.id === packageId ? 'is-on' : ''}`}
                         aria-pressed={p.id === packageId} onClick={() => setPackageId(p.id)}>
-                        <span className="promo__days">{PROMO_PRODUCTS[p.product].once ? 'One time' : `${p.days} days`}</span>
+                        <span className="promo__days">{PROMO_PRODUCTS[p.product].once ? t('One time') : t('{n} days', { n: p.days })}</span>
                         <span className="promo__price">{fmtMoney(p.priceCents, p.currency)}</span>
                         {!PROMO_PRODUCTS[p.product].once && (
-                          <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / day</span>
+                          <span className="tiny muted">{fmtMoney(Math.round(p.priceCents / p.days), p.currency)} / {t('day')}</span>
                         )}
                       </button>
                     ))}
@@ -277,22 +279,22 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
             <div className="promo__step">
               <span className="promo__num">4</span>
               <div className="promo__body">
-                <b>{payments === 'manual' ? 'Send the request' : 'Pay'}</b>
+                <b>{t(payments === 'manual' ? 'Send the request' : 'Pay')}</b>
                 <div className="promo__pay">
                   <button type="button" className="btn btn--primary" disabled={!target || !pkg || busy || !target.active} onClick={buy}>
-                    {busy ? 'One moment…' : payments === 'manual'
-                      ? `Request · ${pkg ? fmtMoney(pkg.priceCents, pkg.currency) : ''}`
-                      : `Pay ${pkg ? fmtMoney(pkg.priceCents, pkg.currency) : ''}`}
+                    {busy ? t('One moment…') : payments === 'manual'
+                      ? `${t('Request')} · ${pkg ? fmtMoney(pkg.priceCents, pkg.currency) : ''}`
+                      : `${t('Pay')} ${pkg ? fmtMoney(pkg.priceCents, pkg.currency) : ''}`}
                   </button>
                   <span className="tiny muted">
-                    {payments === 'manual'
+                    {t(payments === 'manual'
                       ? 'We will contact you with payment details; the promotion starts once payment arrives.'
-                      : 'Secure card payment by Stripe. The promotion starts right after payment.'}
+                      : 'Secure card payment by Stripe. The promotion starts right after payment.')}
                   </span>
                 </div>
                 {payments === 'stripe-test' && (
                   <p className="tiny muted" style={{ marginTop: 8 }}>
-                    Test mode: pay with card 4242 4242 4242 4242, any future date and any CVC.
+                    {t('Test mode: pay with card 4242 4242 4242 4242, any future date and any CVC.')}
                   </p>
                 )}
               </div>
@@ -302,28 +304,28 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
       </div>
 
       <div className="panel" style={{ marginTop: 20 }}>
-        <h3 style={{ marginBottom: 12 }}>My campaigns</h3>
+        <h3 style={{ marginBottom: 12 }}>{t('My campaigns')}</h3>
         {campaigns.length === 0 ? (
-          <p className="muted small">No campaigns yet. Your promotions and their results will show up here.</p>
+          <p className="muted small">{t('No campaigns yet. Your promotions and their results will show up here.')}</p>
         ) : (
           <>
             <div className="stats">
-              <div className="stat"><span className="muted small">Live now</span><b>{live.length}</b></div>
-              <div className="stat"><span className="muted small">Impressions</span><b>{fmtNumber(totals.impressions)}</b></div>
-              <div className="stat"><span className="muted small">Page visits</span><b>{fmtNumber(totals.clicks)}</b></div>
-              <div className="stat"><span className="muted small">Spent</span><b>{fmtMoney(totals.spent)}</b></div>
+              <div className="stat"><span className="muted small">{t('Live now')}</span><b>{live.length}</b></div>
+              <div className="stat"><span className="muted small">{t('Impressions')}</span><b>{fmtNumber(totals.impressions)}</b></div>
+              <div className="stat"><span className="muted small">{t('Page visits')}</span><b>{fmtNumber(totals.clicks)}</b></div>
+              <div className="stat"><span className="muted small">{t('Spent')}</span><b>{fmtMoney(totals.spent)}</b></div>
             </div>
             {hasDaily && (
               <div className="pchart-row">
-                <DailyBars title="Impressions · last 30 days" unit="impressions" days={last30}
+                <DailyBars title={t('Impressions · last 30 days')} unit="impressions" days={last30}
                   values={last30.map((d) => sum30.get(d)?.impressions ?? 0)} />
-                <DailyBars title="Page visits · last 30 days" unit="visits" days={last30}
+                <DailyBars title={t('Page visits · last 30 days')} unit="visits" days={last30}
                   values={last30.map((d) => sum30.get(d)?.clicks ?? 0)} />
               </div>
             )}
             <div className="promo__table">
               <table className="table">
-                <thead><tr><th>Item</th><th>Period</th><th>Status</th><th>Impressions</th><th>Visits</th><th>CTR</th><th>Before → during</th><th>Price</th><th>Per visit</th><th></th></tr></thead>
+                <thead><tr><th>{t('Item')}</th><th>{t('Period')}</th><th>{t('Status')}</th><th>{t('Impressions')}</th><th>{t('Visits')}</th><th>CTR</th><th>{t('Before → during')}</th><th>{t('Price')}</th><th>{t('Per visit')}</th><th></th></tr></thead>
                 <tbody>
                   {campaigns.map((c) => {
                     const href = targetHref(c.kind, c.targetId);
@@ -337,36 +339,36 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
                       <Fragment key={c.id}>
                       <tr>
                         <td>
-                          <div className="tiny muted">{PROMO_PRODUCTS[c.product].label} · {KIND_LABEL[c.kind]}</div>
+                          <div className="tiny muted">{t(PROMO_PRODUCTS[c.product].label)} · {t(KIND_LABEL[c.kind])}</div>
                           {href ? <Link href={href}>{c.targetName || '—'}</Link> : c.targetName || '—'}
                         </td>
-                        <td className="small" data-label="Period">
-                          {c.startsAt && c.endsAt ? `${fmtDate(c.startsAt)} – ${fmtDate(c.endsAt)}` : `${c.days} days`}
+                        <td className="small" data-label={t('Period')}>
+                          {c.startsAt && c.endsAt ? `${fmtDate(c.startsAt)} – ${fmtDate(c.endsAt)}` : t('{n} days', { n: c.days })}
                         </td>
-                        <td data-label="Status"><StatusPill c={c} /></td>
-                        <td data-label="Impressions">{fmtNumber(c.impressions)}</td>
-                        <td data-label="Visits">{fmtNumber(c.clicks)}</td>
-                        <td data-label="CTR">{ctr(c)}</td>
-                        <td data-label="Before → during"><EffectCell e={effects[c.id]} /></td>
-                        <td data-label="Price">{fmtMoney(c.priceCents, c.currency)}</td>
-                        <td data-label="Per visit">{c.status === 'pending' ? '—' : perVisit(c)}</td>
+                        <td data-label={t('Status')}><StatusPill c={c} /></td>
+                        <td data-label={t('Impressions')}>{fmtNumber(c.impressions)}</td>
+                        <td data-label={t('Visits')}>{fmtNumber(c.clicks)}</td>
+                        <td data-label={t('CTR')}>{ctr(c)}</td>
+                        <td data-label={t('Before → during')}><EffectCell e={effects[c.id]} /></td>
+                        <td data-label={t('Price')}>{fmtMoney(c.priceCents, c.currency)}</td>
+                        <td data-label={t('Per visit')}>{c.status === 'pending' ? '—' : perVisit(c)}</td>
                         <td style={{ whiteSpace: 'nowrap' }}>
                           {rows && (
                             <button type="button" className={`btn btn--sm btn--ghost btn--icon ${isOpen ? 'is-on' : ''}`}
-                              title="Stats by day" aria-label={`Stats by day: ${c.targetName}`} aria-expanded={isOpen}
+                              title={t('Stats by day')} aria-label={`${t('Stats by day')}: ${c.targetName}`} aria-expanded={isOpen}
                               onClick={() => setOpenStats(isOpen ? '' : c.id)}>
                               <Icon name="chart" size={16} />
                             </button>
                           )}
                           {canRenew(c) && (
-                            <button type="button" className="btn btn--sm btn--ghost" title="Buy the same promotion again"
+                            <button type="button" className="btn btn--sm btn--ghost" title={t('Buy the same promotion again')}
                               onClick={() => renew(c)}>
-                              <Icon name="calendar" size={14} /> {c.status === 'active' ? 'Extend' : 'Renew'}
+                              <Icon name="calendar" size={14} /> {t(c.status === 'active' ? 'Extend' : 'Renew')}
                             </button>
                           )}
                           {c.status === 'pending' && (
-                            <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Cancel request"
-                              aria-label={`Cancel request: ${c.targetName}`} onClick={() => cancel(c)}>
+                            <button type="button" className="btn btn--sm btn--ghost btn--icon" title={t('Cancel request')}
+                              aria-label={`${t('Cancel request')}: ${c.targetName}`} onClick={() => cancel(c)}>
                               <Icon name="trash" size={16} />
                             </button>
                           )}
@@ -376,9 +378,9 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
                         <tr className="promo__statsrow">
                           <td colSpan={10}>
                             <div className="pchart-row">
-                              <DailyBars title="Impressions by day" unit="impressions" days={span}
+                              <DailyBars title={t('Impressions by day')} unit="impressions" days={span}
                                 values={span.map((d) => byDay.get(d)?.impressions ?? 0)} />
-                              <DailyBars title="Page visits by day" unit="visits" days={span}
+                              <DailyBars title={t('Page visits by day')} unit="visits" days={span}
                                 values={span.map((d) => byDay.get(d)?.clicks ?? 0)} />
                             </div>
                           </td>
@@ -391,9 +393,7 @@ export default function PromotePanel({ pick }: { pick?: PromoPick | null }) {
               </table>
             </div>
             <p className="tiny muted" style={{ marginTop: 10 }}>
-              Impressions — how many times the item was shown in lists while promoted. Visits — opens of its page during the campaign.
-              Before → during — page views and leads during the campaign against the same number of days right before it.
-              Per visit — price divided by visits, to compare campaigns with each other.
+              {t('Impressions — how many times the item was shown in lists while promoted. Visits — opens of its page during the campaign. Before → during — page views and leads during the campaign against the same number of days right before it. Per visit — price divided by visits, to compare campaigns with each other.')}
             </p>
           </>
         )}
@@ -412,6 +412,7 @@ function TargetPicker({ targets, value, onChange, until }: {
   targets: PromoTarget[]; value: string; onChange: (id: string) => void;
   until: (t: PromoTarget) => string | null;
 }) {
+  const t = useT();
   const [q, setQ] = useState('');
   const query = q.trim().toLowerCase();
   const shown = query
@@ -426,24 +427,24 @@ function TargetPicker({ targets, value, onChange, until }: {
         <div className="promo-pick__search">
           <Icon name="search" size={16} />
           <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
-            placeholder="Search by title, unit or area" aria-label="Search items to promote" />
+            placeholder={t('Search by title, unit or area')} aria-label={t('Search items to promote')} />
         </div>
       )}
-      <div className="promo-pick__list" role="radiogroup" aria-label="Item to promote">
-        {list.length === 0 && <p className="muted small" style={{ padding: 12 }}>Nothing matches “{q}”.</p>}
-        {list.map((t) => {
-          const end = until(t);
+      <div className="promo-pick__list" role="radiogroup" aria-label={t('Item to promote')}>
+        {list.length === 0 && <p className="muted small" style={{ padding: 12 }}>{t('Nothing matches “{q}”.', { q })}</p>}
+        {list.map((x) => {
+          const end = until(x);
           return (
-            <button key={t.id} type="button" role="radio" aria-checked={t.id === value} disabled={!t.active}
-              className={`promo-pick__item ${t.id === value ? 'is-on' : ''}`} onClick={() => onChange(t.id)}>
-              <Photo className="thumb" src={t.photo} label="" />
+            <button key={x.id} type="button" role="radio" aria-checked={x.id === value} disabled={!x.active}
+              className={`promo-pick__item ${x.id === value ? 'is-on' : ''}`} onClick={() => onChange(x.id)}>
+              <Photo className="thumb" src={x.photo} label="" />
               <span className="promo-pick__text">
-                <b>{t.name}</b>
-                {t.sub && <span className="tiny muted">{t.sub}</span>}
+                <b>{x.name}</b>
+                {x.sub && <span className="tiny muted">{x.sub}</span>}
               </span>
-              {!t.active
-                ? <span className="pill pill--off">Unpublished</span>
-                : end ? <span className="badge badge--ok">Promoted to {fmtDate(end)}</span> : null}
+              {!x.active
+                ? <span className="pill pill--off">{t('Unpublished')}</span>
+                : end ? <span className="badge badge--ok">{t('Promoted to {date}', { date: fmtDate(end) })}</span> : null}
             </button>
           );
         })}

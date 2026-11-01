@@ -21,8 +21,10 @@ const asText = (t: Terms) => ({ down: String(t.down), rate: String(t.rate), year
  * Скільки треба грошей, щоб купити, і скільки виходить на місяць у розстрочку.
  * Витрати на угоду — за гайдом roatan-closing-costs, фінансування — звичайний ануїтет.
  */
-export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCosts = true, showFinancing = true }: {
+export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCosts = true, showFinancing = true, island = '' }: {
   price: number; hoa: number; ownerFinancing: boolean; showCosts?: boolean; showFinancing?: boolean;
+  /** Острів чи місто: на материку місцеві купують з іпотекою банку, на Роатані — переважно готівкою */
+  island?: string;
 }) {
   const t = useT();
   const money = useMoney();
@@ -165,7 +167,9 @@ export default function PurchaseCalculator({ price, hoa, ownerFinancing, showCos
             </dl>
           )}
           <p className="tiny muted calc__note">
-            {t('An estimate, not an offer. Mortgages for foreign buyers are rare on Roatán; most pay cash or agree terms with the seller.')}
+            {island && island !== 'Roatán'
+              ? t('An estimate, not an offer. Residents can get a mortgage from local banks such as BAC, Ficohsa, Atlántida or Banpaís; foreign buyers usually pay cash.')
+              : t('An estimate, not an offer. Mortgages for foreign buyers are rare on Roatán; most pay cash or agree terms with the seller.')}
           </p>
         </div>}
       </div>

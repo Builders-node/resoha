@@ -1,5 +1,5 @@
 'use client';
-import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { catalogTitle } from '@/lib/catalogTitle';
@@ -11,6 +11,7 @@ import ListingCard from './ListingCard';
 import { RoomPriceStats } from './PriceStats';
 import RecentlyViewed from './RecentlyViewed';
 import { REGIONS, islandFor, regionByName } from '@/lib/regions';
+import { CONTACT_EMAIL, CONTACT_WHATSAPP } from '@/lib/site';
 import type { Pin } from './MapView';
 import { toast } from './Toaster';
 import {
@@ -45,7 +46,22 @@ const pageIndex = (v: string | null) => {
 const AUTO_KEY = 'resoha:map-auto-search';
 // скільки карта має постояти після зуму чи зсуву, перш ніж список перешукає видиму область
 const MOVE_DELAY = 800;
+/** Після скількох карток показати статистику цін за спальнями */
+const STATS_AFTER = 8;
 const noSubscribe = () => () => {};
+
+/** Сусідні райони для порожньої видачі: найближчі за координатами до вибраних, у тому ж місті */
+function nearbyAreas(picked: string[], limit = 5): string[] {
+  const region = REGIONS.find((r) => picked.some((n) => n in r.areas));
+  if (!region) return [];
+  const centres = picked.map((n) => region.areas[n]).filter(Boolean);
+  const dist = ([a, b]: [number, number]) => Math.min(...centres.map(([c, d]) => (a - c) ** 2 + (b - d) ** 2));
+  return Object.entries(region.areas)
+    .filter(([n]) => !picked.includes(n))
+    .sort((x, y) => dist(x[1]) - dist(y[1]))
+    .slice(0, limit)
+    .map(([n]) => n);
+}
 const readAutoOff = () => {
   try { return localStorage.getItem(AUTO_KEY) === '0'; } catch { return false; /* приватне вікно */ }
 };
@@ -328,10 +344,6 @@ export default function ListingsExplorer({
             </p>
           )}
 
-          {(filters.deal === 'sale' || filters.deal === 'rent') && (
-            <RoomPriceStats deal={filters.deal} stats={roomStats} onPick={(beds) => set({ beds })} />
-          )}
-
           {total === 0 && !loading ? (
             <div className="empty">
               <div className="empty__ico"><Icon name="island" size={40} /></div>
@@ -340,22 +352,64 @@ export default function ListingsExplorer({
                 : active > 0
                 ? t('Nothing matches these filters. Drop one of them and try again.')
                 : filters.deal === 'rent'
-                  ? t('Nothing on Roatán for rent in this section yet.')
-                  : t('Nothing on Roatán for sale in this section yet.')}
+                  ? t('Nothing for rent in {place} in this section yet.', { place: filters.island || 'Honduras' })
+                  : t('Nothing for sale in {place} in this section yet.', { place: filters.island || 'Honduras' })}
+              {/* пуста видача — найкращий момент попросити email: людина вже сказала, що шукає */}
+              <div className="empty__acts">
+                <button className="btn btn--primary" onClick={saveSearch}>
+                  <Icon name="bell" size={17} /> {t('Email me when something matches')}
+                </button>
+                {active > 0 && (
+                  <button className="btn btn--ghost" onClick={() => setFilters({ ...EMPTY_FILTERS, deal: filters.deal, island: filters.island })}>
+                    {t('Clear filters')}
+                  </button>
+                )}
+                {filters.island && (
+                  <button className="btn btn--ghost" onClick={() => set({ island: '', neighborhoods: [], bbox: '' })}>
+                    {t('Search all cities')}
+                  </button>
+                )}
+                {(CONTACT_WHATSAPP || CONTACT_EMAIL) && (
+                  <a className="btn btn--ghost" target="_blank" rel="noreferrer"
+                    href={CONTACT_WHATSAPP
+                      ? `https://wa.me/${CONTACT_WHATSAPP}?text=${encodeURIComponent(t('Hi! I am looking for a property and found nothing on the site. What I need:'))}`
+                      : `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(t('Help me find a property'))}`}>
+                    <Icon name="chat" size={17} /> {t('Tell us what you need — we will look for you')}
+                  </a>
+                )}
+              </div>
+              {filters.neighborhoods.length > 0 && nearbyAreas(filters.neighborhoods).length > 0 && (
+                <div className="empty__near">
+                  <span className="small muted">{t('Try nearby areas:')}</span>
+                  <div className="chip-row">
+                    {nearbyAreas(filters.neighborhoods).map((n) => (
+                      <button key={n} type="button" className="chip-btn" onClick={() => set({ neighborhoods: [n], bbox: '' })}>{n}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <div className="grid grid--list">
               {items.map((l, i) => (
-                <div key={l.id} id={`card-${l.id}`}>
-                  <ListingCard
-                    listing={l}
-                    eager={i === 0}
-                    isFav={favIds.includes(l.id)}
-                    highlighted={activeId === l.id}
-                    onMouseEnter={() => setActiveId(l.id)}
-                    onMouseLeave={() => setActiveId(null)}
-                  />
-                </div>
+                <Fragment key={l.id}>
+                  <div id={`card-${l.id}`}>
+                    <ListingCard
+                      listing={l}
+                      eager={i === 0}
+                      isFav={favIds.includes(l.id)}
+                      highlighted={activeId === l.id}
+                      onMouseEnter={() => setActiveId(l.id)}
+                      onMouseLeave={() => setActiveId(null)}
+                    />
+                  </div>
+                  {/* статистика цін — після перших карток: на телефоні вона відсувала перше оголошення за екран */}
+                  {i === Math.min(STATS_AFTER, items.length) - 1 && (filters.deal === 'sale' || filters.deal === 'rent') && (
+                    <div className="grid__full">
+                      <RoomPriceStats deal={filters.deal} stats={roomStats} onPick={(beds) => set({ beds })} />
+                    </div>
+                  )}
+                </Fragment>
               ))}
             </div>
           )}

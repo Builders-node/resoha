@@ -25,8 +25,16 @@ export async function GET() {
     .filter((k) => /SUPABASE/i.test(k))
     .sort();
 
+  // сповіщення й лічильники мовчки вимикаються без цих змінних — показуємо лише «є / немає»
+  const services = Object.fromEntries(
+    ['PROMO_SECRET', 'RESEND_API_KEY', 'EMAIL_FROM', 'TELEGRAM_BOT_TOKEN', 'TELEGRAM_WEBHOOK_SECRET',
+      'NEXT_PUBLIC_TELEGRAM_BOT', 'CRON_SECRET', 'STRIPE_SECRET_KEY', 'STRIPE_WEBHOOK_SECRET']
+      .map((k) => [k, process.env[k] ? 'set' : 'missing']),
+  );
+
   return NextResponse.json({
     ok: Boolean(url && key),
+    services,
     env: process.env.VERCEL_ENV ?? 'local',
     commit: process.env.VERCEL_GIT_COMMIT_SHA?.slice(0, 7) ?? null,
     NEXT_PUBLIC_SUPABASE_URL: url ? new URL(url).host : null,

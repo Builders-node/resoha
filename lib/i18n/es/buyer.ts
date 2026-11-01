@@ -72,6 +72,21 @@ export const ES_BUYER: Record<string, string> = {
   'Total interest': 'Intereses totales',
   'No loan': 'Sin préstamo',
   'HOA only — no loan': 'Solo HOA, sin préstamo',
+  'An estimate, not an offer. Residents can get a mortgage from local banks such as BAC, Ficohsa, Atlántida or Banpaís; foreign buyers usually pay cash.':
+    'Es una estimación, no una oferta. Los residentes pueden obtener una hipoteca en bancos locales como BAC, Ficohsa, Atlántida o Banpaís; los compradores extranjeros suelen pagar al contado.',
   'An estimate, not an offer. Mortgages for foreign buyers are rare on Roatán; most pay cash or agree terms with the seller.':
     'Es una estimación, no una oferta. Las hipotecas para compradores extranjeros son raras en Roatán; la mayoría paga al contado o acuerda condiciones con el vendedor.',
+
+  // форма на сторінці обʼєкта: готові питання і листи
+  'Ask about this property': 'Pregunte por esta propiedad',
+  'Your question, or when you would like to see it': 'Su pregunta o cuándo le gustaría verla',
+  'Is it still available?': '¿Sigue disponible?',
+  'Can I see it this week?': '¿Puedo verla esta semana?',
+  'Is the price negotiable?': '¿El precio es negociable?',
+  'Can you send more photos?': '¿Me puede enviar más fotos?',
+  'When can I move in?': '¿Cuándo me puedo mudar?',
+  'What deposit is required?': '¿Qué depósito se requiere?',
+  'Email me similar homes': 'Recibir propiedades similares por correo',
+  'Tell me if the price drops': 'Avisarme si baja el precio',
+  'Please confirm you are not a robot and send again.': 'Confirme que no es un robot y envíe de nuevo.',
 };

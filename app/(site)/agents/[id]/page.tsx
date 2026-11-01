@@ -8,8 +8,8 @@ import Icon from '@/components/Icon';
 import AgentReviews from '@/components/AgentReviews';
 import AgentListings from '@/components/AgentListings';
 import { TelegramMark, ViberMark, WhatsAppMark } from '@/components/AgentContact';
-import { canReviewAgent, getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
-import { telegramHref } from '@/lib/format';
+import { agentReplyHours, canReviewAgent, getAgency, getAgent, getFavorites, queryListings } from '@/lib/db';
+import { replyLabel, telegramHref } from '@/lib/format';
 import { getSession } from '@/lib/session';
 import { getLang, getLp, getT } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const about = lang === 'en' ? (a.about ?? '').trim() : '';
   return localized(`/agents/${a.id}`, {
     title: `${a.name} — ${a.agency || t('realtor')} | ${SITE_NAME}`,
-    description: metaDescription(about.length >= 70 ? about : t('{name}, realtor on Roatán: listings and contact details.', { name: a.name })),
+    description: metaDescription(about.length >= 70 ? about : t('{name}, realtor in Honduras: listings and contact details.', { name: a.name })),
   });
 }
 
@@ -39,13 +39,16 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
   const agent = await loadAgent(id);
   if (!agent) notFound();
 
-  const [agency, listings, session, lang] = await Promise.all([
+  const [agency, listings, session, lang, replies] = await Promise.all([
     getAgency(agent.agencyId),
     queryListings({ agentId: agent.id, sort: 'new' }),
     getSession(),
     getLang(),
+    agentReplyHours(id),
   ]);
   const t = makeT(lang);
+  const reply = replies.get(agent.id);
+  const replyText = reply !== undefined ? (() => { const r = replyLabel(reply); return t(r.en, { n: r.n ?? 0 }); })() : '';
   const [favIds, canReview] = await Promise.all([
     session ? getFavorites(session.id) : Promise.resolve([]),
     canReviewAgent(agent.id, session?.id ?? null),
@@ -66,7 +69,8 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
       value: <>{agent.rating}<Icon name="star" size={18} className="agent-hero__star" /></>,
       note: t(agent.reviews === 1 ? '{n} review' : '{n} reviews', { n: agent.reviews }),
     },
-    agent.experience > 0 && { label: t('Years on island'), value: agent.experience },
+    replyText && { label: t('Usually replies'), value: <span className="agent-hero__place">{replyText}</span> },
+    agent.experience > 0 && { label: t('Years of experience'), value: agent.experience },
     areas.length > 0 && (areas.length <= 2
       ? { label: t('Areas'), value: <span className="agent-hero__place">{areas.join(', ')}</span> }
       : { label: t('Areas'), value: areas.length }),

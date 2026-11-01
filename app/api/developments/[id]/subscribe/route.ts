@@ -3,6 +3,7 @@ import { createLead, getDevelopment, queryListings } from '@/lib/db';
 import { pickLeadUnit } from '@/lib/developmentPage';
 import { clip, looksAutomated, withinLimit } from '@/lib/guard';
 import { currentUser } from '@/lib/session';
+import { supabaseServer } from '@/lib/supabase/server';
 import { UPDATE_TOPICS } from '@/lib/visits';
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -37,6 +38,11 @@ export async function POST(req: Request, { params }: Ctx) {
       message: `Subscribed to ${dev.name} updates: ${UPDATE_TOPICS.join(', ').toLowerCase()}.`,
       userId: user?.id ?? null,
     });
+    // з акаунтом — ще й справжня підписка на новини (міграція 0068); без таблиці просто пропускаємо
+    if (user) {
+      await (await supabaseServer()).from('development_follows')
+        .upsert({ development_id: dev.id, user_id: user.id }, { onConflict: 'development_id,user_id', ignoreDuplicates: true });
+    }
   } catch (e) {
     const msg = (e as { message?: string }).message ?? '';
     if (/too many/i.test(msg)) return NextResponse.json({ error: msg }, { status: 429 });

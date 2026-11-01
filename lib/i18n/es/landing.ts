@@ -34,6 +34,8 @@ export const ES_LANDING: Record<string, string> = {
 
   // Про нас
   'About Hogarli': 'Acerca de Hogarli',
+  'Property in Roatán, San Pedro Sula and Tegucigalpa, with the facts to check before you buy':
+    'Propiedades en Roatán, San Pedro Sula y Tegucigalpa, con los datos para revisar antes de comprar',
   'Every property in Roatán, San Pedro Sula and Tegucigalpa, checked before you buy':
     'Todas las propiedades de Roatán, San Pedro Sula y Tegucigalpa, verificadas antes de comprar',
   'Roatán has no MLS. Listings are scattered across dozens of agency sites and Facebook groups, prices disagree, sold homes stay online and agents need no licence. Buyers who live thousands of miles away are left to piece it together. Hogarli brings the island’s listings into one place and makes the facts that protect your money visible.':
@@ -68,7 +70,7 @@ export const ES_LANDING: Record<string, string> = {
   'How Hogarli works': 'Cómo funciona Hogarli',
   'Island agencies and agents publish their listings, or we load them on their behalf.': 'Las agencias y agentes de la isla publican sus anuncios, o nosotros los cargamos por ellos.',
   'Each listing keeps a link to its source, and land gets a land passport.': 'Cada anuncio conserva un enlace a su fuente, y los terrenos reciben un pasaporte del terreno.',
-  'You search the whole island, save listings and searches, and contact agents directly.': 'Usted busca en toda la isla, guarda anuncios y búsquedas, y contacta a los agentes directamente.',
+  'You search every listing, save listings and searches, and contact agents directly.': 'Usted busca en todos los anuncios, guarda anuncios y búsquedas, y contacta a los agentes directamente.',
   'The agent handles the viewing and the sale; your own attorney checks the title.': 'El agente se encarga de la visita y la venta; su propio abogado revisa el título.',
   'The company': 'La empresa',
   '{site} is operated by {operator}. We are a listing platform, not a real-estate broker: listing details are published by the agency holding each property, and we never handle deposits or purchase funds.':

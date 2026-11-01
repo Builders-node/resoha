@@ -1,4 +1,5 @@
 import { after } from 'next/server';
+import { serverRpc } from './serverRpc';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { supabaseServer } from './supabase/server';
 import { QUALITY_CHECKS, type QualityKey } from './quality';
@@ -10,7 +11,7 @@ import { cleanSchedule } from './visits';
 import { islandFor } from './regions';
 import type { ImportedListing } from './listingImport';
 import type { ExistingUnit } from './priceList';
-import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
+import type { AdminLogEntry, Agency, Agent, Building, Deal, Developer, DevFinance, Development, DevelopmentDocument, DevelopmentNews, ProgressEntry, LandFacts, Lead, Listing, ListingQuery, ListingReport, ListingReview, NotifySettings, PricePoint, ReportReason, Review, SavedSearch, SiteSettings, StatRow } from './types';
 import { pingDeveloper, pingDevelopment, pingListings } from './indexNow';
 
 /**
@@ -124,6 +125,8 @@ const mapLead = (r: Row): Lead => ({
   listingTitle: r.listing?.title ?? '', agentName: r.agent?.name ?? '',
   developmentName: r.listing?.development?.name ?? '', developmentSlug: r.listing?.development?.slug ?? '',
   source: r.source ?? '',   // до міграції 0056 колонки немає
+  remindAt: r.remind_at ?? null,
+  listingPrice: Number(r.listing?.price ?? 0), listingDeal: r.listing?.deal === 'rent' ? 'rent' : 'sale',
 });
 
 /**
@@ -149,6 +152,16 @@ export async function getAgent(id: string): Promise<Agent | null> {
     ? await client.from('profiles').select(AGENT_PUBLIC_COLS).eq('id', id).maybeSingle()
     : full;
   return data ? mapAgent(data) : null;
+}
+
+/**
+ * Медіана часу відповіді на заявки, годин (міграція 0068): від 3 оброблених заявок за пів року.
+ * До міграції функції немає — тоді просто порожньо.
+ */
+export async function agentReplyHours(agentId?: string): Promise<Map<string, number>> {
+  const { data, error } = await (await db()).rpc('agent_reply_stats', agentId ? { p_agent: agentId } : {});
+  if (error) return new Map();
+  return new Map(((data ?? []) as { agent_id: string; hours: number }[]).map((r) => [r.agent_id, Number(r.hours)]));
 }
 
 export async function listAgents(): Promise<Agent[]> {
@@ -333,6 +346,8 @@ export async function searchListings(query: ListingQuery = {}, page = 0, pageSiz
   if (error && NEW_SORTS.includes(q.sort ?? '') && (error.code === '42703' || /price_per_sqft|price_cut_pct/.test(error.message))) {
     ({ data, error, count } = await run(undefined, false));
   }
+  // сторінка за межами видачі (?page=99 зі старого посилання) — порожня сторінка, а не 500
+  if (error && error.code === 'PGRST103') return { items: page === 0 ? sponsored : [], total: sponsored.length, hasMore: false };
   if (error) throw error;
   const organic = (data ?? []).map(mapListing);
   const items = page === 0 ? [...sponsored, ...organic] : organic;
@@ -531,7 +546,7 @@ export async function deleteListing(id: string) {
 }
 
 export async function bumpViews(id: string) {
-  await (await db()).rpc('bump_views', { p_listing: id });
+  await serverRpc(await db(), 'bump_views', { p_listing: id });
 }
 
 /**
@@ -542,12 +557,28 @@ export async function bumpViews(id: string) {
 export async function bumpViewsAfterResponse(id: string) {
   const client = await db();
   after(async () => {
-    const { error } = await client.rpc('bump_views', { p_listing: id });
+    const { error } = await serverRpc(client, 'bump_views', { p_listing: id });
     if (error) console.error('bump_views failed:', error.message);
   });
 }
 
 /* ---------- developments (ЖК) ---------- */
+const numIn = (v: unknown, min: number, max: number) => {
+  const n = Number(v);
+  return v === '' || v === null || v === undefined || !Number.isFinite(n) ? null : Math.min(max, Math.max(min, n));
+};
+/** Розстрочка: числа в межах, банки — список до 8 назв. До міграції 0068 колонки немає — порожньо. */
+export function cleanFinance(v: unknown): DevFinance {
+  const o = (v && typeof v === 'object' ? v : {}) as Row;
+  const banks = Array.isArray(o.banks) ? o.banks : String(o.banks ?? '').split(',');
+  return {
+    downPct: numIn(o.downPct, 0, 100),
+    months: numIn(o.months, 1, 240) === null ? null : Math.round(numIn(o.months, 1, 240)!),
+    rate: numIn(o.rate, 0, 40),
+    banks: banks.map((b: unknown) => String(b).trim().slice(0, 60)).filter(Boolean).slice(0, 8),
+  };
+}
+
 const mapDevelopment = (r: Row): Development => ({
   id: r.id, slug: r.slug, name: r.name, developer: r.developer ?? '', developerId: r.developer_id ?? null,
   completion: r.completion ?? '',
@@ -555,6 +586,7 @@ const mapDevelopment = (r: Row): Development => ({
   address: r.address ?? '', lat: r.lat, lng: r.lng, photos: r.photos ?? [], text: r.body ?? '',
   floors: r.floors ?? null, construction: r.construction ?? '', parking: r.parking ?? '', amenities: r.amenities ?? [],
   hoa: r.hoa ?? null, rentals: cleanRentals(r.rentals), payment: r.payment ?? '',
+  finance: cleanFinance(r.finance),
   projectClass: r.project_class ?? '', walls: r.walls ?? '', insulation: r.insulation ?? '', climate: r.climate ?? '',
   ceiling: r.ceiling ?? '', finish: r.finish ?? '', territory: r.territory ?? '', backupPower: r.backup_power ?? '',
   water: r.water ?? '', video: r.video ?? '', tour: r.tour ?? '', office: r.office ?? '', hours: r.hours ?? '',
@@ -618,6 +650,7 @@ function developmentRow(input: Record<string, unknown>): Row {
   for (const [k, col] of DEVELOPMENT_SPECS) if (typeof input[k] === 'string') row[col] = (input[k] as string).trim().slice(0, 120);
   if (input.rentals !== undefined) row.rentals = cleanRentals(input.rentals);
   if (input.payment !== undefined) row.payment = String(input.payment).trim().slice(0, 2000);
+  if (input.finance !== undefined) row.finance = cleanFinance(input.finance);
   if (input.amenities !== undefined) row.amenities = splitList(input.amenities);
   if (input.floors !== undefined) row.floors = intOrNull(input.floors);
   if (input.hoa !== undefined) row.hoa = intOrNull(input.hoa);
@@ -650,6 +683,12 @@ export async function updateDevelopment(id: string, input: Record<string, unknow
   const client = await db();
   let { data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle();
   // до міграції 0047 колонки графіка немає — зберігаємо решту
+  if (error && 'finance' in row && /finance/.test(error.message ?? '')) {
+    // до міграції 0068 розстрочки в цифрах немає — решту зберігаємо, а про це кажемо явно
+    delete row.finance;
+    if (!Object.keys(row).length) throw new Error('Payment plan numbers need a database update (migration 0068)');
+    ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
+  }
   if (error && 'schedule' in row && /schedule/.test(error.message ?? '')) {
     delete row.schedule;
     ({ data, error } = await client.from('developments').update(row).eq('id', id).select('*').maybeSingle());
@@ -971,7 +1010,7 @@ export async function listLeads(): Promise<Lead[]> {
   // RLS сама віддає потрібний зріз: ріелтору — його заявки, власнику — по всій агенції,
   // покупцеві — ті, що він надіслав. Тягнемо назву обʼєкта й імʼя ріелтора одним запитом.
   const { data } = await (await db()).from('leads')
-    .select('*, listing:listings(title, development:developments(name, slug)), agent:profiles!leads_agent_id_fkey(name)')
+    .select('*, listing:listings(title, price, deal, development:developments(name, slug)), agent:profiles!leads_agent_id_fkey(name)')
     .order('created_at', { ascending: false });
   return (data ?? []).map(mapLead);
 }
@@ -1017,7 +1056,7 @@ export async function createLead(input: {
 
 /** Лічильник запитів у базі: true — ще в межах ліміту. Див. lib/guard.ts. */
 export async function rateLimitHit(key: string, max: number, windowSeconds: number): Promise<boolean> {
-  const { data, error } = await (await db()).rpc('rate_limit_hit', {
+  const { data, error } = await serverRpc(await db(), 'rate_limit_hit', {
     p_key: key, p_max: max, p_window_seconds: windowSeconds,
   });
   if (error) throw error;

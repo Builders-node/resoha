@@ -13,6 +13,9 @@ import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
 import { useLp } from './useLp';
 import { gaLead } from '@/lib/gtag';
+import { openAuth } from '@/lib/auth-modal';
+import GuestSearchAlert from './GuestSearchAlert';
+import Turnstile, { captchaToken } from './Turnstile';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -57,7 +60,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const lang = useLang();
   const money = useMoney();
   const [shown, setShown] = useState(false);
-  const [formOpen, setFormOpen] = useState(false);
+  // форма відкрита одразу: прихована за посиланням, її відкрили двічі за місяць
+  const [formOpen, setFormOpen] = useState(true);
+  const formSeen = useRef(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const msgRef = useRef<HTMLTextAreaElement>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -73,6 +80,22 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const perSqft = !hasUnits && listing.deal === 'sale' && listing.sqft > 0
     ? money.perArea(listing.price, listing.sqft) : '';
   const place = [listing.address, listing.neighborhood].filter(Boolean).join(', ');
+
+  // готові питання під угоду: покупця й орендаря цікавить різне
+  const quick = listing.deal === 'rent'
+    ? ['Is it still available?', 'When can I move in?', 'What deposit is required?', 'Can I see it this week?']
+    : ['Is it still available?', 'Can I see it this week?', 'Is the price negotiable?', 'Can you send more photos?'];
+
+  // «схожі» для листів: та сама угода, тип і район, ціна ±25%
+  const similarQuery = new URLSearchParams({
+    deal: listing.deal, type: listing.type,
+    ...(listing.neighborhood ? { neighborhoods: listing.neighborhood } : {}),
+    ...(listing.price > 0 ? {
+      priceMin: String(Math.round(listing.price * 0.75)), priceMax: String(Math.round(listing.price * 1.25)),
+    } : {}),
+  }).toString();
+  const similarTitle = [listing.deal === 'rent' ? t('Rentals') : t('For sale'), listing.neighborhood || listing.island]
+    .filter(Boolean).join(', ');
 
   const msg = t('Hi {name}, I\'m interested in "{what}" ', { name: agent.name.split(' ')[0], what: topic ?? listing.title })
     + `${topic ? '' : `(${fmtPrice(listing.price, listing.deal, lang)}) `}— ${listingUrl}`;
@@ -135,7 +158,7 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
         listingId: listing.id,
         name: fd.get('name'), phone: fd.get('phone'),
         email: fd.get('email') || me?.email, message: fd.get('message'),
-        website: fd.get('website'), ts: shownAt.current,
+        website: fd.get('website'), ts: shownAt.current, captcha: captchaToken(fd),
       }),
     });
     setSending(false);
@@ -224,19 +247,6 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             </div>
           )}
 
-          {/* Оголошення зі стороннього джерела: показуємо, у кого воно насправді. */}
-          {listing.sourceName && (
-            <p className="src" style={{ marginTop: 14 }}>
-              <Icon name="link" size={16} />
-              <span>
-                {t('Held by')} <b>{listing.sourceName}</b>{listing.sourceRef && <> · {listing.sourceRef}</>}.
-                {listing.sourceUrl && (
-                  <> <a href={listing.sourceUrl} target="_blank" rel="noreferrer nofollow"
-                    onClick={() => gaLead('agency_link', gaTarget)}>{t('Original listing')}</a></>
-                )}
-              </span>
-            </p>
-          )}
         </div>
       </div>
 
@@ -246,9 +256,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
             <Icon name="headset" size={20} /> <span>{t('Book a visit to the sales office')}</span>
           </Link>
         )}
-        <button className="cc__link" onClick={() => { if (!formOpen) track('form_open'); setFormOpen((v) => !v); }} aria-expanded={formOpen}>
-          <Icon name="calendar" size={20} /> <span>{t('Request a viewing')}</span>
-        </button>
+        {!formOpen && (
+          <button className="cc__link" onClick={() => setFormOpen(true)} aria-expanded={formOpen}>
+            <Icon name="calendar" size={20} /> <span>{t('Request a viewing')}</span>
+          </button>
+        )}
         <ReportListing listingId={listing.id} email={me?.email} />
       </div>
 
@@ -259,15 +271,29 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
               <Icon name="check" size={16} className="ico ico--ok" /> {t('Sent. The agent sees your enquiry in their dashboard and will reply — most respond same day.')}
             </div>
           ) : (
-            <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}>
-              <div style={{ fontWeight: 700 }}>{t('Request a viewing')}</div>
-              <input className="input" name="name" placeholder={t('Your name')} defaultValue={me?.name ?? ''} required maxLength={120} />
-              <input className="input" name="phone" placeholder={t('Phone / WhatsApp')} defaultValue={me?.phone ?? ''} required maxLength={40} />
-              <input className="input" name="email" type="email" placeholder={t('Email (optional)')} defaultValue={me?.email ?? ''} maxLength={200} />
-              <textarea className="input" name="message" rows={3} placeholder={t('When are you on the island?')} maxLength={2000}
+            <form onSubmit={submit} style={{ display: 'grid', gap: 10 }}
+              onFocus={() => { if (!formSeen.current) { formSeen.current = true; track('form_open'); } }}>
+              <div style={{ fontWeight: 700 }}>{t('Ask about this property')}</div>
+              {/* готові питання: один дотик замість набору тексту на телефоні */}
+              <div className="cc__quick">
+                {quick.map((q) => (
+                  <button key={q} type="button" className="cc__q" onClick={() => {
+                    const el = msgRef.current;
+                    if (!el) return;
+                    const line = t(q);
+                    if (!el.value.includes(line)) el.value = el.value.trim() ? `${el.value.trim()} ${line}` : line;
+                    el.focus();
+                  }}>{t(q)}</button>
+                ))}
+              </div>
+              <textarea ref={msgRef} className="input" name="message" rows={3} placeholder={t('Your question, or when you would like to see it')} maxLength={2000}
                 defaultValue={topic ? `${t('Interested in {what}.', { what: topic })} ` : undefined} />
+              <input className="input" name="name" placeholder={t('Your name')} defaultValue={me?.name ?? ''} required maxLength={120} autoComplete="name" />
+              <input className="input" name="phone" type="tel" placeholder={t('Phone / WhatsApp')} defaultValue={me?.phone ?? ''} required maxLength={40} autoComplete="tel" />
+              <input className="input" name="email" type="email" placeholder={t('Email (optional)')} defaultValue={me?.email ?? ''} maxLength={200} autoComplete="email" />
               {/* приманка для ботів: людина цього поля не бачить і не заповнює */}
               <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+              <Turnstile />
               <button className="btn btn--primary btn--block" disabled={sending}>
                 {sending ? t('Sending…') : t('Send enquiry')}
               </button>
@@ -280,6 +306,20 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
         </div>
       )}
 
+      {!forBuilding && (
+        <div className="cc__alerts">
+          <button className="cc__link" onClick={() => setAlertOpen(true)}>
+            <Icon name="bell" size={20} /> <span>{t('Email me similar homes')}</span>
+          </button>
+          {!me && (
+            <button className="cc__link" onClick={() => openAuth('signup', 'buyer')}>
+              <Icon name="arrowDown" size={20} /> <span>{t('Tell me if the price drops')}</span>
+            </button>
+          )}
+        </div>
+      )}
+      {alertOpen && <GuestSearchAlert title={similarTitle} query={similarQuery} onClose={() => setAlertOpen(false)} />}
+
       {extra}
 
       {sticky && (
@@ -287,7 +327,6 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
           onWhatsApp={() => { track('whatsapp'); noteWhatsApp(); }}
           onCall={() => track('phone')}
           onBook={() => {
-            if (!formOpen) track('form_open');
             setFormOpen(true);
             // форма зʼявляється після рендеру — тоді й прокручуємо до неї
             setTimeout(() => document.getElementById('enquiry')?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 60);

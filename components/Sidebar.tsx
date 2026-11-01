@@ -13,6 +13,40 @@ import CurrencySwitch from './CurrencySwitch';
 import { useT } from './LangProvider';
 import { useLp } from './useLp';
 import { stripLang } from '@/lib/i18n/paths';
+import { goCabinetTab, lastCabinet, type CabinetState } from '@/lib/cabinetBus';
+import type { Tab } from '@/lib/agentTabs';
+
+/** Нижня панель кабінету на телефоні: те, з чим ріелтор працює щодня. Решта — у листі «More». */
+const CAB_BAR: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'leads', ico: 'inbox', cap: 'Leads' },
+  { tab: 'listings', ico: 'home', cap: 'Listings' },
+  { tab: 'new', ico: 'plus', cap: 'Add' },
+  { tab: 'visits', ico: 'calendar', cap: 'Visits' },
+];
+// забудовнику: проєкти замість «оголошень», компанія замість «developer company»
+const CAB_BAR_DEV: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'leads', ico: 'inbox', cap: 'Leads' },
+  { tab: 'developments', ico: 'building', cap: 'Projects' },
+  { tab: 'listings', ico: 'home', cap: 'Units' },
+  { tab: 'visits', ico: 'calendar', cap: 'Visits' },
+];
+const CAB_MORE_DEV: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'new', ico: 'plus', cap: 'Add listing' },
+  { tab: 'analytics', ico: 'chart', cap: 'Analytics' },
+  { tab: 'import', ico: 'download', cap: 'Import' },
+  { tab: 'developer', ico: 'briefcase', cap: 'Company' },
+  { tab: 'team', ico: 'users', cap: 'Team' },
+  { tab: 'profile', ico: 'user', cap: 'Profile' },
+];
+const CAB_MORE: { tab: Tab; ico: string; cap: string }[] = [
+  { tab: 'analytics', ico: 'chart', cap: 'Analytics' },
+  { tab: 'developments', ico: 'building', cap: 'Developments' },
+  { tab: 'import', ico: 'download', cap: 'Import' },
+  { tab: 'promote', ico: 'sparkle', cap: 'Promote' },
+  { tab: 'team', ico: 'users', cap: 'Team' },
+  { tab: 'developer', ico: 'briefcase', cap: 'Developer company' },
+  { tab: 'profile', ico: 'user', cap: 'Profile' },
+];
 
 type Match = (path: string, deal: string, type: string) => boolean;
 
@@ -40,6 +74,19 @@ export default function Sidebar({ session }: { session: Session | null }) {
   const params = useSearchParams();
   const deal = params.get('deal') ?? '';
   const type = params.get('type') ?? '';
+  const inCabinet = session?.role === 'agent' && pathname === '/agent';
+  const [cab, setCab] = useState<CabinetState | null>(null);
+
+  useEffect(() => {
+    if (!inCabinet) return;
+    const on = (e: Event) => setCab((e as CustomEvent<CabinetState>).detail);
+    window.addEventListener('cabinet:state', on);
+    // кабінет міг оголосити вкладку раніше, ніж ми підписались
+    const id = requestAnimationFrame(() => setCab(lastCabinet()));
+    return () => { window.removeEventListener('cabinet:state', on); cancelAnimationFrame(id); };
+  }, [inCabinet]);
+
+  const goTab = (tab: Tab) => { setMore(false); goCabinetTab(tab); };
 
   // після переходу лист має закриватись сам
   useEffect(() => { setMore(false); setMenu(false); }, [pathname]);
@@ -69,10 +116,21 @@ export default function Sidebar({ session }: { session: Session | null }) {
 
         {NAV.map((n) => (
           <Link key={n.cap} href={lp(n.href)}
-            className={`${n.match(pathname, deal, type) ? 'is-active' : ''} ${n.deskOnly ? 'desk-only' : ''}`}>
+            className={`${n.match(pathname, deal, type) ? 'is-active' : ''} ${n.deskOnly || inCabinet ? 'desk-only' : ''}`}>
             <span className="sidebar__ico"><Icon name={n.ico} size={22} /></span>
             <span className="sidebar__cap">{t(n.cap)}</span>
           </Link>
+        ))}
+
+        {inCabinet && (cab?.developer ? CAB_BAR_DEV : CAB_BAR).map((c) => (
+          <button key={c.tab} type="button" onClick={() => goTab(c.tab)}
+            className={`sidelink mob-only ${c.tab === 'new' ? 'sidelink--add' : ''} ${cab?.tab === c.tab ? 'is-active' : ''}`}>
+            <span className="sidebar__ico">
+              <Icon name={c.ico} size={c.tab === 'new' ? 24 : 22} />
+              {c.tab === 'leads' && (cab?.newLeads ?? 0) > 0 && <span className="sidebar__dot">{cab!.newLeads}</span>}
+            </span>
+            <span className="sidebar__cap">{t(c.cap)}</span>
+          </button>
         ))}
 
         <div className="sidebar__foot">
@@ -90,7 +148,7 @@ export default function Sidebar({ session }: { session: Session | null }) {
           )}
           <button className="sidelink mob-only" onClick={() => setMore(true)}>
             <span className="sidebar__ico"><Icon name="more" size={22} /></span>
-            <span className="sidebar__cap">{t('Other')}</span>
+            <span className="sidebar__cap">{t(inCabinet ? 'More' : 'Other')}</span>
           </button>
         </div>
       </aside>
@@ -132,6 +190,18 @@ export default function Sidebar({ session }: { session: Session | null }) {
             )}
             {session && <AccountSwitcher onDone={() => setMore(false)} />}
 
+            {inCabinet && (cab?.developer ? CAB_MORE_DEV : CAB_MORE).map((c) => (
+              <button key={c.tab} type="button" className={`sheet__item ${cab?.tab === c.tab ? 'is-active' : ''}`} onClick={() => goTab(c.tab)}>
+                <Icon name={c.ico} size={19} /> {t(c.cap)}
+              </button>
+            ))}
+            {inCabinet && (
+              <Link className="sheet__item" href={lp('/listings?deal=sale')}>
+                <Icon name="search" size={19} /> {t('Browse the site')}
+              </Link>
+            )}
+
+            {!inCabinet && <>
             <Link className="sheet__item" href="/saved">
               <Icon name="heart" size={19} /> {t('Saved listings')}
             </Link>
@@ -146,6 +216,8 @@ export default function Sidebar({ session }: { session: Session | null }) {
             <Link className="sheet__item" href={lp('/listings?type=land')}>
               <Icon name="land" size={19} /> {t('Land & lots')}
             </Link>
+
+            </>}
 
             {session?.isAdmin && (
               <Link className="sheet__item" href="/admin">

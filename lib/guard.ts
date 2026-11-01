@@ -37,3 +37,24 @@ export async function withinLimit(req: Request, action: string, max: number, win
 }
 
 export const clip = (v: unknown, max: number) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
+
+/**
+ * Cloudflare Turnstile — вмикається, щойно у Vercel задано TURNSTILE_SECRET_KEY
+ * і NEXT_PUBLIC_TURNSTILE_SITE_KEY. Без ключів форма працює як раніше (три шари вище).
+ */
+export async function captchaOk(token: unknown, req: Request): Promise<boolean> {
+  const secret = process.env.TURNSTILE_SECRET_KEY;
+  if (!secret || !process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) return true;
+  if (typeof token !== 'string' || !token) return false;
+  const body = new URLSearchParams({ secret, response: token });
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim();
+  if (ip) body.set('remoteip', ip);
+  try {
+    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body });
+    const d = (await res.json()) as { success?: boolean };
+    return d.success === true;
+  } catch {
+    // Cloudflare недоступний — не блокуємо людей, лишаються ліміти й приманка
+    return true;
+  }
+}

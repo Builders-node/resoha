@@ -104,7 +104,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
                   {m.name}
                   {m.verified && <Icon name="verified" size={15} className="ico ico--ok" />}
                 </div>
-                <div className="muted small">{m.isOwner ? t('Owner') : t('Agent')}{m.experience ? ` · ${t('{n} yrs on island', { n: m.experience })}` : ''}</div>
+                <div className="muted small">{m.isOwner ? t('Owner') : t('Agent')}{m.experience ? ` · ${t('{n} yrs of experience', { n: m.experience })}` : ''}</div>
                 {m.languages.length > 0 && <div className="tiny muted">{t('Speaks {langs}', { langs: m.languages.join(', ') })}</div>}
               </div>
             </Link>

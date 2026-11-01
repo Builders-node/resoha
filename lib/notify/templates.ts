@@ -102,6 +102,18 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
           p.email, visit && when(p.visitAt), p.message && `“${String(p.message).slice(0, 300)}”`, listingUrl(c)]),
       };
     }
+    case 'lead_remind_agent': {
+      const subject = `Reminder: get back to ${p.name}`;
+      const details: [string, unknown][] = [['Phone', p.phone], ['Email', p.email], ['Listing', p.listingTitle]];
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px"><b>You asked to be reminded about this enquiry.</b></p>`
+          + `<table style="border-collapse:collapse;font-size:14px">${rows(details)}</table>`
+          + button(`${SITE_URL}/agent?tab=leads`, 'Open enquiries'), footer('agent', unsub)),
+        text: plain([subject, '', ...details.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '', `${SITE_URL}/agent?tab=leads`]),
+        telegram: plain(['Reminder: get back to', `${p.name} · ${p.phone}`, p.listingTitle, `${SITE_URL}/agent?tab=leads`]),
+      };
+    }
     case 'lead_receipt': {
       const c = p.listing as Card;
       const visit = p.channel === 'visit' && p.visitAt;
@@ -260,6 +272,62 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
     case 'promo_ending':
     case 'promo_ended':
       return promoMessage(kind === 'promo_ended', p, unsub);
+    case 'weekly_report': {
+      // понеділковий звіт ріелтору чи забудовнику (0068) — таке пересилають керівнику
+      const n = (k: string) => Number(p[k] ?? 0);
+      const delta = (now: number, prev: number) => (prev > 0 ? ` (${now >= prev ? '+' : ''}${Math.round(((now - prev) / prev) * 100)}% vs previous week)` : '');
+      const subject = `Your week on ${SITE_NAME}: ${n('views')} views, ${n('leads')} enquiries`;
+      const details: [string, unknown][] = [
+        ['Views', `${n('views')}${delta(n('views'), n('viewsPrev'))}`],
+        ['Phone and messenger taps', n('contacts')],
+        ['Enquiries', `${n('leads')}${delta(n('leads'), n('leadsPrev'))}`],
+        ['Office visits booked', n('visits')],
+        ['Enquiries still waiting for a reply', n('unanswered') || ''],
+      ];
+      const top = (Array.isArray(p.top) ? p.top : []) as { title: string; views: number }[];
+      const topHtml = top.length
+        ? `<p style="margin:16px 0 6px"><b>Most viewed</b></p><table style="border-collapse:collapse;font-size:14px">${rows(top.map((x) => [x.title, `${x.views} views`]))}</table>`
+        : '';
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px"><b>${esc(p.from)} – ${esc(p.to)}</b></p>`
+          + `<table style="border-collapse:collapse;font-size:14px">${rows(details)}</table>${topHtml}`
+          + button(`${SITE_URL}/agent?tab=analytics`, 'Open analytics'), footer('agent', unsub)),
+        text: plain([subject, `${p.from} – ${p.to}`, '', ...details.filter(([, v]) => v !== '').map(([k, v]) => `${k}: ${v}`),
+          ...top.map((x) => `${x.title}: ${x.views} views`), '', `${SITE_URL}/agent?tab=analytics`]),
+        telegram: '',
+      };
+    }
+    case 'review_request': {
+      // через тиждень після звернення (міграція 0068): один лист на пару покупець–агент
+      const agent = String(p.agentName || 'your agent');
+      const url = `${SITE_URL}/agents/${encodeURIComponent(String(p.agentId ?? ''))}#reviews`;
+      const subject = `How was ${agent}? Leave a short review`;
+      const about = p.listingTitle ? ` about “${p.listingTitle}”` : '';
+      const body = `A week ago you contacted ${agent}${about} on Hogarli. Did they answer, show the property, tell the truth about it? Two lines from you help the next buyer pick the right agent.`;
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 16px">${esc(body)}</p>${button(url, 'Leave a review')}`, footer('alerts', unsub)),
+        text: plain([subject, '', body, '', url]),
+        telegram: '',
+      };
+    }
+    case 'dev_news': {
+      // нова новина ЖК для тих, хто стежить (0068)
+      const url = `${SITE_URL}/developments/${encodeURIComponent(String(p.slug ?? ''))}/news`;
+      const subject = `${p.development}: ${p.title}`;
+      const photo = typeof p.photo === 'string' && /^https?:\/\//.test(p.photo)
+        ? `<img src="${esc(p.photo)}" alt="" width="520" style="display:block;width:100%;max-width:520px;height:auto;border-radius:12px;margin:0 0 12px">`
+        : '';
+      return {
+        subject,
+        html: layout(`${photo}<div style="font-weight:700;font-size:17px;margin:0 0 8px">${esc(p.title)}</div>`
+          + (p.body ? `<p style="margin:0 0 16px;white-space:pre-line">${esc(p.body)}</p>` : '')
+          + button(url, `Open ${p.development} news`), footer('alerts', unsub)),
+        text: plain([subject, '', p.body, '', url]),
+        telegram: '',
+      };
+    }
     default:
       return null;
   }

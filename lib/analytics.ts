@@ -51,7 +51,8 @@ export type AgentStat = {
 
 export type AreaStat = { neighborhood: string; mine: number; market: number; myCount: number; marketCount: number };
 
-export type Insight = { tone: 'good' | 'warn' | 'info'; text: string };
+/** text — готовий англійський рядок; tpl + vars — те саме як ключ перекладу */
+export type Insight = { tone: 'good' | 'warn' | 'info'; text: string; tpl?: string; vars?: Record<string, string | number> };
 
 export type Analytics = {
   days: number; from: string; to: string; tracked: boolean;
@@ -287,21 +288,28 @@ export function buildAnalytics(input: {
   const tracked = input.events.length > 0;
   const delta = (a: number, b: number) => (b > 0 ? Math.round(((a - b) / b) * 100) : null);
   const dv = delta(totals.views, prev.views);
-  if (dv !== null && dv >= 15) insights.push({ tone: 'good', text: `Views are up ${dv}% on the previous ${days} days.` });
-  if (dv !== null && dv <= -15) insights.push({ tone: 'warn', text: `Views are down ${-dv}% on the previous ${days} days. Fresh photos or a price update usually bring buyers back.` });
+  const fill = (tpl: string, vars: Record<string, string | number>) => tpl.replace(/\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
+  const add = (tone: Insight['tone'], tpl: string, vars: Record<string, string | number> = {}) =>
+    insights.push({ tone, text: fill(tpl, vars), tpl, vars });
+  if (dv !== null && dv >= 15) add('good', 'Views are up {n}% on the previous {days} days.', { n: dv, days });
+  if (dv !== null && dv <= -15) add('warn', 'Views are down {n}% on the previous {days} days. Fresh photos or a price update usually bring buyers back.', { n: -dv, days });
   const noLeads = listingStats.filter((l) => l.flags.includes('no_leads'));
-  if (noLeads.length) insights.push({ tone: 'warn', text: `${noLeads.length} listing${noLeads.length > 1 ? 's get' : ' gets'} plenty of views but no leads: “${noLeads[0].title}” first. Check the price and the first photo.` });
+  if (noLeads.length) {
+    add('warn', noLeads.length > 1
+      ? '{n} listings get plenty of views but no leads: “{title}” first. Check the price and the first photo.'
+      : '{n} listing gets plenty of views but no leads: “{title}” first. Check the price and the first photo.', { n: noLeads.length, title: noLeads[0].title });
+  }
   const over = listingStats.filter((l) => l.flags.includes('overpriced'));
-  if (over.length) insights.push({ tone: 'warn', text: `${over.length} listing${over.length > 1 ? 's are' : ' is'} priced 20%+ above the area median per ft².` });
+  if (over.length) add('warn', over.length > 1 ? '{n} listings are priced 20%+ above the area median per ft².' : '{n} listing is priced 20%+ above the area median per ft².', { n: over.length });
   const thin = listingStats.filter((l) => l.active && l.flags.includes('few_photos')).length;
-  if (thin) insights.push({ tone: 'info', text: `${thin} active listing${thin > 1 ? 's have' : ' has'} fewer than 5 photos. Photos are the first thing buyers judge a listing by.` });
-  if (openLeads > 0) insights.push({ tone: 'warn', text: `${openLeads} lead${openLeads > 1 ? 's are' : ' is'} still waiting for a reply.` });
-  if (responseHours !== null && responseHours <= 2) insights.push({ tone: 'good', text: `You answer leads in ${fmtHours(responseHours)} on median. Fast replies win viewings.` });
+  if (thin) add('info', thin > 1 ? '{n} active listings have fewer than 5 photos. Photos are the first thing buyers judge a listing by.' : '{n} active listing has fewer than 5 photos. Photos are the first thing buyers judge a listing by.', { n: thin });
+  if (openLeads > 0) add('warn', openLeads > 1 ? '{n} leads are still waiting for a reply.' : '{n} lead is still waiting for a reply.', { n: openLeads });
+  if (responseHours !== null && responseHours <= 2) add('good', 'You answer leads in {time} on median. Fast replies win viewings.', { time: fmtHours(responseHours) });
   if (totals.views >= 20 && devices.mobile / Math.max(1, totals.views) >= 0.6) {
-    insights.push({ tone: 'info', text: `${Math.round((devices.mobile / totals.views) * 100)}% of buyers browse on a phone. Make sure WhatsApp is set in your profile.` });
+    add('info', '{n}% of buyers browse on a phone. Make sure WhatsApp is set in your profile.', { n: Math.round((devices.mobile / totals.views) * 100) });
   }
   const pk = peak as Analytics['peak'];
-  if (pk && best >= 5) insights.push({ tone: 'info', text: `Buyers look most on ${WEEKDAYS[pk.day]}s around ${hourLabel(pk.hour)}. A good time to publish or drop a price.` });
+  if (pk && best >= 5) add('info', 'Buyers look most on {day}s around {hour}. A good time to publish or drop a price.', { day: WEEKDAYS[pk.day], hour: hourLabel(pk.hour) });
 
   return {
     days, from: new Date(fromMs).toISOString(), to: new Date(now).toISOString(), tracked,

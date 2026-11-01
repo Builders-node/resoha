@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createLead, listLeads } from '@/lib/db';
-import { clip, looksAutomated, withinLimit } from '@/lib/guard';
+import { captchaOk, clip, looksAutomated, withinLimit } from '@/lib/guard';
 import { kickNotifications } from '@/lib/notify';
 import { currentUser } from '@/lib/session';
 
@@ -37,6 +37,10 @@ export async function POST(req: Request) {
   // віджет ЖК на сайті забудовника (/embed/developments/<slug>): позначаємо джерело й сайт, де стоїть віджет
   const widget = body.source === 'widget';
   const site = widget ? clip(body.site, 120).replace(/^https?:\/\//, '').replace(/\/.*$/, '') : '';
+  // капча лише для форми на нашому сайті: відмітка WhatsApp і віджет на чужому сайті її не мають
+  if (channel === 'form' && !widget && !(await captchaOk(body.captcha, req))) {
+    return NextResponse.json({ error: 'Please confirm you are not a robot and send again.' }, { status: 400 });
+  }
 
   const name = channel === 'whatsapp' ? (user?.name || 'WhatsApp visitor') : clip(body.name, 120);
   const phone = channel === 'whatsapp' ? (user?.phone ?? '') : clip(body.phone, 40);

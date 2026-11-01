@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseServer } from '@/lib/supabase/server';
 import { currentUser, toSession } from '@/lib/session';
 import { mapAgency } from '@/lib/db';
-import { looksAutomated, withinLimit } from '@/lib/guard';
+import { captchaOk, looksAutomated, withinLimit } from '@/lib/guard';
 
 type Body = {
   mode?: 'buyer' | 'agent' | 'agency';
@@ -22,6 +22,10 @@ export async function POST(req: Request) {
     return NextResponse.json(
       { error: 'Too many sign-up attempts from this connection. Please try again in an hour.' }, { status: 429 },
     );
+  }
+
+  if (!(await captchaOk((b as { captcha?: unknown }).captcha, req))) {
+    return NextResponse.json({ error: 'Please confirm you are not a robot and send again.' }, { status: 400 });
   }
 
   if (!b.email) return NextResponse.json({ error: 'Enter a valid email' }, { status: 400 });

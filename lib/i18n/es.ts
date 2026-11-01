@@ -14,9 +14,12 @@ import { ES_ALERTS } from './es/alerts';
 import { ES_PROMO } from './es/promo';
 import { ES_SEO } from './es/seo';
 import { ES_BLOG } from './es/blog';
+import { ES_CABINET } from './es/cabinet';
 
 /** Іспанський словник: англійський рядок → переклад. Розбитий на файли за розділами сайту. */
 export const ES: Record<string, string> = {
+  // кабінет першим: якщо рядок уже перекладено деінде, лишається той переклад
+  ...ES_CABINET,
   ...ES_SHELL,
   ...ES_CATALOG,
   ...ES_ACCOUNTS,

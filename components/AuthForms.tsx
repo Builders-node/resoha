@@ -2,6 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import AccountSwitcher from './AccountSwitcher';
+import Turnstile, { captchaToken } from './Turnstile';
 import Icon from './Icon';
 import { toast } from './Toaster';
 import type { AuthMode as Mode, AuthView } from '@/lib/auth-modal';
@@ -70,7 +71,7 @@ export function LoginForm({ next, onSwitch, onDone }: InModal & { next: string; 
   return (
     <>
         <h2 className="auth__title">{t('Sign in')}</h2>
-        <p className="muted" style={{ margin: '8px 0 20px' }}>{t('Welcome back to Hogarli Roatán.')}</p>
+        <p className="muted" style={{ margin: '8px 0 20px' }}>{t('Welcome back to Hogarli.')}</p>
 
         {/* акаунти, відкладені в цьому браузері, — вхід одним дотиком */}
         <AccountSwitcher showAdd={false} onDone={onDone} />
@@ -115,7 +116,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
       body: JSON.stringify({
         mode,
         email: fd.get('email'), password: fd.get('password'), agencyName: fd.get('agencyName'), inviteCode: fd.get('inviteCode'),
-        website: fd.get('website'), ts: shownAt.current,
+        website: fd.get('website'), ts: shownAt.current, captcha: captchaToken(fd),
       }),
     });
     const data = await res.json();
@@ -142,7 +143,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
             {t('Your account is created. Open the confirmation link sent to')} <b>{pending}</b> {t('and then sign in.')}
           </p>
           <p className="tiny muted" style={{ margin: '-8px 0 20px' }}>
-            {t('Nothing arrived? This site has no mail service connected yet — ask the Hogarli admin to confirm the account by hand.')}
+            {t('Nothing arrived? Check the spam folder, or continue with Google instead.')}
           </p>
           <button type="button" className="btn btn--primary btn--lg btn--block" onClick={() => onSwitch('login')}>{t('Go to sign in')}</button>
       </div>
@@ -170,6 +171,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
 
         <form onSubmit={submit} className="auth__form">
           <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
+          <Turnstile />
           {mode === 'agency' && (
             <div className="field"><label>{t('Agency name')}</label>
               <input className="input" name="agencyName" required placeholder="Blue Harbour Estates" /></div>

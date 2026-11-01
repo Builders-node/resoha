@@ -482,7 +482,7 @@ export default async function PropertyPage({ params, searchParams }: {
           {/* кожну половину адмін вимикає окремо (Admin → Overview → Listing page) */}
           {listing.deal === 'sale' && listing.price > 0 && (site.showPurchaseCosts || site.showFinancing) && (
             <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing}
-              showCosts={site.showPurchaseCosts} showFinancing={site.showFinancing} />
+              showCosts={site.showPurchaseCosts} showFinancing={site.showFinancing} island={listing.island} />
           )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}

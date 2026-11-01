@@ -190,7 +190,7 @@ export default function UserAccount({ session, user }: {
               <div className="field"><label>{t('Phone / WhatsApp')}</label><input className="input" name="phone" defaultValue={user.phone} /></div>
               <div className="field full"><label>{t('Email')}</label>
                 <input className="input" defaultValue={user.email} disabled />
-                <span className="tiny muted">{t('Email is managed by your login — change it from Supabase Auth.')}</span>
+                <span className="tiny muted">{t('This is the email you sign in with.')}</span>
               </div>
               <div className="full" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
                 <button className="btn btn--primary" disabled={saving}>{saving ? t('Saving…') : t('Save')}</button>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import DevelopmentFollow from '@/components/DevelopmentFollow';
+import DevPaymentCalc from '@/components/DevPaymentCalc';
 import dynamic from 'next/dynamic';
 import BackButton from '@/components/BackButton';
 import DevelopmentBuildings from '@/components/DevelopmentBuildings';
@@ -23,6 +25,23 @@ import JsonLd from '@/components/JsonLd';
 import { developmentLd, graph } from '@/lib/seo';
 
 const MapView = dynamic(() => import('@/components/MapView'));
+
+/** Рядки умов оплати; «10% reservation deposit» стає кроком із відсотком, решта лишається текстом */
+function paymentSteps(text: string) {
+  const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
+  const pct: { pct: number; label: string }[] = [];
+  const other: string[] = [];
+  for (const l of lines) {
+    // «10% on signing» або «On signing: 10%»
+    const a = l.match(/^(\d{1,3}(?:[.,]\d+)?)\s*%\s*[-–—:]?\s*(.*)$/);
+    const b = a ? null : l.match(/^(.*?)[\s:–—-]+(\d{1,3}(?:[.,]\d+)?)\s*%$/);
+    const [num, label] = a ? [a[1], a[2]] : b ? [b[2], b[1]] : ['', ''];
+    const n = Number(num.replace(',', '.'));
+    if (num && n > 0 && n <= 100) pct.push({ pct: n, label: (label.trim() || l).replace(/^./, (c) => c.toUpperCase()) });
+    else other.push(l);
+  }
+  return { lines, pct, other };
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   return developmentMetadata((await params).slug);
@@ -168,12 +187,33 @@ export default async function DevelopmentPage({ params, searchParams }: {
         </section>
       )}
 
-      {dev.payment && (
+      {(dev.payment || dev.finance.downPct !== null || dev.finance.months !== null) && (
         <section className="dev">
           <h2 className="dev__title">{t('Payment plan')}</h2>
-          <ol className="dev__pay">
-            {dev.payment.split('\n').map((l) => l.trim()).filter(Boolean).map((l, i) => <li key={i}>{l}</li>)}
-          </ol>
+          {(dev.finance.downPct !== null || dev.finance.months !== null) && (
+            <DevPaymentCalc finance={dev.finance}
+              prices={units.filter((u) => u.deal === 'sale' && (u.status === 'available' || u.status === 'reserved')).map((u) => u.price)} />
+          )}
+          {dev.payment && (() => {
+            const plan = paymentSteps(dev.payment);
+            // кроки з відсотками — таблицею з сумами для найдешевшої квартири; решту — списком як є
+            if (plan.pct.length >= 2 && from) {
+              return (
+                <>
+                  <table className="dev__plan">
+                    <thead><tr><th>{t('Step')}</th><th>%</th><th>{t('For a unit at {price}', { price: money.amount(from) })}</th></tr></thead>
+                    <tbody>
+                      {plan.pct.map((st, i) => (
+                        <tr key={i}><td>{st.label}</td><td>{st.pct}%</td><td><b>{money.amount(Math.round((from * st.pct) / 100))}</b></td></tr>
+                      ))}
+                    </tbody>
+                  </table>
+                  {plan.other.length > 0 && <ul className="dev__pay">{plan.other.map((l, i) => <li key={i}>{l}</li>)}</ul>}
+                </>
+              );
+            }
+            return <ol className="dev__pay">{plan.lines.map((l, i) => <li key={i}>{l}</li>)}</ol>;
+          })()}
           <p className="tiny muted" style={{ marginTop: 8 }}>{t('Terms come from the developer — confirm the current plan with the agent.')}</p>
         </section>
       )}
@@ -193,20 +233,21 @@ export default async function DevelopmentPage({ params, searchParams }: {
         </section>
       )}
 
-      {news.length > 0 && (
-        <section className="dev">
-          <div className="dev__head">
-            <h2 className="dev__title">{t('News')}</h2>
-            <Link className="dev__more" href={`${base}/news`}>{t('All news')} →</Link>
-          </div>
+      <section className="dev">
+        <div className="dev__head">
+          <h2 className="dev__title">{t('News')}</h2>
+          {news.length > 0 && <Link className="dev__more" href={`${base}/news`}>{t('All news')} →</Link>}
+        </div>
+        {news.length > 0 && (
           <ul className="dteaser-list">
             {news.slice(0, 3).map((n) => (
               <li key={n.id}><span className="small muted" style={{ minWidth: 110 }}>{fmtDay(n.publishedOn, lang)}</span>
                 <Link href={`${base}/news#n-${n.id}`}>{n.title}</Link></li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+        <DevelopmentFollow developmentId={dev.id} />
+      </section>
 
       <DevelopmentSalesOffice ctx={ctx} />
 

@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { DEAL_LABELS, specLine } from '@/lib/format';
+import { SQFT_PER_M2, specLine } from '@/lib/format';
 import { readiness } from '@/lib/land';
 import { statusLabel } from '@/lib/units';
 import type { Listing } from '@/lib/types';
@@ -25,6 +25,11 @@ type Props = {
   eager?: boolean;
 };
 
+/** «Новое» — опубліковано за останні два тижні */
+const NEW_DAYS = 14;
+/** «зараз» на момент завантаження модуля: значок «New» не мусить бути точним до секунди */
+const NOW = Date.now();
+
 export default function ListingCard({
   listing: l, agentName, isFav, highlighted, ratio = 'wide', onMouseEnter, onMouseLeave, eager,
 }: Props) {
@@ -32,6 +37,10 @@ export default function ListingCard({
   const t = useT();
   const lang = useLang();
   const money = useMoney();
+  const cut = l.oldPrice > l.price && l.price > 0 ? Math.round((1 - l.price / l.oldPrice) * 100) : 0;
+  const isNew = NOW - new Date(l.createdAt).getTime() < NEW_DAYS * 86_400_000;
+  // ціна за m² — лише для продажу житла з площею; для землі й оренди вона нічого не каже
+  const perM2 = l.deal === 'sale' && l.type !== 'land' && l.sqft > 0 ? Math.round((l.price / l.sqft) * SQFT_PER_M2) : 0;
   return (
     <Link
       href={lp(`/listings/${l.id}`)}
@@ -45,7 +54,10 @@ export default function ListingCard({
         {l.sponsored
           ? <span className="badge badge--sponsored" title={t('Paid placement')}>{t('Sponsored')}</span>
           : l.featured && <span className="badge badge--featured"><Icon name="star" size={12} /> {t('Featured')}</span>}
-        <span className={`badge ${l.deal === 'rent' ? 'badge--accent' : 'badge--brand'}`}>{t(DEAL_LABELS[l.deal])}</span>
+        {/* продаж — звичайний випадок, підписуємо лише оренду */}
+        {l.deal === 'rent' && <span className="badge badge--accent">{t('For rent')}</span>}
+        {cut >= 1 && <span className="badge badge--cut">{t('Price cut {n}%', { n: cut })}</span>}
+        {isNew && !cut && <span className="badge badge--new">{t('New')}</span>}
         {l.status !== 'available' && <span className="badge">{t(statusLabel(l.status))}</span>}
         {l.oceanfront && <span className="badge">{t('Oceanfront')}</span>}
         {/* земля: один бейдж готовності замість «Titled»; без перевірки — нічого */}
@@ -62,7 +74,16 @@ export default function ListingCard({
           : agentName && <div className="ov__agency">{agentName}</div>}
         <div className="ov__title">{l.title}</div>
         <div className="ov__meta">{l.neighborhood} · {specLine(l, lang)}</div>
-        <div className="ov__price">{money.price(l.price, l.deal, lang)}</div>
+        <div className="ov__price">
+          {money.price(l.price, l.deal, lang)}
+          {cut >= 1 && <s className="ov__old">{money.amount(l.oldPrice)}</s>}
+          {perM2 > 0 && <span className="ov__ppm">{money.amount(perM2)}/m²</span>}
+          {l.photos.length > 1 && (
+            <span className="ov__photos" title={t('{n} photos', { n: l.photos.length })}>
+              <Icon name="camera" size={13} /> {l.photos.length}
+            </span>
+          )}
+        </div>
       </div>
     </Link>
   );

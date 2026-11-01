@@ -11,7 +11,7 @@ import { gaEvent } from '@/lib/gtag';
  * у цьому ж: обране, пошуки й заявки лишаються. Агенцію відкривають або до неї
  * приєднуються вже з вкладки Agency в кабінеті.
  */
-export default function BecomeRealtor({ name }: { name: string }) {
+export default function BecomeRealtor({ name, developer = false }: { name: string; developer?: boolean }) {
   const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState<'realtor' | 'agency' | null>(null);
@@ -23,7 +23,7 @@ export default function BecomeRealtor({ name }: { name: string }) {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) { setError(t(j.error ?? 'Something went wrong. Please try again.')); setBusy(null); return; }
     gaEvent('agent_sign_up', { method: 'upgrade', account: next === 'agency' ? 'agency' : 'agent' });
-    router.replace(next === 'agency' ? '/agent?tab=team' : '/agent');
+    router.replace(developer ? '/agent?tab=developer' : next === 'agency' ? '/agent?tab=team' : '/agent');
     router.refresh();
   }
 
@@ -31,20 +31,22 @@ export default function BecomeRealtor({ name }: { name: string }) {
     <div className="wrap" style={{ padding: '80px 0' }}>
       <div className="panel" style={{ maxWidth: 480, margin: '0 auto', textAlign: 'center' }}>
         <div className="empty__ico"><Icon name="building" size={40} /></div>
-        <h2 style={{ marginTop: 10 }}>{t('List properties on Hogarli')}</h2>
+        <h2 style={{ marginTop: 10 }}>{t(developer ? 'Open your developer cabinet' : 'List properties on Hogarli')}</h2>
 
         <p className="muted" style={{ margin: '10px 0 24px' }}>
-          {t('You are signed in as')} <b>{name}</b>. {t('Turn this account into a realtor account to publish listings and answer enquiries. Your saved listings and searches stay where they are.')}
+          {t('You are signed in as')} <b>{name}</b>. {t(developer
+            ? 'One cabinet for your projects, units, buyer enquiries, office visits and company page. Your saved listings and searches stay where they are.'
+            : 'Turn this account into a realtor account to publish listings and answer enquiries. Your saved listings and searches stay where they are.')}
         </p>
 
         <div style={{ display: 'grid', gap: 10 }}>
           <button className="btn btn--primary btn--lg btn--block" disabled={!!busy} onClick={() => upgrade('realtor')}>
-            {busy === 'realtor' ? t('Switching…') : t('Become a realtor')}
+            {busy === 'realtor' ? t('Switching…') : t(developer ? 'Open the developer cabinet' : 'Become a realtor')}
           </button>
-          <button className="link-accent" disabled={!!busy} onClick={() => upgrade('agency')}
+          {!developer && <button className="link-accent" disabled={!!busy} onClick={() => upgrade('agency')}
             style={{ justifyContent: 'center', marginTop: 4, background: 'none', border: 0, cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit' }}>
             {busy === 'agency' ? t('Switching…') : <>{t('Open or join an agency')} <Icon name="arrowRight" size={15} /></>}
-          </button>
+          </button>}
           {error && <div className="auth__error">{error}</div>}
           <Link className="btn btn--ghost btn--block" href="/agents">{t('Browse agents & agencies')}</Link>
         </div>

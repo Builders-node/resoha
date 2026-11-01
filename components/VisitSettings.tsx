@@ -4,6 +4,7 @@ import Icon from './Icon';
 import { toast } from './Toaster';
 import { officeToday } from '@/lib/visits';
 import type { Development } from '@/lib/types';
+import { useT } from './LangProvider';
 
 /**
  * Запис на візит: скільки людей приймає відділ продажів в один слот і в які дні він зачинений
@@ -13,6 +14,7 @@ export default function VisitSettings({ dev, onSaved }: {
   dev: Development;
   onSaved: (capacity: number, blackout: string[]) => void;
 }) {
+  const t = useT();
   const today = officeToday();
   const [capacity, setCapacity] = useState(dev.visitCapacity || 1);
   const [days, setDays] = useState<string[]>(() => (dev.blackoutDates ?? []).filter((d) => d >= today));
@@ -20,7 +22,7 @@ export default function VisitSettings({ dev, onSaved }: {
   const [saving, setSaving] = useState(false);
 
   function add() {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(pick) || pick < today) return toast('Pick a date from today on');
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(pick) || pick < today) return toast(t('Pick a date from today on'));
     setDays((v) => [...new Set([...v, pick])].sort());
     setPick('');
   }
@@ -33,9 +35,9 @@ export default function VisitSettings({ dev, onSaved }: {
     });
     const d = await res.json().catch(() => ({}));
     setSaving(false);
-    if (!res.ok) return toast(d.error ?? 'Could not save');
+    if (!res.ok) return toast(d.error ?? t('Could not save'));
     onSaved(d.capacity, d.blackout);
-    toast('Visit booking settings saved');
+    toast(t('Visit booking settings saved'));
   }
 
   const fmt = (d: string) => new Intl.DateTimeFormat('en-US', { timeZone: 'UTC', weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
@@ -44,32 +46,32 @@ export default function VisitSettings({ dev, onSaved }: {
   return (
     <form className="form-grid" onSubmit={save} style={{ marginTop: 28 }}>
       <div className="field full">
-        <h4 style={{ margin: 0 }}>Visit booking</h4>
-        <span className="tiny muted">How many buyers the sales office can see at once, and days it is closed.</span>
+        <h4 style={{ margin: 0 }}>{t('Visit booking')}</h4>
+        <span className="tiny muted">{t('How many buyers the sales office can see at once, and days it is closed.')}</span>
       </div>
-      <div className="field"><label>Visits per 30-minute slot</label>
+      <div className="field"><label>{t('Visits per 30-minute slot')}</label>
         <input className="input" type="number" min={1} max={20} value={capacity}
           onChange={(e) => setCapacity(Math.min(20, Math.max(1, Number(e.target.value) || 1)))} />
-        <span className="tiny muted">A slot disappears from the booking calendar once it is full.</span></div>
-      <div className="field full"><label>Closed on (holidays)</label>
+        <span className="tiny muted">{t('A slot disappears from the booking calendar once it is full.')}</span></div>
+      <div className="field full"><label>{t('Closed on (holidays)')}</label>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <input className="input" type="date" min={today} value={pick} onChange={(e) => setPick(e.target.value)} style={{ maxWidth: 200 }} />
-          <button type="button" className="btn btn--ghost" onClick={add} disabled={!pick}><Icon name="plus" size={14} /> Add day</button>
+          <button type="button" className="btn btn--ghost" onClick={add} disabled={!pick}><Icon name="plus" size={14} /> {t('Add day')}</button>
         </div>
         {days.length > 0 ? (
           <div className="vsettings__days">
             {days.map((d) => (
               <span key={d} className="fchip">{fmt(d)}
-                <button type="button" aria-label={`Remove ${d}`} onClick={() => setDays((v) => v.filter((x) => x !== d))}>
+                <button type="button" aria-label={t('Remove {d}', { d })} onClick={() => setDays((v) => v.filter((x) => x !== d))}>
                   <Icon name="close" size={14} />
                 </button>
               </span>
             ))}
           </div>
-        ) : <span className="tiny muted">No closed days. Booked visits on a day you close stay in your calendar.</span>}
+        ) : <span className="tiny muted">{t('No closed days. Booked visits on a day you close stay in your calendar.')}</span>}
       </div>
       <div className="field full" style={{ flexDirection: 'row', gap: 8 }}>
-        <button className="btn btn--primary" disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
+        <button className="btn btn--primary" disabled={saving}>{t(saving ? 'Saving…' : 'Save')}</button>
       </div>
     </form>
   );

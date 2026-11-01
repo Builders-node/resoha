@@ -55,7 +55,7 @@ export default function AgentReviews({
     : 0;
 
   return (
-    <section className="section" style={{ paddingTop: 0 }}>
+    <section id="reviews" className="section" style={{ paddingTop: 0, scrollMarginTop: 80 }}>
       <div className="section__head">
         <h2>{t('Reviews')}</h2>
         {items.length > 0 && (

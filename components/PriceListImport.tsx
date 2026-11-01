@@ -8,6 +8,7 @@ import { PRICE_LIST_MAX, parsePriceTable, splitPaste, type PriceDiff, type Price
 import { statusLabel, toM2, unitTypeLabel } from '@/lib/units';
 import { readXlsx } from '@/lib/xlsx';
 import type { Building, Development } from '@/lib/types';
+import { useT } from './LangProvider';
 
 const FIELD_LABEL: Record<keyof UnitFields, string> = { price: 'Price', beds: 'Type', floor: 'Floor', sqft: 'Area', status: 'Status' };
 const show = (k: keyof UnitFields, v: UnitFields[keyof UnitFields]) =>
@@ -22,6 +23,7 @@ const show = (k: keyof UnitFields, v: UnitFields[keyof UnitFields]) =>
  * Квартири зіставляються за номером у ЖК: нові додаються, наявні оновлюються, дублів немає.
  */
 export default function PriceListImport({ dev, buildings, onAdded }: { dev: Development; buildings: Building[]; onAdded: () => void }) {
+  const t = useT();
   const [paste, setPaste] = useState('');
   const [fileRows, setFileRows] = useState<{ name: string; rows: PriceListRow[] } | null>(null);
   const [deal, setDeal] = useState<'sale' | 'rent'>('sale');
@@ -40,17 +42,17 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
         ? await readXlsx(await file.arrayBuffer())
         : parseCsv(await file.text());
       const parsed = parsePriceTable(table);
-      if (!parsed.length) return toast('No units found in this file — it needs unit and price columns');
+      if (!parsed.length) return toast(t('No units found in this file — it needs unit and price columns'));
       setFileRows({ name: file.name, rows: parsed });
     } catch (e) {
-      toast(`Could not read ${file.name}: ${(e as Error).message}`);
+      toast(`${t('Could not read {name}', { name: file.name })}: ${(e as Error).message}`);
     }
   }
 
   async function send(apply: boolean) {
     const list = rows();
-    if (!list.length) return toast('No units found — one row per unit: unit, type, floor, m², ft², price');
-    if (list.length > PRICE_LIST_MAX) return toast(`Up to ${PRICE_LIST_MAX} units at a time`);
+    if (!list.length) return toast(t('No units found — one row per unit: unit, type, floor, m², ft², price'));
+    if (list.length > PRICE_LIST_MAX) return toast(t('Up to {n} units at a time', { n: PRICE_LIST_MAX }));
     setBusy(true);
     const res = await fetch(`/api/developments/${dev.id}/price-list`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -58,9 +60,9 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
     });
     setBusy(false);
     const data = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(data.error ?? 'Something went wrong');
+    if (!res.ok) return toast(data.error ?? t('Something went wrong'));
     if (!apply) return setDiff(data.diff);
-    toast(`Price list saved: ${data.created} new, ${data.updated} updated`);
+    toast(t('Price list saved: {n} new, {u} updated', { n: data.created, u: data.updated }));
     setDiff(null); setPaste(''); setFileRows(null);
     onAdded();
   }
@@ -69,32 +71,29 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
 
   return (
     <div className="units-form" style={{ marginTop: 24 }}>
-      <label><b>Price list</b></label>
+      <label><b>{t('Price list')}</b></label>
       <span className="tiny muted">
-        Upload the developer&apos;s XLSX or CSV, or paste rows from the table. Columns: unit, type, floor, m², ft², price,
-        and optionally status — with a header row the order doesn&apos;t matter. Units are matched by number in {dev.name}:
-        new numbers become new listings with this development&apos;s photos, address and pin; existing ones get the new price,
-        area and status. You&apos;ll see every change before it&apos;s saved.
+        {t('Upload the developer’s XLSX or CSV, or paste rows from the table. Columns: unit, type, floor, m², ft², price, and optionally status — with a header row the order doesn’t matter. Units are matched by number in {name}: new numbers become new listings with this development’s photos, address and pin; existing ones get the new price, area and status. You’ll see every change before it’s saved.', { name: dev.name })}
       </span>
       <div className="chip-row">
-        <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => { setDeal('sale'); reset(); }}>For sale</button>
-        <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => { setDeal('rent'); reset(); }}>For rent</button>
+        <button type="button" className={`chip-btn ${deal === 'sale' ? 'is-on' : ''}`} onClick={() => { setDeal('sale'); reset(); }}>{t('For sale')}</button>
+        <button type="button" className={`chip-btn ${deal === 'rent' ? 'is-on' : ''}`} onClick={() => { setDeal('rent'); reset(); }}>{t('For rent')}</button>
       </div>
       {buildings.length > 0 && (
         <select className="input" value={buildingId} onChange={(e) => { setBuildingId(e.target.value); reset(); }} style={{ maxWidth: 320 }}>
-          <option value="">Whole development</option>
+          <option value="">{t('Whole development')}</option>
           {buildings.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
       )}
 
       <div className="chip-row">
         <button type="button" className="btn btn--ghost btn--sm" onClick={() => fileInput.current?.click()}>
-          <Icon name="plus" size={16} /> Upload XLSX or CSV
+          <Icon name="plus" size={16} /> {t('Upload XLSX or CSV')}
         </button>
         {fileRows && (
           <span className="small">
             <b>{fileRows.name}</b> · {fileRows.rows.length} units{' '}
-            <button type="button" className="link-btn small" onClick={() => { setFileRows(null); reset(); }}>Remove</button>
+            <button type="button" className="link-btn small" onClick={() => { setFileRows(null); reset(); }}>{t('Remove')}</button>
           </span>
         )}
         <input ref={fileInput} type="file" hidden
@@ -109,7 +108,7 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
       {!diff && (
         <button type="button" className="btn" style={{ alignSelf: 'flex-start' }}
           disabled={busy || (!fileRows && !paste.trim())} onClick={() => send(false)}>
-          {busy ? 'Checking…' : 'Check changes'}
+          {t(busy ? 'Checking…' : 'Check changes')}
         </button>
       )}
 
@@ -131,7 +130,7 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
           {diff.changed.length > 0 && (
             <div className="imp-table-wrap">
               <table className="table imp-table">
-                <thead><tr><th>Unit</th><th>Changes</th></tr></thead>
+                <thead><tr><th>{t('Unit')}</th><th>{t('Changes')}</th></tr></thead>
                 <tbody>
                   {diff.changed.map((c) => (
                     <tr key={c.id}>
@@ -139,7 +138,7 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
                       <td>
                         {c.fields.map((f) => (
                           <span key={f} className="imp-change">
-                            {FIELD_LABEL[f]}: <s>{show(f, c.before[f])}</s> → <b>{show(f, c.after[f])}</b>
+                            {t(FIELD_LABEL[f])}: <s>{show(f, c.before[f])}</s> → <b>{show(f, c.after[f])}</b>
                           </span>
                         ))}
                       </td>
@@ -153,7 +152,7 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
           {diff.added.length > 0 && (
             <div className="imp-table-wrap">
               <table className="table imp-table">
-                <thead><tr><th>New unit</th><th>Type</th><th>Floor</th><th>Area</th><th>Price</th></tr></thead>
+                <thead><tr><th>{t('New unit')}</th><th>{t('Type')}</th><th>{t('Floor')}</th><th>{t('Area')}</th><th>{t('Price')}</th></tr></thead>
                 <tbody>
                   {diff.added.map((r) => (
                     <tr key={r.unit}>
@@ -168,9 +167,9 @@ export default function PriceListImport({ dev, buildings, onAdded }: { dev: Deve
 
           <div className="chip-row">
             <button type="button" className="btn btn--primary" disabled={busy || !pending} onClick={() => send(true)}>
-              {busy ? 'Saving…' : pending ? `Apply ${pending} ${pending === 1 ? 'change' : 'changes'}` : 'Nothing to change'}
+              {busy ? t('Saving…') : pending ? t(pending === 1 ? 'Apply {n} change' : 'Apply {n} changes', { n: pending }) : t('Nothing to change')}
             </button>
-            <button type="button" className="btn btn--ghost" onClick={reset}>Back</button>
+            <button type="button" className="btn btn--ghost" onClick={reset}>{t('Back')}</button>
           </div>
         </div>
       )}

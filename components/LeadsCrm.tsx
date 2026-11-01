@@ -7,6 +7,9 @@ import { fmtDate } from '@/lib/format';
 import { LEAD_STAGES, LOST_REASONS, leadStageLabel, leadsCsv, stageTone } from '@/lib/leadFunnel';
 import { contactPrefShort, fmtVisit } from '@/lib/visits';
 import type { Agent, Lead, LeadEvent, LeadStatus } from '@/lib/types';
+import { useT } from './LangProvider';
+import type { T } from '@/lib/i18n';
+import { QuickReply, RemindButton, RemindPill } from './LeadQuickActions';
 
 const PER_PAGE = 30;
 const DAY = 24 * 60 * 60 * 1000;
@@ -17,15 +20,17 @@ const CHANNELS: [Lead['channel'], string][] = [['form', 'Form'], ['whatsapp', 'W
  * перепризначення в агенції та вивантаження в CSV. Фільтрує на клієнті — кабінет і так
  * вантажить усі заявки (RLS віддає ріелтору його, власнику — по агенції).
  */
-export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onChanged }: {
+export default function LeadsCrm({ leads, meId, meName = '', isOwner, agencyId, members, onChanged }: {
   leads: Lead[];
   meId: string;
+  meName?: string;
   isOwner: boolean;
   /** активна команда: перепризначати можна лише її заявки і лише на її ріелторів */
   agencyId: string | null;
   members: Agent[];
   onChanged: () => void;
 }) {
+  const t = useT();
   const [q, setQ] = useState('');
   const [stage, setStage] = useState<'' | 'open' | LeadStatus>('');
   const [channel, setChannel] = useState('');
@@ -36,9 +41,13 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
   const [since, setSince] = useState(0);
   const [limit, setLimit] = useState(PER_PAGE);
   const [openId, setOpenId] = useState<string | null>(null);
+  // «перезвонить сегодня»: нагадування до кінця дня, ще не закриті заявки
+  const [dueOnly, setDueOnly] = useState(false);
+  const [dayEnd] = useState(() => { const d = new Date(); d.setHours(23, 59, 59, 999); return d.getTime(); });
+  const isDue = (l: Lead) => !!l.remindAt && l.status !== 'deal' && l.status !== 'lost' && Date.parse(l.remindAt) <= dayEnd;
 
   const agentName = (id: string) =>
-    id === meId ? 'Me' : members.find((m) => m.id === id)?.name || leads.find((l) => l.agentId === id)?.agentName || '—';
+    id === meId ? t('Me') : members.find((m) => m.id === id)?.name || leads.find((l) => l.agentId === id)?.agentName || '—';
 
   const counts = useMemo(() => {
     const c = Object.fromEntries(LEAD_STAGES.map(([k]) => [k, 0])) as Record<LeadStatus, number>;
@@ -52,17 +61,19 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
     const m = new Map<string, string>();
     for (const l of leads) {
       if (l.developmentSlug) m.set(`d:${l.developmentSlug}`, l.developmentName);
-      else m.set(`l:${l.listingId}`, l.listingTitle || 'Listing');
+      else m.set(`l:${l.listingId}`, l.listingTitle || t('Listing'));
     }
     return [...m].sort((a, b) => a[1].localeCompare(b[1]));
-  }, [leads]);
+  }, [leads, t]);
 
-  const filtering = Boolean(q || stage || channel || agent || object || period);
+  const filtering = Boolean(q || stage || channel || agent || object || period || dueOnly);
+  const dueCount = leads.filter(isDue).length;
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const digits = needle.replace(/[^\d]/g, '');
     return leads.filter((l) => {
+      if (dueOnly && !isDue(l)) return false;
       if (stage === 'open' ? l.status === 'deal' || l.status === 'lost' : stage && l.status !== stage) return false;
       if (channel && l.channel !== channel) return false;
       if (agent && l.agentId !== agent) return false;
@@ -75,10 +86,11 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
       }
       return true;
     });
-  }, [leads, q, stage, channel, agent, object, period, since]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leads, q, stage, channel, agent, object, period, since, dueOnly, dayEnd]);
 
   function reset() {
-    setQ(''); setStage(''); setChannel(''); setAgent(''); setObject(''); setPeriod('');
+    setQ(''); setStage(''); setChannel(''); setAgent(''); setObject(''); setPeriod(''); setDueOnly(false);
   }
 
   function exportCsv() {
@@ -96,81 +108,87 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
     <div className="panel">
       <div className="fgroup__head">
         <div>
-          <h3 style={{ marginBottom: 4 }}>Buyer enquiries</h3>
+          <h3 style={{ marginBottom: 4 }}>{t('Buyer enquiries')}</h3>
           <p className="muted small" style={{ margin: 0 }}>
-            {isOwner ? 'Everything that came in for your agency. Reassign an enquiry to the right agent from its card.' : 'Enquiries assigned to you.'}
+            {t(isOwner ? 'Everything that came in for your agency. Reassign an enquiry to the right agent from its card.' : 'Enquiries assigned to you.')}
           </p>
         </div>
         {leads.length > 0 && (
           <button type="button" className="btn btn--sm btn--ghost" onClick={exportCsv}>
-            <Icon name="download" size={16} /> Export CSV
+            <Icon name="download" size={16} /> {t('Export CSV')}
           </button>
         )}
       </div>
 
       {leads.length === 0 ? (
-        <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>No enquiries yet</div>
+        <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>{t('No enquiries yet')}</div>
       ) : (
         <>
           {/* воронка: клік — фільтр за стадією */}
-          <div className="crm-funnel" role="group" aria-label="Pipeline">
+          <div className="crm-funnel" role="group" aria-label={t('Pipeline')}>
             <button type="button" className={`crm-funnel__step ${stage === 'open' ? 'is-on' : ''}`}
               onClick={() => setStage(stage === 'open' ? '' : 'open')}>
-              <b>{open}</b><span>In progress</span>
+              <b>{open}</b><span>{t('In progress')}</span>
             </button>
             {LEAD_STAGES.map(([k, label]) => (
               <button key={k} type="button" className={`crm-funnel__step crm-funnel__step--${k} ${stage === k ? 'is-on' : ''}`}
                 onClick={() => setStage(stage === k ? '' : k)}>
-                <b>{counts[k]}</b><span>{label}</span>
+                <b>{counts[k]}</b><span>{t(label)}</span>
               </button>
             ))}
           </div>
+
+          {dueCount > 0 && (
+            <button type="button" className={`crm-due ${dueOnly ? 'is-on' : ''}`} onClick={() => setDueOnly(!dueOnly)}>
+              <Icon name="bell" size={16} /> {t(dueCount === 1 ? '{n} call back today' : '{n} call backs today', { n: dueCount })}
+            </button>
+          )}
 
           <div className="dash-filters">
             <div className="dash-filters__search">
               <Icon name="search" size={17} />
               <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
-                placeholder="Search by name, phone, email, property or message" aria-label="Search enquiries" />
+                placeholder={t('Search by name, phone, email, property or message')} aria-label={t('Search enquiries')} />
             </div>
-            <select className="input" value={stage} onChange={(e) => setStage(e.target.value as typeof stage)} aria-label="Stage">
-              <option value="">Any stage</option>
-              <option value="open">In progress</option>
-              {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            <select className="input" value={stage} onChange={(e) => setStage(e.target.value as typeof stage)} aria-label={t('Stage')}>
+              <option value="">{t('Any stage')}</option>
+              <option value="open">{t('In progress')}</option>
+              {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
             </select>
-            <select className="input" value={channel} onChange={(e) => setChannel(e.target.value)} aria-label="Channel">
-              <option value="">Any channel</option>
-              {CHANNELS.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            <select className="input" value={channel} onChange={(e) => setChannel(e.target.value)} aria-label={t('Channel')}>
+              <option value="">{t('Any channel')}</option>
+              {CHANNELS.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
             </select>
             {objects.length > 1 && (
-              <select className="input" value={object} onChange={(e) => setObject(e.target.value)} aria-label="Property">
-                <option value="">All properties</option>
-                {objects.map(([k, name]) => <option key={k} value={k}>{k.startsWith('d:') ? `${name} (development)` : name}</option>)}
+              <select className="input" value={object} onChange={(e) => setObject(e.target.value)} aria-label={t('Property')}>
+                <option value="">{t('All properties')}</option>
+                {objects.map(([k, name]) => <option key={k} value={k}>{k.startsWith('d:') ? t('{name} (development)', { name }) : name}</option>)}
               </select>
             )}
             {agents.length > 1 && (
-              <select className="input" value={agent} onChange={(e) => setAgent(e.target.value)} aria-label="Agent">
-                <option value="">All agents</option>
+              <select className="input" value={agent} onChange={(e) => setAgent(e.target.value)} aria-label={t('Agent')}>
+                <option value="">{t('All agents')}</option>
                 {agents.map((id) => <option key={id} value={id}>{agentName(id)}</option>)}
               </select>
             )}
-            <select className="input" value={period} aria-label="Period"
+            <select className="input" value={period} aria-label={t('Period')}
               onChange={(e) => { setPeriod(e.target.value); setSince(Date.now() - Number(e.target.value) * DAY); }}>
-              <option value="">Any time</option>
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
+              <option value="">{t('Any time')}</option>
+              <option value="7">{t('Last 7 days')}</option>
+              <option value="30">{t('Last 30 days')}</option>
+              <option value="90">{t('Last 90 days')}</option>
             </select>
           </div>
           <div className="dash-filters__sum small muted">
-            {filtering ? `${shown.length} of ${leads.length} enquiries` : `${leads.length} enquiries`}
-            {filtering && <> · <button type="button" className="link-btn" onClick={reset}>Clear filters</button></>}
+            {filtering ? t('{n} of {total} enquiries', { n: shown.length, total: leads.length }) : t('{total} enquiries', { total: leads.length })}
+            {filtering && <> · <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></>}
           </div>
 
           {shown.length === 0 ? (
             <div className="empty"><div className="empty__ico"><Icon name="search" size={40} /></div>
-              Nothing matches these filters. <button type="button" className="link-btn" onClick={reset}>Clear filters</button></div>
+              {t('Nothing matches these filters.')} <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></div>
           ) : shown.slice(0, limit).map((l) => (
-            <LeadRow key={l.id} lead={l} meId={meId} agentName={agentName}
+            <LeadRow key={l.id} lead={l} meId={meId} meName={meName} agentName={agentName}
               canAssign={isOwner && !!agencyId && l.agencyId === agencyId}
               members={members} expanded={openId === l.id}
               onToggle={() => setOpenId(openId === l.id ? null : l.id)} onChanged={onChanged} />
@@ -178,7 +196,7 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
           {shown.length > limit && (
             <div style={{ textAlign: 'center', marginTop: 16 }}>
               <button type="button" className="btn btn--ghost" onClick={() => setLimit(limit + PER_PAGE)}>
-                Show more ({shown.length - limit} left)
+                {t('Show more ({n} left)', { n: shown.length - limit })}
               </button>
             </div>
           )}
@@ -188,26 +206,27 @@ export default function LeadsCrm({ leads, meId, isOwner, agencyId, members, onCh
   );
 }
 
-async function patchLead(id: string, patch: Record<string, unknown>) {
+async function patchLead(id: string, patch: Record<string, unknown>, t: T) {
   const res = await fetch(`/api/leads/${id}`, {
     method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
   });
   const d = await res.json().catch(() => ({}));
-  if (!res.ok) toast(d.error ?? 'Not allowed');
+  if (!res.ok) toast(d.error ?? t('Not allowed'));
   return res.ok;
 }
 
-function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onToggle, onChanged }: {
-  lead: Lead; meId: string; agentName: (id: string) => string; canAssign: boolean; members: Agent[];
+function LeadRow({ lead: l, meId, meName, agentName, canAssign, members, expanded, onToggle, onChanged }: {
+  lead: Lead; meId: string; meName: string; agentName: (id: string) => string; canAssign: boolean; members: Agent[];
   expanded: boolean; onToggle: () => void; onChanged: () => void;
 }) {
+  const t = useT();
   // «Lost» спершу питає причину і лише тоді зберігає
   const [askLost, setAskLost] = useState(false);
 
   async function setStage(status: LeadStatus) {
     if (status === l.status) return;
     if (status === 'lost') { setAskLost(true); return; }
-    if (await patchLead(l.id, { status })) { toast(`Moved to ${leadStageLabel(status)}`); onChanged(); }
+    if (await patchLead(l.id, { status }, t)) { toast(t('Moved to {stage}', { stage: t(leadStageLabel(status)) })); onChanged(); }
   }
 
   return (
@@ -215,47 +234,46 @@ function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onTog
       <div className="crm-lead__main">
         <div style={{ minWidth: 0 }}>
           <b>{l.name}</b>{l.phone && <span className="muted"> · {l.phone}</span>}
-          <span className={`pill ${stageTone(l.status)}`} style={{ marginLeft: 8 }}>{leadStageLabel(l.status)}</span>
-          {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>WhatsApp</span>}
-          {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>Website widget</span>}
+          <span className={`pill ${stageTone(l.status)}`} style={{ marginLeft: 8 }}>{t(leadStageLabel(l.status))}</span>
+          {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('WhatsApp')}</span>}
+          {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('Website widget')}</span>}
           {l.status === 'lost' && l.lostReason && <span className="tiny muted" style={{ marginLeft: 6 }}>{l.lostReason}</span>}
+          {l.remindAt && l.status !== 'deal' && l.status !== 'lost' && <RemindPill at={l.remindAt} />}
           {l.visitAt && <VisitLine lead={l} />}
           {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
           <div className="tiny muted" style={{ marginTop: 6 }}>
             {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
               ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
-              : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || 'the listing'}</Link>}
+              : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || t('the listing')}</Link>}
             {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
-            {l.agentId !== meId && ` · agent: ${agentName(l.agentId)}`}
+            {l.agentId !== meId && ` · ${t('agent: {name}', { name: agentName(l.agentId) })}`}
           </div>
         </div>
         <div className="crm-lead__act">
-          <select className="input input--sm" value={l.status} aria-label="Stage"
+          <select className="input input--sm" value={l.status} aria-label={t('Stage')}
             onChange={(e) => setStage(e.target.value as LeadStatus)}>
-            {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{label}</option>)}
+            {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
           </select>
           {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
           {l.phone && (
             <>
-              <a className="btn btn--sm btn--ghost btn--icon" title="WhatsApp" aria-label="WhatsApp"
-                href={`https://wa.me/${l.phone.replace(/[^\d]/g, '')}`} target="_blank" rel="noreferrer">
-                <Icon name="chat" size={16} />
-              </a>
-              <a className="btn btn--sm btn--primary btn--icon" title="Call" aria-label="Call" href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
+              <QuickReply lead={l} agentName={agentName(l.agentId) === t('Me') ? meName : agentName(l.agentId)} />
+              <a className="btn btn--sm btn--primary btn--icon" title={t('Call')} aria-label={t('Call')} href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
                 <Icon name="phone" size={16} />
               </a>
             </>
           )}
+          <RemindButton lead={l} onChanged={onChanged} />
           <button type="button" className="btn btn--sm btn--ghost" aria-expanded={expanded} onClick={onToggle}>
-            {expanded ? 'Close' : 'Notes & history'}
+            {t(expanded ? 'Close' : 'Notes & history')}
           </button>
         </div>
       </div>
 
       {askLost && (
         <LostForm onCancel={() => setAskLost(false)} onSave={async (reason) => {
-          if (await patchLead(l.id, { status: 'lost', lostReason: reason })) {
-            setAskLost(false); toast('Marked as lost'); onChanged();
+          if (await patchLead(l.id, { status: 'lost', lostReason: reason }, t)) {
+            setAskLost(false); toast(t('Marked as lost')); onChanged();
           }
         }} />
       )}
@@ -266,24 +284,25 @@ function LeadRow({ lead: l, meId, agentName, canAssign, members, expanded, onTog
 }
 
 function LostForm({ initial = '', onSave, onCancel }: { initial?: string; onSave: (r: string) => void; onCancel: () => void }) {
+  const t = useT();
   const preset = LOST_REASONS.includes(initial) ? initial : initial ? 'other' : '';
   const [pick, setPick] = useState(preset);
   const [other, setOther] = useState(preset === 'other' ? initial : '');
   const reason = pick === 'other' ? other.trim() : pick;
   return (
     <form className="crm-lost" onSubmit={(e) => { e.preventDefault(); if (reason) onSave(reason); }}>
-      <span className="small"><b>Why was it lost?</b></span>
-      <select className="input input--sm" value={pick} onChange={(e) => setPick(e.target.value)} aria-label="Reason" autoFocus>
-        <option value="">Choose a reason…</option>
-        {LOST_REASONS.map((r) => <option key={r} value={r}>{r}</option>)}
-        <option value="other">Other…</option>
+      <span className="small"><b>{t('Why was it lost?')}</b></span>
+      <select className="input input--sm" value={pick} onChange={(e) => setPick(e.target.value)} aria-label={t('Reason')} autoFocus>
+        <option value="">{t('Choose a reason…')}</option>
+        {LOST_REASONS.map((r) => <option key={r} value={r}>{t(r)}</option>)}
+        <option value="other">{t('Other…')}</option>
       </select>
       {pick === 'other' && (
-        <input className="input input--sm" value={other} maxLength={300} placeholder="Reason"
-          onChange={(e) => setOther(e.target.value)} aria-label="Other reason" />
+        <input className="input input--sm" value={other} maxLength={300} placeholder={t('Reason')}
+          onChange={(e) => setOther(e.target.value)} aria-label={t('Other reason')} />
       )}
-      <button className="btn btn--sm btn--primary" disabled={!reason}>Save</button>
-      <button type="button" className="btn btn--sm btn--ghost" onClick={onCancel}>Cancel</button>
+      <button className="btn btn--sm btn--primary" disabled={!reason}>{t('Save')}</button>
+      <button type="button" className="btn btn--sm btn--ghost" onClick={onCancel}>{t('Cancel')}</button>
     </form>
   );
 }
@@ -292,6 +311,7 @@ function LostForm({ initial = '', onSave, onCancel }: { initial?: string; onSave
 function LeadDetail({ lead: l, canAssign, members, agentName, onChanged }: {
   lead: Lead; canAssign: boolean; members: Agent[]; agentName: (id: string) => string; onChanged: () => void;
 }) {
+  const t = useT();
   const [events, setEvents] = useState<LeadEvent[] | null>(null);
   const [available, setAvailable] = useState(true);
   const [note, setNote] = useState('');
@@ -320,13 +340,13 @@ function LeadDetail({ lead: l, canAssign, members, agentName, onChanged }: {
     });
     setBusy(false);
     const d = await res.json().catch(() => ({}));
-    if (!res.ok) return toast(d.error ?? 'Could not save the note');
+    if (!res.ok) return toast(d.error ?? t('Could not save the note'));
     setNote(''); setTick((t) => t + 1);
   }
 
   async function reassign(agentId: string) {
     if (!agentId || agentId === l.agentId) return;
-    if (await patchLead(l.id, { agentId })) { toast(`Assigned to ${agentName(agentId)}`); onChanged(); }
+    if (await patchLead(l.id, { agentId }, t)) { toast(t('Assigned to {name}', { name: agentName(agentId) })); onChanged(); }
   }
 
   const team = members.filter((m) => m.active !== false);
@@ -336,37 +356,37 @@ function LeadDetail({ lead: l, canAssign, members, agentName, onChanged }: {
       <div className="crm-detail__side">
         {canAssign && team.length > 1 && (
           <label className="field">
-            <span className="small muted">Assigned agent</span>
+            <span className="small muted">{t('Assigned agent')}</span>
             <select className="input input--sm" value={l.agentId} onChange={(e) => reassign(e.target.value)}>
               {!team.some((m) => m.id === l.agentId) && <option value={l.agentId}>{agentName(l.agentId)}</option>}
-              {team.map((m) => <option key={m.id} value={m.id}>{m.name || 'Agent'}{m.isOwner ? ' (owner)' : ''}</option>)}
+              {team.map((m) => <option key={m.id} value={m.id}>{m.name || t('Agent')}{m.isOwner ? ` (${t('owner')})` : ''}</option>)}
             </select>
           </label>
         )}
         {l.status === 'lost' && (editLost
           ? <LostForm initial={l.lostReason} onCancel={() => setEditLost(false)} onSave={async (reason) => {
-              if (await patchLead(l.id, { status: 'lost', lostReason: reason })) { setEditLost(false); onChanged(); }
+              if (await patchLead(l.id, { status: 'lost', lostReason: reason }, t)) { setEditLost(false); onChanged(); }
             }} />
           : <div className="small">
-              <span className="muted">Lost reason: </span>{l.lostReason || '—'}{' '}
-              <button type="button" className="link-btn small" onClick={() => setEditLost(true)}>Edit</button>
+              <span className="muted">{t('Lost reason:')} </span>{l.lostReason || '—'}{' '}
+              <button type="button" className="link-btn small" onClick={() => setEditLost(true)}>{t('Edit')}</button>
             </div>)}
       </div>
 
       {available ? (
         <form className="crm-note" onSubmit={addNote}>
           <textarea className="input" rows={2} maxLength={2000} value={note} onChange={(e) => setNote(e.target.value)}
-            placeholder="Add a note: what you discussed, next step, budget…" aria-label="Note" />
-          <button className="btn btn--sm btn--primary" disabled={busy || !note.trim()}>Add note</button>
+            placeholder={t('Add a note: what you discussed, next step, budget…')} aria-label={t('Note')} />
+          <button className="btn btn--sm btn--primary" disabled={busy || !note.trim()}>{t('Add note')}</button>
         </form>
       ) : (
-        <p className="tiny muted">Notes and history will appear once the database update is applied.</p>
+        <p className="tiny muted">{t('Notes and history will appear once the database update is applied.')}</p>
       )}
 
       <ol className="crm-timeline">
         {[...(events ?? [])].reverse().map((e) => (
           <li key={e.id} className={`crm-timeline__item crm-timeline__item--${e.kind}`}>
-            <div className="small">{describe(e, agentName)}</div>
+            <div className="small">{describe(e, agentName, t)}</div>
             {e.kind === 'note' && <p className="small" style={{ margin: '2px 0 0', whiteSpace: 'pre-line' }}>{e.body}</p>}
             <div className="tiny muted">
               {fmtStamp(e.createdAt)}{e.actorName && ` · ${e.actorName}`}{!e.actorId && e.kind === 'assign' && ' · automatic'}
@@ -374,21 +394,21 @@ function LeadDetail({ lead: l, canAssign, members, agentName, onChanged }: {
           </li>
         ))}
         <li className="crm-timeline__item">
-          <div className="small">Enquiry received{l.channel === 'whatsapp' ? ' via WhatsApp' : l.channel === 'visit' ? ' (office visit booking)' : ''}</div>
+          <div className="small">{t(l.channel === 'whatsapp' ? 'Enquiry received via WhatsApp' : l.channel === 'visit' ? 'Enquiry received (office visit booking)' : 'Enquiry received')}</div>
           <div className="tiny muted">{fmtStamp(l.createdAt)}</div>
         </li>
-        {events === null && <li className="tiny muted">Loading history…</li>}
+        {events === null && <li className="tiny muted">{t('Loading history…')}</li>}
       </ol>
     </div>
   );
 }
 
-function describe(e: LeadEvent, agentName: (id: string) => string) {
-  if (e.kind === 'note') return <b>Note</b>;
+function describe(e: LeadEvent, agentName: (id: string) => string, t: T) {
+  if (e.kind === 'note') return <b>{t('Note')}</b>;
   if (e.kind === 'assign') {
-    return <>Reassigned from <b>{agentName(e.from)}</b> to <b>{agentName(e.to)}</b>{e.body === 'Round-robin' && ' (round-robin)'}</>;
+    return <>{t('Reassigned from')} <b>{agentName(e.from)}</b> {t('to')} <b>{agentName(e.to)}</b>{e.body === 'Round-robin' && ` (${t('round-robin')})`}</>;
   }
-  return <>Stage: {leadStageLabel(e.from)} → <b>{leadStageLabel(e.to)}</b>{e.to === 'lost' && e.body && ` · ${e.body}`}</>;
+  return <>{t('Stage:')} {t(leadStageLabel(e.from))} → <b>{t(leadStageLabel(e.to))}</b>{e.to === 'lost' && e.body && ` · ${e.body}`}</>;
 }
 
 const fmtStamp = (iso: string) =>
@@ -396,13 +416,14 @@ const fmtStamp = (iso: string) =>
 
 /** Запис на візит: коли прийде, що цікавить і як зручніше звʼязатись */
 function VisitLine({ lead }: { lead: Lead }) {
+  const t = useT();
   const past = new Date(lead.visitAt!) < new Date();
   return (
     <div className="lead__visit">
       <span className={`pill ${past ? 'pill--off' : 'pill--on'}`}>
-        <Icon name="calendar" size={14} /> Office visit · {fmtVisit(lead.visitAt!)}
+        <Icon name="calendar" size={14} /> {t('Office visit')} · {fmtVisit(lead.visitAt!)}
       </span>
-      {lead.contactVia && <span className="tiny muted">Prefers {contactPrefShort(lead.contactVia)}</span>}
+      {lead.contactVia && <span className="tiny muted">{t('Prefers {via}', { via: t(contactPrefShort(lead.contactVia)) })}</span>}
       {lead.interests.length > 0 && (
         <div className="lead__tags">{lead.interests.map((x) => <span key={x} className="tag">{x}</span>)}</div>
       )}

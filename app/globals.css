@@ -211,7 +211,13 @@ textarea.input{resize:vertical;min-height:96px}
 .ov__title{font-size:15px;font-weight:600;letter-spacing:-.02em;margin:2px 0 4px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ov__meta{font-size:13px;opacity:.88}
-.ov__price{font-size:20px;font-weight:800;margin-top:4px}
+.ov__price{font-size:20px;font-weight:800;margin-top:4px;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.ov__old{font-size:13px;font-weight:500;opacity:.7}
+.ov__ppm{font-size:12px;font-weight:600;opacity:.85}
+.ov__photos{margin-left:auto;display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:600;
+  padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
+.badge--cut{background:#16a34a;color:#fff}
+.badge--new{background:#2563eb;color:#fff}
 .ov .card__badges{z-index:2}
 .ov .fav{z-index:2;background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
 .ov .fav.is-on{color:#ff4d6d;background:rgba(255,255,255,.92)}
@@ -428,6 +434,11 @@ textarea.input{resize:vertical;min-height:96px}
 .cc__link:hover{color:var(--ink-2)}
 .cc__form{margin-top:16px;padding:20px}
 .cc__form .input{background:#fff}
+.cc__quick{display:flex;flex-wrap:wrap;gap:6px}
+.cc__q{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;
+  color:var(--ink-2);cursor:pointer}
+.cc__q:hover{border-color:var(--ink-3);color:var(--ink)}
+.cc__alerts{display:grid;justify-items:center;gap:10px;margin-top:16px}
 .rating{display:inline-flex;gap:4px;align-items:center;font-weight:800}
 #miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
 
@@ -463,6 +474,7 @@ textarea.input{resize:vertical;min-height:96px}
 .form-grid .full{grid-column:1/-1}
 .empty{text-align:center;padding:60px 20px;color:var(--ink-2)}
 .empty__ico{display:flex;justify-content:center;color:var(--ink-3);margin-bottom:12px}
+.empty__acts{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-top:18px}
 .lead{display:flex;gap:16px;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
 .lead:last-child{border-bottom:0;padding-bottom:0}
 .cta{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
@@ -2454,7 +2466,7 @@ html{scroll-behavior:smooth}
 
 /* друк сторінки обʼєкта: лише зміст і контакт, без навігації й кнопок */
 @media print{
-  .sidebar,.footer,.mbar,.no-print,.cmp-tray,.back-btn,.prop__acts,.cc__acts,.cc__links,.cc__form,
+  .sidebar,.footer,.mbar,.no-print,.cmp-tray,.back-btn,.prop__acts,.cc__acts,.cc__links,.cc__form,.cc__alerts,
   .gallery__all,.gallery__more,#miniMap,.lightbox,.crumbs--foot,.view-toggle{display:none !important}
   .shell{margin-left:0 !important;padding-bottom:0 !important}
   body{background:#fff}
@@ -2957,3 +2969,77 @@ html{scroll-behavior:smooth}
 .seo-text__faq{display:grid;gap:14px;margin:0}
 .seo-text__faq dt{color:var(--ink);font-weight:700}
 .seo-text__faq dd{margin:4px 0 0}
+.grid__full{grid-column:1/-1}
+.empty__near{margin-top:14px;display:grid;gap:8px;justify-items:center}
+.dev__plan{width:100%;border-collapse:collapse;font-size:15px}
+.dev__plan th{text-align:left;font-size:12px;font-weight:600;color:var(--muted,#777);padding:0 8px 6px 0}
+.dev__plan td{padding:8px 8px 8px 0;border-top:1px solid rgba(0,0,0,.08)}
+.dev__plan td:nth-child(2){white-space:nowrap}
+.dev__follow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+
+/* Кабінет на телефоні: нижня панель (Sidebar) замість ряду вкладок, цифри — одним рядком */
+.sidebar__dot{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;
+  background:var(--orange);color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center}
+.sidebar__ico{position:relative}
+.sheet__item.is-active{color:var(--orange)}
+@media (max-width:860px){
+  .sidebar button.sidelink.is-active{opacity:1}
+  .sidebar button.sidelink.is-active::before{
+    content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+    width:26px;height:3px;border-radius:0 0 4px 4px;background:var(--orange)}
+  .sidebar button.sidelink.is-active .sidebar__cap,.sidebar button.sidelink.is-active .sidebar__ico{color:var(--orange)}
+  .sidebar button.sidelink--add{opacity:1}
+  .sidebar button.sidelink--add .sidebar__ico{width:40px;height:28px;border-radius:10px;background:var(--orange);color:#fff}
+  .sidebar button.sidelink--add.is-active .sidebar__ico{color:#fff}
+  .dash > .sidenav{display:none}
+  .dash{padding-top:16px}
+  .stats.stats--dash{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:14px}
+  .stats--dash .stat{padding:8px 10px;border-radius:12px}
+  .stats--dash .stat .small{font-size:11px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .stats--dash .stat b{font-size:17px;margin-top:0}
+}
+
+/* Швидкі дії по заявці: готові відповіді й нагадування */
+.qa{position:relative;display:inline-flex}
+.qa__pop{position:absolute;right:0;top:calc(100% + 6px);z-index:30;width:min(360px,calc(100vw - 32px));max-height:70vh;overflow:auto;
+  display:grid;gap:6px;padding:12px;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 12px 32px rgba(0,0,0,.14)}
+.qa__pop--narrow{width:240px}
+.qa__head{font-weight:700;font-size:14px}
+.qa__item{display:block;text-align:left;padding:8px 10px;border:0;border-radius:10px;background:var(--bg-soft);font:inherit;font-size:13px;line-height:1.4;color:var(--ink);cursor:pointer}
+.qa__item:hover{background:#e9e9ef}
+.qa__item--plain{background:none;color:var(--ink-2)}
+.qa__custom{display:flex;gap:6px}
+.qa__custom .input{flex:1;min-width:0}
+.btn.is-set{color:var(--orange);border-color:var(--orange)}
+.pill--due{background:var(--orange);color:#fff}
+.pill .ico,.pill svg{vertical-align:-2px}
+.crm-due{display:inline-flex;align-items:center;gap:8px;margin:0 0 10px;padding:8px 14px;border-radius:999px;border:1px solid var(--orange);
+  background:#fff4ee;color:#b23a00;font:inherit;font-weight:700;font-size:14px;cursor:pointer}
+.crm-due.is-on{background:var(--orange);color:#fff}
+@media (max-width:560px){ .qa__label{display:none} }
+
+
+/* Живий показник повноти у формі оголошення */
+.lf__quality{border:1px solid var(--line);border-radius:14px;padding:10px 14px;margin:0 0 16px;background:#fff}
+.lf__quality summary{display:flex;align-items:center;gap:12px;flex-wrap:wrap;cursor:pointer;font-weight:700;list-style:none}
+.lf__quality summary::-webkit-details-marker{display:none}
+.lf__quality .q-meter{flex:1;min-width:100px}
+.lf__quality-next{flex-basis:100%;font-weight:500}
+.lf__quality ul{margin:8px 0 0;padding-left:18px;color:var(--ink-2)}
+
+/* Шахматка в кабінеті: клік по квартирі — стан і ціна */
+button.chess__cell{font:inherit;font-size:12px;text-align:left;cursor:pointer}
+.chess__cell.is-open{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset}
+.ub__pop{margin-top:10px;max-width:340px;display:grid;gap:10px;padding:12px;background:#fff;
+  border:1px solid var(--line);border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.10)}
+.ub__head{display:flex;justify-content:space-between;align-items:center}
+.ub__statuses{display:flex;flex-wrap:wrap;gap:6px}
+.ub__price{display:grid;gap:4px}
+
+/* Калькулятор розстрочки ЖК */
+.pcalc{border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 14px;background:#fff}
+.pcalc__in{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.pcalc__in .field{display:grid;gap:4px;margin:0}
+.pcalc__out{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+.pcalc__out > div{display:grid;gap:2px}
+.pcalc__out b{font-size:22px;letter-spacing:-.02em}
