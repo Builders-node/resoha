@@ -113,6 +113,9 @@ export interface Listing {
   text: string;
   /** Опис іспанською (body_es, міграція 0059); порожньо — іспаномовні бачать англійський */
   textEs?: string;
+  /** Відео (YouTube / Vimeo) і 3D-тур (Matterport, Kuula…) — міграція 0069; порожньо — немає */
+  video: string;
+  tour: string;
   /* Звідки взяті факти. Порожньо — оголошення завів сам ріелтор. */
   sourceName: string;
   sourceRef: string;
@@ -397,6 +400,8 @@ export interface ListingQuery {
   build?: 'new' | 'resale';
   /** ціну знижували (old_price) */
   reduced?: boolean;
+  /** є відео або 3D-тур (міграція 0069) */
+  media?: boolean;
   /** додано за останні N днів */
   days?: number;
   /** слова тексту після виправлення опечаток (search_terms) — заповнює сам db.ts */

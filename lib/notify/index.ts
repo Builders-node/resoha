@@ -44,10 +44,15 @@ async function withVisitDetails(client: SupabaseClient, r: Claimed) {
   if (!visit || typeof p.manageToken !== 'string' || !r.email) return p;
   try {
     const { data } = await client.rpc('visit_lookup', { p_token: p.manageToken });
-    const v = data as { leadId?: string; development?: { office?: string; address?: string; neighborhood?: string; name?: string } | null } | null;
+    const v = data as {
+      leadId?: string; development?: { office?: string; address?: string; neighborhood?: string; name?: string } | null;
+      viewing?: { address?: string; neighborhood?: string } | null;
+    } | null;
     if (!v?.leadId) return p;
     const d = v.development;
-    const location = d ? d.office || [d.name, d.address, d.neighborhood].filter(Boolean).join(', ') : '';
+    // перегляд вторинки (0069) — адреса самого обʼєкта
+    const location = d ? d.office || [d.name, d.address, d.neighborhood].filter(Boolean).join(', ')
+      : [v.viewing?.address, v.viewing?.neighborhood].filter(Boolean).join(', ');
     return { ...p, leadId: v.leadId, ...(location ? { location } : {}) };
   } catch {
     return p;

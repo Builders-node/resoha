@@ -82,6 +82,8 @@ const mapListing = (r: Row): Listing => ({
   featured: r.featured, featuredRank: r.featured_rank ?? 0, active: r.active, views: r.views,
   createdAt: r.created_at, tags: r.tags ?? [], photos: r.photos ?? [], text: r.body ?? '',
   textEs: r.body_es ?? '',   // до міграції 0059 колонки немає
+  // відео й 3D-тур (міграція 0069); до неї колонок немає
+  video: r.video ?? '', tour: r.tour ?? '',
   sourceName: r.source_name ?? '', sourceRef: r.source_ref ?? '', sourceUrl: r.source_url ?? '',
   land: mapLand(r.land_facts),
   // до міграції 0028 колонки немає — тоді просто порожньо
@@ -274,6 +276,8 @@ function applyFilters(sel: any, q: ListingQuery) {
     anyOf.push('details->>condition.is.null,details->>condition.neq.new');
   }
   if (q.reduced) sel = sel.gt('old_price', 0);
+  // є відео або 3D-тур (згенерована колонка, міграція 0069)
+  if (q.media) sel = sel.eq('has_media', true);
   if (q.days) sel = sel.gte('created_at', new Date(Date.now() - q.days * 864e5).toISOString());
   // кожне слово має знайтись хоч десь; значення в or() беремо в лапки — інакше пробіли ламають розбір у PostgREST
   for (const w of q.terms ?? splitWords(q.q)) {
@@ -386,13 +390,19 @@ export async function getListing(id: string): Promise<Listing | null> {
  * До міграцій 0036, 0048 і 0049 колонок details, photo_rooms, review і expires_at немає:
  * PostgREST відповідає PGRST204 — тоді зберігаємо без них.
  */
-const OPTIONAL_COLUMNS = ['details', 'photo_rooms', 'review', 'expires_at', 'body_es'];
+const OPTIONAL_COLUMNS = ['details', 'photo_rooms', 'review', 'expires_at', 'body_es', 'video', 'tour'];
 const missingDetails = (e: { code?: string; message?: string } | null) =>
-  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at|body_es/.test(e.message ?? ''));
+  Boolean(e && (e.code === 'PGRST204' || e.code === '42703') && /details|photo_rooms|review|expires_at|body_es|video|tour/.test(e.message ?? ''));
 const dropOptional = (row: Row) => { for (const c of OPTIONAL_COLUMNS) delete row[c]; };
-/** До міграції 0059 немає лише body_es — тоді прибираємо тільки його, щоб не губити решту полів. */
-const onlyBodyEsMissing = (e: { code?: string; message?: string } | null, row: Row) =>
-  Boolean(missingDetails(e) && /body_es/.test(e?.message ?? '') && 'body_es' in row && delete row.body_es);
+/**
+ * До міграцій 0059 і 0069 немає лише body_es чи video/tour — тоді прибираємо тільки ту колонку,
+ * про яку скаржиться база, щоб не губити решту полів.
+ */
+const onlyBodyEsMissing = (e: { code?: string; message?: string } | null, row: Row) => {
+  if (!missingDetails(e)) return false;
+  const col = ['body_es', 'video', 'tour'].find((c) => new RegExp(`\\b${c}\\b`).test(e?.message ?? '') && c in row);
+  return Boolean(col && delete row[col]);
+};
 
 export async function createListing(input: Partial<Listing> & { agentId: string; agencyId: string | null; externalId?: string }) {
   const client = await db();
@@ -422,6 +432,8 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     photos: input.photos ?? [],
     body: input.text ?? '',
     ...(input.textEs ? { body_es: String(input.textEs).slice(0, 8000) } : {}),
+    ...(safeUrl(input.video) ? { video: safeUrl(input.video).slice(0, 500) } : {}),
+    ...(safeUrl(input.tour) ? { tour: safeUrl(input.tour).slice(0, 500) } : {}),
     source_name: input.sourceName ?? '',
     source_ref: input.sourceRef ?? '',
     source_url: safeUrl(input.sourceUrl),
@@ -441,7 +453,9 @@ export async function createListing(input: Partial<Listing> & { agentId: string;
     ...(input.externalId ? { external_id: input.externalId.slice(0, 120) } : {}),
   };
   let res = await client.from('listings').insert(row).select(listingCols({})).single();
-  if (onlyBodyEsMissing(res.error, row)) res = await client.from('listings').insert(row).select(listingCols({})).single();
+  for (let i = 0; i < 3 && onlyBodyEsMissing(res.error, row); i++) {
+    res = await client.from('listings').insert(row).select(listingCols({})).single();
+  }
   if (missingDetails(res.error)) {
     dropOptional(row);
     res = await client.from('listings').insert(row).select(listingCols({})).single();
@@ -480,7 +494,7 @@ const LISTING_COLUMNS: Record<string, string> = {
   sourceName: 'source_name', sourceRef: 'source_ref', sourceUrl: 'source_url',
   nearby: 'nearby', details: 'details', photoRooms: 'photo_rooms',
   developmentId: 'development_id', buildingId: 'building_id', unitNo: 'unit_no', floor: 'floor', status: 'status',
-  floorplan: 'floorplan',
+  floorplan: 'floorplan', video: 'video', tour: 'tour',
   // «на перевірку» / «в чернетку» і продовження строку; що з цього дозволено, вирішує тригер
   review: 'review', expiresAt: 'expires_at',
 };
@@ -493,6 +507,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
     const value = (patch as Row)[key];
     if (value === undefined) continue;
     row[column] = key === 'sourceUrl' ? safeUrl(value)
+      : key === 'video' || key === 'tour' ? safeUrl(value).slice(0, 500)
       : key === 'floorplan' ? safePlan(value)
       : key === 'nearby' ? cleanNearby(value)
       : key === 'details' ? cleanDetails(value)
@@ -512,7 +527,7 @@ export async function updateListing(id: string, patch: Partial<Listing>) {
 
   const client = await db();
   let res = await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle();
-  if (onlyBodyEsMissing(res.error, row)) {
+  for (let i = 0; i < 3 && onlyBodyEsMissing(res.error, row); i++) {
     res = Object.keys(row).length
       ? await client.from('listings').update(row).eq('id', id).select(listingCols({})).maybeSingle()
       : await client.from('listings').select(listingCols({})).eq('id', id).maybeSingle();

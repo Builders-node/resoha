@@ -60,6 +60,12 @@ export default function ListingCard({
         {isNew && !cut && <span className="badge badge--new">{t('New')}</span>}
         {l.status !== 'available' && <span className="badge">{t(statusLabel(l.status))}</span>}
         {l.oceanfront && <span className="badge">{t('Oceanfront')}</span>}
+        {/* відео й 3D-тур (0069): тур важливіший — його й показуємо, якщо є обидва */}
+        {(l.tour || l.video) && (
+          <span className="badge badge--media">
+            <Icon name={l.tour ? 'orbit' : 'play'} size={12} /> {t(l.tour ? '3D tour' : 'Video')}
+          </span>
+        )}
         {/* земля: один бейдж готовності замість «Titled»; без перевірки — нічого */}
         {l.type === 'land' && l.land?.checkedAt && (
           <span className={`badge badge--${readiness(l.land).tone}`}>{t(readiness(l.land).label)}</span>

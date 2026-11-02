@@ -218,6 +218,7 @@ textarea.input{resize:vertical;min-height:96px}
   padding:2px 7px;border-radius:999px;background:rgba(0,0,0,.35);backdrop-filter:blur(6px)}
 .badge--cut{background:#16a34a;color:#fff}
 .badge--new{background:#2563eb;color:#fff}
+.badge--media{background:rgba(15,15,16,.78);color:#fff;display:inline-flex;align-items:center;gap:4px}
 .ov .card__badges{z-index:2}
 .ov .fav{z-index:2;background:rgba(255,255,255,.18);color:#fff;backdrop-filter:blur(6px)}
 .ov .fav.is-on{color:#ff4d6d;background:rgba(255,255,255,.92)}
@@ -438,6 +439,22 @@ textarea.input{resize:vertical;min-height:96px}
 .cc__q{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;
   color:var(--ink-2);cursor:pointer}
 .cc__q:hover{border-color:var(--ink-3);color:var(--ink)}
+.cc__q.is-on{background:var(--ink);border-color:var(--ink);color:#fff}
+/* вибір часу перегляду вторинки (0069) */
+.vslots{display:grid;gap:8px;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fff}
+.vslots__head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.vslots__days{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.vslots__days::-webkit-scrollbar{display:none}
+.vslots__day{flex:0 0 auto;display:grid;justify-items:center;gap:0;min-width:52px;padding:6px 4px;border:1px solid var(--line);
+  border-radius:12px;background:#fff;font:inherit;color:var(--ink);cursor:pointer;line-height:1.2}
+.vslots__day b{font-size:16px}
+.vslots__day .tiny{color:var(--ink-2)}
+.vslots__day.is-on{background:var(--ink);border-color:var(--ink);color:#fff}
+.vslots__day.is-on .tiny{color:#fff}
+.vslots__more{align-content:center}
+.vslots__times{display:flex;flex-wrap:wrap;gap:6px}
+.vslots__video{display:flex;gap:8px;align-items:center}
+.vslots__done{display:grid;gap:12px}
 .cc__alerts{display:grid;justify-items:center;gap:10px;margin-top:16px}
 .rating{display:inline-flex;gap:4px;align-items:center;font-weight:800}
 #miniMap{height:420px;border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);position:relative}
@@ -2318,6 +2335,9 @@ html{scroll-behavior:smooth}
 .calc__note{margin:12px 0 0;line-height:1.5}
 .calc__note .link-accent{display:inline-flex;vertical-align:middle}
 @media (max-width:900px){ .calc__grid{grid-template-columns:1fr} }
+.yield__inputs{grid-template-columns:repeat(2,minmax(0,1fr))}
+.yield__inputs .field:first-child{grid-column:auto}
+.yield__neg{color:#dc2626}
 @media (max-width:560px){
   .calc__card{padding:16px}
   .calc__inputs{grid-template-columns:1fr 1fr}

@@ -18,6 +18,8 @@ import PhotoTour from '@/components/PhotoTour';
 import DevelopmentDocs from '@/components/DevelopmentDocs';
 import PriceHistory from '@/components/PriceHistory';
 import PurchaseCalculator from '@/components/PurchaseCalculator';
+import RentalYieldCalculator from '@/components/RentalYieldCalculator';
+import DevelopmentMedia from '@/components/DevelopmentMedia';
 import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
@@ -473,6 +475,15 @@ export default async function PropertyPage({ params, searchParams }: {
           {/* Фототур — коли ріелтор позначив кімнати на фото; інакше лишається галерея вгорі */}
           <PhotoTour groups={photoTour(listing.photos, listing.photoRooms)} title={listing.title} />
 
+          {/* відео й 3D-тур ріелтора (0069); у квартири ЖК без своїх — відео й тур самого ЖК */}
+          {(listing.video || listing.tour || dev?.video || dev?.tour) && (
+            <section id="media">
+              <h3 className="prop__h">{t(listing.tour || (!listing.video && dev?.tour) ? 'Video and 3D tour' : 'Video')}</h3>
+              <DevelopmentMedia video={listing.video || (listing.tour ? '' : dev?.video ?? '')}
+                tour={listing.tour || (listing.video ? '' : dev?.tour ?? '')} name={listing.title} />
+            </section>
+          )}
+
           <section id="price-history">
             <h3 className="prop__h">{t('Price history')}</h3>
             <PriceHistory points={prices} deal={listing.deal} price={listing.price} since={listing.createdAt} />
@@ -483,6 +494,11 @@ export default async function PropertyPage({ params, searchParams }: {
           {listing.deal === 'sale' && listing.price > 0 && (site.showPurchaseCosts || site.showFinancing) && (
             <PurchaseCalculator price={listing.price} hoa={listing.hoa} ownerFinancing={listing.ownerFinancing}
               showCosts={site.showPurchaseCosts} showFinancing={site.showFinancing} island={listing.island} />
+          )}
+
+          {/* дохідність здачі: для житла на продаж — подобова оренда мінус HOA, керування й податки */}
+          {listing.deal === 'sale' && listing.price > 0 && (listing.type === 'condo' || listing.type === 'house') && (
+            <RentalYieldCalculator price={listing.price} hoa={listing.hoa} island={listing.island} house={listing.type === 'house'} />
           )}
 
           {/* Місця поблизости — їх додає ріелтор у формі; точки з координатами є й на карті нижче */}

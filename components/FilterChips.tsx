@@ -35,6 +35,7 @@ export default function FilterChips({ filters: f, onChange, onReset }: {
   if (f.yearMin) add('year', t('Built {year}+', { year: f.yearMin }), { yearMin: '' });
   if (f.build) add('build', t(f.build === 'new' ? 'New build' : 'Resale'), { build: '' });
   if (f.reduced) add('reduced', t('Price reduced'), { reduced: false });
+  if (f.media) add('media', t('Video or 3D tour'), { media: false });
   if (f.days) add('days', t(DAYS[f.days] ?? 'Added recently'), { days: '' });
   if (f.oceanfront) add('ocean', t('Oceanfront'), { oceanfront: false });
   if (f.ready && f.type === 'land') add('ready', t('Ready to build'), { ready: false });

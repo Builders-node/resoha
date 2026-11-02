@@ -16,6 +16,8 @@ import { gaLead } from '@/lib/gtag';
 import { openAuth } from '@/lib/auth-modal';
 import GuestSearchAlert from './GuestSearchAlert';
 import Turnstile, { captchaToken } from './Turnstile';
+import ViewingSlots from './ViewingSlots';
+import AddToCalendar from './AddToCalendar';
 
 const digits = (v: string) => v.replace(/[^\d]/g, '');
 
@@ -67,6 +69,11 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
   const msgRef = useRef<HTMLTextAreaElement>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  // перегляд вторинки на конкретний час (0069): ISO-момент і підпис «Thu, Nov 5 · 10:30»
+  const [viewAt, setViewAt] = useState('');
+  const [viewLabel, setViewLabel] = useState('');
+  const [byVideo, setByVideo] = useState(false);
+  const [booked, setBooked] = useState('');
 
   // коли картка зʼявилась: сервер відсіює «відправки» швидші за людину (lib/guard.ts)
   const shownAt = useRef(0);
@@ -151,6 +158,30 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setSending(true);
+    if (viewAt) {
+      // запис на слот: та сама заявка-візит, що й у ЖК — з листом, .ics і нагадуваннями
+      const res = await fetch(`/api/listings/${listing.id}/viewing`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          visitAt: viewAt, name: fd.get('name'), phone: fd.get('phone'), email: fd.get('email') || me?.email,
+          message: fd.get('message'), contactVia: 'whatsapp',
+          interests: [byVideo ? 'Video call viewing' : 'In-person viewing'],
+          website: fd.get('website'), ts: shownAt.current,
+        }),
+      });
+      setSending(false);
+      if (res.ok) {
+        setBooked(viewAt); setSent(true);
+        toast(t('Viewing booked'));
+        gaLead('form', gaTarget);
+        return;
+      }
+      const error = (await res.json().catch(() => ({}))).error;
+      toast(error ? t(error) : t('Something went wrong'));
+      if (res.status === 400 && /time/i.test(error ?? '')) { setViewAt(''); setViewLabel(''); }
+      return;
+    }
     const res = await fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -266,7 +297,13 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
 
       {formOpen && (
         <div className="cc cc__form" id="enquiry">
-          {sent ? (
+          {sent && booked ? (
+            <div className="small note-ok vslots__done">
+              <span><Icon name="check" size={16} className="ico ico--ok" /> {t('Viewing booked for {when}. We emailed you the details and a link to change or cancel it; the agent will confirm.', { when: viewLabel })}</span>
+              <AddToCalendar uid={`viewing-${listing.id}-${Date.parse(booked)}@hogarli`} visitAt={booked} kind="viewing"
+                place={listing.title} address={place} agent={{ name: agent.name, phone: agent.phone }} />
+            </div>
+          ) : sent ? (
             <div className="small note-ok">
               <Icon name="check" size={16} className="ico ico--ok" /> {t('Sent. The agent sees your enquiry in their dashboard and will reply — most respond same day.')}
             </div>
@@ -286,16 +323,27 @@ export default function AgentContact({ agent, agency, listing, listingUrl, isFav
                   }}>{t(q)}</button>
                 ))}
               </div>
-              <textarea ref={msgRef} className="input" name="message" rows={3} placeholder={t('Your question, or when you would like to see it')} maxLength={2000}
+              {/* вторинка: вільні слоти ріелтора; квартири ЖК записуються у відділ продажів */}
+              {!forBuilding && !listing.developmentId && (
+                <ViewingSlots agentId={agent.id} value={viewAt} onChange={(iso, label) => { setViewAt(iso); setViewLabel(label); }} />
+              )}
+              {viewAt && (
+                <label className="small vslots__video">
+                  <input type="checkbox" checked={byVideo} onChange={(e) => setByVideo(e.target.checked)} /> {t('Show it to me on a video call (I am abroad)')}
+                </label>
+              )}
+              <textarea ref={msgRef} className="input" name="message" rows={3} placeholder={t(viewAt ? 'Anything the agent should know (optional)' : 'Your question, or when you would like to see it')} maxLength={2000}
                 defaultValue={topic ? `${t('Interested in {what}.', { what: topic })} ` : undefined} />
               <input className="input" name="name" placeholder={t('Your name')} defaultValue={me?.name ?? ''} required maxLength={120} autoComplete="name" />
               <input className="input" name="phone" type="tel" placeholder={t('Phone / WhatsApp')} defaultValue={me?.phone ?? ''} required maxLength={40} autoComplete="tel" />
-              <input className="input" name="email" type="email" placeholder={t('Email (optional)')} defaultValue={me?.email ?? ''} maxLength={200} autoComplete="email" />
+              {/* на запис з часом пошта обовʼязкова: туди йде підтвердження й посилання «змінити чи скасувати» */}
+              <input className="input" name="email" type="email" placeholder={viewAt ? 'Email *' : t('Email (optional)')} defaultValue={me?.email ?? ''}
+                maxLength={200} autoComplete="email" required={Boolean(viewAt)} />
               {/* приманка для ботів: людина цього поля не бачить і не заповнює */}
               <input className="hp" name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" />
               <Turnstile />
               <button className="btn btn--primary btn--block" disabled={sending}>
-                {sending ? t('Sending…') : t('Send enquiry')}
+                {sending ? t('Sending…') : viewAt ? t('Book viewing · {when}', { when: viewLabel }) : t('Send enquiry')}
               </button>
               <span className="tiny muted">
                 {t('By sending you agree to be contacted about this property.')}
