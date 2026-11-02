@@ -6,6 +6,7 @@ import AvatarPicker from './AvatarPicker';
 import NotifySettings from './NotifySettings';
 import Icon, { HeartIcon } from './Icon';
 import ListingCard from './ListingCard';
+import EmptyState from './EmptyState';
 import { toast } from './Toaster';
 import { fmtDate } from '@/lib/format';
 import { intlLocale } from '@/lib/i18n';
@@ -102,10 +103,13 @@ export default function UserAccount({ session, user, initialTab }: {
         {tab === 'fav' && (
           loading ? <div className="empty">{t('Loading…')}</div> :
           favs.length === 0 ? (
-            <div className="panel"><div className="empty"><div className="empty__ico"><HeartIcon size={40} /></div>
-              {t('No saved properties yet.')}<br />
-              <Link href="/listings" className="link-accent">{t('Start browsing')} <Icon name="arrowRight" size={16} /></Link>
-            </div></div>
+            <div className="panel">
+              <EmptyState icon={<HeartIcon size={30} />} title={t('No saved properties yet')}
+                text={t('Tap the heart on any listing to keep it here — handy for comparing prices and coming back later.')}>
+                <Link href="/listings" className="btn btn--primary"><Icon name="search" size={18} /> {t('Browse listings')}</Link>
+                <Link href="/developments" className="btn btn--ghost">{t('Browse developments')}</Link>
+              </EmptyState>
+            </div>
           ) : (
             <div className="grid grid--3">
               {favs.map((l) => <ListingCard key={l.id} listing={l} isFav />)}
@@ -120,7 +124,10 @@ export default function UserAccount({ session, user, initialTab }: {
               {t('Each one keeps its filters and shows how many properties match right now.')}
             </p>
             {searches.length === 0 ? (
-              <div className="empty"><div className="empty__ico"><Icon name="bell" size={40} /></div>{t('No saved searches. Use “Save search” on the results page.')}</div>
+              <EmptyState icon={<Icon name="bell" size={30} />} title={t('No saved searches yet')}
+                text={t('Set your filters on the results page and press “Save search” — we will email you when new properties match.')}>
+                <Link href="/listings" className="btn btn--primary"><Icon name="search" size={18} /> {t('Browse listings')}</Link>
+              </EmptyState>
             ) : searches.map((s) => (
               <div key={s.id} className="lead">
                 <div>
@@ -152,10 +159,10 @@ export default function UserAccount({ session, user, initialTab }: {
               {t('Developments you follow. We email you promotions, construction photos, price and document updates.')}
             </p>
             {loading ? <div className="empty">{t('Loading…')}</div> : followed.length === 0 ? (
-              <div className="empty"><div className="empty__ico"><Icon name="building" size={40} /></div>
-                {t('No subscriptions yet. Press “Subscribe” at the bottom of a development page.')}<br />
-                <Link href="/developments" className="link-accent">{t('Browse developments')} <Icon name="arrowRight" size={16} /></Link>
-              </div>
+              <EmptyState icon={<Icon name="building" size={30} />} title={t('No subscriptions yet')}
+                text={t('Press “Subscribe” at the bottom of a development page to get its news here and by email.')}>
+                <Link href="/developments" className="btn btn--primary"><Icon name="building" size={18} /> {t('Browse developments')}</Link>
+              </EmptyState>
             ) : followed.map((d) => (
               <div key={d.id} className="lead">
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
@@ -183,10 +190,10 @@ export default function UserAccount({ session, user, initialTab }: {
               {t('Everything you sent from a property page. “Handled” means the agent has worked it.')}
             </p>
             {leads.length === 0 ? (
-              <div className="empty">
-                <div className="empty__ico"><Icon name="chat" size={40} /></div>
-                {t('No enquiries yet. Open a listing and ask the agent for a viewing.')}
-              </div>
+              <EmptyState icon={<Icon name="chat" size={30} />} title={t('No enquiries yet')}
+                text={t('Open a listing and ask the agent for a viewing — your messages will appear here.')}>
+                <Link href="/listings" className="btn btn--primary"><Icon name="search" size={18} /> {t('Browse listings')}</Link>
+              </EmptyState>
             ) : leads.map((l) => (
               <div key={l.id} className="lead">
                 <div>

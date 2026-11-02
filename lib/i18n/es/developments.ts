@@ -155,7 +155,9 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
   'Unsubscribed': 'Suscripción cancelada',
   'Development updates': 'Novedades de proyectos',
   'Developments you follow. We email you promotions, construction photos, price and document updates.': 'Proyectos que sigue. Le enviamos por email promociones, fotos de la obra y cambios de precios y documentos.',
-  'No subscriptions yet. Press “Subscribe” at the bottom of a development page.': 'Aún no tiene suscripciones. Pulse «Suscribirse» al final de la página de un proyecto.',
+  'No subscriptions yet': 'Aún no tiene suscripciones',
+  'Press “Subscribe” at the bottom of a development page to get its news here and by email.':
+    'Pulse «Suscribirse» al final de la página de un proyecto para recibir sus novedades aquí y por email.',
   'Browse developments': 'Ver proyectos',
   'Subscribed {date}': 'Suscrito el {date}',
 };
