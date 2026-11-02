@@ -51,7 +51,7 @@ export function PaymentHistory({ campaigns }: { campaigns: PromoCampaign[] }) {
                     </div>
                   )}
                 </td>
-                <td className="small" data-label="Method">{c.payMethod === 'stripe' ? 'Card (Stripe)' : 'Manual'}</td>
+                <td className="small" data-label="Method">{c.payMethod === 'stripe' ? 'Card (Stripe)' : c.payMethod === 'plan' ? 'Included in plan' : 'Manual'}</td>
                 <td data-label="Receipt" style={{ whiteSpace: 'nowrap' }}>
                   <a className="btn btn--sm btn--ghost" href={`/api/promo/${c.id}/receipt`} target="_blank" rel="noopener">
                     <Icon name="download" size={14} /> PDF

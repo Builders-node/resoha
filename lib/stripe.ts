@@ -113,3 +113,98 @@ export async function paymentIntentOf(ref: string): Promise<string | null> {
   if (ref.startsWith('cs_')) return (await getCheckout(ref)).payment_intent;
   return null;
 }
+
+/* ---------- підписки, Stripe Billing (міграція 0072) ---------- */
+
+export type BillingInterval = 'month' | 'year';
+
+/** Те з підписки Stripe, що ми зберігаємо. Новіші версії API тримають період у позиції, старіші — у самій підписці. */
+export type StripeSubscription = {
+  id: string; status: string; customer: string; metadata: Record<string, string>;
+  cancel_at_period_end: boolean; canceled_at: number | null; trial_end: number | null;
+  current_period_start?: number; current_period_end?: number;
+  items: { data: {
+    id: string; current_period_start?: number; current_period_end?: number;
+    price: { unit_amount: number | null; currency: string; recurring: { interval: string } | null };
+  }[] };
+};
+
+export type StripeInvoice = {
+  id: string; number: string | null; created: number; amount_paid: number; amount_due: number; currency: string;
+  status: string | null; hosted_invoice_url: string | null; invoice_pdf: string | null;
+};
+
+/** Продукт для тарифу: створюємо раз, далі ціна задається в кожній оплаті (price_data), тож каталог у Stripe вести не треба. */
+export const createProduct = (name: string, planId: string) =>
+  call<{ id: string }>('/products', {
+    method: 'POST',
+    body: new URLSearchParams({ name: name.slice(0, 250), 'metadata[plan_id]': planId }),
+    headers: { 'Idempotency-Key': `product-${planId}-${name}`.slice(0, 255) },
+  });
+
+export async function createSubscriptionCheckout(opts: {
+  product: string; priceCents: number; currency: string; interval: BillingInterval;
+  metadata: Record<string, string>; trialDays: number;
+  customer?: string; email?: string; successUrl: string; cancelUrl: string;
+}): Promise<CheckoutSession> {
+  const form = new URLSearchParams({
+    mode: 'subscription',
+    success_url: opts.successUrl,
+    cancel_url: opts.cancelUrl,
+    allow_promotion_codes: 'true',
+    'line_items[0][quantity]': '1',
+    'line_items[0][price_data][currency]': opts.currency,
+    'line_items[0][price_data][unit_amount]': String(opts.priceCents),
+    'line_items[0][price_data][product]': opts.product,
+    'line_items[0][price_data][recurring][interval]': opts.interval,
+  });
+  for (const [k, v] of Object.entries(opts.metadata)) {
+    form.set(`metadata[${k}]`, v);
+    form.set(`subscription_data[metadata][${k}]`, v);
+  }
+  if (opts.trialDays > 0) form.set('subscription_data[trial_period_days]', String(opts.trialDays));
+  if (opts.customer) form.set('customer', opts.customer);
+  else if (opts.email) form.set('customer_email', opts.email);
+  return call<CheckoutSession>('/checkout/sessions', { method: 'POST', body: form });
+}
+
+/** Сесія Checkout разом із підпискою — після повернення зі Stripe. */
+export const getCheckoutWithSubscription = (id: string) =>
+  call<CheckoutSession & { mode: string; subscription: StripeSubscription | string | null }>(
+    `/checkout/sessions/${encodeURIComponent(id)}?expand[]=subscription`,
+  );
+
+export const getSubscription = (id: string) =>
+  call<StripeSubscription>(`/subscriptions/${encodeURIComponent(id)}`);
+
+/** Інший тариф чи інший період оплати: різницю Stripe порахує пропорційно. */
+export function changeSubscriptionPrice(sub: { id: string; item: string }, opts: {
+  product: string; priceCents: number; currency: string; interval: BillingInterval; metadata: Record<string, string>;
+}) {
+  const form = new URLSearchParams({
+    'items[0][id]': sub.item,
+    'items[0][price_data][currency]': opts.currency,
+    'items[0][price_data][unit_amount]': String(opts.priceCents),
+    'items[0][price_data][product]': opts.product,
+    'items[0][price_data][recurring][interval]': opts.interval,
+    proration_behavior: 'create_prorations',
+    cancel_at_period_end: 'false',
+  });
+  for (const [k, v] of Object.entries(opts.metadata)) form.set(`metadata[${k}]`, v);
+  return call<StripeSubscription>(`/subscriptions/${encodeURIComponent(sub.id)}`, { method: 'POST', body: form });
+}
+
+/** Скасувати наприкінці оплаченого періоду (або передумати). */
+export const setCancelAtPeriodEnd = (id: string, cancel: boolean) =>
+  call<StripeSubscription>(`/subscriptions/${encodeURIComponent(id)}`, {
+    method: 'POST', body: new URLSearchParams({ cancel_at_period_end: String(cancel) }),
+  });
+
+/** Портал Stripe: картка, рахунки, адреса. Вмикається раз у Stripe → Settings → Billing → Customer portal. */
+export const createPortalSession = (customer: string, returnUrl: string) =>
+  call<{ url: string }>('/billing_portal/sessions', {
+    method: 'POST', body: new URLSearchParams({ customer, return_url: returnUrl }),
+  });
+
+export const listInvoices = (customer: string, limit = 24) =>
+  call<{ data: StripeInvoice[] }>(`/invoices?customer=${encodeURIComponent(customer)}&limit=${limit}`);

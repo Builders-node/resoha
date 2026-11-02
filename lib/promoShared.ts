@@ -14,7 +14,7 @@ export type PromoCampaign = {
   id: string; ownerId: string; ownerName?: string;
   kind: PromoKind; targetId: string; targetName: string;
   days: number; priceCents: number; currency: string;
-  status: PromoStatus; payMethod: '' | 'stripe' | 'manual'; payRef: string;
+  status: PromoStatus; payMethod: '' | 'stripe' | 'manual' | 'plan'; payRef: string;
   paidAt: string | null; startsAt: string | null; endsAt: string | null;
   impressions: number; clicks: number; createdAt: string;
   /** вид і повернення грошей — міграція 0060 */
