@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import BackButton from '@/components/BackButton';
 import Icon from '@/components/Icon';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import ListingCard from '@/components/ListingCard';
 import { agencyMembers, getAgency, getFavorites, queryListings } from '@/lib/db';
 import { trackPromo } from '@/lib/promo';
@@ -68,7 +69,7 @@ export default async function AgencyPage({ params }: { params: Promise<{ id: str
         <div>
           <h1 className="with-ico">
             {agency.name}
-            {agency.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
+            {agency.verified && <VerifiedBadge label={t('Verified agency: company documents checked by Hogarli')} />}
           </h1>
           <p className="org__about">{about}</p>
           <div className="org__contacts">

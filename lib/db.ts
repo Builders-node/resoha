@@ -1092,7 +1092,7 @@ export async function adminOverview() {
     return n ?? 0;
   };
 
-  const [listings, hidden, agencies, reviews, leads, newLeads, pending, reports] = await Promise.all([
+  const [listings, hidden, agencies, reviews, leads, newLeads, pending, reports, verifications] = await Promise.all([
     count('listings'),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     count('listings', ((q: any) => q.eq('active', false)) as never),
@@ -1106,6 +1106,9 @@ export async function adminOverview() {
     count('listings', ((q: any) => q.eq('review', 'pending')) as never),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     count('listing_reports', ((q: any) => q.eq('status', 'open')) as never),
+    // заявки на перевірку за документами (0075); до міграції — нуль
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    count('verification_requests', ((q: any) => q.eq('status', 'pending')) as never),
   ]);
 
   const { data: people } = await client.from('profiles').select('role, verified, is_admin, active');
@@ -1130,7 +1133,7 @@ export async function adminOverview() {
   ) as Record<QualityKey, number>;
 
   return {
-    listings, hidden, agencies, reviews, leads, newLeads, views, quality, pending, reports,
+    listings, hidden, agencies, reviews, leads, newLeads, views, quality, pending, reports, verifications,
     agents: rows.filter((r) => r.role === 'agent').length,
     buyers: rows.filter((r) => r.role === 'user').length,
     unverifiedAgents: rows.filter((r) => r.role === 'agent' && !r.verified).length,
@@ -1280,7 +1283,7 @@ export async function listFeaturedBuildings(): Promise<(Building & { development
 /* ---------- журнал дій адміністратора ---------- */
 type AdminLogInput = {
   action: string;
-  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign' | 'report' | 'site';
+  targetKind: 'listing' | 'profile' | 'agency' | 'review' | 'development' | 'building' | 'campaign' | 'report' | 'site' | 'developer';
   targetId: string | null;
   targetName?: string;
   reason?: string;

@@ -7,6 +7,7 @@ import Photo from './Photo';
 import PhotoUploader from './PhotoUploader';
 import { toast } from './Toaster';
 import EmbedSnippets from './EmbedSnippets';
+import VerificationCard from './VerificationCard';
 import type { Developer } from '@/lib/types';
 import { useT } from './LangProvider';
 
@@ -23,6 +24,8 @@ export default function DeveloperPanel() {
   const [sort, setSort] = useState<'name' | 'new'>('name');
   const [page, setPage] = useState(1);
   const [links, setLinks] = useState<Record<string, string>>({});
+  // у якої компанії розгорнута заявка на перевірку за документами
+  const [verifying, setVerifying] = useState<string | null>(null);
 
   /** Пошук і фільтр скидають сторінку, щоб не лишитись на порожній 7-й */
   const shown = useMemo(() => {
@@ -127,11 +130,20 @@ export default function DeveloperPanel() {
                 </div>
                 <div className="co-row__acts">
                   <Link className="btn btn--ghost btn--sm" href={`/developers/${d.slug}`} target="_blank">{t('Open page')}</Link>
+                  {!d.verified && (
+                    <button className={`btn btn--ghost btn--sm ${verifying === d.id ? 'is-on' : ''}`} title={t('Send company documents to get the verified badge')}
+                      onClick={() => setVerifying((v) => (v === d.id ? null : d.id))}>
+                      <Icon name="shield" size={15} />{t('Get verified')}
+                    </button>
+                  )}
                   <button className={`btn btn--ghost btn--sm ${links[d.id] ? 'is-on' : ''}`} title={t('Create a link the company uses to take over this page')} onClick={() => handover(d)}>
                     <Icon name="link" size={15} />{t('Hand over')}
                   </button>
                   <button className="btn btn--ghost btn--sm btn--icon" title={t('Edit')} aria-label={t('Edit {name}', { name: d.name })} onClick={() => setEditing(d)}><Icon name="pencil" size={16} /></button>
                 </div>
+                {verifying === d.id && (
+                  <VerificationCard compact kind="developer" subjectId={d.id} name={d.name} verified={d.verified} onChanged={load} />
+                )}
                 {links[d.id] && (
                   <div className="co-row__handover">
                     <input className="input small" readOnly value={links[d.id]} onFocus={(e) => e.currentTarget.select()}

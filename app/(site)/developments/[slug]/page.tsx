@@ -21,6 +21,7 @@ import { DEAL_LABELS, fmtNumber } from '@/lib/format';
 import { getLang } from '@/lib/i18n/server';
 import { makeT } from '@/lib/i18n';
 import { getMoney } from '@/lib/currencyServer';
+import { getDeveloper } from '@/lib/db';
 import JsonLd from '@/components/JsonLd';
 import { developmentLd, graph } from '@/lib/seo';
 
@@ -53,7 +54,9 @@ export default async function DevelopmentPage({ params, searchParams }: {
   const { slug } = await params;
   const ctx = await developmentContext(slug);
   const { dev, units, buildings, docs, progress, news, base, from } = ctx;
-  const [lang, money] = await Promise.all([getLang(), getMoney()]);
+  const [lang, money, company] = await Promise.all([
+    getLang(), getMoney(), dev.developerId ? getDeveloper(dev.developerId) : Promise.resolve(null),
+  ]);
   const t = makeT(lang);
   await trackAfterResponse({ developmentId: dev.id }, 'dev_view', { utm: (await searchParams).utm_source });
   await trackPromo('development', [dev], 'click');
@@ -105,7 +108,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
           {units.length > 0 && <Link className="dev__more" href={`${base}/layouts`}>{t('Layouts')} →</Link>}
         </div>
         <DevelopmentUnits units={units}
-          buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} developerHref={dev.developerId ? `/developers/${dev.developerId}` : undefined} completion={dev.completion} sales={dev.sales}
+          buildings={buildings.length > 1 ? Object.fromEntries(buildings.map((b) => [b.id, b.name])) : undefined} developer={dev.developer} developerHref={dev.developerId ? `/developers/${company?.slug ?? dev.developerId}` : undefined} developerVerified={!!company?.verified} completion={dev.completion} sales={dev.sales}
           contactHref="#contact" />
         <ul className="dev__facts">
           {dev.website && (

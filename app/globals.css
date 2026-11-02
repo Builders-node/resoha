@@ -3095,3 +3095,21 @@ button.chess__cell{font:inherit;font-size:12px;text-align:left;cursor:pointer}
   .co-tools__sort{width:100%}
   .co-foot{justify-content:center}
 }
+
+/* Перевірка за документами (кабінет і адмінка) */
+.verify__state{display:flex;align-items:flex-start;gap:8px;padding:12px 14px;border-radius:12px;margin:0 0 12px;flex-wrap:wrap}
+.verify__state > span{flex:1;min-width:0}
+.verify__state--ok{background:#ecfdf5;color:#047857}
+.verify__state--wait{background:var(--chip);color:var(--ink-2)}
+.verify__state--bad{background:#fff4e5;color:#92400e}
+.verify__form{display:grid;gap:10px}
+.verify__files{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.verify__files li{display:flex;align-items:center;gap:8px;min-width:0}
+.verify__files select{max-width:46%}
+.verify__fname{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.verify--compact{grid-column:1/-1;padding-top:10px}
+.verify-docs{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.verify-docs a{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:10px;background:var(--chip);font-size:13px;max-width:100%}
+.verify-docs a span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:560px){.verify__files li{flex-wrap:wrap}.verify__files select{max-width:none;flex:1 1 100%;order:3}}
+.vbadge{display:inline-flex;align-items:center;cursor:help}

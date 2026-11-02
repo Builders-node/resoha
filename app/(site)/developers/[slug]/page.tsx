@@ -3,6 +3,7 @@ import { localized, metaDescription } from '@/lib/seoMeta';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import Icon from '@/components/Icon';
+import VerifiedBadge from '@/components/VerifiedBadge';
 import Photo from '@/components/Photo';
 import { getDeveloper, listDevelopments, queryListings } from '@/lib/db';
 import { getMoney } from '@/lib/currencyServer';
@@ -47,7 +48,7 @@ export default async function DeveloperPage({ params }: Props) {
         <Photo className="dev-logo" src={dev.logo} alt={dev.name} label="" />
         <div>
           <h1 className="with-ico" style={{ fontSize: 24 }}>
-            {dev.name}{dev.verified && <Icon name="verified" size={20} className="ico ico--ok" />}
+            {dev.name}{dev.verified && <VerifiedBadge label={t('Verified developer: company documents checked by Hogarli')} />}
           </h1>
           <div className="muted">
             {t('Developer')}{dev.founded && ` · ${t('since {year}', { year: dev.founded })}`} · {t(projects.length === 1 ? '1 development' : '{n} developments', { n: projects.length })}

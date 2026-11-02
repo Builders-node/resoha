@@ -27,6 +27,7 @@ const when = (iso: string) => `${fmtVisit(iso)} (Roatán time)`;
 const dateOnly = (iso: string) => new Date(iso).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
 
 const CHANNEL: Record<string, string> = { form: 'Enquiry form', visit: 'Sales office visit', whatsapp: 'WhatsApp' };
+const VERIFY_WHAT: Record<string, string> = { agent: 'realtor', agency: 'agency', developer: 'developer' };
 const REASONS: Record<string, string> = {
   sold: 'Already sold or rented', wrong_price: 'Wrong price', wrong_info: 'Wrong details or location',
   photos: 'Photos don’t match', scam: 'Looks like a scam', duplicate: 'Duplicate listing', other: 'Something else',
@@ -244,6 +245,34 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
           + cardHtml(c, 'Open listing') + button(dashboard, 'Open my listings'), footer('agent', unsub)),
         text: plain([subject, body, p.note && `Note: ${p.note}`, listingUrl(c)]),
         telegram: plain([ok ? 'Listing approved' : 'Listing needs changes', c.title, p.note && `Note: ${p.note}`, listingUrl(c)]),
+      };
+    }
+    case 'verification_request': {
+      const what = VERIFY_WHAT[p.subjectKind] ?? 'profile';
+      const subject = `Verification request: ${p.subjectName} (${what})`;
+      const body = `${p.subjectName} sent ${Number(p.documents) || 0} document(s) to get the verified badge on their ${what} profile.`;
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px">${esc(body)}</p>` + button(`${SITE_URL}/admin?tab=verification`, 'Open the verification queue'), footer('agent', unsub)),
+        text: plain([subject, body, `${SITE_URL}/admin?tab=verification`]),
+        telegram: plain(['Verification request', `${p.subjectName} · ${what}`, `${SITE_URL}/admin?tab=verification`]),
+      };
+    }
+    case 'verification_result': {
+      const ok = p.decision === 'approved';
+      const what = VERIFY_WHAT[p.subjectKind] ?? 'profile';
+      const subject = ok ? `${p.subjectName} is verified on ${SITE_NAME}` : `Verification needs more: ${p.subjectName}`;
+      const body = ok
+        ? `We checked the documents for your ${what} profile. The verified badge now shows on your page, cards and listings.`
+        : `We couldn’t verify your ${what} profile yet. Read the note below, then send the documents again from your dashboard.`;
+      const cta = p.subjectKind === 'developer' ? `${SITE_URL}/agent?tab=developer` : p.subjectKind === 'agency' ? `${SITE_URL}/agent?tab=team` : `${SITE_URL}/agent?tab=profile`;
+      return {
+        subject,
+        html: layout(`<p style="margin:0 0 12px">${esc(body)}</p>`
+          + (p.note ? `<p style="margin:0 0 12px"><b>Reviewer’s note:</b> ${esc(p.note)}</p>` : '')
+          + button(cta, 'Open my dashboard'), footer('agent', unsub)),
+        text: plain([subject, body, p.note && `Note: ${p.note}`, cta]),
+        telegram: plain([ok ? 'Verified' : 'Verification needs more', p.subjectName, p.note && `Note: ${p.note}`]),
       };
     }
     case 'report': {

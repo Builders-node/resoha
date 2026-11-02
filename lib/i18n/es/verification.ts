@@ -1,0 +1,50 @@
+/** Перевірка за документами (0075): заявка в кабінеті й значок на публічних сторінках. */
+export const ES_VERIFICATION: Record<string, string> = {
+  'Get the verified badge': 'Obtén la insignia de verificado',
+  'Verify the agency': 'Verificar la agencia',
+  'Verify {name}': 'Verificar {name}',
+  '{name}: only PDF, JPEG, PNG or WebP': '{name}: solo PDF, JPEG, PNG o WebP',
+  '{name} is over 20 MB': '{name} pesa más de 20 MB',
+  'Up to {n} documents': 'Hasta {n} documentos',
+  'Attach at least one document': 'Adjunta al menos un documento',
+  'Could not send': 'No se pudo enviar',
+  'Sent — we usually check documents within two working days': 'Enviado: solemos revisar los documentos en dos días hábiles',
+  'Withdraw this request? You can send a new one at any time.': '¿Retirar esta solicitud? Puedes enviar otra cuando quieras.',
+  'Request withdrawn': 'Solicitud retirada',
+  'Verified. Buyers see the badge on your page and cards.': 'Verificado. Los compradores ven la insignia en tu página y tus tarjetas.',
+  'Checked {date}.': 'Revisado el {date}.',
+  'Documents sent {date}. We’ll email you once they’re checked.': 'Documentos enviados el {date}. Te escribiremos cuando estén revisados.',
+  file: 'archivo',
+  files: 'archivos',
+  Withdraw: 'Retirar',
+  'We couldn’t verify it yet.': 'Aún no pudimos verificarlo.',
+  'Verified profiles get a badge on their page, cards and listings, and buyers trust them more.':
+    'Los perfiles verificados llevan una insignia en su página, tarjetas y anuncios, y los compradores confían más en ellos.',
+  'Send documents again': 'Enviar documentos de nuevo',
+  'Send documents': 'Enviar documentos',
+  'Send your ID and a real estate licence or association membership card. If you work without a licence, a letter from your agency also works.':
+    'Envía tu identificación y tu licencia de bienes raíces o carné de asociación. Si trabajas sin licencia, también sirve una carta de tu agencia.',
+  'Send the company registration (escritura de constitución or RTN) and the ID of the owner or legal representative.':
+    'Envía el registro de la empresa (escritura de constitución o RTN) y la identificación del dueño o representante legal.',
+  'Send the company registration (escritura de constitución or RTN) and the ID of the legal representative. Permits for a specific project go to that project’s documents.':
+    'Envía el registro de la empresa (escritura de constitución o RTN) y la identificación del representante legal. Los permisos de un proyecto van en los documentos de ese proyecto.',
+  'Files stay private: only the Hogarli team sees them. PDF, JPEG, PNG or WebP, up to 20 MB each.':
+    'Los archivos son privados: solo los ve el equipo de Hogarli. PDF, JPEG, PNG o WebP, hasta 20 MB cada uno.',
+  'Document type': 'Tipo de documento',
+  'Real estate licence or association card': 'Licencia de bienes raíces o carné de asociación',
+  'ID or passport': 'Identidad o pasaporte',
+  'Company registration (escritura, RTN)': 'Registro de la empresa (escritura, RTN)',
+  'Tax certificate': 'Constancia tributaria',
+  'Proof of office address': 'Comprobante de dirección de la oficina',
+  'Other document': 'Otro documento',
+  'Remove {name}': 'Quitar {name}',
+  'Add another file': 'Añadir otro archivo',
+  'Choose files': 'Elegir archivos',
+  'Anything we should know? Licence number, association, who signs for the company…':
+    '¿Algo que debamos saber? Número de licencia, asociación, quién firma por la empresa…',
+  'Send for review': 'Enviar a revisión',
+  'Send company documents to get the verified badge': 'Envía los documentos de la empresa para obtener la insignia de verificado',
+  'Get verified': 'Verificarse',
+  'Verified developer: company documents checked by Hogarli': 'Desarrolladora verificada: Hogarli revisó los documentos de la empresa',
+  'Verified agency: company documents checked by Hogarli': 'Agencia verificada: Hogarli revisó los documentos de la empresa',
+};
