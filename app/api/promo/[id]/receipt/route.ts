@@ -39,7 +39,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   b.row('Promoted item', c.targetName || '-');
   b.row('What it includes', PROMO_PRODUCTS[c.product].blurb);
   if (c.startsAt && c.endsAt) b.row('Period', `${fmtDate(c.startsAt)} - ${fmtDate(c.endsAt)}`);
-  b.row('Payment method', c.payMethod === 'stripe' ? 'Card (Stripe)' : 'Manual payment');
+  b.row('Payment method', c.payMethod === 'stripe' ? 'Card (Stripe)' : c.payMethod === 'plan' ? 'Included in your Hogarli plan' : 'Manual payment');
   if (c.payRef) b.row('Payment reference', c.payRef);
   b.row('Amount paid', fmtMoney(c.priceCents, c.currency));
   if (c.refundedAt) {

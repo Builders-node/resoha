@@ -36,6 +36,7 @@ const CAB_MORE_DEV: { tab: Tab; ico: string; cap: string }[] = [
   { tab: 'import', ico: 'download', cap: 'Import' },
   { tab: 'developer', ico: 'briefcase', cap: 'Company' },
   { tab: 'team', ico: 'users', cap: 'Team' },
+  { tab: 'plan', ico: 'wallet', cap: 'Plan' },
   { tab: 'profile', ico: 'user', cap: 'Profile' },
 ];
 const CAB_MORE: { tab: Tab; ico: string; cap: string }[] = [
@@ -44,6 +45,7 @@ const CAB_MORE: { tab: Tab; ico: string; cap: string }[] = [
   { tab: 'import', ico: 'download', cap: 'Import' },
   { tab: 'promote', ico: 'sparkle', cap: 'Promote' },
   { tab: 'team', ico: 'users', cap: 'Team' },
+  { tab: 'plan', ico: 'wallet', cap: 'Plan' },
   { tab: 'developer', ico: 'briefcase', cap: 'Developer company' },
   { tab: 'profile', ico: 'user', cap: 'Profile' },
 ];

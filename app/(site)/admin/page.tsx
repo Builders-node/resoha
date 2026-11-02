@@ -6,7 +6,7 @@ import { getSession } from '@/lib/session';
 
 export const metadata = { title: 'Admin — Hogarli Roatán' };
 
-const TABS: Tab[] = ['overview', 'moderation', 'verification', 'analytics', 'featured', 'promotions', 'developments', 'listings', 'leads', 'agencies', 'users', 'reviews', 'log'];
+const TABS: Tab[] = ['overview', 'moderation', 'verification', 'analytics', 'featured', 'promotions', 'billing', 'developments', 'listings', 'leads', 'agencies', 'users', 'reviews', 'log'];
 
 export default async function AdminPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getSession();
