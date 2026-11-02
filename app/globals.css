@@ -2395,18 +2395,56 @@ html{scroll-behavior:smooth}
 /* ---------- кабінет: CRM заявок, повнота оголошень, масові дії (0053) ---------- */
 .pill--ok{background:#dcfce7;color:#15803d}
 .input--sm{padding:7px 10px;font-size:13px;border-radius:10px;width:auto;min-width:0}
-.crm-funnel{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:14px 0 12px}
-.crm-funnel__step{display:grid;gap:2px;justify-items:start;background:var(--bg-soft);border:1px solid transparent;
-  border-radius:12px;padding:10px 12px;cursor:pointer;text-align:left;font:inherit;color:var(--ink)}
-.crm-funnel__step b{font-size:20px;line-height:1.1}
-.crm-funnel__step span{font-size:12px;color:var(--ink-2)}
-.crm-funnel__step:hover{border-color:var(--line)}
-.crm-funnel__step.is-on{border-color:var(--ink);background:#fff}
-.crm-funnel__step--deal b{color:#15803d}
-.crm-funnel__step--lost b{color:#b45309}
-.crm-lead{display:block}
-.crm-lead__main{display:flex;gap:16px;justify-content:space-between;align-items:flex-start}
-.crm-lead__act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;flex:none}
+/* Заявки: стадії вкладками, список рядками як у таблиці */
+.crm-tabs{display:flex;align-items:center;gap:4px;margin:16px 0 12px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.crm-tabs::-webkit-scrollbar{display:none}
+.crm-tabs__sep{flex:none;width:1px;height:20px;background:var(--line);margin:0 4px}
+.crm-tab{flex:none;display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;border:1px solid transparent;
+  background:none;font:inherit;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;white-space:nowrap}
+.crm-tab:hover{background:var(--bg-soft);color:var(--ink)}
+.crm-tab.is-on{background:var(--ink);color:#fff}
+.crm-tab__n{font-size:12px;font-weight:700;min-width:20px;padding:1px 6px;border-radius:999px;background:var(--bg-soft);color:var(--ink);text-align:center}
+.crm-tab.is-on .crm-tab__n{background:rgba(255,255,255,.18);color:#fff}
+.crm-tab.is-zero:not(.is-on){color:var(--ink-3)}
+.crm-tab.is-zero:not(.is-on) .crm-tab__n{background:none;color:var(--ink-3)}
+.crm-tab--deal:not(.is-zero):not(.is-on) .crm-tab__n{background:#dcfce7;color:#15803d}
+.crm-tab--lost:not(.is-zero):not(.is-on) .crm-tab__n{background:#fff4e5;color:#b45309}
+.crm-tabs .crm-due{flex:none;margin:0 0 0 auto;padding:6px 12px;font-size:13px;white-space:nowrap}
+
+.crm-list{border-top:1px solid var(--line)}
+.crm-head,.crm-row__main{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1.5fr) 96px 128px 212px;gap:16px;align-items:center}
+.crm-head{padding:10px 12px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-3);font-weight:700;border-bottom:1px solid var(--line)}
+.crm-row{padding:12px;border-bottom:1px solid var(--line);transition:background var(--dur) var(--ease)}
+.crm-row:hover,.crm-row.is-open{background:var(--bg-soft)}
+.crm-row:last-child{border-bottom:0}
+.crm-row__who{display:flex;gap:12px;align-items:center;min-width:0}
+.crm-ava{flex:none;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--orange-soft);color:#b23a00;font-weight:800;font-size:14px}
+.crm-row__name{display:flex;flex-wrap:wrap;align-items:center;gap:4px 8px}
+.crm-row__name b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.crm-row__name .pill{padding:2px 8px;font-size:11px}
+.crm-row__contact{margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crm-row__contact a{color:inherit}
+.crm-row__contact a:hover{color:var(--ink)}
+.crm-row__obj{min-width:0}
+.crm-row__obj a{color:var(--ink);font-weight:600;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.crm-row__obj a:hover{color:var(--orange)}
+.crm-row__date{white-space:nowrap}
+.crm-stage{appearance:none;-webkit-appearance:none;width:100%;border:0;border-radius:999px;padding:6px 28px 6px 12px;font:inherit;font-size:13px;font-weight:700;cursor:pointer;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center}
+.crm-stage.pill--off{background-color:var(--chip)}
+.crm-stage:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.crm-row__act{display:flex;gap:6px;align-items:center;justify-content:flex-end}
+.crm-row__more .ico{transform:rotate(90deg);transition:transform var(--dur) var(--ease)}
+.crm-row__more.is-on .ico{transform:rotate(-90deg)}
+.crm-row__extra{padding-left:50px;margin-top:6px;display:grid;gap:6px;max-width:760px}
+.crm-row__extra .lead__visit{margin-top:0}
+.crm-row__flags{display:flex;flex-wrap:wrap;gap:6px}
+.crm-row__flags .pill{margin-left:0!important;display:inline-flex;align-items:center;gap:4px}
+.crm-row__msg{margin:0;color:var(--ink-2);white-space:pre-line;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.crm-row__msg.is-full{display:block}
+.crm-row .crm-lost,.crm-row .crm-detail{margin-left:50px}
+.crm-row.is-open .crm-detail{background:#fff;border:1px solid var(--line)}
 .crm-lost{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:10px;padding:10px 12px;
   background:var(--orange-soft);border-radius:12px}
 .crm-detail{margin-top:12px;padding:14px;background:var(--bg-soft);border-radius:12px;display:grid;gap:12px}
@@ -2445,9 +2483,21 @@ html{scroll-behavior:smooth}
 .bulk-bar__row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .bulk-bar .btn.is-on{background:var(--ink);color:#fff}
 @media (max-width:860px){
-  .crm-funnel{grid-template-columns:repeat(4,minmax(0,1fr))}
-  .crm-lead__main{flex-direction:column}
-  .crm-lead__act{justify-content:flex-start}
+  .crm-head{display:none}
+  .crm-row{padding:14px 4px}
+  .crm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 12px;
+    grid-template-areas:"who stage" "obj date" "extra extra" "lost lost" "act act" "detail detail"}
+  .crm-row__main{display:contents}
+  .crm-row__extra{grid-area:extra;margin-top:0}
+  .crm-row .crm-lost{grid-area:lost;margin-top:0}
+  .crm-row .crm-detail{grid-area:detail;margin-top:4px}
+  .crm-row__act .qa__label{display:inline}
+  .crm-row__who{grid-area:who}
+  .crm-row__stage{grid-area:stage}
+  .crm-row__obj{grid-area:obj;padding-left:50px}
+  .crm-row__date{grid-area:date;text-align:right}
+  .crm-row__act{grid-area:act;justify-content:flex-start;padding-left:50px;margin-top:4px}
+  .crm-stage{width:auto}
   .crm-note{flex-direction:column;align-items:stretch}
   .table tr{position:relative}
   .table td.td--pick{position:absolute;top:12px;right:14px;width:auto;padding:0}
@@ -3176,3 +3226,9 @@ button.chess__cell{font:inherit;font-size:12px;text-align:left;cursor:pointer}
 .plan-card .is-disabled{opacity:.6;pointer-events:none}
 .plan-admin input[type=number]{width:90px}
 .plan-admin td{vertical-align:top}
+@media (max-width:560px){
+  .crm-row__obj,.crm-row__act,.crm-row__extra{padding-left:0}
+  .crm-row .crm-lost,.crm-row .crm-detail{margin-left:0}
+  .crm-row__act .qa:has(.btn--wa){flex:1}
+  .crm-row__act .qa:has(.btn--wa) .btn{width:100%;justify-content:center}
+}
