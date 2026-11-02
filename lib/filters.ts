@@ -31,6 +31,8 @@ export type Filters = {
   /** '' | 'new' | 'resale' */
   build: string;
   reduced: boolean;
+  /** є відео або 3D-тур */
+  media: boolean;
   /** додано за N днів: '' | '1' | '7' | '30' */
   days: string;
   tags: string[];
@@ -46,7 +48,7 @@ export const EMPTY_FILTERS: Filters = {
   deal: '', type: '', island: '', neighborhoods: [], beds: [], bathsMin: '',
   priceMin: '', priceMax: '', sqftMin: '', sqftMax: '', lotMin: '', lotMax: '',
   hoaMax: '', yearMin: '', oceanfront: false, titled: false, ownerFinancing: false, ready: false,
-  furnished: false, pets: false, parking: false, ac: false, build: '', reduced: false, days: '',
+  furnished: false, pets: false, parking: false, ac: false, build: '', reduced: false, media: false, days: '',
   tags: [], agentId: '', agencyId: '', q: '', sort: '', bbox: '',
 };
 
@@ -82,6 +84,7 @@ export function toQuery(f: Filters): string {
   if (f.ac) p.set('ac', '1');
   put('build', f.build);
   if (f.reduced) p.set('reduced', '1');
+  if (f.media) p.set('media', '1');
   put('days', f.days);
   put('tags', f.tags.join(','));
   put('agentId', f.agentId);
@@ -118,6 +121,7 @@ export function fromParams(bag: ParamBag): Filters {
     parking: get('parking') === '1', ac: get('ac') === '1',
     build: ['new', 'resale'].includes(get('build')) ? get('build') : '',
     reduced: get('reduced') === '1',
+    media: get('media') === '1',
     days: DAYS.includes(get('days')) ? get('days') : '',
     tags: arr('tags'), agentId: get('agentId'), agencyId: get('agencyId'), q: get('q'), sort: get('sort'),
     bbox: parseBbox(get('bbox')) ? get('bbox') : '',
@@ -141,7 +145,7 @@ export function countActive(f: Filters): number {
   if (f.titled) n++;
   if (f.ownerFinancing) n++;
   if (f.ready && f.type === 'land') n++;
-  for (const k of ['furnished', 'pets', 'parking', 'ac', 'reduced'] as const) if (f[k]) n++;
+  for (const k of ['furnished', 'pets', 'parking', 'ac', 'reduced', 'media'] as const) if (f[k]) n++;
   if (f.build) n++;
   if (f.days) n++;
   n += f.tags.length;
@@ -217,6 +221,7 @@ export function toListingQuery(sp: URLSearchParams): ListingQuery {
     ac: flag('ac'),
     build: sp.get('build') === 'new' || sp.get('build') === 'resale' ? (sp.get('build') as 'new' | 'resale') : undefined,
     reduced: flag('reduced'),
+    media: flag('media'),
     days: DAYS.includes(sp.get('days') ?? '') ? Number(sp.get('days')) : undefined,
     tags: list('tags'),
     q: sp.get('q') || undefined,

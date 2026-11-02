@@ -58,7 +58,7 @@ export default function VisitsCalendar({ meId }: { meId: string }) {
   return (
     <div className="panel vteam">
       <div className="fgroup__head">
-        <h3>{t('Sales office visits')}</h3>
+        <h3>{t('Visits and viewings')}</h3>
         <div className="chip-row">
           <button className="chip-btn" onClick={() => setStart(addDays(start, -7))} aria-label={t('Previous week')}><Icon name="arrowLeft" size={16} /></button>
           <button className={`chip-btn ${days.includes(today) ? 'is-on' : ''}`} onClick={() => setStart(addDays(today, -weekdayOf(today)))}>{t('This week')}</button>

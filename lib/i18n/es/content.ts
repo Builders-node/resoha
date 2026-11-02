@@ -720,8 +720,8 @@ export const ES_CONTENT: Record<string, string> = {
     "Antes de comprar para alquilar",
   "Ask the seller or agent for real booking history, not projections. Check whether the building or community allows short-term rentals, and what share of revenue its rental programme takes. Remember that you will pay the island’s [closing costs](/guides/roatan-closing-costs) and a 10% capital gains tax when you sell.":
     "Pida al vendedor o al agente el historial real de reservas, no proyecciones. Compruebe si el edificio o la comunidad permite alquileres de corta estancia y qué parte de los ingresos se queda su programa de alquiler. Recuerde que pagará los [gastos de cierre](/guides/roatan-closing-costs) de la isla y un 10 % de impuesto sobre la ganancia de capital cuando venda.",
-  "Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Hogarli.":
-    "Explore en Hogarli los anuncios con la etiqueta [Ingresos por alquiler](/listings?deal=sale&tags=Rental%20income).",
+  'Run your own numbers in the [rental yield calculator](/rental-yield-calculator); every condo and house for sale on Hogarli has one with its price and HOA filled in. Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income).':
+    'Haga sus propios cálculos con la [calculadora de rentabilidad](/rental-yield-calculator); cada condominio y casa en venta en Hogarli tiene una con su precio y HOA ya cargados. Vea los anuncios con la etiqueta [Ingresos por alquiler](/listings?deal=sale&tags=Rental%20income).',
   "Figures are third-party estimates for the whole island and change month to month. They are not a forecast for any particular property.":
     "Las cifras son estimaciones de terceros para toda la isla y cambian de un mes a otro. No son una previsión para ninguna propiedad en particular.",
   "Is Airbnb profitable in Roatán?":

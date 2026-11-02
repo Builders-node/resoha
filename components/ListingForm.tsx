@@ -750,6 +750,20 @@ export default function ListingForm({
         {/* 4. Фото */}
         <section data-step={3} hidden={show(3)} className="lf__sec">
           <PhotoUploader value={photos} onChange={setPhotos} rooms={photoRooms} onRoomsChange={setPhotoRooms} watermark />
+          {/* відео й 3D-тур (0069): буде значок на картці й фільтр «Video or 3D tour» у пошуку */}
+          <div className="lf__group">
+            <div className="lf__group-head"><b>{t('Video and 3D tour')}</b>
+              <span className="tiny muted">{t('Listings with a video or a tour get a badge in search and more enquiries from buyers abroad.')}</span></div>
+            <div className="lf__row">
+              <div className="field"><label>{t('Video link')}</label>
+                <input className="input" name="video" type="url" maxLength={500} defaultValue={v?.video}
+                  placeholder="https://youtube.com/watch?v=…" /></div>
+              <div className="field"><label>{t('3D tour link')}</label>
+                <input className="input" name="tour" type="url" maxLength={500} defaultValue={v?.tour}
+                  placeholder="https://my.matterport.com/show/?m=…" /></div>
+            </div>
+            <span className="tiny muted">{t('YouTube, Vimeo, Matterport, Kuula or any other link. Known services play right on the listing page.')}</span>
+          </div>
         </section>
 
         {/* 5. Опис */}

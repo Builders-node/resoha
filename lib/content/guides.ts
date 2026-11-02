@@ -354,7 +354,7 @@ export const GUIDES: Guide[] = [
         h: 'Before you buy for rental',
         body: [
           'Ask the seller or agent for real booking history, not projections. Check whether the building or community allows short-term rentals, and what share of revenue its rental programme takes. Remember that you will pay the island’s [closing costs](/guides/roatan-closing-costs) and a 10% capital gains tax when you sell.',
-          'Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income) on Hogarli.',
+          'Run your own numbers in the [rental yield calculator](/rental-yield-calculator); every condo and house for sale on Hogarli has one with its price and HOA filled in. Browse listings tagged [Rental income](/listings?deal=sale&tags=Rental%20income).',
         ],
       },
       { h: 'Important', body: [{ note: 'Figures are third-party estimates for the whole island and change month to month. They are not a forecast for any particular property.' }] },

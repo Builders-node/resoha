@@ -15,6 +15,7 @@ import { useLang, useT } from './LangProvider';
 import { useMoney } from './CurrencyProvider';
 import type { Money } from '@/lib/currency';
 import { localePath } from '@/lib/i18n/paths';
+import { kindIcon, kindLabel, placeName, type MapPlace } from '@/lib/mapPlaces';
 
 /** Карті потрібні лише координати й ціна — картку вона підвантажує окремо. */
 export type Pin = {
@@ -49,7 +50,19 @@ type Props = {
   onMoveStart?: () => void;
   /** сторінка обʼєкта: місця поблизости, яким ріелтор поставив точку */
   places?: NearbyPlace[];
+  /**
+   * Спільний шар місць (0070): пляжі, дайв-сайти, школи, лікарні, пороми, аеропорти.
+   * true — кнопка шару на карті, увімкнено з початку на сторінці обʼєкта.
+   */
+  layer?: boolean;
 };
+
+/** Шар місць однаковий для всіх карт сторінки — вантажимо раз */
+let placesOnce: Promise<MapPlace[]> | null = null;
+const loadPlaces = () => (placesOnce ??= fetch('/api/map-places')
+  .then((r) => (r.ok ? r.json() : { places: [] }))
+  .then((d) => (Array.isArray(d.places) ? d.places as MapPlace[] : []))
+  .catch(() => { placesOnce = null; return []; }));
 
 const ORANGE = '#ff6a2b';
 /** Висота умовного будинку, коли OSM його не знає; земля — лише ділянка. */
@@ -152,7 +165,7 @@ function addOverlays(m: MLMap) {
 
 export default function MapView({
   items, activeId, onSelect, onHover, area, onMoved, onMoveStart, center = [16.36, -86.45], zoom = 11,
-  interactive = true, detail = false, places,
+  interactive = true, detail = false, places, layer = false,
 }: Props) {
   const t = useT();
   const lang = useLang();
@@ -202,6 +215,9 @@ export default function MapView({
   const rulerRef = useRef(false);
   const locMarker = useRef<Marker | null>(null);
   const placeMarkers = useRef<Marker[]>([]);
+  const layerMarkers = useRef<Marker[]>([]);
+  const [layerOn, setLayerOn] = useState(layer && detail);
+  const [layerPlaces, setLayerPlaces] = useState<MapPlace[]>([]);
   // лише ті, що мають точку; памʼятаємо за вмістом, щоб не перемальовувати на кожен рендер
   const pinned = (places ?? []).filter((p) => p.lat !== null && p.lng !== null);
   const pinnedKey = JSON.stringify(pinned);
@@ -548,6 +564,43 @@ export default function MapView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pinnedKey, lang]);
 
+  /* --- спільний шар місць (0070) --- */
+  useEffect(() => {
+    if (!layerOn) return;
+    let off = false;
+    loadPlaces().then((p) => { if (!off) setLayerPlaces(p); });
+    return () => { off = true; };
+  }, [layerOn]);
+
+  useEffect(() => {
+    const ml = lib.current;
+    const m = map.current;
+    layerMarkers.current.forEach((mk) => mk.remove());
+    layerMarkers.current = [];
+    if (!ready || !ml || !m || !layerOn) return;
+    layerMarkers.current = layerPlaces.map((p) => {
+      const node = document.createElement('button');
+      node.type = 'button';
+      node.className = 'mplace';
+      node.textContent = kindIcon(p.kind);
+      const name = placeName(p, lang);
+      node.title = `${name} · ${t(kindLabel(p.kind))}`;
+      node.setAttribute('aria-label', node.title);
+      const pop = document.createElement('div');
+      pop.className = 'mplace-pop';
+      const b = document.createElement('b');
+      b.textContent = name;
+      const sub = document.createElement('span');
+      sub.textContent = [t(kindLabel(p.kind)), p.note].filter(Boolean).join(' · ');
+      pop.append(b, sub);
+      return new ml.Marker({ element: node })
+        .setLngLat([p.lng, p.lat])
+        .setPopup(new ml.Popup({ offset: 16, closeButton: false }).setDOMContent(pop))
+        .addTo(m);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, layerOn, layerPlaces, lang]);
+
   /* --- підсвітка активного --- */
   useEffect(() => {
     activeIdRef.current = activeId;
@@ -628,6 +681,18 @@ export default function MapView({
               <path d="m3 13 9 5 9-5" />
             </svg>
           </button>
+          {layer && (
+            <button
+              type="button" className={`map-ctrl__btn${layerOn ? ' is-on' : ''}`}
+              title={t('Beaches, schools, hospitals')} aria-label={t('Show beaches, schools, hospitals and more')} aria-pressed={layerOn}
+              onClick={() => setLayerOn((v) => !v)}
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round">
+                <path d="M12 21s6-5.2 6-10a6 6 0 1 0-12 0c0 4.8 6 10 6 10z" />
+                <path d="M9.5 10.5h5M12 8v5" />
+              </svg>
+            </button>
+          )}
           <div className="map-ctrl__group">
             <button
               type="button" className={`map-ctrl__btn${ruler ? ' is-on' : ''}`}

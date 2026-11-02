@@ -423,7 +423,7 @@ export default function ListingsExplorer({
         </div>
 
         <div className="split__map">
-          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId}
+          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId} layer
             area={area} onMoved={onMoved} onMoveStart={onMoveStart} center={regionByName(filters.island)?.centre} />
           {movedTo && !autoSearch ? (
             <button className="btn btn--sm map-area-btn" onClick={searchArea} disabled={loading}>

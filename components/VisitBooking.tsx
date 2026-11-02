@@ -16,15 +16,17 @@ import {
  * Свята й зайняті слоти ЖК (0055): спершу те, що прийшло зі сторінки, потім свіжі дані з API.
  * Без devId або до міграції — лише графік, як раніше.
  */
-export function useAvailability(devId: string | undefined, initial?: Partial<Availability>) {
+export function useAvailability(devId: string | undefined, initial?: Partial<Availability>, agentId?: string) {
   const [avail, setAvail] = useState<Availability>({ ...NO_LIMITS, ...initial });
   const reload = useCallback(() => {
-    if (!devId) return;
-    fetch(`/api/developments/${devId}/availability`, { cache: 'no-store' })
+    // перегляд вторинки (0069): зайнятість ріелтора замість відділу продажів ЖК
+    const url = devId ? `/api/developments/${devId}/availability` : agentId ? `/api/agents/${agentId}/availability` : '';
+    if (!url) return;
+    fetch(url, { cache: 'no-store' })
       .then((r) => (r.ok ? r.json() : null))
       .then((d: Availability | null) => { if (d && d.busy) setAvail(d); })
       .catch(() => {});
-  }, [devId]);
+  }, [devId, agentId]);
   useEffect(() => { reload(); }, [reload]);
   return [avail, reload] as const;
 }

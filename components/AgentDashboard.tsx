@@ -12,6 +12,7 @@ import ImportPanel from './ImportPanel';
 import AvatarPicker from './AvatarPicker';
 import ListingForm from './ListingForm';
 import NotifySettings from './NotifySettings';
+import ViewingHoursSettings from './ViewingHoursSettings';
 import { renewedUntil } from '@/lib/lifecycle';
 import PromotePanel, { type PromoPick } from './PromotePanel';
 import BillingPanel from './BillingPanel';
@@ -258,6 +259,7 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'analytics' && <AnalyticsPanel isOwner={canListings} agencyName={agency?.name} />}
 
+        {tab === 'visits' && <ViewingHoursSettings />}
         {tab === 'visits' && <VisitsCalendar meId={session.id} />}
 
         {tab === 'developments' && <DevelopmentsPanel onUnitsAdded={load} isAdmin={!!session.isAdmin}

@@ -13,8 +13,10 @@ export async function GET(_req: Request, { params }: Ctx) {
   const place = dev?.name || visit.listing.title;
   let ics = buildIcs(visitEvent({
     uid: visitUid(visit.leadId), visitAt: visit.visitAt, place,
-    address: dev ? dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ') : '',
+    address: dev ? dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ')
+      : [visit.viewing?.address, visit.viewing?.neighborhood].filter(Boolean).join(', '),
     manageUrl: `${SITE_URL}/visit/${token}`, agent: visit.agent, sequence: seqNow(),
+    kind: visit.viewing ? 'viewing' : 'office',
   }));
   if (visit.status === 'cancelled') ics = ics.replace('STATUS:CONFIRMED', 'STATUS:CANCELLED');
   return new Response(ics, {

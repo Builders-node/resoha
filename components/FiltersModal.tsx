@@ -219,6 +219,11 @@ export default function FiltersModal({
               <button className={`switch ${draft.reduced ? 'is-on' : ''}`}
                 onClick={() => set({ reduced: !draft.reduced })} aria-label={t('Price reduced')} />
             </div>
+            <div className="switch-row">
+              <span className="switch-row__label">{t('Video or 3D tour')}</span>
+              <button className={`switch ${draft.media ? 'is-on' : ''}`}
+                onClick={() => set({ media: !draft.media })} aria-label={t('Video or 3D tour')} />
+            </div>
           </section>
 
           {/* ——— Living: для оренди ще меблі й тварини ——— */}
