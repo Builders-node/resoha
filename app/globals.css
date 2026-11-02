@@ -1334,6 +1334,25 @@ textarea.input{resize:vertical;min-height:96px}
 .dev-card__main{display:flex;gap:12px;align-items:center;background:none;border:0;padding:0;text-align:left;font:inherit;cursor:pointer;color:inherit}
 .dev-card__main > span{display:flex;flex-direction:column;gap:2px;min-width:0}
 .dev-card__img{width:72px;height:56px;border-radius:10px;object-fit:cover;flex:none}
+/* «My developments» таблицею: рядок — ЖК, рідші дії сховані в «⋯» */
+.dev-table__name{display:flex;align-items:center;gap:12px;background:none;border:0;padding:0;font:inherit;color:inherit;text-align:left;cursor:pointer}
+.dev-table__name .thumb{width:56px;height:42px;flex:none}
+.dev-table__name:hover b{color:var(--orange)}
+.dev-table__meta{display:none;margin-top:6px}
+.dev-table__acts{display:flex;gap:6px;justify-content:flex-end;align-items:center}
+.row-menu{position:relative;display:inline-flex}
+.row-menu__pop{position:absolute;right:0;top:calc(100% + 6px);z-index:20;display:flex;flex-direction:column;min-width:180px;
+  padding:6px;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 10px 30px rgba(0,0,0,.12)}
+.row-menu__pop a{padding:9px 12px;border-radius:8px;font-size:14px;font-weight:600;white-space:nowrap}
+.row-menu__pop a:hover{background:var(--bg-soft)}
+@media (max-width:860px){
+  .dev-table td.dev-table__col{display:none}
+  .dev-table__meta{display:block}
+  .dev-table td.td--act{margin-top:10px;padding-top:10px}
+  .dev-table__acts{width:100%}
+  .dev-table__acts > .btn:first-child{flex:1}
+  .table td.td--act .dev-table__acts .btn--icon{flex:0 0 auto}
+}
 /* кабінет: картки домів ЖК у розділі «Buildings & units» */
 .bld-admin{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-top:12px}
 .bld-admin__card{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--bg);transition:box-shadow var(--dur) var(--ease)}

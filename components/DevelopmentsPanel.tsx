@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import VisitSettings from './VisitSettings';
 import LocationPicker from './LocationPicker';
@@ -65,33 +65,76 @@ export default function DevelopmentsPanel({ onUnitsAdded, isAdmin = false, onPro
       </p>
       {items === null && <p className="muted">{t('Loading…')}</p>}
       {items?.length === 0 && <p className="muted">{t('No developments yet.')}</p>}
-      <div className="dev-cards">
-        {items?.map((d) => (
-          <div key={d.id} className="dev-card">
-            <button type="button" className="dev-card__main" onClick={() => setOpen({ dev: d, section: 'overview' })}>
-              <Photo className="dev-card__img" src={d.photos[0]} label="" />
-              <span>
-                <b>{d.name}</b>
-                <span className="small muted">
-                  {[d.developer, d.neighborhood, salesLabel(d.sales), d.completion].filter(Boolean).join(' · ')}
-                </span>
-                {!d.active && <span className="pill pill--off" style={{ alignSelf: 'flex-start' }}>{t('Hidden')}</span>}
-              </span>
-            </button>
-            <div className="chip-row">
-              <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>{t('Manage')}</button>
-              <button className="btn btn--ghost btn--sm" onClick={() => setOpen({ dev: d, section: 'news' })}>{t('+ Post news')}</button>
-              {onPromote && d.active && (
-                <button className="btn btn--ghost btn--sm with-ico" onClick={() => onPromote(d.id)}><Icon name="sparkle" size={14} /> {t('Promote')}</button>
-              )}
-              <Link className="btn btn--ghost btn--sm" href={`/developments/${d.slug}`} target="_blank">{t('Open page')}</Link>
-              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/booklet`} target="_blank" rel="noreferrer">{t('Booklet PDF')}</a>
-              <a className="btn btn--ghost btn--sm" href={`/developments/${d.slug}/price-list`} target="_blank" rel="noreferrer">{t('Price list PDF')}</a>
-            </div>
-          </div>
-        ))}
-      </div>
+      {!!items?.length && (
+        <table className="table dev-table">
+          <thead>
+            <tr>
+              <th>{t('Development')}</th><th>{t('Developer')}</th><th>{t('Area')}</th><th>{t('Status')}</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((d) => (
+              <tr key={d.id}>
+                <td>
+                  <button type="button" className="dev-table__name" onClick={() => setOpen({ dev: d, section: 'overview' })}>
+                    <Photo className="thumb" src={d.photos[0]} label="" />
+                    <b>{d.name}</b>
+                    {!d.active && <span className="pill pill--off">{t('Hidden')}</span>}
+                  </button>
+                  {/* на телефоні колонки ховаються — ті ж дані одним рядком */}
+                  <div className="dev-table__meta tiny muted">
+                    {[d.developer, d.neighborhood, t(salesLabel(d.sales)), d.completion].filter(Boolean).join(' · ')}
+                  </div>
+                </td>
+                <td className="small dev-table__col" data-label={t('Developer')}>{d.developer || '—'}</td>
+                <td className="small dev-table__col" data-label={t('Area')}>{d.neighborhood || '—'}</td>
+                <td className="small dev-table__col" data-label={t('Status')} style={{ whiteSpace: 'nowrap' }}>
+                  {t(salesLabel(d.sales))}
+                  {d.completion && <div className="tiny muted">{d.completion}</div>}
+                </td>
+                <td className="td--act">
+                  <span className="dev-table__acts">
+                    <button className="btn btn--sm" onClick={() => setOpen({ dev: d, section: 'overview' })}>{t('Manage')}</button>
+                    <button className="btn btn--sm btn--ghost btn--icon" title={t('Post news')} aria-label={t('Post news')}
+                      onClick={() => setOpen({ dev: d, section: 'news' })}><Icon name="bell" size={16} /></button>
+                    {onPromote && d.active && (
+                      <button className="btn btn--sm btn--ghost btn--icon" title={t('Promote')} aria-label={t('Promote')}
+                        onClick={() => onPromote(d.id)}><Icon name="sparkle" size={16} /></button>
+                    )}
+                    <RowMenu label={t('More actions')}>
+                      <Link href={`/developments/${d.slug}`} target="_blank">{t('Open page')}</Link>
+                      <a href={`/developments/${d.slug}/booklet`} target="_blank" rel="noreferrer">{t('Booklet PDF')}</a>
+                      <a href={`/developments/${d.slug}/price-list`} target="_blank" rel="noreferrer">{t('Price list PDF')}</a>
+                    </RowMenu>
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
+  );
+}
+
+/** Кнопка «⋯» з рідшими діями рядка; закривається кліком повз або Esc */
+function RowMenu({ label, children }: { label: string; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (!open) return;
+    const away = (e: Event) => { if (!ref.current?.contains(e.target as Node)) setOpen(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('pointerdown', away);
+    document.addEventListener('keydown', esc);
+    return () => { document.removeEventListener('pointerdown', away); document.removeEventListener('keydown', esc); };
+  }, [open]);
+  return (
+    <span className="row-menu" ref={ref}>
+      <button type="button" className="btn btn--sm btn--ghost btn--icon" title={label} aria-label={label}
+        aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)}><Icon name="more" size={16} /></button>
+      {open && <span className="row-menu__pop" role="menu" onClick={() => setOpen(false)}>{children}</span>}
+    </span>
   );
 }
 
