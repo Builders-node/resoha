@@ -346,6 +346,7 @@ export const ES_CABINET: Record<string, string> = {
   '+ New development': '+ Nuevo proyecto',
   'Each development has its own page. Open one to edit it section by section, add units or post news.': 'Cada proyecto tiene su propia página. Abra uno para editarlo por secciones, agregar unidades o publicar noticias.',
   'No developments yet.': 'Aún no hay proyectos.',
+  'More actions': 'Más acciones',
   'Manage': 'Administrar',
   '+ Post news': '+ Publicar noticia',
   'Booklet PDF': 'Folleto PDF',
