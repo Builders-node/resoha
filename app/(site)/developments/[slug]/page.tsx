@@ -1,6 +1,5 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import DevelopmentFollow from '@/components/DevelopmentFollow';
 import DevPaymentCalc from '@/components/DevPaymentCalc';
 import dynamic from 'next/dynamic';
 import BackButton from '@/components/BackButton';
@@ -236,21 +235,21 @@ export default async function DevelopmentPage({ params, searchParams }: {
         </section>
       )}
 
-      <section className="dev">
-        <div className="dev__head">
-          <h2 className="dev__title">{t('News')}</h2>
-          {news.length > 0 && <Link className="dev__more" href={`${base}/news`}>{t('All news')} →</Link>}
-        </div>
-        {news.length > 0 && (
+      {/* підписка на новини — банер «Key updates» унизу сторінки (DevelopmentShell) */}
+      {news.length > 0 && (
+        <section className="dev">
+          <div className="dev__head">
+            <h2 className="dev__title">{t('News')}</h2>
+            <Link className="dev__more" href={`${base}/news`}>{t('All news')} →</Link>
+          </div>
           <ul className="dteaser-list">
             {news.slice(0, 3).map((n) => (
               <li key={n.id}><span className="small muted" style={{ minWidth: 110 }}>{fmtDay(n.publishedOn, lang)}</span>
                 <Link href={`${base}/news#n-${n.id}`}>{n.title}</Link></li>
             ))}
           </ul>
-        )}
-        <DevelopmentFollow developmentId={dev.id} />
-      </section>
+        </section>
+      )}
 
       <DevelopmentSalesOffice ctx={ctx} />
 

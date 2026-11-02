@@ -2089,21 +2089,31 @@ form.promo__row{grid-template-columns:70px 1fr auto}
 .dcon__more{margin-top:36px}
 .vpick{padding:24px 22px}
 .vpick__go{margin-top:20px}
-.dupd{display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(0,1fr) auto;gap:20px 40px;align-items:center;
+.dupd{display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(0,1fr) minmax(220px,300px);gap:20px 40px;align-items:center;
   margin-top:56px;background:var(--bg-soft);border-radius:var(--radius-lg);padding:36px 40px}
-.dupd__art{display:grid;place-items:center;width:120px;height:120px;border-radius:32px;background:var(--orange);color:#fff;
-  transform:rotate(-8deg)}
+.dupd__art{position:relative;display:grid;place-items:center;width:120px;height:120px;border-radius:32px;background:var(--orange);color:#fff;
+  transform:rotate(-8deg);box-shadow:0 14px 30px -14px rgba(255,72,0,.7)}
+.dupd__dot{position:absolute;top:22px;right:24px;width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid var(--orange)}
+.dupd.is-on .dupd__dot{display:none}
+.dupd__art .ico{width:56px;height:56px}
 .dupd__title{font-size:30px;line-height:1.15;margin:0}
-.dupd__sub{margin:10px 0 0;font-size:16px}
+.dupd__sub{margin:10px 0 0;font-size:16px;color:var(--ink-2)}
 .dupd__list{list-style:none;margin:0;padding:0;display:grid;gap:12px;font-size:15px}
 .dupd__list li{display:flex;align-items:center;gap:12px}
-.dupd__form{display:grid;gap:10px;min-width:260px}
-.dupd__done{display:flex;align-items:center;gap:8px;margin:0;font-weight:600;color:#047857}
+.dupd__list .ico{flex:none;color:var(--orange)}
+.dupd__cta{display:grid;gap:10px;justify-items:stretch;text-align:center}
+.dupd__btn{width:100%;min-height:56px;font-size:16px}
+.dupd__form{display:grid;gap:10px}
+.dupd__done{display:flex;align-items:center;justify-content:center;gap:8px;margin:0;font-weight:600;color:#047857}
+.dupd__links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.dupd__off{background:none;border:0;padding:0;color:var(--ink-2);text-decoration:underline;cursor:pointer;font:inherit}
+.dupd__off:hover{color:var(--ink)}
 @media (max-width:1100px){
   .dcon__row{grid-template-columns:1fr}
   .dcon__book{max-width:520px}
   .dupd{grid-template-columns:auto 1fr}
-  .dupd__list,.dupd__form,.dupd__done{grid-column:1/-1}
+  .dupd__list,.dupd__cta{grid-column:1/-1}
+  .dupd__cta{max-width:420px}
 }
 @media (max-width:760px){
   .dcon__map{height:auto;border:0;border-radius:0;overflow:visible}
@@ -2115,6 +2125,8 @@ form.promo__row{grid-template-columns:70px 1fr auto}
   .dupd{grid-template-columns:1fr;padding:24px 20px;gap:18px}
   .dupd__art{width:76px;height:76px;border-radius:22px}
   .dupd__art .ico{width:36px;height:36px}
+  .dupd__dot{top:12px;right:14px;width:12px;height:12px;border-width:2px}
+  .dupd__cta{max-width:none}
   .dupd__title{font-size:24px}
 }
 
@@ -3077,7 +3089,6 @@ html{scroll-behavior:smooth}
 .dev__plan th{text-align:left;font-size:12px;font-weight:600;color:var(--muted,#777);padding:0 8px 6px 0}
 .dev__plan td{padding:8px 8px 8px 0;border-top:1px solid rgba(0,0,0,.08)}
 .dev__plan td:nth-child(2){white-space:nowrap}
-.dev__follow{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
 
 /* Кабінет на телефоні: нижня панель (Sidebar) замість ряду вкладок, цифри — одним рядком */
 .sidebar__dot{position:absolute;top:-4px;right:-10px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;
