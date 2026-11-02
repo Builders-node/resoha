@@ -74,7 +74,7 @@ export default function AgentReviews({
       {items.map((r) => (
         <div key={r.id} className="lead">
           <div style={{ display: 'flex', gap: 12 }}>
-            {r.authorAvatar && <img src={r.authorAvatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} />}
+            {r.authorAvatar && <img src={r.authorAvatar} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }} onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
             <div>
               <b>{r.authorName}</b> <Stars value={r.rating} />
               {r.body && <p className="muted small" style={{ margin: '6px 0 0' }}>{r.body}</p>}

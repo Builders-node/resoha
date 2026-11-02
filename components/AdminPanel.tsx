@@ -20,6 +20,7 @@ import BillingAdmin from './BillingAdmin';
 import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
 import RehostPhotos from './RehostPhotos';
+import BrokenPhotos from './BrokenPhotos';
 
 export type Tab = 'overview' | 'moderation' | 'verification' | 'analytics' | 'featured' | 'promotions' | 'billing' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
 type Quality = Record<QualityKey, number>;
@@ -285,6 +286,7 @@ export default function AdminPanel({ session, initialTab }: { session: Session; 
 
               <SiteSettingsAdmin />
               <RehostPhotos />
+              <BrokenPhotos />
             </>
           ) : <div className="panel">Loading…</div>
         )}

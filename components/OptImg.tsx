@@ -10,11 +10,20 @@ function optimizable(url: string) {
   try { return IMAGE_HOSTS.includes(new URL(url).hostname); } catch { return false; }
 }
 
-/** Оптимізатор не зміг (сайт агенції не віддав фото тощо) — показуємо оригінал напряму. */
-function fallback(img: HTMLImageElement, orig: string) {
-  if (img.getAttribute('src') === orig) return;
+/**
+ * Оптимізатор не зміг (сайт агенції не віддав фото тощо) — показуємо оригінал напряму.
+ * Не відкрився й оригінал — фото бите: віддаємо батькові (заглушка), а без нього просто ховаємо,
+ * щоб не було значка «зламаної картинки».
+ */
+function fallback(img: HTMLImageElement, orig: string, onFail?: () => void) {
+  if (img.getAttribute('src') === orig) { broken(img, onFail); return; }
   img.removeAttribute('srcset');
   img.setAttribute('src', orig);
+}
+
+function broken(img: HTMLImageElement, onFail?: () => void) {
+  if (onFail) onFail();
+  else img.style.visibility = 'hidden';
 }
 
 type Props = {
@@ -30,16 +39,22 @@ type Props = {
   width?: number;
   /** Головне фото сторінки (LCP): вантажимо одразу й першочергово. */
   eager?: boolean;
+  /** Фото не відкрилось зовсім (ні через оптимізатор, ні напряму). */
+  onFail?: () => void;
 };
 
 /**
  * Звичайний <img>, але src/srcSet ведуть на /_next/image: AVIF/WebP під потрібну ширину.
  * Розмітка й класи ті самі, що й раніше, — розміри задає CSS, а не next/image.
  */
-export default function OptImg({ src, alt = '', className, sizes, width = 1080, eager }: Props) {
+export default function OptImg({ src, alt = '', className, sizes, width = 1080, eager, onFail }: Props) {
   const loading = eager ? 'eager' : 'lazy';
   if (!optimizable(src)) {
-    return <img className={className} src={src} alt={alt} loading={loading} fetchPriority={eager ? 'high' : undefined} />;
+    return (
+      <img className={className} src={src} alt={alt} loading={loading} fetchPriority={eager ? 'high' : undefined}
+        onError={(e) => broken(e.currentTarget, onFail)}
+        ref={(img) => { if (img?.complete && img.currentSrc && !img.naturalWidth) broken(img, onFail); }} />
+    );
   }
   // fill і height — лише щоб next/image не вимагав розмірів; їхні атрибути й стилі не беремо
   const { props } = getImageProps(sizes ? { src, alt, fill: true, sizes } : { src, alt, width, height: width });
@@ -56,10 +71,10 @@ export default function OptImg({ src, alt = '', className, sizes, width = 1080, 
       sizes={props.sizes}
       srcSet={props.srcSet}
       src={props.src}
-      onError={(e) => fallback(e.currentTarget, src)}
+      onError={(e) => fallback(e.currentTarget, src, onFail)}
       // помилка могла статись ще до гідрації — тоді onError React уже не побачить;
       // currentSrc порожній у лінивого фото, яке ще не почало вантажитись
-      ref={(img) => { if (img?.complete && img.currentSrc && !img.naturalWidth) fallback(img, src); }}
+      ref={(img) => { if (img?.complete && img.currentSrc && !img.naturalWidth) fallback(img, src, onFail); }}
     />
   );
 }
