@@ -23,6 +23,7 @@ import type { Tab } from '@/lib/agentTabs';
 import Avatar from './Avatar';
 import { useT } from './LangProvider';
 import TabStrip from './TabStrip';
+import VerificationCard from './VerificationCard';
 import VisitsCalendar from './VisitsCalendar';
 import { agencyCan, agencyRoleOf, roleLabel } from '@/lib/teamRoles';
 import { announceCabinet } from '@/lib/cabinetBus';
@@ -316,6 +317,10 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
 
         {tab === 'team' && <AgencyPanel meId={session.id} onChanged={load} />}
 
+        {tab === 'team' && isOwner && agency && (
+          <VerificationCard kind="agency" subjectId={agency.id} name={agency.name} verified={agency.verified} onChanged={load} />
+        )}
+
         {tab === 'profile' && (
           <div className="panel">
             <h3 style={{ marginBottom: 14 }}>{t('Agent profile')}</h3>
@@ -351,6 +356,10 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
               </div>
             </form>
           </div>
+        )}
+
+        {tab === 'profile' && (
+          <VerificationCard kind="agent" subjectId={agent.id} name={agent.name} verified={agent.verified} onChanged={load} />
         )}
 
         {tab === 'profile' && <NotifySettings agent />}

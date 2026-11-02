@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import VerifiedBadge from './VerifiedBadge';
 import { fmtNumber } from '@/lib/format';
 import { SQFT_PER_M2, groupUnits, salesLabel, statusLabel, toM2, type SalesStatus } from '@/lib/units';
 import type { Deal, Listing } from '@/lib/types';
@@ -14,13 +15,15 @@ const m2 = (n: number) => String(Math.round(n * 10) / 10);
  * рядок на тип квартир із діапазонами, а по кліку — список квартир із посиланнями.
  * Окремо для продажу й оренди. Без клієнтського JS: розкриття тримає <details>.
  */
-export default async function DevelopmentUnits({ units, buildings, developer, developerHref, completion, sales, contactHref }: {
+export default async function DevelopmentUnits({ units, buildings, developer, developerHref, developerVerified = false, completion, sales, contactHref }: {
   units: Listing[];
   /** id → назва дому; лише коли домів кілька — тоді в таблиці зʼявляється колонка «Building» */
   buildings?: Record<string, string>;
   developer: string;
   /** сторінка забудовника, якщо в ЖК обрано його профіль */
   developerHref?: string;
+  /** у компанії значок «перевірено» за документами (0075) */
+  developerVerified?: boolean;
   completion: string;
   sales: SalesStatus;
   contactHref: string;
@@ -41,7 +44,8 @@ export default async function DevelopmentUnits({ units, buildings, developer, de
         <span className="muted">
           {developer ? <>{t('Project by')} {developerHref
             ? <Link href={developerHref}><b className="dev__by">{developer}</b></Link>
-            : <b className="dev__by">{developer}</b>}</> : t('New development')}
+            : <b className="dev__by">{developer}</b>}
+            {developerVerified && <> <VerifiedBadge size={16} label={t('Verified developer: company documents checked by Hogarli')} /></>}</> : t('New development')}
         </span>
         <a className="btn dev__ask" href={contactHref}>{t('Ask about prices & availability')}</a>
       </div>

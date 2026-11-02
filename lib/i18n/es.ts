@@ -15,6 +15,7 @@ import { ES_PROMO } from './es/promo';
 import { ES_SEO } from './es/seo';
 import { ES_BLOG } from './es/blog';
 import { ES_CABINET } from './es/cabinet';
+import { ES_VERIFICATION } from './es/verification';
 import { ES_BUYER_TOOLS } from './es/buyerTools';
 import { ES_BILLING } from './es/billing';
 
@@ -38,6 +39,7 @@ export const ES: Record<string, string> = {
   ...ES_PROMO,
   ...ES_SEO,
   ...ES_BLOG,
+  ...ES_VERIFICATION,
   ...ES_BUYER_TOOLS,
   ...ES_BILLING,
 };

@@ -121,7 +121,7 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
       body: JSON.stringify({
         name: fd.get('name'), phone: fd.get('phone'), whatsapp: fd.get('whatsapp'),
         experience: fd.get('experience'), about: fd.get('about'),
-        verified: fd.get('verified') === 'on', active: fd.get('active') === 'on',
+        active: fd.get('active') === 'on',
       }),
     });
     const d = await res.json();
@@ -378,7 +378,6 @@ export default function AgencyPanel({ meId, onChanged }: { meId: string; onChang
                         <div className="field"><label>{t('WhatsApp')}</label><input className="input" name="whatsapp" defaultValue={m.whatsapp} /></div>
                         <div className="field full"><label>{t('About')}</label><textarea className="input" name="about" defaultValue={m.about} /></div>
                         <div className="field full switch-inline">
-                          <label><input type="checkbox" name="verified" defaultChecked={m.verified} /> {t('Verified by the agency')}</label>
                           <label><input type="checkbox" name="active" defaultChecked={m.active} /> {t('Account active')}</label>
                         </div>
                         <div className="full"><button className="btn btn--primary">{t('Save agent')}</button></div>

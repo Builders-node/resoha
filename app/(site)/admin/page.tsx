@@ -1,12 +1,14 @@
 import Link from 'next/link';
-import AdminPanel from '@/components/AdminPanel';
+import AdminPanel, { type Tab } from '@/components/AdminPanel';
 import AuthLink from '@/components/AuthLink';
 import Icon from '@/components/Icon';
 import { getSession } from '@/lib/session';
 
 export const metadata = { title: 'Admin — Hogarli Roatán' };
 
-export default async function AdminPage() {
+const TABS: Tab[] = ['overview', 'moderation', 'verification', 'analytics', 'featured', 'promotions', 'billing', 'developments', 'listings', 'leads', 'agencies', 'users', 'reviews', 'places', 'log'];
+
+export default async function AdminPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const session = await getSession();
 
   if (!session?.isAdmin) {
@@ -28,5 +30,7 @@ export default async function AdminPage() {
     );
   }
 
-  return <AdminPanel session={session} />;
+  // посилання з листів ведуть одразу у вкладку: /admin?tab=verification
+  const { tab } = await searchParams;
+  return <AdminPanel session={session} initialTab={TABS.includes(tab as Tab) ? (tab as Tab) : undefined} />;
 }

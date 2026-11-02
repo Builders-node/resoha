@@ -13,6 +13,7 @@ import type { AdminLogEntry, Agency, Agent, Lead, Listing, Review, Session } fro
 import Avatar from './Avatar';
 import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
 import ModerationAdmin from './ModerationAdmin';
+import VerificationAdmin from './VerificationAdmin';
 import PromoAdmin from './PromoAdmin';
 import MapPlacesAdmin from './MapPlacesAdmin';
 import BillingAdmin from './BillingAdmin';
@@ -20,20 +21,21 @@ import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
 import RehostPhotos from './RehostPhotos';
 
-type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'billing' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
+export type Tab = 'overview' | 'moderation' | 'verification' | 'analytics' | 'featured' | 'promotions' | 'billing' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
   listings: number; hidden: number; agencies: number; reviews: number; leads: number;
   newLeads: number; views: number; agents: number; buyers: number;
   unverifiedAgents: number; suspended: number; quality: Quality;
-  pending: number; reports: number;
+  pending: number; reports: number; verifications?: number;
 };
 type AgencyRowData = { agency: Agency; agents: number; listings: number };
 
 const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'overview', label: 'Overview', ico: 'sliders' },
   { v: 'moderation', label: 'Moderation', ico: 'flag' },
+  { v: 'verification', label: 'Verification', ico: 'verified' },
   { v: 'analytics', label: 'Analytics', ico: 'chart' },
   { v: 'featured', label: 'Featured', ico: 'star' },
   { v: 'promotions', label: 'Promotions', ico: 'sparkle' },
@@ -55,8 +57,8 @@ const PAGE = 25;
 const has = (haystack: (string | undefined)[], needle: string) =>
   !needle || haystack.some((h) => (h ?? '').toLowerCase().includes(needle.toLowerCase()));
 
-export default function AdminPanel({ session }: { session: Session }) {
-  const [tab, setTab] = useState<Tab>('overview');
+export default function AdminPanel({ session, initialTab }: { session: Session; initialTab?: Tab }) {
+  const [tab, setTab] = useState<Tab>(initialTab ?? 'overview');
   const [overview, setOverview] = useState<Overview | null>(null);
   const [listings, setListings] = useState<Listing[]>([]);
   const [owners, setOwners] = useState<Owner[]>([]);
@@ -79,7 +81,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   const load = useCallback(async (which: Tab) => {
     // ці вкладки вантажать себе самі
-    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions' || which === 'billing' || which === 'moderation') return;
+    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions' || which === 'billing' || which === 'moderation' || which === 'verification') return;
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -182,6 +184,8 @@ export default function AdminPanel({ session }: { session: Session }) {
 
         {tab === 'analytics' && <AdminAnalytics />}
 
+        {tab === 'verification' && <VerificationAdmin />}
+
         {tab === 'overview' && (
           overview ? (
             <>
@@ -215,10 +219,16 @@ export default function AdminPanel({ session }: { session: Session }) {
                     hint: 'Sold, wrong price, scam and other complaints about listings',
                     go: () => setTab('moderation'),
                   },
+                  (overview.verifications ?? 0) > 0 && {
+                    key: 'verifications',
+                    body: <><b>{overview.verifications}</b> verification {overview.verifications === 1 ? 'request' : 'requests'} with documents</>,
+                    hint: 'Realtors, agencies and developers waiting for the verified badge',
+                    go: () => setTab('verification'),
+                  },
                   overview.unverifiedAgents > 0 && {
                     key: 'unverified',
                     body: <><b>{overview.unverifiedAgents}</b> {plural(overview.unverifiedAgents, 'realtor')} not verified yet</>,
-                    hint: 'Verified agents get a badge on their card and profile',
+                    hint: 'They can send documents from their dashboard; verified agents get a badge on their card and profile',
                     go: () => { setTab('users'); setTimeout(() => setState('unverified'), 0); },
                   },
                   overview.newLeads > 0 && {
