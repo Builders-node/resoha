@@ -7,3 +7,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+# UI style
+
+Before adding or changing UI, read `docs/DESIGN.md` — colours, font scale, spacing, components and EN/ES copy rules. Use the tokens from `:root` in `app/globals.css`; do not add new hex colours or font sizes outside the scale.
