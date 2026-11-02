@@ -191,6 +191,8 @@ export const ES_CABINET: Record<string, string> = {
   'No enquiries yet': 'Aún no hay consultas',
   'Pipeline': 'Embudo',
   'In progress': 'En curso',
+  'Interested in': 'Le interesa',
+  'Received': 'Recibida',
   'Search by name, phone, email, property or message': 'Buscar por nombre, teléfono, correo, propiedad o mensaje',
   'Search enquiries': 'Buscar consultas',
   'Stage': 'Etapa',

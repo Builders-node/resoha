@@ -124,25 +124,29 @@ export default function LeadsCrm({ leads, meId, meName = '', isOwner, agencyId, 
         <div className="empty"><div className="empty__ico"><Icon name="inbox" size={40} /></div>{t('No enquiries yet')}</div>
       ) : (
         <>
-          {/* воронка: клік — фільтр за стадією */}
-          <div className="crm-funnel" role="group" aria-label={t('Pipeline')}>
-            <button type="button" className={`crm-funnel__step ${stage === 'open' ? 'is-on' : ''}`}
-              onClick={() => setStage(stage === 'open' ? '' : 'open')}>
-              <b>{open}</b><span>{t('In progress')}</span>
+          {/* стадії як вкладки: один рядок замість окремої плитки на кожну стадію */}
+          <div className="crm-tabs" role="group" aria-label={t('Pipeline')}>
+            <button type="button" className={`crm-tab ${!stage ? 'is-on' : ''}`} aria-pressed={!stage} onClick={() => setStage('')}>
+              {t('All')} <span className="crm-tab__n">{leads.length}</span>
             </button>
+            <button type="button" className={`crm-tab ${stage === 'open' ? 'is-on' : ''}`} aria-pressed={stage === 'open'}
+              onClick={() => setStage(stage === 'open' ? '' : 'open')}>
+              {t('In progress')} <span className="crm-tab__n">{open}</span>
+            </button>
+            <span className="crm-tabs__sep" aria-hidden />
             {LEAD_STAGES.map(([k, label]) => (
-              <button key={k} type="button" className={`crm-funnel__step crm-funnel__step--${k} ${stage === k ? 'is-on' : ''}`}
+              <button key={k} type="button" aria-pressed={stage === k}
+                className={`crm-tab crm-tab--${k} ${stage === k ? 'is-on' : ''} ${counts[k] ? '' : 'is-zero'}`}
                 onClick={() => setStage(stage === k ? '' : k)}>
-                <b>{counts[k]}</b><span>{t(label)}</span>
+                {t(label)} <span className="crm-tab__n">{counts[k]}</span>
               </button>
             ))}
+            {dueCount > 0 && (
+              <button type="button" className={`crm-due ${dueOnly ? 'is-on' : ''}`} aria-pressed={dueOnly} onClick={() => setDueOnly(!dueOnly)}>
+                <Icon name="bell" size={15} /> {t(dueCount === 1 ? '{n} call back today' : '{n} call backs today', { n: dueCount })}
+              </button>
+            )}
           </div>
-
-          {dueCount > 0 && (
-            <button type="button" className={`crm-due ${dueOnly ? 'is-on' : ''}`} onClick={() => setDueOnly(!dueOnly)}>
-              <Icon name="bell" size={16} /> {t(dueCount === 1 ? '{n} call back today' : '{n} call backs today', { n: dueCount })}
-            </button>
-          )}
 
           <div className="dash-filters">
             <div className="dash-filters__search">
@@ -150,11 +154,6 @@ export default function LeadsCrm({ leads, meId, meName = '', isOwner, agencyId, 
               <input className="input" type="search" value={q} onChange={(e) => setQ(e.target.value)}
                 placeholder={t('Search by name, phone, email, property or message')} aria-label={t('Search enquiries')} />
             </div>
-            <select className="input" value={stage} onChange={(e) => setStage(e.target.value as typeof stage)} aria-label={t('Stage')}>
-              <option value="">{t('Any stage')}</option>
-              <option value="open">{t('In progress')}</option>
-              {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
-            </select>
             <select className="input" value={channel} onChange={(e) => setChannel(e.target.value)} aria-label={t('Channel')}>
               <option value="">{t('Any channel')}</option>
               {CHANNELS.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
@@ -187,12 +186,19 @@ export default function LeadsCrm({ leads, meId, meName = '', isOwner, agencyId, 
           {shown.length === 0 ? (
             <div className="empty"><div className="empty__ico"><Icon name="search" size={40} /></div>
               {t('Nothing matches these filters.')} <button type="button" className="link-btn" onClick={reset}>{t('Clear filters')}</button></div>
-          ) : shown.slice(0, limit).map((l) => (
-            <LeadRow key={l.id} lead={l} meId={meId} meName={meName} agentName={agentName}
-              canAssign={isOwner && !!agencyId && l.agencyId === agencyId}
-              members={members} expanded={openId === l.id}
-              onToggle={() => setOpenId(openId === l.id ? null : l.id)} onChanged={onChanged} />
-          ))}
+          ) : (
+            <div className="crm-list">
+              <div className="crm-head" aria-hidden>
+                <span>{t('Buyer')}</span><span>{t('Interested in')}</span><span>{t('Received')}</span><span>{t('Stage')}</span><span />
+              </div>
+              {shown.slice(0, limit).map((l) => (
+                <LeadRow key={l.id} lead={l} meId={meId} meName={meName} agentName={agentName}
+                  canAssign={isOwner && !!agencyId && l.agencyId === agencyId}
+                  members={members} expanded={openId === l.id}
+                  onToggle={() => setOpenId(openId === l.id ? null : l.id)} onChanged={onChanged} />
+              ))}
+            </div>
+          )}
           {shown.length > limit && (
             <div style={{ textAlign: 'center', marginTop: 16 }}>
               <button type="button" className="btn btn--ghost" onClick={() => setLimit(limit + PER_PAGE)}>
@@ -229,46 +235,75 @@ function LeadRow({ lead: l, meId, meName, agentName, canAssign, members, expande
     if (await patchLead(l.id, { status }, t)) { toast(t('Moved to {stage}', { stage: t(leadStageLabel(status)) })); onChanged(); }
   }
 
+  const live = l.status !== 'deal' && l.status !== 'lost';
+  const initials = l.name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase() || '?';
+  const hasExtra = Boolean(l.message || l.visitAt || (l.remindAt && live) || (l.status === 'lost' && l.lostReason));
+
   return (
-    <div className={`lead crm-lead ${expanded ? 'is-open' : ''}`}>
-      <div className="crm-lead__main">
-        <div style={{ minWidth: 0 }}>
-          <b>{l.name}</b>{l.phone && <span className="muted"> · {l.phone}</span>}
-          <span className={`pill ${stageTone(l.status)}`} style={{ marginLeft: 8 }}>{t(leadStageLabel(l.status))}</span>
-          {l.channel === 'whatsapp' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('WhatsApp')}</span>}
-          {l.source === 'widget' && <span className="pill pill--off" style={{ marginLeft: 6 }}>{t('Website widget')}</span>}
-          {l.status === 'lost' && l.lostReason && <span className="tiny muted" style={{ marginLeft: 6 }}>{l.lostReason}</span>}
-          {l.remindAt && l.status !== 'deal' && l.status !== 'lost' && <RemindPill at={l.remindAt} />}
-          {l.visitAt && <VisitLine lead={l} />}
-          {l.message && <p className="muted small" style={{ margin: '6px 0 0', whiteSpace: 'pre-line' }}>{l.message}</p>}
-          <div className="tiny muted" style={{ marginTop: 6 }}>
-            {fmtDate(l.createdAt)} · {l.channel === 'visit' && l.developmentSlug
-              ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
-              : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || t('the listing')}</Link>}
-            {l.email && <> · <a href={`mailto:${l.email}`}>{l.email}</a></>}
-            {l.agentId !== meId && ` · ${t('agent: {name}', { name: agentName(l.agentId) })}`}
+    <div className={`crm-row ${expanded ? 'is-open' : ''}`}>
+      <div className="crm-row__main">
+        <div className="crm-row__who">
+          <span className="crm-ava" aria-hidden>{initials}</span>
+          <div style={{ minWidth: 0 }}>
+            <div className="crm-row__name">
+              <b>{l.name}</b>
+              {l.channel === 'whatsapp' && <span className="pill pill--off">{t('WhatsApp')}</span>}
+              {l.source === 'widget' && <span className="pill pill--off">{t('Website widget')}</span>}
+            </div>
+            <div className="crm-row__contact tiny muted">
+              {l.phone && <a href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>{l.phone}</a>}
+              {l.phone && l.email && ' · '}
+              {l.email && <a href={`mailto:${l.email}`}>{l.email}</a>}
+            </div>
           </div>
         </div>
-        <div className="crm-lead__act">
-          <select className="input input--sm" value={l.status} aria-label={t('Stage')}
+
+        <div className="crm-row__obj small">
+          {l.channel === 'visit' && l.developmentSlug
+            ? <Link href={`/developments/${l.developmentSlug}`}>{l.developmentName}</Link>
+            : <Link href={`/listings/${l.listingId}`}>{l.listingTitle || t('the listing')}</Link>}
+          {l.agentId !== meId && <div className="tiny muted">{t('agent: {name}', { name: agentName(l.agentId) })}</div>}
+        </div>
+
+        <div className="crm-row__date small muted">{fmtDate(l.createdAt)}</div>
+
+        <div className="crm-row__stage">
+          <select className={`crm-stage ${stageTone(l.status)}`} value={l.status} aria-label={t('Stage')}
             onChange={(e) => setStage(e.target.value as LeadStatus)}>
             {LEAD_STAGES.map(([k, label]) => <option key={k} value={k}>{t(label)}</option>)}
           </select>
+        </div>
+
+        <div className="crm-row__act">
           {/* анонімний перехід у WhatsApp номера не лишає — дзвонити нікуди */}
           {l.phone && (
             <>
               <QuickReply lead={l} agentName={agentName(l.agentId) === t('Me') ? meName : agentName(l.agentId)} />
-              <a className="btn btn--sm btn--primary btn--icon" title={t('Call')} aria-label={t('Call')} href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
+              <a className="btn btn--sm btn--ghost btn--icon" title={t('Call')} aria-label={t('Call')} href={`tel:${l.phone.replace(/[^+\d]/g, '')}`}>
                 <Icon name="phone" size={16} />
               </a>
             </>
           )}
           <RemindButton lead={l} onChanged={onChanged} />
-          <button type="button" className="btn btn--sm btn--ghost" aria-expanded={expanded} onClick={onToggle}>
-            {t(expanded ? 'Close' : 'Notes & history')}
+          <button type="button" className={`btn btn--sm btn--ghost btn--icon crm-row__more ${expanded ? 'is-on' : ''}`}
+            aria-expanded={expanded} onClick={onToggle} title={t('Notes & history')} aria-label={t('Notes & history')}>
+            <Icon name="chevron" size={16} />
           </button>
         </div>
       </div>
+
+      {hasExtra && (
+        <div className="crm-row__extra">
+          {(l.remindAt && live || (l.status === 'lost' && l.lostReason)) && (
+            <div className="crm-row__flags">
+              {l.remindAt && live && <RemindPill at={l.remindAt} />}
+              {l.status === 'lost' && l.lostReason && <span className="pill pill--warn">{l.lostReason}</span>}
+            </div>
+          )}
+          {l.visitAt && <VisitLine lead={l} />}
+          {l.message && <p className={`crm-row__msg small ${expanded ? 'is-full' : ''}`}>{l.message}</p>}
+        </div>
+      )}
 
       {askLost && (
         <LostForm onCancel={() => setAskLost(false)} onSave={async (reason) => {
