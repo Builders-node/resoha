@@ -6,13 +6,15 @@ import HomeTiles from '@/components/HomeTiles';
 import AgencyRow from '@/components/AgencyRow';
 import ListingCard from '@/components/ListingCard';
 import Photo from '@/components/Photo';
+import OptImg from '@/components/OptImg';
 import RecentlyViewed from '@/components/RecentlyViewed';
 import HomeBlog from '@/components/HomeBlog';
 import HomeSeoText from '@/components/HomeSeoText';
 import { agencyBoard, getFavorites, listDevelopments, listFeaturedBuildings, priceStatsRows, queryListings } from '@/lib/db';
 import { CityPriceStats } from '@/components/PriceStats';
 import { cityStats, statsPeriod, yearAgo } from '@/lib/priceStats';
-import { fmtNumber, nListings } from '@/lib/format';
+import { fmtNumber, nListings, photoUrl } from '@/lib/format';
+import type { Listing } from '@/lib/types';
 import { getSession } from '@/lib/session';
 import { trackPromo } from '@/lib/promo';
 import { fromPrice, salesLabel, stageLabel } from '@/lib/units';
@@ -29,6 +31,27 @@ export async function generateMetadata(): Promise<Metadata> {
 /** Картка району завжди веде в каталог з цим районом — однаково для всіх районів і мов. */
 function areaHref(name: string) {
   return `/listings?neighborhoods=${encodeURIComponent(name)}`;
+}
+
+/** Кімнати, що показують сам район, а не інтерʼєр: їх беремо на обкладинку першими. */
+const OUTDOOR = new Set(['view', 'exterior', 'pool', 'garden', 'terrace', 'amenities']);
+
+/**
+ * Обкладинка плитки району — справжнє фото з оголошення в цьому районі.
+ * Найкраще — вид / фасад / басейн; далі — будь-яке перше фото. Оголошення, що вже стоять у
+ * «Featured» вище, беремо в останню чергу, щоб той самий кадр не повторювався двічі поспіль.
+ */
+function areaCover(listings: Listing[], shown: Set<string>) {
+  let best = '';
+  let bestScore = -1;
+  for (const l of listings) {
+    const photos = l.photos.map(photoUrl).filter(Boolean);
+    if (!photos.length) continue;
+    const outdoor = photos.find((u) => OUTDOOR.has(l.photoRooms?.[u] ?? ''));
+    const score = (outdoor ? 4 : 0) + (shown.has(l.id) ? 0 : 2) + (l.deal === 'sale' ? 1 : 0);
+    if (score > bestScore) { bestScore = score; best = outdoor ?? photos[0]; }
+  }
+  return best;
 }
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
@@ -81,7 +104,8 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       from: l.deal === 'sale' ? Math.min(cur.from, l.price) : cur.from,
     });
   });
-  const areas = [...byArea.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 4);
+  const areas = [...byArea.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 4)
+    .map(([name, a]) => [name, { ...a, cover: areaCover(all.filter((l) => l.neighborhood === name), featuredIds) }] as const);
 
   // квартири ЖК — звичайні оголошення, тож кількість і ціну «від» беремо з уже завантаженого каталогу
   const devOrder = [...devs].sort((a, b) => Number(b.featured) - Number(a.featured)
@@ -145,10 +169,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
             <Link className="btn btn--primary" href={lp('/areas')}>{t('All areas compared')} <Icon name="arrowRight" size={18} /></Link>
           </div>
           <div className="grid grid--4">
-            {areas.map(([name, a]) => (
-              <Link key={name} className="ov ov--area ov--plain"
+            {areas.map(([name, a], i) => (
+              <Link key={name} className={`ov ov--area${a.cover ? '' : ' ov--plain'}`}
                 href={lp(areaHref(name))}>
-                <span className="ov__map" aria-hidden="true"><Icon name="pin" size={26} /></span>
+                {/* фон без фото — навмисний «план району» (колір за місцем у ряду, щоб сусіди не зливались);
+                    справжнє фото, якщо є, лягає зверху, а якщо не відкриється, під ним лишається цей фон, а не дірка */}
+                <span className={`ov__plan ov__plan--${i % 4}`} aria-hidden="true" />
+                {a.cover && <OptImg src={a.cover} alt="" sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 440px" />}
+                {!a.cover && <span className="ov__map" aria-hidden="true"><Icon name="pin" size={22} /></span>}
                 <div className="ov__b">
                   <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
                   <div className="ov__meta">
