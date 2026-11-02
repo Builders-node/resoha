@@ -931,9 +931,22 @@ textarea.input{resize:vertical;min-height:96px}
   display:flex;align-items:center;justify-content:center;background:#fff;color:var(--orange)}
 .tile--wide .tile__ico{width:54px;height:54px}
 
-/* Плитка району — без фото, самим кольором */
-.ov--plain{background:linear-gradient(150deg,#20202a,#3b2a1f)}
-.ov__map{position:absolute;right:14px;top:12px;z-index:2;color:rgba(255,255,255,.5)}
+/* Плитка району. Є фото з оголошення в районі — показуємо його; нема — навмисний «план району»
+   (контури й дороги поверх кольору), щоб плитка не виглядала як фото, що не завантажилось. */
+.ov--area img{position:relative}
+.ov__plan{position:absolute;inset:0;background-color:var(--plan,#2b3a3f);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='200' viewBox='0 0 320 200' fill='none' stroke='white'%3E%3Cg stroke-opacity='.16' stroke-width='1'%3E%3Cpath d='M-10 40C60 30 90 70 160 58s120-40 180-20'/%3E%3Cpath d='M-10 78c70-8 110 30 180 18s110-36 160-18'/%3E%3Cpath d='M-10 120c60-12 120 24 190 10s100-30 150-14'/%3E%3Cpath d='M-10 162c80-14 120 18 200 6s90-22 140-8'/%3E%3C/g%3E%3Cg stroke-opacity='.28' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='M40 -10L120 210'/%3E%3Cpath d='M-10 140L330 70'/%3E%3Cpath d='M230 -10c-20 60 10 120 -10 220'/%3E%3C/g%3E%3C/svg%3E"),
+    radial-gradient(120% 90% at 85% 10%,rgba(255,255,255,.18),transparent 60%),
+    linear-gradient(160deg,transparent,rgba(0,0,0,.28));
+  background-size:320px 200px,auto,auto;background-position:center}
+.ov__plan--0{--plan:#1f5d63}  /* море */
+.ov__plan--1{--plan:#b45a32}  /* теракота */
+.ov__plan--2{--plan:#4f6b3a}  /* зелень пагорбів */
+.ov__plan--3{--plan:#6a4a7a}  /* вечір */
+.ov--plain::after{background:linear-gradient(180deg,rgba(0,0,0,0) 45%,rgba(0,0,0,.55) 100%)}
+.ov__map{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:2;
+  width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  background:#fff;color:var(--orange);box-shadow:0 0 0 10px rgba(255,255,255,.18),0 0 0 22px rgba(255,255,255,.08)}
 
 /* Звідки взяті факти оголошення */
 .src{display:flex;gap:8px;align-items:flex-start;margin-top:16px;padding:12px 14px;
