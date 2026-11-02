@@ -194,12 +194,14 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Profile': 'Perfil',
   'Browse listings': 'Ver propiedades',
   'Loading…': 'Cargando…',
-  'No saved properties yet.': 'Aún no tiene propiedades guardadas.',
-  'Start browsing': 'Empezar a buscar',
+  'No saved properties yet': 'Aún no tiene propiedades guardadas',
+  'Tap the heart on any listing to keep it here — handy for comparing prices and coming back later.':
+    'Toque el corazón en cualquier propiedad para guardarla aquí: así podrá comparar precios y volver más tarde.',
   'Each one keeps its filters and shows how many properties match right now.':
     'Cada una conserva sus filtros y muestra cuántas propiedades coinciden ahora mismo.',
-  'No saved searches. Use “Save search” on the results page.':
-    'No hay búsquedas guardadas. Use “Guardar búsqueda” en la página de resultados.',
+  'No saved searches yet': 'Aún no tiene búsquedas guardadas',
+  'Set your filters on the results page and press “Save search” — we will email you when new properties match.':
+    'Configure los filtros en la página de resultados y pulse «Guardar búsqueda»: le avisaremos por email cuando haya propiedades nuevas.',
   '{n} match': '{n} resultado',
   '{n} matches': '{n} resultados',
   '+{n} new': '+{n} nuevas',
@@ -209,8 +211,8 @@ export const ES_ACCOUNTS: Record<string, string> = {
   'Delete': 'Eliminar',
   'Everything you sent from a property page. “Handled” means the agent has worked it.':
     'Todo lo que envió desde la página de una propiedad. “Atendida” significa que el agente ya la gestionó.',
-  'No enquiries yet. Open a listing and ask the agent for a viewing.':
-    'Aún no tiene consultas. Abra una propiedad y pida una visita al agente.',
+  'Open a listing and ask the agent for a viewing — your messages will appear here.':
+    'Abra una propiedad y pida una visita al agente: sus mensajes aparecerán aquí.',
   'Listing': 'Propiedad',
   'Sent on WhatsApp': 'Enviada por WhatsApp',
   'Awaiting reply': 'Esperando respuesta',
