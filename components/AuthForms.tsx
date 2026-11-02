@@ -138,7 +138,7 @@ export function SignupForm({ initialMode = 'buyer', next, onSwitch, onDone }: In
     return (
       <div style={{ textAlign: 'center' }}>
           <div className="empty__ico"><Icon name="inbox" size={40} /></div>
-          <h2 className="auth__title" style={{ fontSize: 24 }}>{t('Confirm your email')}</h2>
+          <h2 className="auth__title">{t('Confirm your email')}</h2>
           <p className="muted" style={{ margin: '10px 0 20px' }}>
             {t('Your account is created. Open the confirmation link sent to')} <b>{pending}</b> {t('and then sign in.')}
           </p>
@@ -238,7 +238,7 @@ export function ForgotForm({ onSwitch }: InModal) {
         {sent ? (
           <>
             <div className="empty__ico"><Icon name="inbox" size={40} /></div>
-            <h2 className="auth__title" style={{ fontSize: 24 }}>{t('Check your email')}</h2>
+            <h2 className="auth__title">{t('Check your email')}</h2>
             <p className="muted" style={{ margin: '10px 0 20px' }}>
               {t('If that address has an account, a reset link is on its way. The link signs you in once and takes you straight to a new-password form.')}
             </p>

@@ -178,7 +178,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                 {a.cover && <OptImg src={a.cover} alt="" sizes="(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 440px" />}
                 {!a.cover && <span className="ov__map" aria-hidden="true"><Icon name="pin" size={22} /></span>}
                 <div className="ov__b">
-                  <div className="ov__title" style={{ fontSize: 20 }}>{name}</div>
+                  <div className="ov__title">{name}</div>
                   <div className="ov__meta">
                     {nListings(a.count, lang)}{Number.isFinite(a.from) && ` · ${t('from {price}', { price: money.amount(a.from) })}`}
                   </div>

@@ -39,7 +39,7 @@ export default function RehostPhotos() {
           {state.failed.length > 0 && <> · <b>{state.failed.length}</b> could not be downloaded (left as they were)</>}
         </p>
       )}
-      {state.error && <p className="small" style={{ color: 'var(--orange)' }}>{state.error}</p>}
+      {state.error && <p className="small err-text" role="alert">{state.error}</p>}
     </div>
   );
 }

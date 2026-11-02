@@ -84,7 +84,7 @@ export default function BrokenPhotos() {
           ))}
         </ul>
       )}
-      {s.error && <p className="small" style={{ color: 'var(--orange)' }}>{s.error}</p>}
+      {s.error && <p className="small err-text" role="alert">{s.error}</p>}
     </div>
   );
 }
