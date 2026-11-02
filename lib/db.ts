@@ -1,3 +1,4 @@
+import { mapPlace, type MapPlace } from './mapPlaces';
 import { after } from 'next/server';
 import { serverRpc } from './serverRpc';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -1798,4 +1799,24 @@ async function sponsoredSlots(q: ListingQuery): Promise<Listing[]> {
     .sort((a, b) => top(a) - top(b) || fnv(`${a.id}:${hour}`) - fnv(`${b.id}:${hour}`))
     .slice(0, SPONSORED_SLOTS)
     .map((l) => ({ ...l, sponsored: true }));
+}
+
+/* ---------- спільний шар місць на карті (міграція 0070) ---------- */
+
+/** Активні місця для карти й «що поруч». До міграції таблиці немає — шар просто порожній. */
+export async function listMapPlaces(opts: { all?: boolean } = {}): Promise<MapPlace[]> {
+  let q = (await db()).from('map_places').select('id, kind, name, name_es, lat, lng, note, active').order('kind').order('name').limit(2000);
+  if (!opts.all) q = q.eq('active', true);
+  const { data, error } = await q;
+  if (error) return [];
+  return (data ?? []).map(mapPlace);
+}
+
+export async function saveMapPlace(id: string | null, row: Record<string, unknown>) {
+  const client = await db();
+  const res = id
+    ? await client.from('map_places').update(row).eq('id', id).select('*').maybeSingle()
+    : await client.from('map_places').insert(row).select('*').single();
+  if (res.error) throw res.error;
+  return res.data ? mapPlace(res.data) : null;
 }

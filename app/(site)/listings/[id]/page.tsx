@@ -23,7 +23,7 @@ import DevelopmentMedia from '@/components/DevelopmentMedia';
 import { RecordView } from '@/components/RecentlyViewed';
 import { trackAfterResponse } from '@/lib/track';
 import { trackPromo } from '@/lib/promo';
-import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, getSiteSettings, listBuildings, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
+import { getAgency, getAgent, getDevelopment, getFavorites, getListing, getPriceHistory, getSiteSettings, listBuildings, listMapPlaces, listDocuments, listUnitDocuments, queryListings } from '@/lib/db';
 import { FeatureGrid, PhotoStrip, developmentFeatures, type Feature } from '@/components/DevelopmentFeatures';
 import { DEAL_LABELS, TYPE_LABELS, fmtDate, fmtNumber, fmtPrice, sqftToM2 } from '@/lib/format';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -33,6 +33,7 @@ import { currentUser } from '@/lib/session';
 import { breadcrumbLd, graph, listingLd } from '@/lib/seo';
 import { listingCrumbs, listingExploreLinks, listingMetaDescription, listingMetaTitle, listingSummary } from '@/lib/listingSeo';
 import { categoryLabel, nearbyDistance } from '@/lib/nearby';
+import { fmtKm, kindIcon, kindLabel, nearestByKind, placeName } from '@/lib/mapPlaces';
 import { OPEN_STATUSES, stageLabel, statusLabel } from '@/lib/units';
 import { DETAIL_FIELDS, IN_UNIT, detailLabel, floorLine } from '@/lib/details';
 import { photoTour } from '@/lib/rooms';
@@ -128,7 +129,7 @@ export default async function PropertyPage({ params, searchParams }: {
   await trackPromo('listing', [listing], 'click');
 
   // усе інше не залежить одне від одного, тож ходимо в базу паралельно
-  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs, site] = await Promise.all([
+  const [agent, agency, me, similarAll, landPeers, prices, devAll, dev, devBuildings, lang, unitDocs, devDocs, site, mapPlaces] = await Promise.all([
     getAgent(listing.agentId),
     getAgency(listing.agencyId),
     currentUser(),
@@ -147,8 +148,11 @@ export default async function PropertyPage({ params, searchParams }: {
     listing.developmentId ? listUnitDocuments(listing.id) : Promise.resolve([]),
     listing.developmentId ? listDocuments(listing.developmentId) : Promise.resolve([]),
     getSiteSettings(),
+    // спільний шар місць (0070): найближчий пляж, лікарня, аеропорт…
+    listMapPlaces(),
   ]);
   const t = makeT(lang);
+  const nearest = nearestByKind(mapPlaces, listing);
   const money = await getMoney();
   const docs = [...unitDocs, ...devDocs];
   const building = devBuildings.find((b) => b.id === listing.buildingId) ?? null;
@@ -525,9 +529,27 @@ export default async function PropertyPage({ params, searchParams }: {
             </section>
           )}
 
+          {/* найближчі місця зі спільного шару — без участі ріелтора */}
+          {nearest.length > 0 && (
+            <section className="nearby" id="nearest">
+              <h3 className="prop__h">{t('Distances')}</h3>
+              <ul className="nearby__list">
+                {nearest.map(({ place, km }) => (
+                  <li key={place.id} className="nearby__item">
+                    <span className="nearby__name">
+                      <b><span aria-hidden>{kindIcon(place.kind)}</span> {placeName(place, lang)}</b>
+                      <span className="small muted">{t(`Nearest ${kindLabel(place.kind).toLowerCase()}`)}</span>
+                    </span>
+                    <span className="nearby__dist">{fmtKm(km, lang)}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <h3 className="prop__h">{t('Location')}</h3>
           <div id="miniMap">
-            <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} />
+            <MapView items={[listing]} center={[listing.lat, listing.lng]} detail places={listing.nearby} layer />
           </div>
 
           {dev && (

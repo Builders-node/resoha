@@ -261,7 +261,7 @@ export default async function DevelopmentPage({ params, searchParams }: {
       <h3 className="prop__h">{t('Location')}</h3>
       <div id="miniMap">
         <MapView items={[{ id: dev.id, lat: dev.lat, lng: dev.lng, price: from ?? 0, deal: 'sale' }]}
-          center={[dev.lat, dev.lng]} detail />
+          center={[dev.lat, dev.lng]} detail layer />
       </div>
     </DevelopmentShell>
   );

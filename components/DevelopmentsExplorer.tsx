@@ -163,7 +163,7 @@ export default function DevelopmentsExplorer({ items: all }: { items: DevItem[] 
         </div>
 
         <div className="split__map">
-          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId} />
+          <MapView items={pins} activeId={activeId} onSelect={onSelect} onHover={setActiveId} layer />
         </div>
       </div>
 

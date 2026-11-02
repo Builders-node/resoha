@@ -3115,3 +3115,16 @@ button.chess__cell{font:inherit;font-size:12px;text-align:left;cursor:pointer}
   .co-tools__sort{width:100%}
   .co-foot{justify-content:center}
 }
+
+/* Admin → Map places (0070) */
+.mplaces{list-style:none;margin:0;padding:0;display:grid}
+.mplaces li{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.mplaces li.is-off{opacity:.55}
+.mplaces__ico{font-size:20px;width:28px;text-align:center}
+.mplaces__name{display:grid;flex:1;min-width:0}
+.mplaces__form{border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:8px}
+/* спільний шар місць на карті */
+.mplace{width:28px;height:28px;border-radius:50%;background:#fff;border:2px solid var(--ink);display:grid;place-items:center;
+  font-size:15px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
+.mplace-pop{font-size:13px;line-height:1.35}
+.mplace-pop b{display:block;font-size:14px}

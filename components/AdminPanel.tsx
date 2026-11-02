@@ -14,11 +14,12 @@ import Avatar from './Avatar';
 import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
 import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
+import MapPlacesAdmin from './MapPlacesAdmin';
 import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
 import RehostPhotos from './RehostPhotos';
 
-type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'log';
+type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
@@ -41,6 +42,7 @@ const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'agencies', label: 'Agencies', ico: 'building' },
   { v: 'users', label: 'People', ico: 'user' },
   { v: 'reviews', label: 'Reviews', ico: 'star' },
+  { v: 'places', label: 'Map places', ico: 'pin' },
   { v: 'log', label: 'Log', ico: 'list' },
 ];
 
@@ -278,6 +280,8 @@ export default function AdminPanel({ session }: { session: Session }) {
         {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}
 
         {tab === 'promotions' && <PromoAdmin />}
+
+        {tab === 'places' && <MapPlacesAdmin />}
 
         {tab === 'moderation' && <ModerationAdmin />}
 

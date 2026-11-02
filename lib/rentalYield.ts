@@ -77,7 +77,7 @@ export function rentalYield(i: YieldInputs): YieldResult {
     { key: 'management', label: 'Property management', amount: gross * (i.management / 100) },
     // у довгій оренді платформи немає
     ...(i.mode === 'nightly' ? [{ key: 'platform', label: 'Booking platform fees', amount: gross * (i.platform / 100) }] : []),
-    { key: 'hoa', label: 'HOA fees', amount: i.hoa * 12 },
+    { key: 'hoa', label: 'HOA dues', amount: i.hoa * 12 },
     { key: 'upkeep', label: 'Utilities and maintenance', amount: i.upkeep * 12 },
     { key: 'insurance', label: 'Insurance', amount: i.price * (i.insurance / 100) },
     { key: 'propertyTax', label: 'Property tax', amount: i.price * (i.propertyTax / 100) },
