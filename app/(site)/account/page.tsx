@@ -2,7 +2,7 @@ import LoginGate from '@/components/LoginGate';
 import UserAccount from '@/components/UserAccount';
 import { currentUser, toSession } from '@/lib/session';
 
-export default async function AccountPage() {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const user = await currentUser();
   // Один акаунт на людину: збережене бачить кожен залогінений — і покупець, і ріелтор
   if (!user) {
@@ -18,5 +18,6 @@ export default async function AccountPage() {
   return <UserAccount
     session={toSession(user)}
     user={{ email: user.email, phone: user.phone }}
+    initialTab={(await searchParams).tab}
   />;
 }

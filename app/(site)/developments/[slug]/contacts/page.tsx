@@ -4,7 +4,6 @@ import dynamic from 'next/dynamic';
 import Avatar from '@/components/Avatar';
 import DevelopmentSalesOffice from '@/components/DevelopmentSalesOffice';
 import DevelopmentShell from '@/components/DevelopmentShell';
-import DevelopmentUpdates from '@/components/DevelopmentUpdates';
 import Icon from '@/components/Icon';
 import { VisitPicker } from '@/components/VisitBooking';
 import { developmentContext, developmentMetadata } from '@/lib/developmentPage';
@@ -31,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function ContactsPage({ params }: Props) {
   const lp = await getLp();
   const ctx = await developmentContext((await params).slug);
-  const { dev, agent, me, from, base, leadUnit } = ctx;
+  const { dev, agent, from, base, leadUnit } = ctx;
   const t = await getT();
   const canBook = dev.schedule.length > 0 && !!leadUnit;
 
@@ -86,8 +85,6 @@ export default async function ContactsPage({ params }: Props) {
           </aside>
         )}
       </div>
-
-      <DevelopmentUpdates devId={dev.id} devName={dev.name} email={me?.email ?? ''} />
     </DevelopmentShell>
   );
 }

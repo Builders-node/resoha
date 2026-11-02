@@ -26,14 +26,15 @@ export async function POST(req: Request, { params }: Ctx) {
   const dev = await getDevelopment(id);
   if (!dev || !dev.active) return NextResponse.json({ error: 'Development not found' }, { status: 404 });
   const unit = pickLeadUnit(await queryListings({ developmentId: dev.id }));
-  if (!unit) return NextResponse.json({ error: 'Development not found' }, { status: 404 });
+  const user = await currentUser();
+  // заявку привʼязуємо до квартири; ЖК без квартир гостю нічого не дає, а з акаунтом — лишається підписка
+  if (!unit && !user) return NextResponse.json({ error: 'Development not found' }, { status: 404 });
 
   const email = clip(body.email, 200);
   if (!/^\S+@\S+\.\S+$/.test(email)) return NextResponse.json({ error: 'Enter a valid email' }, { status: 400 });
 
-  const user = await currentUser();
   try {
-    await createLead({
+    if (unit) await createLead({
       listingId: unit.id, name: clip(user?.name, 120) || email.split('@')[0], phone: clip(user?.phone, 40), email,
       message: `Subscribed to ${dev.name} updates: ${UPDATE_TOPICS.join(', ').toLowerCase()}.`,
       userId: user?.id ?? null,

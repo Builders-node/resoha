@@ -15,31 +15,37 @@ import Avatar from './Avatar';
 import TabStrip from './TabStrip';
 import { useLang, useT } from './LangProvider';
 
-type Tab = 'fav' | 'searches' | 'enquiries' | 'profile';
+type Tab = 'fav' | 'searches' | 'developments' | 'enquiries' | 'profile';
+const TABS: Tab[] = ['fav', 'searches', 'developments', 'enquiries', 'profile'];
+type Followed = { id: string; slug: string; name: string; neighborhood: string; photo: string; since: string };
 
-export default function UserAccount({ session, user }: {
+export default function UserAccount({ session, user, initialTab }: {
   session: Session;
   user: { email: string; phone: string };
+  /** /account?tab=developments — з банера «Key updates» на сторінці ЖК */
+  initialTab?: string;
 }) {
   const t = useT();
   const lang = useLang();
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>('fav');
+  const [tab, setTab] = useState<Tab>(TABS.includes(initialTab as Tab) ? initialTab as Tab : 'fav');
   const [favs, setFavs] = useState<Listing[]>([]);
   const [favIds, setFavIds] = useState<string[]>([]);
   const [searches, setSearches] = useState<SavedSearch[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [followed, setFollowed] = useState<Followed[]>([]);
   const [loading, setLoading] = useState(true);
   const [avatar, setAvatar] = useState(session.avatar);
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const [f, s, l] = await Promise.all([
+    const [f, s, l, d] = await Promise.all([
       fetch('/api/favorites').then((r) => r.json()),
       fetch('/api/saved-searches').then((r) => r.json()),
       fetch('/api/leads').then((r) => r.json()),
+      fetch('/api/developments/following').then((r) => r.json()).catch(() => ({})),
     ]);
-    setFavs(f.items ?? []); setFavIds(f.ids ?? []); setSearches(s.items ?? []);
+    setFavs(f.items ?? []); setFavIds(f.ids ?? []); setSearches(s.items ?? []); setFollowed(d.items ?? []);
     // ріелтору /api/leads віддає ще й вхідні заявки — тут лише ті, що людина надіслала сама
     setLeads((l.items ?? []).filter((x: Lead) => x.userId === session.id));
     setLoading(false);
@@ -53,6 +59,12 @@ export default function UserAccount({ session, user }: {
     load();
   }
 
+  async function unfollow(id: string) {
+    await fetch(`/api/developments/${id}/follow`, { method: 'DELETE' });
+    toast(t('Unsubscribed'));
+    setFollowed((xs) => xs.filter((x) => x.id !== id));
+  }
+
   return (
     <div className="wrap dash">
       <TabStrip>
@@ -60,6 +72,9 @@ export default function UserAccount({ session, user }: {
           <HeartIcon filled size={18} /> {t('Saved')} {favIds.length > 0 && <span className="pill pill--off">{favIds.length}</span>}
         </a>
         <a className={tab === 'searches' ? 'is-active' : ''} onClick={() => setTab('searches')}><Icon name="bell" size={18} /> {t('Saved searches')}</a>
+        <a className={tab === 'developments' ? 'is-active' : ''} onClick={() => setTab('developments')}>
+          <Icon name="building" size={18} /> {t('Developments')} {followed.length > 0 && <span className="pill pill--off">{followed.length}</span>}
+        </a>
         <a className={tab === 'enquiries' ? 'is-active' : ''} onClick={() => setTab('enquiries')}>
           <Icon name="chat" size={18} /> {t('My enquiries')} {leads.length > 0 && <span className="pill pill--off">{leads.length}</span>}
         </a>
@@ -124,6 +139,37 @@ export default function UserAccount({ session, user }: {
                 <div style={{ display: 'flex', gap: 8 }}>
                   <Link className="btn btn--sm btn--ghost" href={`/listings?${s.query}`}>{t('Open')}</Link>
                   <button className="btn btn--sm btn--danger btn--icon" title={t('Delete')} aria-label={t('Delete')} onClick={() => removeSearch(s.id)}><Icon name="trash" size={16} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {tab === 'developments' && (
+          <div className="panel">
+            <h3 style={{ marginBottom: 4 }}>{t('Development updates')}</h3>
+            <p className="muted small" style={{ marginBottom: 16 }}>
+              {t('Developments you follow. We email you promotions, construction photos, price and document updates.')}
+            </p>
+            {loading ? <div className="empty">{t('Loading…')}</div> : followed.length === 0 ? (
+              <div className="empty"><div className="empty__ico"><Icon name="building" size={40} /></div>
+                {t('No subscriptions yet. Press “Subscribe” at the bottom of a development page.')}<br />
+                <Link href="/developments" className="link-accent">{t('Browse developments')} <Icon name="arrowRight" size={16} /></Link>
+              </div>
+            ) : followed.map((d) => (
+              <div key={d.id} className="lead">
+                <div style={{ display: 'flex', gap: 12, alignItems: 'center', minWidth: 0 }}>
+                  {d.photo && <img src={d.photo} alt="" width={64} height={48} style={{ borderRadius: 8, objectFit: 'cover', flex: 'none' }} />}
+                  <div>
+                    <b>{d.name}</b>
+                    <div className="tiny muted" style={{ marginTop: 4 }}>
+                      {[d.neighborhood, t('Subscribed {date}', { date: fmtDate(d.since, lang) })].filter(Boolean).join(' · ')}
+                    </div>
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <Link className="btn btn--sm btn--ghost" href={`/developments/${d.slug}`}>{t('Open')}</Link>
+                  <button className="btn btn--sm btn--ghost" onClick={() => unfollow(d.id)}>{t('Unsubscribe')}</button>
                 </div>
               </div>
             ))}
