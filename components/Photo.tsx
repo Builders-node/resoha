@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import Icon from './Icon';
 import OptImg from './OptImg';
 import { useT } from './LangProvider';
@@ -26,11 +27,15 @@ export const CARD_SIZES = '(max-width: 560px) 100vw, (max-width: 1080px) 50vw, 4
  */
 export default function Photo({ src, alt = '', className = '', eager, sizes = CARD_SIZES, optimize = true, label = 'No photo yet' }: Props) {
   const t = useT();
+  // фото за посиланням не відкрилось (сайт агенції його прибрав) — та сама заглушка, що й без фото
+  const [failed, setFailed] = useState('');
   const url = photoUrl(src);
-  if (url) {
+  if (url && failed !== url) {
+    const fail = () => setFailed(url);
     return optimize
-      ? <OptImg className={className || undefined} src={url} alt={alt} sizes={sizes} eager={eager} />
-      : <img className={className} src={url} alt={alt} loading={eager ? 'eager' : 'lazy'} />;
+      ? <OptImg className={className || undefined} src={url} alt={alt} sizes={sizes} eager={eager} onFail={fail} />
+      : <img className={className} src={url} alt={alt} loading={eager ? 'eager' : 'lazy'} onError={fail}
+          ref={(img) => { if (img?.complete && img.currentSrc && !img.naturalWidth) fail(); }} />;
   }
   return (
     <span className={`nophoto ${className}`.trim()} role="img" aria-label={t(label || 'No photo yet')}>

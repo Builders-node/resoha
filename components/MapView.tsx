@@ -95,6 +95,7 @@ function buildPopupNode(l: Listing, onClick: () => void, t: T, lang: Lang, money
       <div class="map-pop__price">${money.price(l.price, l.deal, lang)}</div>
     </div>`;
   node.addEventListener('click', onClick);
+  swapBrokenImg(node, t);
   return node;
 }
 
@@ -115,7 +116,19 @@ function buildCardNode(c: PinCard, onClick: () => void, t: T) {
       ${c.price ? `<div class="map-pop__price">${esc(c.price)}</div>` : ''}
     </div>`;
   node.addEventListener('click', onClick);
+  swapBrokenImg(node, t);
   return node;
+}
+
+/** Фото в міні-картці не відкрилось (сайт агенції його прибрав) — заглушка замість значка битої картинки. */
+function swapBrokenImg(node: HTMLElement, t: T) {
+  const img = node.querySelector('img');
+  img?.addEventListener('error', () => {
+    const ph = document.createElement('span');
+    ph.className = 'nophoto';
+    ph.innerHTML = `<em>${t('No photo yet')}</em>`;
+    img.replaceWith(ph);
+  }, { once: true });
 }
 
 /** Додаткові джерела й шари поверх базового стилю: обʼєкт, ділянка, лінійка. */
