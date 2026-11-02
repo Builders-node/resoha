@@ -13,7 +13,7 @@ import { QuickReply, RemindButton, RemindPill } from './LeadQuickActions';
 
 const PER_PAGE = 30;
 const DAY = 24 * 60 * 60 * 1000;
-const CHANNELS: [Lead['channel'], string][] = [['form', 'Form'], ['whatsapp', 'WhatsApp'], ['visit', 'Office visit']];
+const CHANNELS: [Lead['channel'], string][] = [['form', 'Form'], ['whatsapp', 'WhatsApp'], ['visit', 'Visit or viewing']];
 
 /**
  * Заявки ріелтора як маленька CRM: воронка зі стадіями, фільтри й пошук, історія з нотатками,
@@ -394,7 +394,7 @@ function LeadDetail({ lead: l, canAssign, members, agentName, onChanged }: {
           </li>
         ))}
         <li className="crm-timeline__item">
-          <div className="small">{t(l.channel === 'whatsapp' ? 'Enquiry received via WhatsApp' : l.channel === 'visit' ? 'Enquiry received (office visit booking)' : 'Enquiry received')}</div>
+          <div className="small">{t(l.channel === 'whatsapp' ? 'Enquiry received via WhatsApp' : l.channel === 'visit' ? (l.developmentName ? 'Enquiry received (office visit booking)' : 'Enquiry received (viewing booking)') : 'Enquiry received')}</div>
           <div className="tiny muted">{fmtStamp(l.createdAt)}</div>
         </li>
         {events === null && <li className="tiny muted">{t('Loading history…')}</li>}
@@ -421,7 +421,7 @@ function VisitLine({ lead }: { lead: Lead }) {
   return (
     <div className="lead__visit">
       <span className={`pill ${past ? 'pill--off' : 'pill--on'}`}>
-        <Icon name="calendar" size={14} /> {t('Office visit')} · {fmtVisit(lead.visitAt!)}
+        <Icon name="calendar" size={14} /> {t(lead.developmentName ? 'Office visit' : 'Viewing')} · {fmtVisit(lead.visitAt!)}
       </span>
       {lead.contactVia && <span className="tiny muted">{t('Prefers {via}', { via: t(contactPrefShort(lead.contactVia)) })}</span>}
       {lead.interests.length > 0 && (

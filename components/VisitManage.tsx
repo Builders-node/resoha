@@ -35,16 +35,18 @@ export default function VisitManage({ token, initial }: { token: string; initial
   // момент відкриття сторінки: чи візит ще попереду
   const [now] = useState(() => Date.now());
   const dev = visit.development;
+  // перегляд вторинки (0069): години й зайнятість ріелтора замість відділу продажів
+  const viewing = dev ? null : visit.viewing;
   const [avail, reloadAvail] = useAvailability(dev?.id, {
     blackout: dev?.blackout ?? [], capacity: dev?.capacity ?? 1,
-  });
+  }, viewing?.agentId);
 
   const today = officeToday();
   const current = slotKey(visit.visitAt);
   const [day, setDay] = useState('');
   const [time, setTime] = useState('');
   const [month, setMonth] = useState(today.slice(0, 7));
-  const schedule = dev?.schedule ?? [];
+  const schedule = dev?.schedule ?? viewing?.schedule ?? [];
   // свій нинішній слот не рахуємо зайнятим — але й обирати його вдруге немає сенсу
   const openSlots = (d: string) => freeSlotsFor(schedule, d, avail).filter((s) => slotKey(officeTimeToDate(d, s)) !== current);
   const slots = day ? openSlots(day) : [];
@@ -53,7 +55,8 @@ export default function VisitManage({ token, initial }: { token: string; initial
     .format(new Date(`${d}T12:00:00Z`));
   const upcoming = visit.status === 'booked' && Date.parse(visit.visitAt) > now;
   const place = dev?.name || visit.listing.title;
-  const address = dev ? dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ') : '';
+  const address = dev ? dev.office || [dev.address, dev.neighborhood].filter(Boolean).join(', ')
+    : [viewing?.address, viewing?.neighborhood].filter(Boolean).join(', ');
 
   function startMove() {
     // перший день із вільним часом
@@ -94,7 +97,7 @@ export default function VisitManage({ token, initial }: { token: string; initial
 
       <div className="visit__office">
         <div className="visit__office-head">
-          <b>{t('{name} sales office', { name: place })}</b>
+          <b>{viewing ? t('Viewing: {name}', { name: place }) : t('{name} sales office', { name: place })}</b>
           <span className="sales__ico"><Icon name="calendar" size={26} /></span>
         </div>
         <p className={visit.status === 'cancelled' ? 'vmanage__when is-off' : 'vmanage__when'}>
@@ -110,7 +113,7 @@ export default function VisitManage({ token, initial }: { token: string; initial
         {visit.status === 'cancelled' && (
           <p className="small muted">
             {visit.cancelledBy === 'team'
-              ? t('The sales office cancelled this visit. They will contact you to agree on another time.')
+              ? t(viewing ? 'The agent cancelled this viewing. They will contact you to agree on another time.' : 'The sales office cancelled this visit. They will contact you to agree on another time.')
               : t('You cancelled this visit.')}
           </p>
         )}
@@ -118,7 +121,7 @@ export default function VisitManage({ token, initial }: { token: string; initial
 
       {upcoming && !moving && (
         <AddToCalendar href={`/api/visit/${token}/ics`} uid={visitUid(visit.leadId)} visitAt={visit.visitAt}
-          place={place} address={address} agent={visit.agent} />
+          place={place} address={address} agent={visit.agent} kind={viewing ? 'viewing' : 'office'} />
       )}
 
       {upcoming && !moving && (
@@ -162,6 +165,9 @@ export default function VisitManage({ token, initial }: { token: string; initial
 
       {!upcoming && dev?.slug && (
         <Link className="btn btn--primary btn--lg btn--block" href={`/developments/${dev.slug}/visit`}>{t('Book another visit')}</Link>
+      )}
+      {!upcoming && viewing && visit.listing.id && (
+        <Link className="btn btn--primary btn--lg btn--block" href={`/listings/${visit.listing.id}#enquiry`}>{t('Book another viewing')}</Link>
       )}
       {visit.status === 'booked' && !upcoming && officeDayOf(new Date(visit.visitAt)) === today && (
         <p className="small muted" style={{ marginTop: 16 }}>{t('This visit has already started and can no longer be changed online.')}</p>

@@ -1,5 +1,6 @@
 import { supabaseServer } from './supabase/server';
 import { cleanSchedule, NO_LIMITS, slotKey, type Availability, type VisitStatus, type WeekSchedule } from './visits';
+import { viewingHours, type ViewingHours } from './viewings';
 
 /**
  * Записи на візит (міграція 0055): зайняті слоти, картка запису за токеном з листа,
@@ -40,6 +41,8 @@ export type VisitCard = {
     office: string; address: string; neighborhood: string; hours: string;
   } | null;
   agent: { name: string; phone: string; whatsapp: string } | null;
+  /** Перегляд вторинки (0069): ріелтор, його години показів і де обʼєкт. null — візит у ЖК */
+  viewing: { agentId: string; schedule: WeekSchedule; address: string; neighborhood: string } | null;
 };
 
 const mapCard = (r: Row | null): VisitCard | null => r && r.leadId ? {
@@ -51,6 +54,10 @@ const mapCard = (r: Row | null): VisitCard | null => r && r.leadId ? {
     neighborhood: r.development.neighborhood ?? '', hours: r.development.hours ?? '',
   } : null,
   agent: r.agent ?? null,
+  viewing: r.viewing ? {
+    agentId: r.viewing.agentId, schedule: viewingHours({ viewing_schedule: r.viewing.schedule }).schedule,
+    address: r.viewing.address ?? '', neighborhood: r.viewing.neighborhood ?? '',
+  } : null,
 } : null;
 
 export async function lookupVisit(token: string): Promise<VisitCard | null> {
@@ -129,4 +136,26 @@ export async function saveVisitSettings(devId: string, capacity: number, blackou
   if (error) return missingSchema(error) ? 'Visit settings need the latest database update' : error.message;
   if (!data) return 'Not allowed';
   return null;
+}
+
+/* ---------- перегляди вторинки (міграція 0069) ---------- */
+
+/** Години показів ріелтора. До міграції колонок немає — типові години, запис увімкнено. */
+export async function agentViewingHours(agentId: string): Promise<ViewingHours> {
+  const { data, error } = await (await supabaseServer()).from('profiles')
+    .select('viewing_schedule, viewing_slots').eq('id', agentId).maybeSingle();
+  if (error && !missingSchema(error)) console.error('viewing hours failed:', error.message);
+  return viewingHours(error ? null : data);
+}
+
+/** Зайняті слоти ріелтора на перегляди вторинки (місткість — один покупець на слот) */
+export async function agentAvailability(agentId: string): Promise<Availability> {
+  const { data, error } = await (await supabaseServer()).rpc('agent_visit_busy', { p_agent: agentId });
+  if (error) {
+    if (!missingSchema(error)) console.error('agent_visit_busy failed:', error.message);
+    return NO_LIMITS;
+  }
+  const busy: Record<string, number> = {};
+  for (const r of (data ?? []) as { visit_at: string; booked: number }[]) busy[slotKey(r.visit_at)] = Number(r.booked) || 0;
+  return { ...NO_LIMITS, busy };
 }

@@ -46,6 +46,7 @@ export default async function sitemap({ id }: { id: Promise<string> }): Promise<
       ...catalog.flatMap((u) => both(u, { changeFrequency: 'daily', priority: 0.9 })),
       ...both('/land-passport', { changeFrequency: 'monthly', priority: 0.8 }),
       ...both('/market', { lastModified: new Date(MARKET_UPDATED), changeFrequency: 'monthly', priority: 0.8 }),
+      ...both('/rental-yield-calculator', { changeFrequency: 'monthly', priority: 0.6 }),
       ...both('/areas', { changeFrequency: 'weekly', priority: 0.8 }),
       ...AREAS.flatMap((a) => both(`/areas/${a.slug}`, { changeFrequency: 'weekly', priority: 0.8 })),
       ...both('/guides', { changeFrequency: 'weekly', priority: 0.7 }),

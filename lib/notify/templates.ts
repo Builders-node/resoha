@@ -86,19 +86,22 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
     case 'lead_agent': {
       const c = p.listing as Card;
       const visit = p.channel === 'visit' && p.visitAt;
-      const subject = visit ? `Visit booked: ${p.name} · ${fmtVisit(p.visitAt)}` : `New enquiry: ${c.title}`;
+      // без ЖК — перегляд вторинки з ріелтором (0069), а не візит у відділ продажів
+      const viewing = visit && !c.development;
+      const subject = visit ? `${viewing ? 'Viewing' : 'Visit'} booked: ${p.name} · ${fmtVisit(p.visitAt)}` : `New enquiry: ${c.title}`;
       const details: [string, unknown][] = [
-        ['From', p.name], ['Phone', p.phone], ['Email', p.email], ['Channel', CHANNEL[p.channel] ?? p.channel],
+        ['From', p.name], ['Phone', p.phone], ['Email', p.email],
+        ['Channel', viewing ? 'Viewing booked online' : CHANNEL[p.channel] ?? p.channel],
         ['Visit', visit ? when(p.visitAt) : ''], ['Interested in', (p.interests ?? []).join(', ')],
         ['Prefers', p.contactVia], ['Message', p.message],
       ];
       return {
         subject,
-        html: layout(`<p style="margin:0 0 12px"><b>${visit ? 'A buyer booked a visit to your sales office.' : 'A buyer sent an enquiry.'}</b> Reply quickly: most buyers contact two or three agents.</p>`
+        html: layout(`<p style="margin:0 0 12px"><b>${viewing ? 'A buyer booked a viewing of this property. Confirm the time with them.' : visit ? 'A buyer booked a visit to your sales office.' : 'A buyer sent an enquiry.'}</b> Reply quickly: most buyers contact two or three agents.</p>`
           + `<table style="border-collapse:collapse;font-size:14px">${rows(details)}</table>`
           + cardHtml(c, 'Open listing') + button(dashboard, 'Open enquiries'), footer('agent', unsub)),
         text: plain([subject, '', ...details.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '', listingUrl(c), dashboard]),
-        telegram: plain([visit ? 'Visit booked' : 'New enquiry', c.title, `${p.name} · ${p.phone}`,
+        telegram: plain([viewing ? 'Viewing booked' : visit ? 'Visit booked' : 'New enquiry', c.title, `${p.name} · ${p.phone}`,
           p.email, visit && when(p.visitAt), p.message && `“${String(p.message).slice(0, 300)}”`, listingUrl(c)]),
       };
     }
@@ -120,18 +123,20 @@ export function render(kind: string, p: Payload, unsub?: string | null): Message
       const a = p.agent ?? {};
       // підписка на новини ЖК — теж заявка (див. developments/[id]/subscribe), але лист інший
       const subscribed = /^Subscribed to /.test(String(p.message ?? ''));
-      const subject = visit ? `Your visit is booked: ${fmtVisit(p.visitAt)}`
+      const viewing = visit && !c.development;
+      const subject = visit ? `Your ${viewing ? 'viewing' : 'visit'} is booked: ${fmtVisit(p.visitAt)}`
         : subscribed ? `You’re subscribed to ${c.development || c.title} updates` : `We sent your enquiry: ${c.title}`;
       const contacts: [string, unknown][] = [['Agent', a.name], ['Phone', a.phone], ['WhatsApp', a.whatsapp], ['Visit', visit ? when(p.visitAt) : '']];
       const manage = visit && p.manageToken ? manageUrl(p.manageToken) : '';
       return {
         subject,
         html: layout(`<p style="margin:0 0 12px">Hi ${esc(p.name)},</p><p style="margin:0 0 12px">`
-          + (visit ? 'Your visit to the sales office is booked. The sales team will confirm it with you.'
+          + (viewing ? 'Your viewing is booked. The agent will confirm it with you.'
+            : visit ? 'Your visit to the sales office is booked. The sales team will confirm it with you.'
             : subscribed ? 'The sales team will write to you about price changes, offers and construction progress.'
               : 'Your enquiry went straight to the listing agent. Most agents reply the same day.')
           + `</p><table style="border-collapse:collapse;font-size:14px">${rows(contacts)}</table>`
-          + (manage ? `<p style="margin:16px 0 0">${button(manage, 'Change or cancel the visit')}</p>` : '')
+          + (manage ? `<p style="margin:16px 0 0">${button(manage, viewing ? 'Change or cancel the viewing' : 'Change or cancel the visit')}</p>` : '')
           + cardHtml(c, 'View the property'), footer('transactional')),
         text: plain([subject, '', ...contacts.filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`), '',
           manage && `Change or cancel: ${manage}`, listingUrl(c)]),
@@ -377,6 +382,8 @@ function visitMessage(agent: boolean, p: Payload, unsub?: string | null): Messag
   const c = p.listing as Card;
   const event = String(p.event || '24h');
   const place = c.development || c.title;
+  // без ЖК — перегляд вторинки з ріелтором (0069)
+  const viewing = !c.development;
   const manage = !agent && p.manageToken && !/cancel/.test(event) ? manageUrl(p.manageToken) : '';
   const was = p.oldVisitAt ? when(p.oldVisitAt) : '';
   const head: Record<string, string> = agent ? {
@@ -389,11 +396,13 @@ function visitMessage(agent: boolean, p: Payload, unsub?: string | null): Messag
     '1h': `Your visit starts in 1 hour: ${fmtVisit(p.visitAt)}`,
     rescheduled: `Your visit is moved to ${fmtVisit(p.visitAt)}`,
     cancelled: `Your visit on ${fmtVisit(p.visitAt)} is cancelled`,
-    cancelled_by_team: `The sales office cancelled your visit on ${fmtVisit(p.visitAt)}`,
+    cancelled_by_team: `${viewing ? 'The agent' : 'The sales office'} cancelled your visit on ${fmtVisit(p.visitAt)}`,
   };
   const what = agent ? ({
-    '24h': `${p.name} (${p.phone}) is coming to the sales office ${when(p.visitAt)}.`,
-    '1h': `${p.name} (${p.phone}) is coming to the sales office in about an hour, ${when(p.visitAt)}.`,
+    '24h': viewing ? `${p.name} (${p.phone}) is coming to view ${c.title} ${when(p.visitAt)}.`
+      : `${p.name} (${p.phone}) is coming to the sales office ${when(p.visitAt)}.`,
+    '1h': viewing ? `${p.name} (${p.phone}) is coming to view ${c.title} in about an hour, ${when(p.visitAt)}.`
+      : `${p.name} (${p.phone}) is coming to the sales office in about an hour, ${when(p.visitAt)}.`,
     rescheduled: `${p.name} (${p.phone}) moved the visit${was ? ` from ${was}` : ''} to ${when(p.visitAt)}.`,
     cancelled: `${p.name} (${p.phone}) cancelled the visit ${when(p.visitAt)}. The slot is free again.`,
   } as Record<string, string>)[event] ?? '' : ({
@@ -401,13 +410,15 @@ function visitMessage(agent: boolean, p: Payload, unsub?: string | null): Messag
     '1h': `Your visit to ${place} starts in about an hour, ${when(p.visitAt)}.`,
     rescheduled: `Your visit to ${place}${was ? ` is moved from ${was}` : ' is moved'} to ${when(p.visitAt)}.`,
     cancelled: `You cancelled your visit to ${place} on ${when(p.visitAt)}. You can book another time on the property page.`,
-    cancelled_by_team: `The sales office of ${place} cancelled your visit on ${when(p.visitAt)}. They will contact you to agree on another time, or you can book one on the property page.`,
+    cancelled_by_team: viewing
+      ? `The agent cancelled your viewing of ${place} on ${when(p.visitAt)}. They will contact you to agree on another time, or you can book one on the property page.`
+      : `The sales office of ${place} cancelled your visit on ${when(p.visitAt)}. They will contact you to agree on another time, or you can book one on the property page.`,
   } as Record<string, string>)[event] ?? '';
   const subject = head[event] ?? head['24h'];
   return {
     subject,
     html: layout(`<p style="margin:0 0 12px">${esc(what)}</p>`
-      + (manage ? `<p style="margin:0 0 12px">${button(manage, 'Change or cancel the visit')}</p>` : '')
+      + (manage ? `<p style="margin:0 0 12px">${button(manage, viewing ? 'Change or cancel the viewing' : 'Change or cancel the visit')}</p>` : '')
       + cardHtml(c, agent ? 'Open listing' : 'View the property'), footer(agent ? 'agent' : 'transactional', unsub)),
     text: plain([subject, '', what, manage && `Change or cancel: ${manage}`, listingUrl(c)]),
     telegram: agent ? plain([subject, what, listingUrl(c)]) : '',
@@ -429,6 +440,6 @@ function visitIcs(p: Payload, sequence: number) {
     uid: visitUid(leadId), visitAt: p.visitAt, place,
     address: p.location || [c?.development, c?.neighborhood].filter(Boolean).join(', '),
     manageUrl: p.manageToken ? manageUrl(p.manageToken) : undefined,
-    agent: p.agent ?? null, sequence,
+    agent: p.agent ?? null, sequence, kind: c?.development ? 'office' : 'viewing',
   }));
 }

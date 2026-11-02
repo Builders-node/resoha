@@ -26,8 +26,9 @@ export async function POST(req: Request, { params }: Ctx) {
 
   if (b.action === 'reschedule') {
     const at = new Date(String(b.visitAt ?? ''));
-    // слот за графіком ЖК — як і при записі; місткість і свята перевіряє база
-    const week = visit.development?.schedule ?? [];
+    // слот за графіком ЖК (або годинами показів ріелтора для вторинки) — як і при записі;
+    // місткість і свята перевіряє база
+    const week = visit.development?.schedule ?? visit.viewing?.schedule ?? [];
     if (Number.isNaN(at.getTime()) || !week.length || !isOpenSlot(week, at)) {
       return NextResponse.json({ error: 'This time is no longer available. Please pick another one.' }, { status: 400 });
     }

@@ -15,6 +15,7 @@ import { ES_PROMO } from './es/promo';
 import { ES_SEO } from './es/seo';
 import { ES_BLOG } from './es/blog';
 import { ES_CABINET } from './es/cabinet';
+import { ES_BUYER_TOOLS } from './es/buyerTools';
 import { ES_BILLING } from './es/billing';
 
 /** Іспанський словник: англійський рядок → переклад. Розбитий на файли за розділами сайту. */
@@ -37,5 +38,6 @@ export const ES: Record<string, string> = {
   ...ES_PROMO,
   ...ES_SEO,
   ...ES_BLOG,
+  ...ES_BUYER_TOOLS,
   ...ES_BILLING,
 };

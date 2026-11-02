@@ -73,15 +73,18 @@ export function googleCalendarUrl(e: CalEvent) {
 export function visitEvent(v: {
   uid: string; visitAt: string; place: string; address?: string; manageUrl?: string;
   agent?: { name?: string; phone?: string } | null; sequence?: number;
+  /** 'viewing' — перегляд вторинки з ріелтором (0069), інакше візит у відділ продажів ЖК */
+  kind?: 'office' | 'viewing';
 }): CalEvent {
   const contact = [v.agent?.name, v.agent?.phone].filter(Boolean).join(', ');
+  const viewing = v.kind === 'viewing';
   return {
     uid: v.uid,
     start: new Date(v.visitAt),
-    title: `Visit: ${v.place}`,
+    title: `${viewing ? 'Viewing' : 'Visit'}: ${v.place}`,
     location: v.address || v.place,
     description: [
-      `Sales office visit at ${v.place}.`,
+      viewing ? `Property viewing: ${v.place}.` : `Sales office visit at ${v.place}.`,
       contact && `Contact: ${contact}`,
       v.manageUrl && `Change or cancel: ${v.manageUrl}`,
     ].filter(Boolean).join('\n'),
