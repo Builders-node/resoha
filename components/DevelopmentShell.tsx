@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import AgentContact from './AgentContact';
+import DevelopmentUpdates from './DevelopmentUpdates';
 import Icon from './Icon';
 import JsonLd from './JsonLd';
 import { areaForNeighborhood } from '@/lib/content/areas';
 import type { DevContext } from '@/lib/developmentPage';
 import { getLp, getT } from '@/lib/i18n/server';
 import { getMoney } from '@/lib/currencyServer';
+import { followState } from '@/lib/follows';
 import { breadcrumbLd, graph } from '@/lib/seo';
 import { SITE_URL } from '@/lib/site';
 import { BUILDING_STAGES, salesLabel, stageLabel } from '@/lib/units';
@@ -28,7 +30,7 @@ export default async function DevelopmentShell({ ctx, active, title, top, wide, 
 }) {
   const lp = await getLp();
   const { dev, agent, me, buildings, tabs, leadUnit, from } = ctx;
-  const [t, money] = await Promise.all([getT(), getMoney()]);
+  const [t, money, follow] = await Promise.all([getT(), getMoney(), followState(dev.id, me?.id ?? null)]);
   const area = areaForNeighborhood(dev.neighborhood);
   const areaPath = area ? `/areas/${area.slug}` : `/listings?neighborhoods=${encodeURIComponent(dev.neighborhood)}`;
   const tab = tabs.find((x) => x.key === active) ?? tabs[0];
@@ -89,6 +91,9 @@ export default async function DevelopmentShell({ ctx, active, title, top, wide, 
         )}
       </div>
       )}
+
+      {/* «Key updates»: підписка на новини ЖК — на кожній вкладці, над «хлібними крихтами» */}
+      <DevelopmentUpdates devId={dev.id} devName={dev.name} email={me?.email ?? ''} signedIn={!!me} initial={follow} />
 
       {/* «хлібні крихти» — унизу сторінки, щоб зверху були лише назва й вкладки */}
       <div className="crumbs crumbs--foot small muted">

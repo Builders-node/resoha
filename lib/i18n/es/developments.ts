@@ -144,4 +144,18 @@ export const ES_DEVELOPMENTS: Record<string, string> = {
 
   /* ---------- інше ---------- */
   'Browse agents & agencies': 'Ver agentes y agencias',
+
+  /* ---------- банер «Key updates» і підписки в кабінеті ---------- */
+  'Updates are saved in your Hogarli account and sent to {email}': 'Las novedades se guardan en su cuenta de Hogarli y se envían a {email}',
+  'We will email you the news. With a Hogarli account, every update is also saved in your profile.': 'Le enviaremos las novedades por email. Con una cuenta de Hogarli, además se guardan en su perfil.',
+  'We will email you when there is news. Create an account to keep every update in one place.': 'Le escribiremos cuando haya novedades. Cree una cuenta para tenerlas todas en un solo lugar.',
+  'Or sign in to subscribe in one click': 'O inicie sesión para suscribirse con un clic',
+  'My subscriptions': 'Mis suscripciones',
+  'You will no longer get updates for {name}': 'Ya no recibirá novedades de {name}',
+  'Unsubscribed': 'Suscripción cancelada',
+  'Development updates': 'Novedades de proyectos',
+  'Developments you follow. We email you promotions, construction photos, price and document updates.': 'Proyectos que sigue. Le enviamos por email promociones, fotos de la obra y cambios de precios y documentos.',
+  'No subscriptions yet. Press “Subscribe” at the bottom of a development page.': 'Aún no tiene suscripciones. Pulse «Suscribirse» al final de la página de un proyecto.',
+  'Browse developments': 'Ver proyectos',
+  'Subscribed {date}': 'Suscrito el {date}',
 };

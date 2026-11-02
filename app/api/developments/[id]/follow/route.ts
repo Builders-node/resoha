@@ -1,20 +1,12 @@
 import { NextResponse } from 'next/server';
 import { currentUser } from '@/lib/session';
+import { followState } from '@/lib/follows';
 import { supabaseServer } from '@/lib/supabase/server';
 
 type Ctx = { params: Promise<{ id: string }> };
 
-/** Підписка на новини ЖК (міграція 0068). До міграції таблиці немає — відповідаємо «не підписаний». */
-async function state(id: string, userId: string | null) {
-  const client = await supabaseServer();
-  const [{ data: count }, mine] = await Promise.all([
-    client.rpc('development_followers', { p_development: id }),
-    userId
-      ? client.from('development_follows').select('development_id').eq('development_id', id).eq('user_id', userId).maybeSingle()
-      : Promise.resolve({ data: null }),
-  ]);
-  return { on: !!mine.data, count: typeof count === 'number' ? count : 0 };
-}
+/** Підписка на оновлення ЖК (міграція 0068): стан і перемикач для банера «Key updates». */
+const state = followState;
 
 export async function GET(_req: Request, { params }: Ctx) {
   const { id } = await params;
