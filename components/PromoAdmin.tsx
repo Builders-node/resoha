@@ -117,7 +117,7 @@ export default function PromoAdmin() {
                       <td className="small" data-label="Period">
                         {c.startsAt && c.endsAt ? `${fmtDate(c.startsAt)} – ${fmtDate(c.endsAt)}` : `requested ${fmtDate(c.createdAt)}`}
                       </td>
-                      <td data-label="Status"><StatusPill c={c} />{c.payMethod && <div className="tiny muted">{c.payMethod === 'stripe' ? 'Stripe' : 'Manual'}</div>}</td>
+                      <td data-label="Status"><StatusPill c={c} />{c.payMethod && <div className="tiny muted">{c.payMethod === 'stripe' ? 'Stripe' : c.payMethod === 'plan' ? 'Plan' : 'Manual'}</div>}</td>
                       <td data-label="Impressions">{fmtNumber(c.impressions)}</td>
                       <td data-label="Visits">{fmtNumber(c.clicks)}</td>
                       <td data-label="CTR">{ctr(c)}</td>
@@ -135,7 +135,7 @@ export default function PromoAdmin() {
                             <Icon name="check" size={16} />
                           </button>
                         )}
-                        {c.paidAt && !c.refundedAt && (c.status === 'active' || c.status === 'ended') && (
+                        {c.paidAt && !c.refundedAt && c.payMethod !== 'plan' && (c.status === 'active' || c.status === 'ended') && (
                           <button type="button" className="btn btn--sm btn--ghost btn--icon" title="Refund and stop"
                             aria-label={`Refund: ${c.targetName}`}
                             onClick={() => confirm(c.payMethod === 'stripe'
