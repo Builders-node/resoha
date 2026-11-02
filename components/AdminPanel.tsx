@@ -15,11 +15,12 @@ import FeaturedAdmin, { StarButton } from './FeaturedAdmin';
 import ModerationAdmin from './ModerationAdmin';
 import PromoAdmin from './PromoAdmin';
 import MapPlacesAdmin from './MapPlacesAdmin';
+import BillingAdmin from './BillingAdmin';
 import SiteSettingsAdmin from './SiteSettingsAdmin';
 import TabStrip from './TabStrip';
 import RehostPhotos from './RehostPhotos';
 
-type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
+type Tab = 'overview' | 'moderation' | 'analytics' | 'featured' | 'promotions' | 'billing' | 'developments' | 'listings' | 'leads' | 'agencies' | 'users' | 'reviews' | 'places' | 'log';
 type Quality = Record<QualityKey, number>;
 type Owner = { id: string; name: string; agency: string };
 type Overview = {
@@ -36,6 +37,7 @@ const TABS: { v: Tab; label: string; ico: string }[] = [
   { v: 'analytics', label: 'Analytics', ico: 'chart' },
   { v: 'featured', label: 'Featured', ico: 'star' },
   { v: 'promotions', label: 'Promotions', ico: 'sparkle' },
+  { v: 'billing', label: 'Billing', ico: 'wallet' },
   { v: 'developments', label: 'Developments', ico: 'building' },
   { v: 'listings', label: 'Listings', ico: 'home' },
   { v: 'leads', label: 'Enquiries', ico: 'inbox' },
@@ -77,7 +79,7 @@ export default function AdminPanel({ session }: { session: Session }) {
 
   const load = useCallback(async (which: Tab) => {
     // ці вкладки вантажать себе самі
-    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions' || which === 'moderation') return;
+    if (which === 'analytics' || which === 'featured' || which === 'developments' || which === 'promotions' || which === 'billing' || which === 'moderation') return;
     setBusy(true);
     const d = await fetch(`/api/admin?section=${which}`).then((r) => r.json());
     if (which === 'overview') setOverview(d.overview);
@@ -280,6 +282,7 @@ export default function AdminPanel({ session }: { session: Session }) {
         {(tab === 'featured' || tab === 'developments') && <FeaturedAdmin key={tab} mode={tab} />}
 
         {tab === 'promotions' && <PromoAdmin />}
+        {tab === 'billing' && <BillingAdmin />}
 
         {tab === 'places' && <MapPlacesAdmin />}
 

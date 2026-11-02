@@ -15,6 +15,7 @@ import NotifySettings from './NotifySettings';
 import ViewingHoursSettings from './ViewingHoursSettings';
 import { renewedUntil } from '@/lib/lifecycle';
 import PromotePanel, { type PromoPick } from './PromotePanel';
+import BillingPanel from './BillingPanel';
 import { toast } from './Toaster';
 import { fmtNumber } from '@/lib/format';
 import type { Agency, Agent, Lead, Listing, Session } from '@/lib/types';
@@ -54,6 +55,7 @@ function navGroups({ agency, total, newLeads, developer }: { agency: boolean; to
       { title: 'Account', items: [
         { tab: 'developer', icon: 'briefcase', label: 'Company' },
         { tab: 'team', icon: 'users', label: agency ? 'Team' : 'Agency' },
+        { tab: 'plan', icon: 'wallet', label: 'Plan' },
         { tab: 'profile', icon: 'user', label: 'Profile' },
       ] },
     ];
@@ -73,6 +75,7 @@ function navGroups({ agency, total, newLeads, developer }: { agency: boolean; to
     { title: 'Account', items: [
       { tab: 'profile', icon: 'user', label: 'Profile' },
       { tab: 'team', icon: 'users', label: agency ? 'Team' : 'Agency' },
+      { tab: 'plan', icon: 'wallet', label: 'Plan' },
       { tab: 'developer', icon: 'briefcase', label: 'Developer company' },
     ] },
   ];
@@ -250,6 +253,8 @@ export default function AgentDashboard({ session, initialTab }: { session: Sessi
         </div>}
 
         {tab === 'promote' && <PromotePanel pick={promoPick} />}
+
+        {tab === 'plan' && <BillingPanel developer={developer} />}
 
         {tab === 'analytics' && <AnalyticsPanel isOwner={canListings} agencyName={agency?.name} />}
 

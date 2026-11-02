@@ -3128,3 +3128,34 @@ button.chess__cell{font:inherit;font-size:12px;text-align:left;cursor:pointer}
   font-size:15px;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.25);cursor:pointer}
 .mplace-pop{font-size:13px;line-height:1.35}
 .mplace-pop b{display:block;font-size:14px}
+/* ---------- тарифи (вкладка Plan, міграція 0072) ---------- */
+.plan-now__head{display:flex;gap:16px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap}
+.plan-now__head h3 .pill{margin-left:8px}
+.plan-now__btns{display:flex;gap:8px;flex-wrap:wrap}
+.plan-warn{color:#be123c}
+.plan-meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:20px}
+.plan-meter__top{display:flex;justify-content:space-between;gap:8px;margin-bottom:6px}
+.plan-meter__full{color:#be123c}
+.plan-meter__bar{height:6px;border-radius:3px;background:var(--bg-soft);overflow:hidden}
+.plan-meter__bar span{display:block;height:100%;background:var(--ink);border-radius:3px}
+.plan-meter__bar span.is-full{background:#be123c}
+.plan-credits{margin-top:20px;display:grid;gap:8px}
+.plan-credit{background:var(--bg-soft);border-radius:var(--radius);padding:10px 14px}
+.plan-credit__row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.plan-credit__row>.with-ico{flex:1;min-width:200px}
+.plan-credit__pick{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.plan-credit__pick select{flex:1;min-width:0;max-width:420px}
+.plan-head{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.plan-head h3{flex:1;min-width:120px}
+.plan-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.plan-card{display:flex;flex-direction:column;gap:8px;border:2px solid var(--line);border-radius:var(--radius-lg);padding:18px}
+.plan-card.is-current{border-color:var(--ink)}
+.plan-card__name{font-size:17px}
+.plan-card__price{font-size:28px;font-weight:700;letter-spacing:-.03em}
+.plan-card__list{list-style:none;margin:4px 0 8px;padding:0;display:grid;align-content:start;gap:6px;font-size:14px;flex:1}
+.plan-card__list li{display:flex;gap:6px;align-items:flex-start}
+.plan-card__list li .ico,.plan-card__list li svg{flex:0 0 auto;margin-top:2px}
+.plan-card .btn{justify-content:center}
+.plan-card .is-disabled{opacity:.6;pointer-events:none}
+.plan-admin input[type=number]{width:90px}
+.plan-admin td{vertical-align:top}
