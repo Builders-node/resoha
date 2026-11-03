@@ -2891,7 +2891,7 @@ html{scroll-behavior:smooth}
 /* текст статей і гайдів: одна центрована колонка */
 .lp .prose{margin-left:auto;margin-right:auto}
 .lp .prose--flush{margin-left:0;margin-right:0}
-.lp .wrap.prose > h1{font-size:clamp(34px,4.6vw,56px);line-height:1.06;letter-spacing:-.045em;margin:24px 0 14px}
+.lp .wrap.prose > h1,.lp .guide__head > h1{font-size:clamp(34px,4.6vw,56px);line-height:1.06;letter-spacing:-.045em;margin:24px 0 14px}
 .lp .prose p,.lp .prose li{font-size:17px;line-height:1.7;color:#232227}
 .lp .prose h2{margin:48px 0 14px}
 .lp .prose h3{font-weight:600}
@@ -3053,6 +3053,12 @@ html{scroll-behavior:smooth}
 .blog-post__body{grid-column:1;grid-row:1;margin:0!important}
 .blog-post__aside{grid-column:2;grid-row:1;position:sticky;top:96px;display:grid;gap:16px}
 .blog-post__aside .toc{margin:0}
+/* Гайд: шапка й текст у колонці, зміст «On this page» — липкою колонкою праворуч */
+.guide{display:grid;grid-template-columns:minmax(0,780px) 260px;column-gap:56px;justify-content:center;align-items:start}
+.guide__head,.guide__body{grid-column:1;margin:0!important}
+.guide__aside{grid-column:2;grid-row:1 / span 2;align-self:stretch}
+.guide__aside .toc{position:sticky;top:96px;margin:24px 0 0;max-height:calc(100vh - 120px);overflow-y:auto}
+.guide__body section[id]{scroll-margin-top:88px}
 .share{background:#fff;border-radius:22px;padding:18px 20px;display:grid;gap:12px;box-shadow:0 10px 30px rgba(60,40,20,.06)}
 .share b{font-weight:600}
 .share__row{display:flex;flex-wrap:wrap;gap:6px}
@@ -3065,6 +3071,9 @@ html{scroll-behavior:smooth}
   .blog-post__cols{grid-template-columns:minmax(0,760px);gap:0}
   .blog-post__aside,.blog-post__body{grid-column:1;grid-row:auto;position:static}
   .blog-post__aside{margin-bottom:8px}
+  .guide{grid-template-columns:minmax(0,780px)}
+  .guide__aside{grid-column:1;grid-row:auto}
+  .guide__aside .toc{position:static;max-height:none;margin:0 0 8px}
 }
 @media (max-width:860px){
   .post-card--feature{grid-template-columns:1fr;gap:20px;padding:12px 12px 24px}

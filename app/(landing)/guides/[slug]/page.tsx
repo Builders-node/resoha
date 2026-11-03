@@ -51,83 +51,90 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
   const related = g.related.map(guideBySlug).filter((x) => x !== undefined).map((r) => localizeContent(r, t));
 
   return (
-    <article className="wrap prose page-top">
+    // Шапка й текст — у колонці 780px, зміст — липкою колонкою праворуч (на ≤1080px — між шапкою й текстом)
+    <article className="wrap page-top guide">
       <JsonLd data={graph(articleLd(g), ...(g.faqSchema === false ? [] : [faqLd(g.faq)]), breadcrumbLd(crumbs))} />
 
-      <h1>{lg.title}</h1>
-      <p className="prose__meta tiny muted">
-        {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time>
-        {' · '}{g.author ? t('By {name}, {role}', { name: g.author.name, role: lg.author!.role }) : t('By the {site} team', { site: SITE_NAME })}
-        {' · '}{g.checked ? t('Sources checked {date}', { date: fmtDate(g.checked, lang) }) : t('{n} sources', { n: g.sources.length })}
-      </p>
+      <header className="prose guide__head">
+        <h1>{lg.title}</h1>
+        <p className="prose__meta tiny muted">
+          {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time>
+          {' · '}{g.author ? t('By {name}, {role}', { name: g.author.name, role: lg.author!.role }) : t('By the {site} team', { site: SITE_NAME })}
+          {' · '}{g.checked ? t('Sources checked {date}', { date: fmtDate(g.checked, lang) }) : t('{n} sources', { n: g.sources.length })}
+        </p>
 
-      {lg.hero && <Figure fig={lg.hero} eager />}
+        {lg.hero && <Figure fig={lg.hero} eager />}
 
-      <section className="answer" aria-label={t('Short answer')}>
-        <span className="answer__k">{t('Short answer')}</span>
-        <p><Rich text={lg.answer} /></p>
-      </section>
-
-      {lg.keyFacts && lg.keyFacts.length > 0 && (
-        <section className="prose__facts">
-          <h2>{t('Key facts')}</h2>
-          <ul>{lg.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
+        <section className="answer" aria-label={t('Short answer')}>
+          <span className="answer__k">{t('Short answer')}</span>
+          <p><Rich text={lg.answer} /></p>
         </section>
-      )}
 
-      <nav className="toc small" aria-label={t('Contents')}>
-        <b>{t('On this page')}</b>
-        <ol>
-          {lg.sections.map((s, i) => <li key={s.h}><a href={`#${anchor(g.sections[i].h)}`}>{s.h}</a></li>)}
-          <li><a href="#faq">{lg.faqTitle ?? t('Frequently asked questions')}</a></li>
-          <li><a href="#sources">{t('Sources')}</a></li>
-        </ol>
-      </nav>
+        {lg.keyFacts && lg.keyFacts.length > 0 && (
+          <section className="prose__facts">
+            <h2>{t('Key facts')}</h2>
+            <ul>{lg.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
+          </section>
+        )}
+      </header>
 
-      {lg.sections.map((s, i) => (
-        <section key={s.h} id={anchor(g.sections[i].h)}>
-          <h2>{s.h}</h2>
-          <Blocks body={s.body} />
+      <aside className="guide__aside">
+        <nav className="toc small" aria-label={t('Contents')}>
+          <b>{t('On this page')}</b>
+          <ol>
+            {lg.sections.map((s, i) => <li key={s.h}><a href={`#${anchor(g.sections[i].h)}`}>{s.h}</a></li>)}
+            <li><a href="#faq">{lg.faqTitle ?? t('Frequently asked questions')}</a></li>
+            <li><a href="#sources">{t('Sources')}</a></li>
+          </ol>
+        </nav>
+      </aside>
+
+      <div className="prose guide__body">
+        {lg.sections.map((s, i) => (
+          <section key={s.h} id={anchor(g.sections[i].h)}>
+            <h2>{s.h}</h2>
+            <Blocks body={s.body} />
+          </section>
+        ))}
+
+        <section id="faq">
+          <h2>{lg.faqTitle ?? t('Frequently asked questions')}</h2>
+          <Faq items={lg.faq} open={lg.faq.length} />
         </section>
-      ))}
 
-      <section id="faq">
-        <h2>{lg.faqTitle ?? t('Frequently asked questions')}</h2>
-        <Faq items={lg.faq} open={lg.faq.length} />
-      </section>
+        <section id="sources">
+          <h2>{t('Sources')}</h2>
+          <SourceList sources={g.sources} />
+        </section>
 
-      <section id="sources">
-        <h2>{t('Sources')}</h2>
-        <SourceList sources={g.sources} />
-      </section>
+        {lg.author && <p className="prose__author"><Rich text={lg.author.bio} /></p>}
 
-      {lg.author && <p className="prose__author"><Rich text={lg.author.bio} /></p>}
-
-      <section className="prose__cta">
-        <div>
-          <h2>{t('See what is for sale on Roatán')}</h2>
-          <p className="muted">{t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
-        </div>
-        <div className="prose__cta-btns">
-          <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
-          <Link className="btn btn--ghost btn--lg" href={lp('/listings?deal=sale&type=land')}>{t('Land with a passport')}</Link>
-        </div>
-      </section>
-
-      {related.length > 0 && (
-        <section>
-          <h2>{t('Related guides')}</h2>
-          <div className="guide-list">
-            {related.map((r) => (
-              <Link key={r.slug} className="guide-card" href={lp(`/guides/${r.slug}`)}>
-                <b>{r.title}</b>
-                <span className="small muted">{r.description}</span>
-              </Link>
-            ))}
+        <section className="prose__cta">
+          <div>
+            <h2>{t('See what is for sale on Roatán')}</h2>
+            <p className="muted">{t('Homes, condos and land from island agencies, each linked to the agency that holds it.')}</p>
+          </div>
+          <div className="prose__cta-btns">
+            <Link className="btn btn--orange btn--lg" href={lp('/listings?deal=sale')}>{t('Browse listings')} <Icon name="arrowRight" size={18} /></Link>
+            <Link className="btn btn--ghost btn--lg" href={lp('/listings?deal=sale&type=land')}>{t('Land with a passport')}</Link>
           </div>
         </section>
-      )}
-      <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
+
+        {related.length > 0 && (
+          <section>
+            <h2>{t('Related guides')}</h2>
+            <div className="guide-list">
+              {related.map((r) => (
+                <Link key={r.slug} className="guide-card" href={lp(`/guides/${r.slug}`)}>
+                  <b>{r.title}</b>
+                  <span className="small muted">{r.description}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+        <Crumbs items={crumbs.map((c) => ({ ...c, name: t(c.name) }))} />
+      </div>
     </article>
   );
 }
