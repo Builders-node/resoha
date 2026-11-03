@@ -224,6 +224,7 @@ export const ES_LANDING: Record<string, string> = {
   'Land & lots': 'Terrenos y lotes',
   'Read next:': 'Lea también:',
   'all areas compared': 'todas las zonas comparadas',
+  'is Roatán safe?': '¿es seguro Roatán?',
   'Listed in {area}': 'Publicado en {area}',
   'See all on the map': 'Ver todo en el mapa',
   'No listings in {area} yet. We are adding agencies every week.':
@@ -238,6 +239,8 @@ export const ES_LANDING: Record<string, string> = {
   'Straight answers to the questions buyers ask before they fly: who can own land, what it costs, how to check a title and where to live. Every figure links to its source.':
     'Respuestas directas a las preguntas que hacen los compradores antes de viajar: quién puede ser dueño de terrenos, cuánto cuesta, cómo verificar un título y dónde vivir. Cada cifra enlaza a su fuente.',
   'By the {site} team': 'Por el equipo de {site}',
+  'By {name}, {role}': 'Por {name}, {role}',
+  'Sources checked {date}': 'Fuentes consultadas el {date}',
   '{n} sources': '{n} fuentes',
   'Short answer': 'Respuesta corta',
   'Key facts': 'Datos clave',

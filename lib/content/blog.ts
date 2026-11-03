@@ -288,7 +288,7 @@ export const POSTS: Post[] = [
     ],
     sources: [SOURCES.latRisks, SOURCES.gpg],
     related: ['buying-off-plan-in-honduras-questions-for-the-developer', 'renting-in-honduras-before-you-buy'],
-    guides: ['how-to-check-land-title-in-roatan', 'how-to-buy-property-in-roatan'],
+    guides: ['how-to-check-land-title-in-roatan', 'is-roatan-safe', 'how-to-buy-property-in-roatan'],
   },
   {
     slug: 'roatan-san-pedro-sula-or-tegucigalpa',
@@ -537,6 +537,7 @@ export function readingMinutes(p: Post): number {
   const text = (b: Block): string => typeof b === 'string' ? b
     : 'note' in b ? b.note
     : 'list' in b ? b.list.join(' ')
+    : 'image' in b ? b.image.caption
     : [...b.table.head, ...b.table.rows.flat()].join(' ');
   const all = [p.lead, ...p.takeaways, ...p.sections.flatMap((s) => [s.h, ...s.body.map(text)])].join(' ');
   return Math.max(1, Math.round(all.split(/\s+/).filter(Boolean).length / 220));

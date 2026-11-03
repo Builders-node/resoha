@@ -5,11 +5,25 @@ import { SOURCES, type Source } from './sources';
  * саме цей абзац підхоплюють і сніпети Google, і відповіді ChatGPT/Perplexity.
  * Текст підтримує `[посилання](/шлях)` і `**жирний**` (components/Rich).
  */
+/** Фото в тексті: лише справжні знімки з видимим автором і ліцензією в підписі (caption). */
+export type Figure = {
+  /** шлях у public/, напр. /photos/guides/…webp */
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  caption: string;
+};
+
 export type Block =
   | string
   | { list: string[]; ordered?: boolean }
   | { table: { head: string[]; rows: string[][] } }
-  | { note: string };
+  | { note: string }
+  | { image: Figure };
+
+/** Автор-людина. Без нього гайд підписано командою сайту. Фото й сторінку автора не вигадуємо. */
+export type Author = { name: string; role: string; bio: string };
 
 export type Guide = {
   slug: string;
@@ -23,9 +37,18 @@ export type Guide = {
   updated: string;
   /** пряма відповідь, 2–3 речення */
   answer: string;
-  keyFacts: string[];
+  keyFacts?: string[];
+  /** головне фото під підписом автора; вантажиться одразу, решта фото — ліниво */
+  hero?: Figure;
+  author?: Author;
+  /** коли востаннє перевіряли джерела, якщо це вказано в тексті */
+  checked?: string;
   sections: { h: string; body: Block[] }[];
+  /** заголовок розділу питань, якщо не стандартний */
+  faqTitle?: string;
   faq: { q: string; a: string }[];
+  /** false — без розмітки FAQPage: коли текст не має обіцяти FAQ-сніпети у видачі */
+  faqSchema?: false;
   sources: Source[];
   related: string[];
 };
@@ -365,7 +388,7 @@ export const GUIDES: Guide[] = [
       { q: 'When is high season in Roatán?', a: 'Roughly December to April, when North American visitors escape winter.' },
     ],
     sources: [SOURCES.airdna, SOURCES.cruise, SOURCES.flights, SOURCES.latMarket],
-    related: ['roatan-closing-costs', 'best-areas-to-live-in-roatan', 'how-to-buy-property-in-roatan'],
+    related: ['roatan-closing-costs', 'best-areas-to-live-in-roatan', 'how-to-buy-property-in-roatan', 'is-roatan-safe'],
   },
   {
     slug: 'best-areas-to-live-in-roatan',
@@ -423,7 +446,152 @@ export const GUIDES: Guide[] = [
       { q: 'What is the cheapest area of Roatán?', a: 'Coxen Hole and the south shore have the lowest prices, typically about $100,000 to $300,000 according to The LatInvestor. The East End has the cheapest land.' },
     ],
     sources: [SOURCES.latMarket, SOURCES.buyingRoatan],
-    related: ['how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
+    related: ['is-roatan-safe', 'how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
+  },
+  {
+    slug: 'is-roatan-safe',
+    title: "Is Roatán Safe? A Guide for Buyers and Expats",
+    seoTitle: "Is Roatán Safe? A Guide for Buyers & Expats",
+    short: "Is Roatán safe?",
+    description: "Is Roatán safe? Official advice on crime, walking at night, hospitals and hurricane preparation, plus practical property checks for buyers.",
+    published: '2026-11-03',
+    updated: '2026-11-03',
+    checked: '2026-11-02',
+    author: {
+      name: "Taras Chaus",
+      role: "CBDO at Hogarli",
+      bio: "**About the author:** Taras Chaus is CBDO at Hogarli and has lived on Roatán for four months as of November 2026.",
+    },
+    hero: {
+      src: "/photos/guides/west-bay-looking-north-pi3-124-2016.webp",
+      alt: "West Bay beach and coastline, looking north in 2016",
+      width: 1920,
+      height: 1080,
+      caption: "West Bay, 2016. Resized and converted to WebP. Photo: [Pi3.124 / Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Roatan_West_Bay_looking_north.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).",
+    },
+    answer: "Canada’s travel advice describes the Bay Islands as generally safe, while warning about petty crime, beach assaults and burglaries at rentals. For buyers and future residents, the practical priorities are secure housing, transport after dark, medical care and property checks.",
+    sections: [
+      {
+        h: "Roatán safety: three practical precautions",
+        body: [
+          "Canada’s government advises a high degree of caution in Honduras. Its [country advisory](https://travel.gc.ca/destinations/honduras) includes specific guidance for the Bay Islands.",
+          "The Canadian advisory supports three practical steps:",
+          { list: [
+              "Avoid isolated beaches and poorly lit areas after dark. It specifically names Coxen Hole, Los Fuertes and Suampo as places to avoid after dark.",
+              "Choose secure accommodation and lock doors and windows at night and when away.",
+              "Arrange insurance that covers hospital stays and medical evacuation.",
+            ] },
+          "Read the full advisory before travel for the latest guidance.",
+        ],
+      },
+      {
+        h: "Crime on Roatán: plan around the reported risks",
+        body: [
+          "Canada’s advisory describes petty crime, assaults on beaches mainly at night, and burglaries at vacation rentals. Use those risks to plan how you carry valuables, secure your accommodation and get home after an evening out.",
+          "Keep bags attended on the beach and valuables out of sight. At a viewing, test locks rather than assuming they work. Ask the host or property manager who responds if you lose a key or need help outside normal hours. If you will leave the home empty, agree who inspects it and how problems are reported.",
+        ],
+      },
+      {
+        h: "Where to stay in Roatán: check the home and the route",
+        body: [
+          "Treat security as a viewing checklist rather than a marketing label. Ask who controls access, how visitors enter, who handles maintenance and what happens when the property is empty. Check the route to shops and medical care, not just the view from the balcony.",
+          "Visit at different times if possible. A listing can show a building, but it cannot tell you whether its surroundings and transport arrangements suit your routine. Our [area comparison](/guides/best-areas-to-live-in-roatan) can help you choose which neighborhoods to visit.",
+          {
+            image: {
+              src: "/photos/guides/beta-district-entrance-taras-chaus.webp",
+              alt: "Daytime view of the Beta District entrance, with a vehicle barrier, gatehouse and tropical vegetation",
+              width: 1350,
+              height: 1800,
+              caption: "Beta District entrance. Photo: Taras Chaus.",
+            },
+          },
+          "Compare the actual home rather than choosing an area only because an advert calls it safe. Useful questions include:",
+          {
+            table: {
+              head: ["Check", "Ask at the viewing"],
+              rows: [
+                ["**Access**", "Who can enter, and how are visitors handled?"],
+                ["**Building**", "Do exterior lights, locks and windows work? Who repairs them?"],
+                ["**Evenings**", "Where can a taxi drop you? What is the route to the door?"],
+                ["**Management**", "Who responds when you are away?"],
+              ],
+            },
+          },
+          "Explore [West Bay](/areas/west-bay), [West End](/areas/west-end) and [Sandy Bay](/areas/sandy-bay) as part of your shortlist, then assess each property and its surroundings in person.",
+        ],
+      },
+      {
+        h: "Is it safe to walk in Roatán at night?",
+        body: [
+          "Canada advises avoiding Coxen Hole, Los Fuertes and Suampo after dark, as well as isolated beaches and poorly lit places. Favor populated, well-lit routes and arrange transport when the alternative is an isolated walk.",
+          "Its transport guidance for Honduras recommends reliable taxis recommended by a hotel and prearranged airport pickups. Ask your accommodation provider how to arrange transport, and plan the journey home before you leave. Do not rely on an unfamiliar beach route as a shortcut after dark.",
+        ],
+      },
+      {
+        h: "Hospitals in Roatán and emergency contacts",
+        body: [
+          "Canada warns that emergency medical facilities in the Bay Islands are limited and major treatment may require evacuation.",
+          "Two private providers publish the following details:",
+          {
+            table: {
+              head: ["Provider", "Location", "Contact advertised by provider"],
+              rows: [
+                [
+                  "[CEMESA Roatán](https://cemesaroatan.com/)",
+                  "Brick Bay",
+                  "24/7 emergency service: **+504 9446-0097**; PBX **+504 2454-7014**",
+                ],
+                [
+                  "[Hospital Wood Medical Center](https://www.hospitalwoodmedicalcenter.com/)",
+                  "Coxen Hole",
+                  "Emergency contact: **+504 9828-8166**",
+                ],
+              ],
+            },
+          },
+          "Confirm services, payment arrangements and insurance coverage with the provider. **For an emergency, call 911.**",
+        ],
+      },
+      {
+        h: "Is buying property in Roatán safe?",
+        body: [
+          "A reassuring neighborhood does not establish clear ownership. Before committing funds, use an independent Honduran lawyer to assess the documents and proposed transaction. Ask questions about ownership, boundaries, access and any restrictions that matter to your plans.",
+          "Start with our [land-title guide](/guides/how-to-check-land-title-in-roatan) and [property-scam guide](/blog/how-to-spot-property-scams-in-honduras). Both explain questions to raise with your lawyer.",
+        ],
+      },
+      {
+        h: "Hurricane season and water safety",
+        body: [
+          "The [National Hurricane Center](https://www.nhc.noaa.gov/climo/) dates the Atlantic hurricane season, including the Caribbean basin, from **June 1 to November 30**. At a property viewing, ask about drainage, storm preparation, shutters and the building’s emergency plan. Check the actual insurance wording for the home.",
+          "Canada’s travel advice warns about currents and inconsistent lifeguard coverage. Choose established water-activity operators, follow local instructions and avoid swimming alone or outside designated areas.",
+        ],
+      },
+      {
+        h: "Living in Roatán: your first-month checklist",
+        body: [
+          { list: [
+              "Save **911**, hospital contacts and your accommodation manager’s number.",
+              "Arrange arrival and evening transport.",
+              "Test locks and agree who handles maintenance or security problems.",
+              "Confirm medical and evacuation coverage.",
+              "Learn the building’s storm procedures and the route to medical care.",
+              "Compare areas in person before making a long-term property commitment.",
+            ] },
+          "Compare [properties for sale](/listings?deal=sale) or [rentals](/listings?deal=rent) while deciding which area suits you.",
+        ],
+      },
+    ],
+    faqTitle: "Questions buyers ask",
+    faq: [
+      { q: "What is the safest area to live in Roatán?", a: "The sources used here do not establish a neighborhood safety ranking. Compare access, lighting, management and the routes you will use, rather than relying on a label in a listing." },
+      { q: "Is Roatán safer than mainland Honduras?", a: "Canada describes the Bay Islands as generally safe and distinguishes them from higher-risk parts of Honduras. Follow its specific precautions rather than treating every mainland location or every island neighborhood as the same." },
+      { q: "What should I ask about a guarded entrance?", a: "Find out who controls visitor access, when staff are present and how residents report incidents." },
+      { q: "Should I know my nearest hospital before moving?", a: "Yes. Save its contact details, confirm its services and check your insurance arrangements." },
+    ],
+    // FAQ на сторінці лишається, але без FAQPage: текст не обіцяє FAQ-сніпетів у видачі
+    faqSchema: false,
+    sources: [SOURCES.canadaHonduras, SOURCES.nhcSeason, SOURCES.cemesa, SOURCES.woodMedical],
+    related: ['best-areas-to-live-in-roatan', 'how-to-check-land-title-in-roatan', 'how-to-buy-property-in-roatan'],
   },
 ];
 

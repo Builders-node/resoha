@@ -1,13 +1,16 @@
 import Link from 'next/link';
 import { Fragment } from 'react';
+import { getLp } from '@/lib/i18n/server';
 
 /**
  * Мінімальна розмітка для текстів гайдів: `[текст](/шлях)` і `**жирний**`.
  * Повноцінний markdown тут не потрібен, а з ним прийшла б зайва залежність.
+ * Внутрішні посилання беруть мову сторінки: на /es/... `/areas/west-bay` веде на `/es/areas/west-bay`.
  */
 const TOKEN = /\[([^\]]+)\]\(([^)]+)\)|\*\*([^*]+)\*\*/g;
 
-export default function Rich({ text }: { text: string }) {
+export default async function Rich({ text }: { text: string }) {
+  const lp = await getLp();
   const out: React.ReactNode[] = [];
   let last = 0;
   for (const m of text.matchAll(TOKEN)) {
@@ -15,7 +18,7 @@ export default function Rich({ text }: { text: string }) {
     if (m[1]) {
       const href = m[2];
       out.push(href.startsWith('/')
-        ? <Link key={m.index} className="link-accent" href={href}>{m[1]}</Link>
+        ? <Link key={m.index} className="link-accent" href={lp(href)}>{m[1]}</Link>
         : <a key={m.index} className="link-accent" href={href} target="_blank" rel="noopener">{m[1]}</a>);
     } else {
       out.push(<b key={m.index}>{m[3]}</b>);
