@@ -3053,6 +3053,10 @@ html{scroll-behavior:smooth}
 .blog-post__body{grid-column:1;grid-row:1;margin:0!important}
 .blog-post__aside{grid-column:2;grid-row:1;position:sticky;top:96px;display:grid;gap:16px}
 .blog-post__aside .toc{margin:0}
+.blog-post__body section[id]{scroll-margin-top:88px}
+/* Фото-обкладинка на всю ширину замість згенерованої (гайд з власним фото) */
+.prose__fig--wide{margin:8px 0}
+.prose__fig--wide img{height:clamp(220px,36vw,520px);object-fit:cover;border-radius:var(--r-xl)}
 .share{background:#fff;border-radius:22px;padding:18px 20px;display:grid;gap:12px;box-shadow:0 10px 30px rgba(60,40,20,.06)}
 .share b{font-weight:600}
 .share__row{display:flex;flex-wrap:wrap;gap:6px}
