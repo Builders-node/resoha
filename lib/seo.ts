@@ -81,7 +81,11 @@ export function articleLd(g: Guide) {
     datePublished: g.published,
     dateModified: g.updated,
     inLanguage: 'en',
-    author: { '@id': ORG_ID },
+    ...(g.hero ? { image: { '@type': 'ImageObject', url: abs(g.hero.src), width: g.hero.width, height: g.hero.height, caption: plain(g.hero.caption) } } : {}),
+    // автор-людина — лише те, що видно на сторінці: ім'я й посада, без вигаданих фото чи профілю
+    author: g.author
+      ? { '@type': 'Person', name: g.author.name, jobTitle: g.author.role, worksFor: { '@id': ORG_ID } }
+      : { '@id': ORG_ID },
     publisher: { '@id': ORG_ID },
     about: { '@type': 'Place', name: 'Roatán, Honduras' },
     citation: g.sources.map((s) => ({ '@type': 'CreativeWork', name: s.title, url: s.url, publisher: s.name })),

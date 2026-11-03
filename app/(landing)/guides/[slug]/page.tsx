@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import Blocks from '@/components/Blocks';
 import Crumbs from '@/components/Crumbs';
 import Faq from '@/components/Faq';
+import Figure from '@/components/Figure';
 import Icon from '@/components/Icon';
 import JsonLd from '@/components/JsonLd';
 import Rich from '@/components/Rich';
@@ -51,28 +52,34 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
   return (
     <article className="wrap prose page-top">
-      <JsonLd data={graph(articleLd(g), faqLd(g.faq), breadcrumbLd(crumbs))} />
+      <JsonLd data={graph(articleLd(g), ...(g.faqSchema === false ? [] : [faqLd(g.faq)]), breadcrumbLd(crumbs))} />
 
       <h1>{lg.title}</h1>
       <p className="prose__meta tiny muted">
-        {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time> · {t('By the {site} team', { site: SITE_NAME })} · {t('{n} sources', { n: g.sources.length })}
+        {t('Updated')} <time dateTime={g.updated}>{fmtDate(g.updated, lang)}</time>
+        {' · '}{g.author ? t('By {name}, {role}', { name: g.author.name, role: lg.author!.role }) : t('By the {site} team', { site: SITE_NAME })}
+        {' · '}{g.checked ? t('Sources checked {date}', { date: fmtDate(g.checked, lang) }) : t('{n} sources', { n: g.sources.length })}
       </p>
+
+      {lg.hero && <Figure fig={lg.hero} eager />}
 
       <section className="answer" aria-label={t('Short answer')}>
         <span className="answer__k">{t('Short answer')}</span>
         <p><Rich text={lg.answer} /></p>
       </section>
 
-      <section className="prose__facts">
-        <h2>{t('Key facts')}</h2>
-        <ul>{lg.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
-      </section>
+      {lg.keyFacts && lg.keyFacts.length > 0 && (
+        <section className="prose__facts">
+          <h2>{t('Key facts')}</h2>
+          <ul>{lg.keyFacts.map((f) => <li key={f}><Rich text={f} /></li>)}</ul>
+        </section>
+      )}
 
       <nav className="toc small" aria-label={t('Contents')}>
         <b>{t('On this page')}</b>
         <ol>
           {lg.sections.map((s, i) => <li key={s.h}><a href={`#${anchor(g.sections[i].h)}`}>{s.h}</a></li>)}
-          <li><a href="#faq">{t('Frequently asked questions')}</a></li>
+          <li><a href="#faq">{lg.faqTitle ?? t('Frequently asked questions')}</a></li>
           <li><a href="#sources">{t('Sources')}</a></li>
         </ol>
       </nav>
@@ -85,7 +92,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
       ))}
 
       <section id="faq">
-        <h2>{t('Frequently asked questions')}</h2>
+        <h2>{lg.faqTitle ?? t('Frequently asked questions')}</h2>
         <Faq items={lg.faq} open={lg.faq.length} />
       </section>
 
@@ -93,6 +100,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
         <h2>{t('Sources')}</h2>
         <SourceList sources={g.sources} />
       </section>
+
+      {lg.author && <p className="prose__author"><Rich text={lg.author.bio} /></p>}
 
       <section className="prose__cta">
         <div>

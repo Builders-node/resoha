@@ -110,4 +110,24 @@ export const SOURCES = {
     title: 'Black Pearl at Pristine Bay',
     url: 'https://www.top100golfcourses.com/golf-course/black-pearl-at-pristine-bay',
   },
+  canadaHonduras: {
+    name: 'Government of Canada',
+    title: 'Travel advice and advisories for Honduras',
+    url: 'https://travel.gc.ca/destinations/honduras',
+  },
+  nhcSeason: {
+    name: 'U.S. National Hurricane Center',
+    title: 'Tropical cyclone climatology: Atlantic hurricane season',
+    url: 'https://www.nhc.noaa.gov/climo/',
+  },
+  cemesa: {
+    name: 'CEMESA Roatán',
+    title: 'Hospital CEMESA Roatán, Brick Bay',
+    url: 'https://cemesaroatan.com/',
+  },
+  woodMedical: {
+    name: 'Hospital Wood Medical Center',
+    title: 'Hospital Wood Medical Center, Coxen Hole',
+    url: 'https://www.hospitalwoodmedicalcenter.com/',
+  },
 } satisfies Record<string, Source>;

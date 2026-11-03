@@ -1,12 +1,14 @@
+import Figure from './Figure';
 import Rich from './Rich';
 import type { Block } from '@/lib/content/guides';
 
-/** Тіло розділу гайда: абзаци, списки, таблиці й примітки. */
+/** Тіло розділу гайда: абзаци, списки, таблиці, примітки й фото. */
 export default function Blocks({ body }: { body: Block[] }) {
   return (
     <>
       {body.map((b, i) => {
         if (typeof b === 'string') return <p key={i}><Rich text={b} /></p>;
+        if ('image' in b) return <Figure key={i} fig={b.image} />;
         if ('note' in b) return <p key={i} className="prose__note"><Rich text={b.note} /></p>;
         if ('list' in b) {
           const items = b.list.map((t) => <li key={t}><Rich text={t} /></li>);

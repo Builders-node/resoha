@@ -830,4 +830,147 @@ export const ES_CONTENT: Record<string, string> = {
   'Can foreigners buy property in Roatán? The 3,000 m² rule': '¿Pueden los extranjeros comprar en Roatán? La regla de 3,000 m²',
   'Roatán rental income: Airbnb occupancy and yields in 2026': 'Alquiler en Roatán: ocupación de Airbnb y rendimientos 2026',
   'Best areas to live in Roatán: neighbourhoods compared': 'Mejores zonas para vivir en Roatán: barrios comparados',
+  /* ---------- Гайд: is-roatan-safe ---------- */
+  "Is Roatán Safe? A Guide for Buyers and Expats":
+    "¿Es seguro Roatán? Lo que debe saber un comprador",
+  "Is Roatán Safe? A Guide for Buyers & Expats":
+    "¿Es seguro Roatán? Guía para compradores",
+  "Is Roatán safe?":
+    "¿Es seguro Roatán?",
+  "Is Roatán safe? Official advice on crime, walking at night, hospitals and hurricane preparation, plus practical property checks for buyers.":
+    "¿Es seguro Roatán? Consulte consejos oficiales sobre delincuencia, transporte nocturno, hospitales y qué revisar antes de elegir vivienda.",
+  "Canada’s travel advice describes the Bay Islands as generally safe, while warning about petty crime, beach assaults and burglaries at rentals. For buyers and future residents, the practical priorities are secure housing, transport after dark, medical care and property checks.":
+    "La alerta de viaje de Canadá describe las Islas de la Bahía como generalmente seguras, pero advierte sobre hurtos, asaltos en playas y robos en alojamientos vacacionales. Para compradores y futuros residentes, conviene planificar la seguridad de la vivienda, el transporte nocturno, la atención médica y la revisión de documentos.",
+  "West Bay beach and coastline, looking north in 2016":
+    "Playa y costa de West Bay vistas hacia el norte en 2016",
+  "West Bay, 2016. Resized and converted to WebP. Photo: [Pi3.124 / Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Roatan_West_Bay_looking_north.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).":
+    "West Bay, 2016. Foto: [Pi3.124 / Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Roatan_West_Bay_looking_north.jpg), [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). Imagen redimensionada y convertida a WebP.",
+  "Daytime view of the Beta District entrance, with a vehicle barrier, gatehouse and tropical vegetation":
+    "Entrada de Beta District de día, con barrera vehicular, caseta y vegetación tropical",
+  "Beta District entrance. Photo: Taras Chaus.":
+    "Entrada de Beta District. Foto: Taras Chaus.",
+  "CBDO at Hogarli":
+    "CBDO de Hogarli",
+  "**About the author:** Taras Chaus is CBDO at Hogarli and has lived on Roatán for four months as of November 2026.":
+    "**Sobre el autor:** Taras Chaus es CBDO de Hogarli y lleva cuatro meses viviendo en Roatán a noviembre de 2026.",
+  "Canada’s government advises a high degree of caution in Honduras. Its [country advisory](https://travel.gc.ca/destinations/honduras) includes specific guidance for the Bay Islands.":
+    "El Gobierno de Canadá recomienda un alto grado de precaución en Honduras. Su [alerta de viaje](https://travel.gc.ca/destinations/honduras) incluye indicaciones para las Islas de la Bahía.",
+  "The Canadian advisory supports three practical steps:":
+    "La alerta canadiense respalda estas medidas:",
+  "Avoid isolated beaches and poorly lit areas after dark. It specifically names Coxen Hole, Los Fuertes and Suampo as places to avoid after dark.":
+    "Evitar playas aisladas y lugares poco iluminados de noche. Menciona Coxen Hole, Los Fuertes y Suampo como lugares que deben evitarse después del anochecer.",
+  "Choose secure accommodation and lock doors and windows at night and when away.":
+    "Elegir alojamiento seguro y cerrar puertas y ventanas de noche y al salir.",
+  "Arrange insurance that covers hospital stays and medical evacuation.":
+    "Contratar un seguro que cubra hospitalización y evacuación médica.",
+  "Read the full advisory before travel for the latest guidance.":
+    "Consulte la alerta completa antes de viajar para conocer las indicaciones actuales.",
+  "Canada’s advisory describes petty crime, assaults on beaches mainly at night, and burglaries at vacation rentals. Use those risks to plan how you carry valuables, secure your accommodation and get home after an evening out.":
+    "La alerta canadiense menciona hurtos, asaltos en playas principalmente de noche y robos en viviendas vacacionales. Téngalo en cuenta al decidir cómo llevar objetos de valor, proteger su alojamiento y volver a casa después de salir.",
+  "Keep bags attended on the beach and valuables out of sight. At a viewing, test locks rather than assuming they work. Ask the host or property manager who responds if you lose a key or need help outside normal hours. If you will leave the home empty, agree who inspects it and how problems are reported.":
+    "No deje bolsos sin vigilancia en la playa y mantenga los objetos de valor fuera de la vista. En una visita, compruebe que las cerraduras funcionan. Pregunte quién responde si pierde una llave o necesita ayuda fuera del horario habitual. Si dejará la vivienda vacía, acuerde quién la revisará y cómo informará de problemas.",
+  "Treat security as a viewing checklist rather than a marketing label. Ask who controls access, how visitors enter, who handles maintenance and what happens when the property is empty. Check the route to shops and medical care, not just the view from the balcony.":
+    "Use la seguridad como una lista de comprobación durante la visita, no como una etiqueta comercial. Pregunte quién controla el acceso, cómo entran las visitas, quién se encarga del mantenimiento y qué sucede cuando la vivienda está vacía. Revise el trayecto hasta comercios y centros médicos, no solo la vista del balcón.",
+  "Visit at different times if possible. A listing can show a building, but it cannot tell you whether its surroundings and transport arrangements suit your routine. Our [area comparison](/guides/best-areas-to-live-in-roatan) can help you choose which neighborhoods to visit.":
+    "Si puede, visite la zona en distintos horarios. Un anuncio muestra el inmueble, pero no permite saber si el entorno y las opciones de transporte se adaptan a su rutina. Nuestra [comparación de zonas](/guides/best-areas-to-live-in-roatan) puede ayudarle a elegir qué zonas visitar.",
+  "Compare the actual home rather than choosing an area only because an advert calls it safe. Useful questions include:":
+    "Compare el inmueble, no solo la descripción de la zona como segura. Estas preguntas ayudan durante la visita:",
+  "Check":
+    "Qué revisar",
+  "Ask at the viewing":
+    "Pregunta para la visita",
+  "**Access**":
+    "**Acceso**",
+  "Who can enter, and how are visitors handled?":
+    "¿Quién puede entrar y cómo se reciben visitas?",
+  "**Building**":
+    "**Edificio**",
+  "Do exterior lights, locks and windows work? Who repairs them?":
+    "¿Funcionan luces exteriores, cerraduras y ventanas? ¿Quién las repara?",
+  "**Evenings**":
+    "**Noches**",
+  "Where can a taxi drop you? What is the route to the door?":
+    "¿Dónde le deja un taxi y cómo llega a la puerta?",
+  "**Management**":
+    "**Administración**",
+  "Who responds when you are away?":
+    "¿Quién responde durante su ausencia?",
+  "Explore [West Bay](/areas/west-bay), [West End](/areas/west-end) and [Sandy Bay](/areas/sandy-bay) as part of your shortlist, then assess each property and its surroundings in person.":
+    "Consulte [West Bay](/areas/west-bay), [West End](/areas/west-end) y [Sandy Bay](/areas/sandy-bay) para preparar una lista, y evalúe cada vivienda y su entorno en persona.",
+  "Canada advises avoiding Coxen Hole, Los Fuertes and Suampo after dark, as well as isolated beaches and poorly lit places. Favor populated, well-lit routes and arrange transport when the alternative is an isolated walk.":
+    "Canadá recomienda evitar Coxen Hole, Los Fuertes y Suampo de noche, además de playas aisladas y sitios poco iluminados. Prefiera rutas transitadas e iluminadas y organice transporte si la alternativa es caminar por un tramo aislado.",
+  "Its transport guidance for Honduras recommends reliable taxis recommended by a hotel and prearranged airport pickups. Ask your accommodation provider how to arrange transport, and plan the journey home before you leave. Do not rely on an unfamiliar beach route as a shortcut after dark.":
+    "Su orientación sobre transporte en Honduras aconseja taxis fiables recomendados por el hotel y traslados desde el aeropuerto organizados previamente. Pregunte al alojamiento cómo organizar los desplazamientos y planifique el regreso antes de salir. No use una playa desconocida como atajo nocturno.",
+  "Canada warns that emergency medical facilities in the Bay Islands are limited and major treatment may require evacuation.":
+    "Canadá advierte que las instalaciones de urgencias de las Islas de la Bahía son limitadas y que los tratamientos importantes pueden requerir evacuación.",
+  "Two private providers publish the following details:":
+    "Dos proveedores privados publican los siguientes datos:",
+  "Provider":
+    "Centro",
+  "Location":
+    "Ubicación",
+  "Contact advertised by provider":
+    "Contacto publicado por el centro",
+  "24/7 emergency service: **+504 9446-0097**; PBX **+504 2454-7014**":
+    "Emergencias 24/7: **+504 9446-0097**; PBX **+504 2454-7014**",
+  "Emergency contact: **+504 9828-8166**":
+    "Emergencias: **+504 9828-8166**",
+  "Confirm services, payment arrangements and insurance coverage with the provider. **For an emergency, call 911.**":
+    "Confirme con el centro los servicios, las condiciones de pago y la cobertura del seguro. **Ante una emergencia, llame al 911.**",
+  "A reassuring neighborhood does not establish clear ownership. Before committing funds, use an independent Honduran lawyer to assess the documents and proposed transaction. Ask questions about ownership, boundaries, access and any restrictions that matter to your plans.":
+    "Que una zona parezca tranquila no demuestra que la titularidad esté clara. Antes de comprometer fondos, pida a un abogado hondureño independiente que revise los documentos y la operación propuesta. Consulte sobre titularidad, linderos, acceso y restricciones relevantes para sus planes.",
+  "Start with our [land-title guide](/guides/how-to-check-land-title-in-roatan) and [property-scam guide](/blog/how-to-spot-property-scams-in-honduras). Both explain questions to raise with your lawyer.":
+    "Empiece por nuestra [guía sobre títulos de propiedad](/guides/how-to-check-land-title-in-roatan) y la [guía sobre estafas inmobiliarias](/blog/how-to-spot-property-scams-in-honduras). Ambas explican qué preguntas plantear a su abogado.",
+  "The [National Hurricane Center](https://www.nhc.noaa.gov/climo/) dates the Atlantic hurricane season, including the Caribbean basin, from **June 1 to November 30**. At a property viewing, ask about drainage, storm preparation, shutters and the building’s emergency plan. Check the actual insurance wording for the home.":
+    "El [Centro Nacional de Huracanes de Estados Unidos](https://www.nhc.noaa.gov/climo/) sitúa la temporada del Atlántico, incluida la cuenca del Caribe, entre el **1 de junio y el 30 de noviembre**. En una visita, pregunte por drenaje, preparación ante tormentas, persianas y el plan del edificio. Revise las condiciones del seguro del inmueble.",
+  "Canada’s travel advice warns about currents and inconsistent lifeguard coverage. Choose established water-activity operators, follow local instructions and avoid swimming alone or outside designated areas.":
+    "Canadá advierte sobre corrientes y cobertura irregular de socorristas. Elija operadores establecidos, siga las indicaciones locales y evite nadar solo o fuera de las zonas designadas.",
+  "Save **911**, hospital contacts and your accommodation manager’s number.":
+    "Guarde **911**, los contactos médicos y el número del administrador.",
+  "Arrange arrival and evening transport.":
+    "Organice el traslado de llegada y los desplazamientos nocturnos.",
+  "Test locks and agree who handles maintenance or security problems.":
+    "Revise cerraduras y acuerde quién atiende problemas de mantenimiento o seguridad.",
+  "Confirm medical and evacuation coverage.":
+    "Confirme la cobertura médica y de evacuación.",
+  "Learn the building’s storm procedures and the route to medical care.":
+    "Conozca los procedimientos ante tormentas y la ruta a un centro médico.",
+  "Compare areas in person before making a long-term property commitment.":
+    "Compare zonas en persona antes de comprometerse a largo plazo.",
+  "Compare [properties for sale](/listings?deal=sale) or [rentals](/listings?deal=rent) while deciding which area suits you.":
+    "Compare [propiedades en venta](/listings?deal=sale) o [en renta](/listings?deal=rent) mientras elige su zona.",
+  "Questions buyers ask":
+    "Preguntas frecuentes",
+  "What is the safest area to live in Roatán?":
+    "¿Cuál es la zona más segura para vivir en Roatán?",
+  "The sources used here do not establish a neighborhood safety ranking. Compare access, lighting, management and the routes you will use, rather than relying on a label in a listing.":
+    "Las fuentes utilizadas no establecen una clasificación de barrios por seguridad. Compare acceso, iluminación, administración y trayectos habituales, no solo el anuncio.",
+  "Is Roatán safer than mainland Honduras?":
+    "¿Roatán es más seguro que tierra firme?",
+  "Canada describes the Bay Islands as generally safe and distinguishes them from higher-risk parts of Honduras. Follow its specific precautions rather than treating every mainland location or every island neighborhood as the same.":
+    "Canadá describe las Islas de la Bahía como generalmente seguras y las distingue de lugares de mayor riesgo de Honduras. Siga las precauciones concretas, sin tratar todas las localidades de tierra firme o todas las zonas de la isla como si fueran iguales.",
+  "What should I ask about a guarded entrance?":
+    "¿Qué conviene preguntar sobre una entrada con vigilancia?",
+  "Find out who controls visitor access, when staff are present and how residents report incidents.":
+    "Quién controla las visitas, en qué horarios hay personal y cómo se reportan los incidentes.",
+  "Should I know my nearest hospital before moving?":
+    "¿Conviene identificar un hospital antes de mudarse?",
+  "Yes. Save its contact details, confirm its services and check your insurance arrangements.":
+    "Sí. Guarde sus contactos, confirme los servicios y revise las condiciones de su seguro.",
+  "Roatán safety: three practical precautions":
+    "Seguridad en Roatán: tres precauciones prácticas",
+  "Crime on Roatán: plan around the reported risks":
+    "Delincuencia en Roatán: precauciones según los riesgos descritos",
+  "Where to stay in Roatán: check the home and the route":
+    "Dónde vivir en Roatán: revise la vivienda y el acceso",
+  "Is it safe to walk in Roatán at night?":
+    "¿Es seguro caminar de noche en Roatán?",
+  "Hospitals in Roatán and emergency contacts":
+    "Hospitales en Roatán y contactos de emergencia",
+  "Is buying property in Roatán safe?":
+    "¿Es seguro comprar una propiedad en Roatán?",
+  "Hurricane season and water safety":
+    "Temporada de huracanes y seguridad en el mar",
+  "Living in Roatán: your first-month checklist":
+    "Vivir en Roatán: lista para el primer mes",
 };

@@ -132,6 +132,7 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
           {region === 'Roatán' && (
             <p className="tiny muted" style={{ marginTop: 14 }}>
               {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
+              {' · '}<Link className="link-accent" href={lp('/guides/is-roatan-safe')}>{t('is Roatán safe?')}</Link>
             </p>
           )}
         </aside>
