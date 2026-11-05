@@ -973,4 +973,127 @@ export const ES_CONTENT: Record<string, string> = {
     "Temporada de huracanes y seguridad en el mar",
   "Living in Roatán: your first-month checklist":
     "Vivir en Roatán: lista para el primer mes",
+  /* ---------- Гайд: honduras-residency-for-property-buyers ---------- */
+  "Honduras residency for property buyers: routes, documents and steps":
+    "Residencia en Honduras para compradores: categorías, documentos y pasos",
+  "Honduras residency for buyers: documents and steps":
+    "Residencia en Honduras: documentos y pasos",
+  "Residency in Honduras":
+    "Residencia en Honduras",
+  "How foreign buyers get residency in Honduras: the pensionado, rentista and investor routes, the documents, the fees, and how to stay legally while you apply.":
+    "Cómo obtiene la residencia en Honduras un comprador extranjero: pensionado, rentista o inversionista, los documentos, las tasas y cómo permanecer legalmente mientras tramita.",
+  "You do not need residency to buy property in Honduras, but many buyers apply once they plan to spend more time here. The usual routes are pensionado (a pension of at least $1,500 a month), rentista (at least $2,500 a month of stable income) and investor (at least $50,000). A legal representative files the application for you under a notarized power of attorney.":
+    "No necesita residencia para comprar una propiedad en Honduras, pero muchos compradores la solicitan cuando planean pasar más tiempo aquí. Las vías habituales son pensionado (una pensión de al menos $1,500 al mes), rentista (al menos $2,500 mensuales de ingresos estables) e inversionista (al menos $50,000). Un apoderado legal presenta la solicitud por usted con una carta poder autenticada por notario.",
+  "Residency is not required to buy: foreigners can own property in their own name.":
+    "La residencia no es requisito para comprar: los extranjeros pueden tener propiedades a su nombre.",
+  "The government requirement sheets list a $300 fee plus 100 lempiras in stamps per applicant.":
+    "Las hojas de requisitos del Gobierno indican una tasa de $300 más 100 lempiras en timbres por solicitante.",
+  "Every foreign document must be apostilled or legalized and officially translated into Spanish.":
+    "Todo documento extranjero debe estar apostillado o legalizado y traducido oficialmente al español.",
+  "Tourists can stay up to 90 days, counted together with Guatemala, El Salvador and Nicaragua under the CA-4 agreement.":
+    "Los turistas pueden quedarse hasta 90 días, que se cuentan junto con Guatemala, El Salvador y Nicaragua según el acuerdo CA-4.",
+  "Do you need residency to buy property?":
+    "¿Necesita residencia para comprar una propiedad?",
+  "No. A foreigner can buy and hold title to a home or condo on Roatán with a passport, without residency or a local partner. The limits that do apply are about land size near the coast, explained in our [guide to foreign ownership](/guides/can-foreigners-buy-property-in-roatan).":
+    "No. Un extranjero puede comprar y tener a su nombre una casa o un condominio en Roatán con su pasaporte, sin residencia ni socio local. Los límites que sí existen se refieren al tamaño del terreno cerca de la costa; los explicamos en nuestra [guía sobre propiedad extranjera](/guides/can-foreigners-buy-property-in-roatan).",
+  "Residency matters for what comes after the purchase: staying longer than a tourist can, receiving a pension or rental income through a Honduran bank, and running your life here without border runs.":
+    "La residencia importa para lo que viene después de la compra: quedarse más tiempo del que permite el turismo, recibir una pensión o rentas a través de un banco hondureño y vivir aquí sin salir del país cada pocos meses.",
+  "Which residency category fits you":
+    "Qué categoría de residencia le corresponde",
+  "The Secretaría de Gobernación, Justicia y Descentralización publishes a requirement sheet for each category. The three that most buyers consider:":
+    "La Secretaría de Gobernación, Justicia y Descentralización publica una hoja de requisitos para cada categoría. Las tres que más consideran los compradores:",
+  "Category":
+    "Categoría",
+  "Minimum":
+    "Mínimo",
+  "What proves it":
+    "Cómo se acredita",
+  "[Pensionado](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1937-requisitos-para-obtener-residencia-en-calidad-de-pensionado-1/file)":
+    "[Pensionado](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1937-requisitos-para-obtener-residencia-en-calidad-de-pensionado-1/file)",
+  "**$1,500 a month**":
+    "**$1,500 al mes**",
+  "A certificate from the institution that pays a permanent pension from abroad. The pension must be paid into a Honduran financial institution.":
+    "Un certificado de la institución que paga una pensión permanente desde el exterior. La pensión debe pagarse en una institución financiera hondureña.",
+  "[Rentista](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/1915-requisitos-para-obtener-residencia-como-rentista/file)":
+    "[Rentista](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/1915-requisitos-para-obtener-residencia-como-rentista/file)",
+  "**$2,500 a month**":
+    "**$2,500 al mes**",
+  "A certificate from a Honduran bank showing stable, lawful income, plus proof of the assets or securities that generate it.":
+    "Un certificado de un banco hondureño que muestre ingresos estables y lícitos, más la prueba de los bienes o valores que los generan.",
+  "[Investor](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1935-requisitos-para-obtener-residencia-como-inversionista-1/file)":
+    "[Inversionista](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1935-requisitos-para-obtener-residencia-como-inversionista-1/file)",
+  "**$50,000 invested**":
+    "**$50,000 de inversión**",
+  "A feasibility study and timeline, a deposit of at least $5,000 at the Banco Central de Honduras, and registration as an investor.":
+    "Un estudio de factibilidad y un cronograma, un depósito de al menos $5,000 en el Banco Central de Honduras y la inscripción como inversionista.",
+  "Ministerial Agreement 374-2025 added a special category for applicants who show at least 50% of the income or investment required for these routes. According to the law firm [García & Bodán](https://garciabodan.com/en/honduras-eases-immigration-requirements-with-new-decree/), each case is assessed individually, so treat it as a possibility to discuss with your attorney rather than a right.":
+    "El Acuerdo Ministerial 374-2025 añadió una categoría especial para quienes acrediten al menos el 50% de los ingresos o la inversión exigidos en estas vías. Según el bufete [García & Bodán](https://garciabodan.com/en/honduras-eases-immigration-requirements-with-new-decree/), cada caso se evalúa individualmente, así que tómelo como una posibilidad para hablar con su abogado y no como un derecho.",
+  "Documents you will need":
+    "Documentos que necesitará",
+  "The requirement sheets for pensionado, rentista and investor share most of their list:":
+    "Las hojas de requisitos de pensionado, rentista e inversionista comparten casi toda la lista:",
+  "**Power of attorney (carta poder)** to your legal representative, authenticated by a notary.":
+    "**Carta poder** a favor de su apoderado legal, autenticada por notario.",
+  "**Criminal record certificate from your home country**, apostilled or legalized and officially translated into Spanish.":
+    "**Certificado de antecedentes penales de su país**, apostillado o legalizado y traducido oficialmente al español.",
+  "**Honduran certificates** of no criminal record (Supreme Court) and no police record (DPI). Your representative can request these with the power of attorney.":
+    "**Constancias hondureñas** de no tener antecedentes penales (Corte Suprema de Justicia) ni policiales (DPI). Su apoderado puede pedirlas con la carta poder.",
+  "**Certificate of migratory movements** from the Instituto Nacional de Migración.":
+    "**Certificación de movimientos migratorios** del Instituto Nacional de Migración.",
+  "**Medical certificate** from a physician on Colegio Médico de Honduras letterhead, issued within the six months before you apply. You have to see the doctor in person.":
+    "**Certificado médico** de un médico en papel del Colegio Médico de Honduras, emitido dentro de los seis meses anteriores a la solicitud. Hay que ir al médico en persona.",
+  "**Notarized copy of your passport** and recent photos, 6 cm by 5 cm.":
+    "**Copia del pasaporte autenticada por notario** y fotos recientes de 6 por 5 cm.",
+  "**Proof of income or investment** for your category, as in the table above.":
+    "**Prueba de ingresos o de la inversión** según su categoría, como en la tabla anterior.",
+  "The fee on each sheet is **$300**, plus **100 lempiras** in stamps per applicant. Your attorney’s fees, translations and apostilles are extra.":
+    "La tasa en cada hoja es de **$300**, más **100 lempiras** en timbres por solicitante. Los honorarios del abogado, las traducciones y las apostillas se pagan aparte.",
+  "Step by step":
+    "Paso a paso",
+  "**Choose a category and an attorney.** The application is addressed to the Secretaría de Gobernación, Justicia y Descentralización and filed by your legal representative.":
+    "**Elija la categoría y un abogado.** La solicitud se dirige a la Secretaría de Gobernación, Justicia y Descentralización y la presenta su apoderado legal.",
+  "**Order your home-country criminal record certificate and apostille it.** It usually takes the longest, so start before you travel.":
+    "**Pida el certificado de antecedentes penales de su país y apostíllelo.** Suele ser lo que más tarda, así que empiece antes de viajar.",
+  "**Sign the power of attorney.** It lets the attorney request your Honduran certificates and file on your behalf. The version we use is bilingual, Spanish and English, so you can read what you sign.":
+    "**Firme la carta poder.** Permite al abogado pedir sus constancias hondureñas y presentar la solicitud en su nombre. La versión que usamos es bilingüe, en español e inglés, para que entienda lo que firma.",
+  "**Get the medical certificate** from a local physician.":
+    "**Obtenga el certificado médico** con un médico local.",
+  "**Let the attorney collect the Honduran certificates and file.** They also get the migratory movements certificate from Migración.":
+    "**Deje que el abogado reúna las constancias hondureñas y presente la solicitud.** También obtiene la certificación de movimientos migratorios en Migración.",
+  "**Keep your stay legal while you wait**, as explained below.":
+    "**Mantenga su estadía en regla mientras espera**, como se explica abajo.",
+  "Staying legal while your application is prepared":
+    "Cómo permanecer legalmente mientras prepara la solicitud",
+  "Most visitors can stay up to 90 days. Under the CA-4 agreement, days spent in Guatemala, El Salvador and Nicaragua count towards the same 90. [Lonely Planet](https://www.lonelyplanet.com/articles/visa-requirements-for-honduras) reports a one-time 30-day extension from Migración for about $20.":
+    "La mayoría de los visitantes puede quedarse hasta 90 días. Con el acuerdo CA-4, los días en Guatemala, El Salvador y Nicaragua cuentan dentro de esos mismos 90. [Lonely Planet](https://www.lonelyplanet.com/articles/visa-requirements-for-honduras) indica una prórroga única de 30 días en Migración por unos $20.",
+  "In the cases we have seen, the extension request goes in with two letters from your attorney: one stating that you are preparing a residency application, and a letter of responsibility in which a Honduran, usually the attorney, vouches for your stay. The exact requirements change from time to time, so ask your attorney before your 90 days run out.":
+    "En los casos que hemos visto, la solicitud de prórroga se presenta con dos cartas de su abogado: una que declara que usted prepara una solicitud de residencia y una carta de responsabilidad en la que un hondureño, normalmente el abogado, responde por su estadía. Los requisitos cambian de vez en cuando, así que consulte a su abogado antes de que se cumplan sus 90 días.",
+  "Opening a bank account":
+    "Abrir una cuenta bancaria",
+  "Pensionado and rentista income must arrive through a Honduran financial institution, so you will need a local account.":
+    "Los ingresos de pensionados y rentistas deben llegar a través de una institución financiera hondureña, así que necesitará una cuenta local.",
+  "In our experience, banks have not asked for a special letter. Saying that you are applying for residency and showing your application documents has been enough. Ask your bank what it needs before your visit.":
+    "Según nuestra experiencia, los bancos no han pedido una carta especial. Ha bastado con decir que está solicitando la residencia y mostrar los documentos de la solicitud. Pregunte a su banco qué necesita antes de ir.",
+  "How Hogarli can help":
+    "Cómo puede ayudarle Hogarli",
+  "If you buy through Hogarli, we can introduce you to a Honduran immigration attorney and prepare the bilingual power of attorney and Migración letters from your passport details, ready for you to sign. [Write to us](/about) to ask.":
+    "Si compra a través de Hogarli, podemos presentarle a un abogado de migración hondureño y preparar la carta poder bilingüe y las cartas para Migración con los datos de su pasaporte, listas para firmar. [Escríbanos](/about) para consultarlo.",
+  "No. Foreigners can buy and own property in Honduras with a passport. Residency only matters if you want to stay longer than a tourist can.":
+    "No. Los extranjeros pueden comprar y tener propiedades en Honduras con su pasaporte. La residencia solo importa si quiere quedarse más tiempo del que permite el turismo.",
+  "How much income do I need for residency in Honduras?":
+    "¿Cuántos ingresos necesito para la residencia en Honduras?",
+  "The government requirement sheets ask for a pension of at least $1,500 a month for pensionado status, or stable income of at least $2,500 a month for rentista status. The investor route requires at least $50,000.":
+    "Las hojas de requisitos del Gobierno piden una pensión de al menos $1,500 al mes para pensionado, o ingresos estables de al menos $2,500 al mes para rentista. La vía de inversionista exige al menos $50,000.",
+  "Do I need a medical certificate?":
+    "¿Necesito un certificado médico?",
+  "Yes. It must come from a physician on Colegio Médico de Honduras letterhead and be issued within six months before you apply, so you have to see a doctor in person.":
+    "Sí. Debe emitirlo un médico en papel del Colegio Médico de Honduras dentro de los seis meses anteriores a la solicitud, así que tiene que ir al médico en persona.",
+  "Can I stay in Honduras while my residency is being prepared?":
+    "¿Puedo quedarme en Honduras mientras se prepara mi residencia?",
+  "Yes, within your tourist stay of up to 90 days, which can be extended at Migración. Ask your attorney to request the extension before the 90 days run out.":
+    "Sí, dentro de su estadía de turista de hasta 90 días, que se puede prorrogar en Migración. Pida a su abogado que solicite la prórroga antes de que se cumplan los 90 días.",
+  "Does Honduran residency need to be renewed?":
+    "¿Hay que renovar la residencia hondureña?",
+  "The law firm [Consortium Legal](https://consortiumlegal.com/2021/11/15/residencia-en-honduras/) writes that residence does not need to be renewed. Confirm the terms of your own resolution with your attorney.":
+    "El bufete [Consortium Legal](https://consortiumlegal.com/2021/11/15/residencia-en-honduras/) indica que la residencia no requiere renovación. Confirme los términos de su propia resolución con su abogado.",
 };

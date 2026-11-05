@@ -130,4 +130,34 @@ export const SOURCES = {
     title: 'Hospital Wood Medical Center, Coxen Hole',
     url: 'https://www.hospitalwoodmedicalcenter.com/',
   },
+  sgjdPensionado: {
+    name: 'Secretaría de Gobernación, Justicia y Descentralización',
+    title: 'Requisitos para obtener residencia en calidad de pensionado',
+    url: 'https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1937-requisitos-para-obtener-residencia-en-calidad-de-pensionado-1/file',
+  },
+  sgjdRentista: {
+    name: 'Secretaría de Gobernación, Justicia y Descentralización',
+    title: 'Requisitos para obtener residencia como rentista',
+    url: 'https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/1915-requisitos-para-obtener-residencia-como-rentista/file',
+  },
+  sgjdInvestor: {
+    name: 'Secretaría de Gobernación, Justicia y Descentralización',
+    title: 'Requisitos para obtener residencia como inversionista',
+    url: 'https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1935-requisitos-para-obtener-residencia-como-inversionista-1/file',
+  },
+  acuerdo374: {
+    name: 'García & Bodán',
+    title: 'Honduras eases immigration requirements with new decree (October 2025)',
+    url: 'https://garciabodan.com/en/honduras-eases-immigration-requirements-with-new-decree/',
+  },
+  consortiumResidency: {
+    name: 'Consortium Legal',
+    title: 'Residencia en Honduras',
+    url: 'https://consortiumlegal.com/2021/11/15/residencia-en-honduras/',
+  },
+  lonelyVisa: {
+    name: 'Lonely Planet',
+    title: 'Do I need a visa to visit Honduras?',
+    url: 'https://www.lonelyplanet.com/articles/visa-requirements-for-honduras',
+  },
 } satisfies Record<string, Source>;

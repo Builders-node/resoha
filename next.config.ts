@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
   },
   // Значок дев-режиму сидить у лівому нижньому куті й перекриває нижню панель на мобільному
   devIndicators: false,
+  // шаблони юристів читаються з диска в маршруті — кажемо трасуванню взяти їх у збірку
+  outputFileTracingIncludes: {
+    '/api/admin/residency-docs': ['./lib/residency/templates/*.docx'],
+  },
   // Duna Tower спершу був одним оголошенням з прайсом; тепер це ЖК з окремими квартирами.
   // Старе посилання вже розійшлось — ведемо його на сторінку ЖК.
   async redirects() {

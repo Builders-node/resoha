@@ -593,6 +593,155 @@ export const GUIDES: Guide[] = [
     sources: [SOURCES.canadaHonduras, SOURCES.nhcSeason, SOURCES.cemesa, SOURCES.woodMedical],
     related: ['best-areas-to-live-in-roatan', 'how-to-check-land-title-in-roatan', 'how-to-buy-property-in-roatan'],
   },
+  {
+    "slug": "honduras-residency-for-property-buyers",
+    "title": "Honduras residency for property buyers: routes, documents and steps",
+    "seoTitle": "Honduras residency for buyers: documents and steps",
+    "short": "Residency in Honduras",
+    "description": "How foreign buyers get residency in Honduras: the pensionado, rentista and investor routes, the documents, the fees, and how to stay legally while you apply.",
+    "published": "2026-11-05",
+    "updated": "2026-11-05",
+    "checked": "2026-11-05",
+    "answer": "You do not need residency to buy property in Honduras, but many buyers apply once they plan to spend more time here. The usual routes are pensionado (a pension of at least $1,500 a month), rentista (at least $2,500 a month of stable income) and investor (at least $50,000). A legal representative files the application for you under a notarized power of attorney.",
+    "keyFacts": [
+      "Residency is not required to buy: foreigners can own property in their own name.",
+      "The government requirement sheets list a $300 fee plus 100 lempiras in stamps per applicant.",
+      "Every foreign document must be apostilled or legalized and officially translated into Spanish.",
+      "Tourists can stay up to 90 days, counted together with Guatemala, El Salvador and Nicaragua under the CA-4 agreement."
+    ],
+    "sections": [
+      {
+        "h": "Do you need residency to buy property?",
+        "body": [
+          "No. A foreigner can buy and hold title to a home or condo on Roatán with a passport, without residency or a local partner. The limits that do apply are about land size near the coast, explained in our [guide to foreign ownership](/guides/can-foreigners-buy-property-in-roatan).",
+          "Residency matters for what comes after the purchase: staying longer than a tourist can, receiving a pension or rental income through a Honduran bank, and running your life here without border runs."
+        ]
+      },
+      {
+        "h": "Which residency category fits you",
+        "body": [
+          "The Secretaría de Gobernación, Justicia y Descentralización publishes a requirement sheet for each category. The three that most buyers consider:",
+          {
+            "table": {
+              "head": [
+                "Category",
+                "Minimum",
+                "What proves it"
+              ],
+              "rows": [
+                [
+                  "[Pensionado](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1937-requisitos-para-obtener-residencia-en-calidad-de-pensionado-1/file)",
+                  "**$1,500 a month**",
+                  "A certificate from the institution that pays a permanent pension from abroad. The pension must be paid into a Honduran financial institution."
+                ],
+                [
+                  "[Rentista](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/1915-requisitos-para-obtener-residencia-como-rentista/file)",
+                  "**$2,500 a month**",
+                  "A certificate from a Honduran bank showing stable, lawful income, plus proof of the assets or securities that generate it."
+                ],
+                [
+                  "[Investor](https://www.sgjd.gob.hn/servicios-y-gestiones-web/requisitos/servicios-de-atencion-al-ciudadano/extranjeria/requisitos-servicios-extranjerias/1935-requisitos-para-obtener-residencia-como-inversionista-1/file)",
+                  "**$50,000 invested**",
+                  "A feasibility study and timeline, a deposit of at least $5,000 at the Banco Central de Honduras, and registration as an investor."
+                ]
+              ]
+            }
+          },
+          "Ministerial Agreement 374-2025 added a special category for applicants who show at least 50% of the income or investment required for these routes. According to the law firm [García & Bodán](https://garciabodan.com/en/honduras-eases-immigration-requirements-with-new-decree/), each case is assessed individually, so treat it as a possibility to discuss with your attorney rather than a right."
+        ]
+      },
+      {
+        "h": "Documents you will need",
+        "body": [
+          "The requirement sheets for pensionado, rentista and investor share most of their list:",
+          {
+            "list": [
+              "**Power of attorney (carta poder)** to your legal representative, authenticated by a notary.",
+              "**Criminal record certificate from your home country**, apostilled or legalized and officially translated into Spanish.",
+              "**Honduran certificates** of no criminal record (Supreme Court) and no police record (DPI). Your representative can request these with the power of attorney.",
+              "**Certificate of migratory movements** from the Instituto Nacional de Migración.",
+              "**Medical certificate** from a physician on Colegio Médico de Honduras letterhead, issued within the six months before you apply. You have to see the doctor in person.",
+              "**Notarized copy of your passport** and recent photos, 6 cm by 5 cm.",
+              "**Proof of income or investment** for your category, as in the table above."
+            ]
+          },
+          "The fee on each sheet is **$300**, plus **100 lempiras** in stamps per applicant. Your attorney’s fees, translations and apostilles are extra."
+        ]
+      },
+      {
+        "h": "Step by step",
+        "body": [
+          {
+            "ordered": true,
+            "list": [
+              "**Choose a category and an attorney.** The application is addressed to the Secretaría de Gobernación, Justicia y Descentralización and filed by your legal representative.",
+              "**Order your home-country criminal record certificate and apostille it.** It usually takes the longest, so start before you travel.",
+              "**Sign the power of attorney.** It lets the attorney request your Honduran certificates and file on your behalf. The version we use is bilingual, Spanish and English, so you can read what you sign.",
+              "**Get the medical certificate** from a local physician.",
+              "**Let the attorney collect the Honduran certificates and file.** They also get the migratory movements certificate from Migración.",
+              "**Keep your stay legal while you wait**, as explained below."
+            ]
+          }
+        ]
+      },
+      {
+        "h": "Staying legal while your application is prepared",
+        "body": [
+          "Most visitors can stay up to 90 days. Under the CA-4 agreement, days spent in Guatemala, El Salvador and Nicaragua count towards the same 90. [Lonely Planet](https://www.lonelyplanet.com/articles/visa-requirements-for-honduras) reports a one-time 30-day extension from Migración for about $20.",
+          "In the cases we have seen, the extension request goes in with two letters from your attorney: one stating that you are preparing a residency application, and a letter of responsibility in which a Honduran, usually the attorney, vouches for your stay. The exact requirements change from time to time, so ask your attorney before your 90 days run out."
+        ]
+      },
+      {
+        "h": "Opening a bank account",
+        "body": [
+          "Pensionado and rentista income must arrive through a Honduran financial institution, so you will need a local account.",
+          "In our experience, banks have not asked for a special letter. Saying that you are applying for residency and showing your application documents has been enough. Ask your bank what it needs before your visit."
+        ]
+      },
+      {
+        "h": "How Hogarli can help",
+        "body": [
+          "If you buy through Hogarli, we can introduce you to a Honduran immigration attorney and prepare the bilingual power of attorney and Migración letters from your passport details, ready for you to sign. [Write to us](/about) to ask."
+        ]
+      },
+      {
+        "h": "Important",
+        "body": [
+          {
+            "note": DISCLAIMER
+          }
+        ]
+      }
+    ],
+    "faq": [
+      {
+        "q": "Do I need residency to buy property in Honduras?",
+        "a": "No. Foreigners can buy and own property in Honduras with a passport. Residency only matters if you want to stay longer than a tourist can."
+      },
+      {
+        "q": "How much income do I need for residency in Honduras?",
+        "a": "The government requirement sheets ask for a pension of at least $1,500 a month for pensionado status, or stable income of at least $2,500 a month for rentista status. The investor route requires at least $50,000."
+      },
+      {
+        "q": "Do I need a medical certificate?",
+        "a": "Yes. It must come from a physician on Colegio Médico de Honduras letterhead and be issued within six months before you apply, so you have to see a doctor in person."
+      },
+      {
+        "q": "Can I stay in Honduras while my residency is being prepared?",
+        "a": "Yes, within your tourist stay of up to 90 days, which can be extended at Migración. Ask your attorney to request the extension before the 90 days run out."
+      },
+      {
+        "q": "Does Honduran residency need to be renewed?",
+        "a": "The law firm [Consortium Legal](https://consortiumlegal.com/2021/11/15/residencia-en-honduras/) writes that residence does not need to be renewed. Confirm the terms of your own resolution with your attorney."
+      }
+    ],
+    "sources": [SOURCES.sgjdPensionado, SOURCES.sgjdRentista, SOURCES.sgjdInvestor, SOURCES.acuerdo374, SOURCES.consortiumResidency, SOURCES.lonelyVisa],
+    "related": [
+      "can-foreigners-buy-property-in-roatan",
+      "how-to-buy-property-in-roatan",
+      "is-roatan-safe"
+    ]
+  },
 ];
 
 export const guideBySlug = (slug: string) => GUIDES.find((g) => g.slug === slug);
