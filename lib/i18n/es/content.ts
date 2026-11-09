@@ -973,4 +973,175 @@ export const ES_CONTENT: Record<string, string> = {
     "Temporada de huracanes y seguridad en el mar",
   "Living in Roatán: your first-month checklist":
     "Vivir en Roatán: lista para el primer mes",
+  /* ---------- Гайд: cost-of-living-in-roatan ---------- */
+  "Cost of Living in Roatán: Build a Budget Around Your Home":
+    "Costo de Vida en Roatán: Prepare un Presupuesto para su Vivienda",
+  "Cost of Living in Roatán: Budget Guide":
+    "Costo de vida en Roatán: presupuesto",
+  "Cost of living in Roatán":
+    "Costo de vida en Roatán",
+  "Plan the cost of living in Roatán with dated rental examples, a monthly budget checklist and questions about utilities, groceries and transport.":
+    "Calcule el costo de vida en Roatán con ejemplos de renta, una lista de gastos mensuales y preguntas sobre servicios, compras y transporte.",
+  "Coastal buildings and shoreline in West End, Roatán":
+    "Edificios junto a la costa de West End, Roatán",
+  "West End shoreline, October 26, 2016. Historical area photograph, not one of the advertised rentals. [West End Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_Isla_Roatan_%2832004256653%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Resized and converted to WebP.":
+    "Costa de West End, 26 de octubre de 2016. Fotografía histórica de la zona, no de las viviendas anunciadas. [West End Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_Isla_Roatan_%2832004256653%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Redimensionada y convertida a WebP.",
+  "**About the author:** Taras Chaus is CBDO at Hogarli.":
+    "**Sobre el autor:** Taras Chaus es CBDO de Hogarli.",
+  "The **cost of living in Roatán** starts with your home, but the advertised rent is only one part of the budget. Before choosing a place, put rent, electricity, water, internet, groceries and transport on the same monthly worksheet. Then separate recurring bills from the cash you need to move in.":
+    "El **costo de vida en Roatán** empieza por la vivienda, pero la renta anunciada es solo una parte del presupuesto. Antes de elegir, reúna en una misma hoja la renta, electricidad, agua, internet, supermercado y transporte. Después, separe los gastos mensuales del dinero necesario para instalarse.",
+  "What does rent cost in Roatán?":
+    "¿Cuánto cuesta rentar en Roatán?",
+  "Below are three named rental examples advertised on Hogarli, followed by the questions that turn a listing price into a household budget. They are examples to investigate, not an average cost for the island.":
+    "Estos tres ejemplos anunciados en Hogarli permiten comenzar la comparación. Las preguntas que siguen ayudan a convertir una renta en un presupuesto doméstico. No representan un costo promedio de toda la isla.",
+  "Hogarli's area pages displayed these long-term rental asking prices on November 5, 2026:":
+    "El 5 de noviembre de 2026, las páginas de zonas de Hogarli mostraban estas ofertas de renta a largo plazo:",
+  "Advertised home":
+    "Vivienda anunciada",
+  "Monthly asking rent":
+    "Renta mensual anunciada",
+  "One-bedroom loft 6 at Alba Plaza":
+    "Loft 6 de una habitación en Alba Plaza",
+  "Gibson Bight, shown on the West End area page":
+    "Gibson Bight, incluido en la página de West End",
+  "Studio at Mar Vista":
+    "Estudio en Mar Vista",
+  "Above West Bay":
+    "En la zona alta de West Bay",
+  "Two-bedroom upper unit at Tortuga Bahia":
+    "Unidad superior de dos habitaciones en Tortuga Bahia",
+  "Sources: [West End area page](/areas/west-end) and [West Bay area page](/areas/west-bay). This is a selection of three advertised homes, not a representative survey. Confirm availability, lease length, deposit and included services with the listing agent.":
+    "Fuentes: [página de West End](/areas/west-end) y [página de West Bay](/areas/west-bay). Son tres ejemplos seleccionados, no una muestra representativa del mercado. Confirme con el agente la disponibilidad, duración del contrato, depósito y servicios incluidos.",
+  "Compare like with like. A studio and a two-bedroom home answer different needs. Before comparing the amounts, check whether each offer includes furniture, water, internet, parking or any community charges. Record anything paid separately rather than assuming the rent covers it.":
+    "Compare viviendas equivalentes. Un estudio y una vivienda de dos habitaciones resuelven necesidades distintas. Antes de comparar los montos, revise si incluyen muebles, agua, internet, estacionamiento o cuotas de la comunidad. Anote por separado lo que le corresponde pagar.",
+  "Use the [rental listings](/listings?deal=rent) to build your shortlist, checking the location of each home. The listing search also includes other parts of Honduras.":
+    "Puede comenzar por las [propiedades en renta](/listings?deal=rent), comprobando la ubicación de cada una. El buscador también incluye propiedades en otras partes de Honduras.",
+  "A monthly budget for living in Roatán":
+    "Presupuesto mensual para vivir en Roatán",
+  "Use one currency throughout your worksheet. Where a bill is in lempiras and your rent is quoted in US dollars, record the conversion rate and any payment charge actually available to you.":
+    "Use una sola moneda en la hoja de cálculo. Si recibe una factura en lempiras y paga la renta en dólares, registre el tipo de cambio y las comisiones que realmente correspondan a su forma de pago.",
+  "**Area**":
+    "**Zona**",
+  "**Rent**":
+    "**Renta**",
+  "**Electricity**":
+    "**Electricidad**",
+  "**Water**":
+    "**Agua**",
+  "**Transport**":
+    "**Transporte**",
+  "Budget line":
+    "Rubro",
+  "Evidence to collect":
+    "Información que conviene reunir",
+  "Written amount, currency, term and included services":
+    "Monto escrito, moneda, plazo y servicios incluidos",
+  "Recent bills for the actual home and its occupancy":
+    "Facturas recientes de esa vivienda y datos de ocupación",
+  "Who supplies it, what is included, and any separate delivery charge":
+    "Proveedor, cargos incluidos y posibles entregas por separado",
+  "**Internet and mobile**":
+    "**Internet y celular**",
+  "Address-specific quote, taxes, equipment and installation":
+    "Cotización para la dirección, impuestos, equipo e instalación",
+  "**Groceries and household supplies**":
+    "**Supermercado y artículos del hogar**",
+  "A basket you would buy regularly, with sizes and prices":
+    "Su compra habitual, con tamaños y precios",
+  "Quotes for your real routes, or actual vehicle running costs":
+    "Cotizaciones de sus rutas o gastos reales del vehículo",
+  "**Health cover and care**":
+    "**Cobertura médica y atención**",
+  "Quotes suited to your household and coverage needs":
+    "Cotizaciones adecuadas para su hogar",
+  "**Other recurring costs**":
+    "**Otros gastos periódicos**",
+  "Cleaning, laundry, subscriptions and agreed community fees":
+    "Limpieza, lavandería, suscripciones y cuotas acordadas",
+  "**Monthly total = rent + separately paid services + everyday spending.** Do not count a service twice if it is already included in rent.":
+    "**Total mensual = renta + servicios pagados por separado + gastos cotidianos.** No sume dos veces un servicio ya incluido en la renta.",
+  "Keep a separate line for a contingency amount you choose. It should be an explicit part of your plan, not money left over by accident.":
+    "Añada una reserva para imprevistos que usted decida. Debe ser un monto planificado, no simplemente lo que quede al final del mes.",
+  "Electricity: ask for the home's bills":
+    "Electricidad: pida facturas de la vivienda",
+  "A budget based on another household's bill can be misleading. Ask for several recent electricity bills and the dates they cover. Find out how many people were living there, whether the home was occupied throughout the period and how air conditioning was used.":
+    "La factura de otra familia no siempre sirve para estimar la suya. Solicite varias facturas recientes y revise los períodos cobrados. Pregunte cuántas personas vivían allí, si la vivienda estuvo ocupada durante todo el período y cómo se utilizó el aire acondicionado.",
+  "At the viewing, ask:":
+    "Durante la visita, aclare:",
+  "Is the home individually metered?":
+    "¿La vivienda tiene medidor individual?",
+  "Who issues the bill, and how is a shared bill divided?":
+    "¿Quién emite el cobro y cómo se divide una factura compartida?",
+  "Are there outstanding charges or a separate service deposit?":
+    "¿Hay saldos pendientes o un depósito independiente para el servicio?",
+  "Which appliances and cooling equipment will you actually use?":
+    "¿Qué equipos de refrigeración y electrodomésticos utilizará?",
+  "Use the applicable supplier's current billing terms rather than importing a mainland tariff or treating an old quoted price per kilowatt-hour as current.":
+    "Consulte las condiciones vigentes del proveedor correspondiente. No aplique automáticamente una tarifa de tierra firme ni use como actual un precio antiguo por kilovatio-hora.",
+  "For September–November 2026, Honduras's electricity regulator, [CREE, publishes these RECO residential tariff components](https://www.cree.gob.hn/tarifas-vigentes-roatan/):":
+    "Para septiembre–noviembre de 2026, la [CREE publica estos componentes de la tarifa residencial de RECO](https://www.cree.gob.hn/tarifas-vigentes-roatan/):",
+  "Monthly consumption category":
+    "Categoría de consumo mensual",
+  "Fixed charge":
+    "Cargo fijo",
+  "Energy charge":
+    "Cargo de energía",
+  "Up to 150 kWh":
+    "Hasta 150 kWh",
+  "More than 150 kWh":
+    "Más de 150 kWh",
+  "HNL26.9294":
+    "L26.9294",
+  "HNL6.1103/kWh":
+    "L6.1103/kWh",
+  "HNL39.4514":
+    "L39.4514",
+  "HNL8.9515/kWh":
+    "L8.9515/kWh",
+  "These are tariff components, not complete household bills. Confirm the applicable category calculation, taxes and other charges with the supplier. Do not read the two categories as an instruction to split a bill into blocks. The regulator also publishes a [quarterly RECO tariff summary](https://www.cree.gob.hn/resumen-informe-trimestral-de-tarifas-reco/).":
+    "Estos componentes no equivalen a una factura completa. Confirme con el proveedor cómo se aplica la categoría, los impuestos y otros cargos. No interprete las dos categorías como una instrucción para dividir el consumo de una factura en bloques. La CREE también publica un [resumen trimestral de las tarifas de RECO](https://www.cree.gob.hn/resumen-informe-trimestral-de-tarifas-reco/).",
+  "Internet and water: confirm the exact address":
+    "Internet y agua: confirme la dirección exacta",
+  "Local provider [MAXCOM](https://www.maxcom.hn/) advertises a 350 Mbps residential plan at **HNL1,250 per month**, checked November 5. Its price display includes the wording “IVA / por mes”; confirm whether tax is included and obtain the full installation and equipment quote before budgeting.":
+    "El proveedor local [MAXCOM](https://www.maxcom.hn/) anuncia un plan residencial de 350 Mbps por **L1,250 al mes**, consultado el 5 de noviembre. La presentación del precio incluye “IVA / por mes”; confirme si el impuesto está incluido y solicite el costo completo de instalación y equipo.",
+  "For internet, request a quote for the home itself, not just a plan advertised for a wider area. Ask about installation, equipment, taxes, commitment period and what happens when you move out. If you work remotely, test the connection where you will work and ask how any backup option is paid for.":
+    "Solicite una cotización de internet para la vivienda, no solo un plan anunciado para una zona amplia. Pregunte por instalación, equipo, impuestos, permanencia y cancelación. Si trabaja a distancia, pruebe la conexión desde el espacio donde trabajará y averigüe quién paga una eventual alternativa de respaldo.",
+  "For water, ask who provides it and whether rent includes the full charge. If the property uses tanks, pumps or delivered water, establish who pays for delivery, electricity and maintenance. Put only the charges you actually expect to pay into your worksheet.":
+    "Para el agua, confirme quién la suministra y si la renta incluye todo el cargo. Si hay cisterna, bomba o entregas, determine quién paga el suministro, la electricidad y el mantenimiento. Incluya únicamente los cargos que realmente le correspondan.",
+  "Groceries and transport: price your own routine":
+    "Supermercado y transporte: cotice su rutina",
+  "Build a small shopping basket around what your household normally uses: food, drinking water, cleaning products and toiletries. Compare equivalent pack sizes and keep the date and currency. A restaurant menu or holiday shopping bill is not a substitute for your normal household basket.":
+    "Prepare una lista breve con lo que consume normalmente: alimentos, agua para beber, limpieza y aseo personal. Compare presentaciones equivalentes y conserve la fecha y la moneda. Un menú de restaurante o una compra de vacaciones no sustituye la canasta habitual de su hogar.",
+  "For transport, list the journeys you will repeat: groceries, work, school, appointments and evening trips. Get quotes for those routes and times. If you plan to drive, include fuel, insurance, servicing and any parking charges, rather than treating the purchase of a vehicle as the whole cost.":
+    "Anote los viajes que repetirá: compras, trabajo, escuela, citas y salidas nocturnas. Cotice esas rutas y horarios. Si conducirá, incluya combustible, seguro, mantenimiento y estacionamiento cuando corresponda; comprar un vehículo no cubre todos sus gastos.",
+  "This is where area choice becomes a practical budget decision. Compare [West End](/areas/west-end), [West Bay](/areas/west-bay) and [Sandy Bay](/areas/sandy-bay) against the places you will visit regularly, not just the view from the home.":
+    "La ubicación también debe evaluarse desde el presupuesto. Compare [West End](/areas/west-end), [West Bay](/areas/west-bay) y [Sandy Bay](/areas/sandy-bay) según sus recorridos habituales, no únicamente por la vista.",
+  "Moving-in costs are separate from monthly living costs":
+    "El dinero para instalarse no es el gasto mensual",
+  "Before paying, ask for a written list of the first payment, deposit, utility setup, internet installation and any agreed furniture or household purchases. Show the deposit as cash needed to move in, separately from recurring spending; its return depends on the agreed terms and the condition of the home.":
+    "Antes de pagar, pida por escrito el primer pago, depósito, activación de servicios, instalación de internet y compras de muebles o artículos que hayan acordado. Registre el depósito como dinero necesario para entrar, separado del gasto periódico. Su devolución dependerá de las condiciones acordadas y del estado de la vivienda.",
+  "Our [rent-before-buying guide](/blog/renting-in-honduras-before-you-buy) covers lease and viewing questions. If you plan to buy, keep purchase costs in a separate calculation using the [closing-cost guide](/guides/roatan-closing-costs). Do not mix a purchase deposit with a monthly household budget.":
+    "La [guía para rentar antes de comprar](/blog/renting-in-honduras-before-you-buy) incluye preguntas sobre el contrato y la visita. Si piensa comprar, calcule la adquisición por separado con la [guía de gastos de cierre](/guides/roatan-closing-costs). No confunda un anticipo de compra con el presupuesto doméstico mensual.",
+  "Retiring in Roatán or working remotely":
+    "Retirarse en Roatán o trabajar a distancia",
+  "Build the budget around the people who will live in the home. A retiree should check the cost and scope of suitable health coverage and access to care. A remote worker should verify connectivity and any backup arrangements. Families should obtain actual school and transport quotes if those apply.":
+    "Adapte el presupuesto a quienes vivirán en la casa. Quien se retire debe confirmar el costo y alcance de una cobertura médica adecuada y el acceso a atención. Quien trabaje a distancia debe verificar la conectividad y cualquier respaldo. Si hay hijos, solicite cotizaciones reales de escuela y transporte cuando sean necesarias.",
+  "For emergency-care planning and published provider contacts, see the [Roatán safety guide](/guides/is-roatan-safe). Those contacts do not replace an individual insurance quote.":
+    "La [guía de seguridad de Roatán](/guides/is-roatan-safe) incluye información para planificar emergencias y contactos publicados por proveedores médicos. Estos datos no sustituyen una cotización individual de seguro.",
+  "Before you commit to a home":
+    "Antes de elegir la vivienda",
+  "Confirm the rent, currency and term in writing.":
+    "Confirme por escrito renta, moneda y plazo.",
+  "Get a list of included and separately charged services.":
+    "Separe servicios incluidos y cargos adicionales.",
+  "Review bills for the actual property.":
+    "Revise facturas de esa propiedad.",
+  "Price your regular shopping and journeys.":
+    "Cotice sus compras y trayectos habituales.",
+  "Separate move-in cash from recurring monthly spending.":
+    "Distinga el dinero inicial del gasto mensual.",
+  "Compare the completed budget with another shortlisted home.":
+    "Compare el presupuesto completo con otra vivienda de su lista.",
+  "The useful question is not simply “Is Roatán cheap?” It is whether a particular home and routine fit the budget you can sustain. Start with real offers, replace assumptions with quotes, and keep the calculation dated.":
+    "Más que preguntar si Roatán es barato, conviene comprobar si esa vivienda y esa rutina caben en un presupuesto sostenible. Comience con ofertas reales, sustituya supuestos por cotizaciones y mantenga la fecha del cálculo.",
 };

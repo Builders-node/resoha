@@ -225,6 +225,7 @@ export const ES_LANDING: Record<string, string> = {
   'Read next:': 'Lea también:',
   'all areas compared': 'todas las zonas comparadas',
   'is Roatán safe?': '¿es seguro Roatán?',
+  'cost of living': 'costo de vida',
   'Listed in {area}': 'Publicado en {area}',
   'See all on the map': 'Ver todo en el mapa',
   'No listings in {area} yet. We are adding agencies every week.':

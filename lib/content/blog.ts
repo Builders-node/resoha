@@ -523,7 +523,7 @@ export const POSTS: Post[] = [
     ],
     sources: [SOURCES.gpg],
     related: ['how-to-spot-property-scams-in-honduras', 'roatan-san-pedro-sula-or-tegucigalpa'],
-    guides: ['best-areas-to-live-in-roatan', 'how-to-buy-property-in-roatan'],
+    guides: ['cost-of-living-in-roatan', 'best-areas-to-live-in-roatan', 'how-to-buy-property-in-roatan'],
   },
 ];
 

@@ -55,6 +55,8 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
 
   const crumbs = [{ name: 'Home', path: '/' }, { name: 'Guides', path: '/guides' }, { name: g.short, path: `/guides/${g.slug}` }];
   const url = `${SITE_URL}${localePath(lang, `/guides/${g.slug}`)}`;
+  // гайд без питань (faq: []) не показує порожній розділ і не дає розмітки FAQPage
+  const hasFaq = g.faq.length > 0;
   const related = g.related.map(guideBySlug).filter((x) => x !== undefined).map((r) => localizeContent(r, t));
 
   return (
@@ -62,7 +64,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     // праворуч липка колонка зі змістом і «Поділитися». Свої блоки гайда — коротка відповідь,
     // ключові факти й FAQ — лишаються в тексті.
     <article className="wrap page-top blog-post">
-      <JsonLd data={graph(articleLd(g), ...(g.faqSchema === false ? [] : [faqLd(g.faq)]), breadcrumbLd(crumbs))} />
+      <JsonLd data={graph(articleLd(g), ...(g.faqSchema === false || !hasFaq ? [] : [faqLd(g.faq)]), breadcrumbLd(crumbs))} />
 
       <header className="blog-hero">
         <Link className="blog-hero__topic" href={lp('/guides')}>
@@ -85,7 +87,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             <b>{t('On this page')}</b>
             <ol>
               {lg.sections.map((s, i) => <li key={s.h}><a href={`#${anchor(g.sections[i].h)}`}>{unnumbered(s.h)}</a></li>)}
-              <li><a href="#faq">{lg.faqTitle ?? t('Frequently asked questions')}</a></li>
+              {hasFaq && <li><a href="#faq">{lg.faqTitle ?? t('Frequently asked questions')}</a></li>}
               <li><a href="#sources">{t('Sources')}</a></li>
             </ol>
           </nav>
@@ -112,10 +114,12 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
             </section>
           ))}
 
-          <section id="faq">
-            <h2>{lg.faqTitle ?? t('Frequently asked questions')}</h2>
-            <Faq items={lg.faq} open={lg.faq.length} />
-          </section>
+          {hasFaq && (
+            <section id="faq">
+              <h2>{lg.faqTitle ?? t('Frequently asked questions')}</h2>
+              <Faq items={lg.faq} open={lg.faq.length} />
+            </section>
+          )}
 
           <section id="sources">
             <h2>{t('Sources')}</h2>

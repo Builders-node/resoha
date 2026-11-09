@@ -130,4 +130,19 @@ export const SOURCES = {
     title: 'Hospital Wood Medical Center, Coxen Hole',
     url: 'https://www.hospitalwoodmedicalcenter.com/',
   },
+  creeRoatan: {
+    name: 'CREE (Comisión Reguladora de Energía Eléctrica)',
+    title: 'Tarifas vigentes Roatán (RECO), September–November 2026',
+    url: 'https://www.cree.gob.hn/tarifas-vigentes-roatan/',
+  },
+  creeRecoSummary: {
+    name: 'CREE (Comisión Reguladora de Energía Eléctrica)',
+    title: 'Resumen informe trimestral de tarifas RECO',
+    url: 'https://www.cree.gob.hn/resumen-informe-trimestral-de-tarifas-reco/',
+  },
+  maxcom: {
+    name: 'MAXCOM',
+    title: 'Residential internet plans, Roatán',
+    url: 'https://www.maxcom.hn/',
+  },
 } satisfies Record<string, Source>;
