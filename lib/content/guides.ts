@@ -446,7 +446,7 @@ export const GUIDES: Guide[] = [
       { q: 'What is the cheapest area of Roatán?', a: 'Coxen Hole and the south shore have the lowest prices, typically about $100,000 to $300,000 according to The LatInvestor. The East End has the cheapest land.' },
     ],
     sources: [SOURCES.latMarket, SOURCES.buyingRoatan],
-    related: ['is-roatan-safe', 'how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
+    related: ['is-roatan-safe', 'cost-of-living-in-roatan', 'how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
   },
   {
     slug: 'is-roatan-safe',
@@ -591,7 +591,151 @@ export const GUIDES: Guide[] = [
     // FAQ на сторінці лишається, але без FAQPage: текст не обіцяє FAQ-сніпетів у видачі
     faqSchema: false,
     sources: [SOURCES.canadaHonduras, SOURCES.nhcSeason, SOURCES.cemesa, SOURCES.woodMedical],
-    related: ['best-areas-to-live-in-roatan', 'how-to-check-land-title-in-roatan', 'how-to-buy-property-in-roatan'],
+    related: ['best-areas-to-live-in-roatan', 'cost-of-living-in-roatan', 'how-to-check-land-title-in-roatan', 'how-to-buy-property-in-roatan'],
+  },
+  {
+    slug: 'cost-of-living-in-roatan',
+    title: "Cost of Living in Roatán: Build a Budget Around Your Home",
+    seoTitle: "Cost of Living in Roatán: Budget Guide",
+    short: "Cost of living in Roatán",
+    description: "Plan the cost of living in Roatán with dated rental examples, a monthly budget checklist and questions about utilities, groceries and transport.",
+    published: '2026-11-09',
+    updated: '2026-11-09',
+    // у тексті: «Rental examples checked November 5, 2026»
+    checked: '2026-11-05',
+    author: {
+      name: "Taras Chaus",
+      role: "CBDO at Hogarli",
+      bio: "**About the author:** Taras Chaus is CBDO at Hogarli.",
+    },
+    hero: {
+      src: "/photos/guides/west-end-coastal-buildings-2016-10-26.webp",
+      alt: "Coastal buildings and shoreline in West End, Roatán",
+      width: 1600,
+      height: 996,
+      // дужки в адресі Commons закодовано: Rich обриває посилання на першій «)»
+      caption: "West End shoreline, October 26, 2016. Historical area photograph, not one of the advertised rentals. [West End Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_Isla_Roatan_%2832004256653%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Resized and converted to WebP.",
+    },
+    answer: "The **cost of living in Roatán** starts with your home, but the advertised rent is only one part of the budget. Before choosing a place, put rent, electricity, water, internet, groceries and transport on the same monthly worksheet. Then separate recurring bills from the cash you need to move in.",
+    sections: [
+      {
+        h: "What does rent cost in Roatán?",
+        body: [
+          "Below are three named rental examples advertised on Hogarli, followed by the questions that turn a listing price into a household budget. They are examples to investigate, not an average cost for the island.",
+          "Hogarli's area pages displayed these long-term rental asking prices on November 5, 2026:",
+          {
+            table: {
+              // «**Area**», а не «Area»: голе слово вже перекладено в каталозі як площа («Área»)
+              head: ["Advertised home", "**Area**", "Monthly asking rent"],
+              rows: [
+                ["One-bedroom loft 6 at Alba Plaza", "Gibson Bight, shown on the West End area page", "US$550"],
+                ["Studio at Mar Vista", "Above West Bay", "US$700"],
+                ["Two-bedroom upper unit at Tortuga Bahia", "West Bay", "US$900"],
+              ],
+            },
+          },
+          "Sources: [West End area page](/areas/west-end) and [West Bay area page](/areas/west-bay). This is a selection of three advertised homes, not a representative survey. Confirm availability, lease length, deposit and included services with the listing agent.",
+          "Compare like with like. A studio and a two-bedroom home answer different needs. Before comparing the amounts, check whether each offer includes furniture, water, internet, parking or any community charges. Record anything paid separately rather than assuming the rent covers it.",
+          "Use the [rental listings](/listings?deal=rent) to build your shortlist, checking the location of each home. The listing search also includes other parts of Honduras.",
+        ],
+      },
+      {
+        h: "A monthly budget for living in Roatán",
+        body: [
+          "Use one currency throughout your worksheet. Where a bill is in lempiras and your rent is quoted in US dollars, record the conversion rate and any payment charge actually available to you.",
+          {
+            table: {
+              head: ["Budget line", "Evidence to collect"],
+              rows: [
+                ["**Rent**", "Written amount, currency, term and included services"],
+                ["**Electricity**", "Recent bills for the actual home and its occupancy"],
+                ["**Water**", "Who supplies it, what is included, and any separate delivery charge"],
+                ["**Internet and mobile**", "Address-specific quote, taxes, equipment and installation"],
+                ["**Groceries and household supplies**", "A basket you would buy regularly, with sizes and prices"],
+                ["**Transport**", "Quotes for your real routes, or actual vehicle running costs"],
+                ["**Health cover and care**", "Quotes suited to your household and coverage needs"],
+                ["**Other recurring costs**", "Cleaning, laundry, subscriptions and agreed community fees"],
+              ],
+            },
+          },
+          "**Monthly total = rent + separately paid services + everyday spending.** Do not count a service twice if it is already included in rent.",
+          "Keep a separate line for a contingency amount you choose. It should be an explicit part of your plan, not money left over by accident.",
+        ],
+      },
+      {
+        h: "Electricity: ask for the home's bills",
+        body: [
+          "A budget based on another household's bill can be misleading. Ask for several recent electricity bills and the dates they cover. Find out how many people were living there, whether the home was occupied throughout the period and how air conditioning was used.",
+          "At the viewing, ask:",
+          { list: [
+              "Is the home individually metered?",
+              "Who issues the bill, and how is a shared bill divided?",
+              "Are there outstanding charges or a separate service deposit?",
+              "Which appliances and cooling equipment will you actually use?",
+            ] },
+          "Use the applicable supplier's current billing terms rather than importing a mainland tariff or treating an old quoted price per kilowatt-hour as current.",
+          "For September–November 2026, Honduras's electricity regulator, [CREE, publishes these RECO residential tariff components](https://www.cree.gob.hn/tarifas-vigentes-roatan/):",
+          {
+            table: {
+              head: ["Monthly consumption category", "Fixed charge", "Energy charge"],
+              rows: [
+                ["Up to 150 kWh", "HNL26.9294", "HNL6.1103/kWh"],
+                ["More than 150 kWh", "HNL39.4514", "HNL8.9515/kWh"],
+              ],
+            },
+          },
+          "These are tariff components, not complete household bills. Confirm the applicable category calculation, taxes and other charges with the supplier. Do not read the two categories as an instruction to split a bill into blocks. The regulator also publishes a [quarterly RECO tariff summary](https://www.cree.gob.hn/resumen-informe-trimestral-de-tarifas-reco/).",
+        ],
+      },
+      {
+        h: "Internet and water: confirm the exact address",
+        body: [
+          "Local provider [MAXCOM](https://www.maxcom.hn/) advertises a 350 Mbps residential plan at **HNL1,250 per month**, checked November 5. Its price display includes the wording “IVA / por mes”; confirm whether tax is included and obtain the full installation and equipment quote before budgeting.",
+          "For internet, request a quote for the home itself, not just a plan advertised for a wider area. Ask about installation, equipment, taxes, commitment period and what happens when you move out. If you work remotely, test the connection where you will work and ask how any backup option is paid for.",
+          "For water, ask who provides it and whether rent includes the full charge. If the property uses tanks, pumps or delivered water, establish who pays for delivery, electricity and maintenance. Put only the charges you actually expect to pay into your worksheet.",
+        ],
+      },
+      {
+        h: "Groceries and transport: price your own routine",
+        body: [
+          "Build a small shopping basket around what your household normally uses: food, drinking water, cleaning products and toiletries. Compare equivalent pack sizes and keep the date and currency. A restaurant menu or holiday shopping bill is not a substitute for your normal household basket.",
+          "For transport, list the journeys you will repeat: groceries, work, school, appointments and evening trips. Get quotes for those routes and times. If you plan to drive, include fuel, insurance, servicing and any parking charges, rather than treating the purchase of a vehicle as the whole cost.",
+          "This is where area choice becomes a practical budget decision. Compare [West End](/areas/west-end), [West Bay](/areas/west-bay) and [Sandy Bay](/areas/sandy-bay) against the places you will visit regularly, not just the view from the home.",
+        ],
+      },
+      {
+        h: "Moving-in costs are separate from monthly living costs",
+        body: [
+          "Before paying, ask for a written list of the first payment, deposit, utility setup, internet installation and any agreed furniture or household purchases. Show the deposit as cash needed to move in, separately from recurring spending; its return depends on the agreed terms and the condition of the home.",
+          "Our [rent-before-buying guide](/blog/renting-in-honduras-before-you-buy) covers lease and viewing questions. If you plan to buy, keep purchase costs in a separate calculation using the [closing-cost guide](/guides/roatan-closing-costs). Do not mix a purchase deposit with a monthly household budget.",
+        ],
+      },
+      {
+        h: "Retiring in Roatán or working remotely",
+        body: [
+          "Build the budget around the people who will live in the home. A retiree should check the cost and scope of suitable health coverage and access to care. A remote worker should verify connectivity and any backup arrangements. Families should obtain actual school and transport quotes if those apply.",
+          "For emergency-care planning and published provider contacts, see the [Roatán safety guide](/guides/is-roatan-safe). Those contacts do not replace an individual insurance quote.",
+        ],
+      },
+      {
+        h: "Before you commit to a home",
+        body: [
+          { list: [
+              "Confirm the rent, currency and term in writing.",
+              "Get a list of included and separately charged services.",
+              "Review bills for the actual property.",
+              "Price your regular shopping and journeys.",
+              "Separate move-in cash from recurring monthly spending.",
+              "Compare the completed budget with another shortlisted home.",
+            ] },
+          "The useful question is not simply “Is Roatán cheap?” It is whether a particular home and routine fit the budget you can sustain. Start with real offers, replace assumptions with quotes, and keep the calculation dated.",
+        ],
+      },
+    ],
+    // у тексті немає розділу питань: сторінка не показує порожній FAQ і не дає розмітки FAQPage
+    faq: [],
+    sources: [SOURCES.creeRoatan, SOURCES.creeRecoSummary, SOURCES.maxcom],
+    related: ['best-areas-to-live-in-roatan', 'is-roatan-safe', 'roatan-closing-costs'],
   },
 ];
 

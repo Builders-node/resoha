@@ -17,7 +17,7 @@ export default function Blocks({ body }: { body: Block[] }) {
         return (
           <div key={i} className="prose__table">
             <table className="table">
-              <thead><tr>{b.table.head.map((h) => <th key={h}>{h}</th>)}</tr></thead>
+              <thead><tr>{b.table.head.map((h) => <th key={h}><Rich text={h} /></th>)}</tr></thead>
               <tbody>
                 {b.table.rows.map((r) => (
                   <tr key={r[0]}>{r.map((c, j) => <td key={j}><Rich text={c} /></td>)}</tr>
