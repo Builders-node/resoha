@@ -1144,4 +1144,149 @@ export const ES_CONTENT: Record<string, string> = {
     "Compare el presupuesto completo con otra vivienda de su lista.",
   "The useful question is not simply “Is Roatán cheap?” It is whether a particular home and routine fit the budget you can sustain. Start with real offers, replace assumptions with quotes, and keep the calculation dated.":
     "Más que preguntar si Roatán es barato, conviene comprobar si esa vivienda y esa rutina caben en un presupuesto sostenible. Comience con ofertas reales, sustituya supuestos por cotizaciones y mantenga la fecha del cálculo.",
+  /* ---------- Гайд: west-end-vs-west-bay ---------- */
+  "West End vs West Bay: Where Should You Live or Buy?":
+    "West End vs West Bay: ¿Dónde Vivir o Comprar?",
+  "West End waterfront with piers and small boats, Roatán":
+    "Costa de West End con muelles y pequeñas embarcaciones, Roatán",
+  "West End waterfront, October 26, 2016. Historical area view. [West End ~ Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_~_Isla_Roatan_%2831392663941%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Resized and converted to WebP.":
+    "Costa de West End, 26 de octubre de 2016. Vista histórica de la zona. [West End ~ Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_~_Isla_Roatan_%2831392663941%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Redimensionada y convertida a WebP.",
+  "**West End vs West Bay** is a choice between two different home bases, not a contest with one winner. West End puts a village of restaurants and dive businesses around Half Moon Bay at the centre of the search. West Bay puts the beach, resort setting and nearby condo buildings at the centre. The better choice depends on the actual home, your daily routes and its recurring costs.":
+    "**West End vs West Bay** no es una competencia con un único ganador. West End permite comenzar la búsqueda alrededor del pueblo, sus restaurantes, negocios de buceo y Half Moon Bay. West Bay orienta la búsqueda hacia la playa, el entorno de resorts y los edificios de condominios cercanos. La mejor elección depende de la vivienda concreta, sus recorridos y los gastos periódicos.",
+  "The differences that matter for a home":
+    "Diferencias que conviene evaluar",
+  "Priority":
+    "Prioridad",
+  "West End: what to investigate":
+    "Qué revisar en West End",
+  "West Bay: what to investigate":
+    "Qué revisar en West Bay",
+  "Setting":
+    "Entorno",
+  "Village streets and Half Moon Bay":
+    "Calles del pueblo y Half Moon Bay",
+  "Beachfront, resort setting and hillside homes":
+    "Playa, resorts y viviendas en las laderas",
+  "Daily routine":
+    "Rutina",
+  "Walking route to the services you use":
+    "Recorrido a pie hasta los servicios que utiliza",
+  "Route from the particular building to shops and transport":
+    "Distancia real desde el edificio hasta comercios y transporte",
+  "Housing":
+    "Vivienda",
+  "Houses and condos in or around the village":
+    "Casas y condominios dentro o cerca del pueblo",
+  "Beach-area condos, managed buildings and houses":
+    "Condominios cercanos a la playa, edificios administrados y casas",
+  "Access":
+    "Acceso",
+  "Parking, hills and the last part of the route home":
+    "Estacionamiento, pendientes y tramo final hasta la casa",
+  "Hillside access, parking and any shared access arrangements":
+    "Acceso en ladera, estacionamiento y accesos compartidos",
+  "Recurring costs":
+    "Gastos",
+  "Actual bills and any community charges":
+    "Facturas reales y posibles cuotas comunitarias",
+  "Actual bills, community fees and included services":
+    "Facturas, cuotas de la comunidad y servicios incluidos",
+  "Hogarli's [West End](/areas/west-end) and [West Bay](/areas/west-bay) pages provide the area descriptions and current inventory behind this comparison. Use them to choose viewings, not to assume every home in an area has the same features.":
+    "Las páginas de [West End](/areas/west-end) y [West Bay](/areas/west-bay) de Hogarli reúnen las descripciones y anuncios utilizados aquí. Sirven para organizar visitas, no para suponer que todas las viviendas de una zona ofrecen lo mismo.",
+  "Is West End or West Bay cheaper?":
+    "¿West End o West Bay es más barato?",
+  "The advertised price alone does not establish that one area is always cheaper. Here are four named examples displayed on Hogarli's area pages on November 12, 2026, in US dollars:":
+    "El precio anunciado no demuestra que una zona sea siempre más económica. Estos cuatro ejemplos aparecían en las páginas de zonas de Hogarli el 12 de noviembre de 2026. Los montos están en dólares estadounidenses:",
+  "Area and advertised property":
+    "Zona y propiedad anunciada",
+  "Type and size":
+    "Tipo y tamaño",
+  "Asking price":
+    "Precio solicitado",
+  "West End: Banana House at Sunset Villas":
+    "West End: Banana House en Sunset Villas",
+  "3-bedroom house, 265 m²":
+    "Casa de 3 habitaciones, 265 m²",
+  "US$499,000 for sale":
+    "US$499,000 en venta",
+  "West Bay: top-floor condo 141 at Acqua di Mare":
+    "West Bay: condominio 141, último piso de Acqua di Mare",
+  "2-bedroom condo, 123 m²":
+    "Condominio de 2 habitaciones, 123 m²",
+  "US$510,000 for sale":
+    "US$510,000 en venta",
+  "West End: condo 12K at Sunset Villas":
+    "West End: condominio 12K en Sunset Villas",
+  "2 bedrooms, 2 bathrooms":
+    "2 habitaciones, 2 baños",
+  "US$900/month for rent":
+    "US$900/mes en renta",
+  "West Bay: upper unit at Tortuga Bahia":
+    "West Bay: unidad superior en Tortuga Bahia",
+  "2 bedrooms, 1 bathroom":
+    "2 habitaciones, 1 baño",
+  "Sources: [West End inventory](/areas/west-end) and [West Bay inventory](/areas/west-bay). This is a selection of four offers, not a representative market sample or completed-sale record. Confirm availability, lease terms, property details and included services with the listing agency.":
+    "Fuentes: [anuncios de West End](/areas/west-end) y [anuncios de West Bay](/areas/west-bay). Son cuatro ofertas seleccionadas, no una muestra representativa ni un registro de ventas cerradas. Confirme disponibilidad, plazo de renta, características y servicios incluidos con la agencia.",
+  "The sale examples differ in building type, size and facilities, so they do not measure an area premium. The rental examples have the same asking rent but different bathrooms and potentially different inclusions. Compare the home you would actually choose, including the costs outside its headline price.":
+    "Los ejemplos en venta tienen distinto tipo de inmueble, tamaño e instalaciones; no permiten calcular una prima de precio por zona. Las rentas coinciden en monto, pero no en número de baños ni necesariamente en servicios incluidos. Compare la propiedad que realmente elegiría y sus cargos adicionales.",
+  "Use our [cost-of-living budget guide](/guides/cost-of-living-in-roatan) to compare utilities, transport and other monthly costs alongside rent.":
+    "Use la [guía de costo de vida](/guides/cost-of-living-in-roatan) para comparar servicios, transporte y otros gastos mensuales además de la renta.",
+  "Living in West End: check the village-to-home route":
+    "Vivir en West End: revise el trayecto hasta su casa",
+  "If the village setting appeals to you, walk from the specific home to the places you expect to use. A property near West End is not necessarily on a level, convenient route into the village. Check hills, road surface, lighting, parking and where a taxi can drop you.":
+    "Si le atrae el entorno del pueblo, recorra la ruta desde la vivienda hasta los lugares que utilizará. Estar cerca de West End no significa tener un camino plano y cómodo al centro. Revise pendientes, superficie, iluminación, estacionamiento y dónde puede dejarle un taxi.",
+  "Ask about normal activity near the home and visit at the times that matter to your routine, where practical. Do not assume an area label tells you how quiet a particular bedroom will be.":
+    "Pregunte por la actividad habitual cerca de la vivienda y visítela en los horarios importantes para su rutina cuando sea posible. El nombre de la zona no indica cuánto ruido se escuchará en una habitación determinada.",
+  "Be precise about location. Hogarli's West End page also includes listings labelled Gibson Bight; a broader search grouping is not the same thing as being in the village.":
+    "Confirme la ubicación exacta. La página de West End también incluye anuncios identificados como Gibson Bight; pertenecer al mismo grupo de búsqueda no equivale a estar dentro del pueblo.",
+  "Living in West Bay: check the building as well as the beach":
+    "Vivir en West Bay: evalúe el edificio además de la playa",
+  "Palm-frond canopy, sand and turquoise sea at West Bay Beach, Roatán":
+    "Hojas de palma, arena y mar turquesa en la playa de West Bay, Roatán",
+  "West Bay Beach, May 23, 2009. Historical beach view. [West Bay Beach - Roatan, Honduras](https://commons.wikimedia.org/wiki/File:West_Bay_Beach_-Roatan_-Honduras-23May2009-c.jpg) · Adalberto Hernandez Vega · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Cropped, resized and converted to WebP.":
+    "Playa de West Bay, 23 de mayo de 2009. Vista histórica de la playa. [West Bay Beach - Roatan, Honduras](https://commons.wikimedia.org/wiki/File:West_Bay_Beach_-Roatan_-Honduras-23May2009-c.jpg) · Adalberto Hernandez Vega · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Recortada, redimensionada y convertida a WebP.",
+  "For a condo, ask for the current community fee, what it includes and what you pay separately. Review the arrangements for maintenance, shared facilities, insurance and property management. Do not assume every building offers the same services.":
+    "Para un condominio, solicite la cuota comunitaria vigente, sus conceptos y los servicios que deberá pagar aparte. Revise mantenimiento, instalaciones compartidas, seguros y administración. No suponga que todos los edificios prestan los mismos servicios.",
+  "For either a condo or a house, check the real route between the property, the beach and your transport. A beach-area address does not by itself establish beachfront ownership or a particular access right. Have your independent adviser check any access arrangements relevant to the purchase.":
+    "Tanto en una casa como en un condominio, compruebe la ruta real entre la propiedad, la playa y el transporte. Una dirección cercana a la playa no acredita por sí sola una propiedad frente al mar ni un derecho de acceso específico. Pida a su asesor independiente que revise los accesos relevantes para la compra.",
+  "If you plan to rent the home out, obtain the actual building rules, management terms and property-specific operating records. A location description is not evidence of occupancy or future rental income.":
+    "Si piensa rentar la propiedad a terceros, solicite el reglamento del edificio, las condiciones de administración y registros operativos de esa unidad. Una descripción de la zona no demuestra ocupación ni ingresos futuros.",
+  "Walkability, transport and evenings":
+    "Caminatas, transporte y salidas nocturnas",
+  "Make a short list of the trips you will repeat: groceries, work, appointments, school if relevant, and evenings out. Test those routes from each shortlisted home and ask for transport options and prices.":
+    "Anote sus recorridos habituales: supermercado, trabajo, citas, escuela si corresponde y salidas. Pruebe las rutas desde cada vivienda y averigüe las opciones y precios de transporte.",
+  "Do not base a daily commute on an assumed water-taxi timetable or a travel time from a holiday visit. Confirm current operating arrangements and an alternative for the journeys you need.":
+    "No organice una rutina diaria alrededor de un horario supuesto de taxi acuático ni de un tiempo de viaje observado durante unas vacaciones. Confirme cómo funciona el servicio y una alternativa para sus trayectos.",
+  "For after-dark precautions and published emergency contacts, use our [Roatán safety guide](/guides/is-roatan-safe). This comparison does not rank either neighbourhood as safer.":
+    "La [guía de seguridad de Roatán](/guides/is-roatan-safe) incluye precauciones nocturnas y contactos publicados para emergencias. Esta comparación no clasifica una de las dos zonas como más segura.",
+  "A viewing checklist for both areas":
+    "Lista para visitar propiedades en ambas zonas",
+  "Confirm the exact location, not only the listing's area label.":
+    "Confirme la ubicación exacta, no solo la etiqueta del anuncio.",
+  "Walk or drive the approach and check parking and drop-off arrangements.":
+    "Recorra el acceso y revise estacionamiento y puntos de llegada.",
+  "Ask for recent utility bills and the list of included services.":
+    "Pida facturas recientes y una lista de servicios incluidos.",
+  "Obtain current community fees and maintenance responsibilities.":
+    "Confirme cuotas comunitarias y responsabilidades de mantenimiento.",
+  "Test the internet connection if you will work from home.":
+    "Pruebe internet si trabajará desde casa.",
+  "Confirm rental restrictions if letting the property is part of your plan.":
+    "Compruebe restricciones de renta si su plan incluye recibir huéspedes.",
+  "Compare the complete costs of two real homes before choosing an area.":
+    "Compare los gastos completos de dos viviendas antes de elegir zona.",
+  "Use the [rent-before-buying guide](/blog/renting-in-honduras-before-you-buy) if you want to test a location first, and the [buying guide](/guides/how-to-buy-property-in-roatan) for the purchase process.":
+    "La [guía para rentar antes de comprar](/blog/renting-in-honduras-before-you-buy) ayuda a probar una ubicación primero. La [guía de compra](/guides/how-to-buy-property-in-roatan) explica el proceso de adquisición.",
+  "Which should you shortlist?":
+    "¿Por cuál empezar?",
+  "Start with **West End** if your main question is whether village life fits your daily routine. Start with **West Bay** if you want to compare beach-area homes and condo-building services. In either case, choose the particular home only after checking its access, terms and ongoing costs.":
+    "Comience por **West End** si quiere comprobar si la vida de pueblo encaja con su rutina. Comience por **West Bay** si busca comparar viviendas cerca de la playa y servicios de edificios de condominios. En ambos casos, revise acceso, condiciones y gastos de la propiedad concreta.",
+  "If neither fits, widen the search using the [island-wide area guide](/guides/best-areas-to-live-in-roatan). Browse [homes for sale](/listings?deal=sale) or [rentals](/listings?deal=rent), checking each property's location; the general search also includes mainland Honduras.":
+    "Si ninguna encaja, amplíe la búsqueda con la [guía de zonas de la isla](/guides/best-areas-to-live-in-roatan). Consulte [propiedades en venta](/listings?deal=sale) o [en renta](/listings?deal=rent), verificando cada ubicación: el buscador general también incluye tierra firme.",
+  "Start with the area character, then compare individual properties. A home marketed under an area name may be outside the part you intend to walk around.":
+    "Primero compare el entorno y después las propiedades. Un anuncio agrupado bajo el nombre de una zona puede quedar fuera del sector por donde usted quiere caminar.",
+  "West End vs West Bay: Where to Live":
+    "West End vs West Bay: dónde vivir",
+  "Compare West End vs West Bay for living or buying: named property examples, access, community fees and a practical viewing checklist.":
+    "Compare West End y West Bay para vivir o comprar: ejemplos de propiedades, acceso, cuotas y preguntas para visitar viviendas.",
 };

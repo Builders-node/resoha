@@ -145,4 +145,14 @@ export const SOURCES = {
     title: 'Residential internet plans, Roatán',
     url: 'https://www.maxcom.hn/',
   },
+  hogarliWestEnd: {
+    name: 'Hogarli',
+    title: 'West End area page and listings, checked November 12, 2026',
+    url: 'https://www.hogarli.com/areas/west-end',
+  },
+  hogarliWestBay: {
+    name: 'Hogarli',
+    title: 'West Bay area page and listings, checked November 12, 2026',
+    url: 'https://www.hogarli.com/areas/west-bay',
+  },
 } satisfies Record<string, Source>;
