@@ -446,7 +446,7 @@ export const GUIDES: Guide[] = [
       { q: 'What is the cheapest area of Roatán?', a: 'Coxen Hole and the south shore have the lowest prices, typically about $100,000 to $300,000 according to The LatInvestor. The East End has the cheapest land.' },
     ],
     sources: [SOURCES.latMarket, SOURCES.buyingRoatan],
-    related: ['is-roatan-safe', 'cost-of-living-in-roatan', 'how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
+    related: ['west-end-vs-west-bay', 'is-roatan-safe', 'cost-of-living-in-roatan', 'how-to-buy-property-in-roatan', 'roatan-rental-income', 'can-foreigners-buy-property-in-roatan'],
   },
   {
     slug: 'is-roatan-safe',
@@ -735,7 +735,132 @@ export const GUIDES: Guide[] = [
     // у тексті немає розділу питань: сторінка не показує порожній FAQ і не дає розмітки FAQPage
     faq: [],
     sources: [SOURCES.creeRoatan, SOURCES.creeRecoSummary, SOURCES.maxcom],
-    related: ['best-areas-to-live-in-roatan', 'is-roatan-safe', 'roatan-closing-costs'],
+    related: ['best-areas-to-live-in-roatan', 'west-end-vs-west-bay', 'is-roatan-safe', 'roatan-closing-costs'],
+  },
+  {
+    slug: 'west-end-vs-west-bay',
+    title: "West End vs West Bay: Where Should You Live or Buy?",
+    seoTitle: "West End vs West Bay: Where to Live",
+    short: "West End vs West Bay",
+    description: "Compare West End vs West Bay for living or buying: named property examples, access, community fees and a practical viewing checklist.",
+    published: '2026-11-13',
+    updated: '2026-11-13',
+    // у тексті: «Listing examples checked November 12, 2026»
+    checked: '2026-11-12',
+    author: {
+      name: "Taras Chaus",
+      role: "CBDO at Hogarli",
+      bio: "**About the author:** Taras Chaus is CBDO at Hogarli.",
+    },
+    // дужки в адресі Commons закодовано: Rich обриває посилання на першій «)»
+    hero: {
+      src: "/photos/guides/west-end-waterfront-2016-10-26.webp",
+      alt: "West End waterfront with piers and small boats, Roatán",
+      width: 1600,
+      height: 797,
+      caption: "West End waterfront, October 26, 2016. Historical area view. [West End ~ Isla Roatan](https://commons.wikimedia.org/wiki/File:West_End_~_Isla_Roatan_%2831392663941%29.jpg) · Prayitno / Thank you for (12 millions +) view · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Resized and converted to WebP.",
+    },
+    answer: "**West End vs West Bay** is a choice between two different home bases, not a contest with one winner. West End puts a village of restaurants and dive businesses around Half Moon Bay at the centre of the search. West Bay puts the beach, resort setting and nearby condo buildings at the centre. The better choice depends on the actual home, your daily routes and its recurring costs.",
+    sections: [
+      {
+        h: "The differences that matter for a home",
+        body: [
+          "Start with the area character, then compare individual properties. A home marketed under an area name may be outside the part you intend to walk around.",
+          {
+            table: {
+              head: ["Priority", "West End: what to investigate", "West Bay: what to investigate"],
+              rows: [
+                ["Setting", "Village streets and Half Moon Bay", "Beachfront, resort setting and hillside homes"],
+                ["Daily routine", "Walking route to the services you use", "Route from the particular building to shops and transport"],
+                ["Housing", "Houses and condos in or around the village", "Beach-area condos, managed buildings and houses"],
+                ["Access", "Parking, hills and the last part of the route home", "Hillside access, parking and any shared access arrangements"],
+                ["Recurring costs", "Actual bills and any community charges", "Actual bills, community fees and included services"],
+              ],
+            },
+          },
+          "Hogarli's [West End](/areas/west-end) and [West Bay](/areas/west-bay) pages provide the area descriptions and current inventory behind this comparison. Use them to choose viewings, not to assume every home in an area has the same features.",
+        ],
+      },
+      {
+        h: "Is West End or West Bay cheaper?",
+        body: [
+          "The advertised price alone does not establish that one area is always cheaper. Here are four named examples displayed on Hogarli's area pages on November 12, 2026, in US dollars:",
+          {
+            table: {
+              head: ["Area and advertised property", "Type and size", "Asking price"],
+              rows: [
+                ["West End: Banana House at Sunset Villas", "3-bedroom house, 265 m²", "US$499,000 for sale"],
+                ["West Bay: top-floor condo 141 at Acqua di Mare", "2-bedroom condo, 123 m²", "US$510,000 for sale"],
+                ["West End: condo 12K at Sunset Villas", "2 bedrooms, 2 bathrooms", "US$900/month for rent"],
+                ["West Bay: upper unit at Tortuga Bahia", "2 bedrooms, 1 bathroom", "US$900/month for rent"],
+              ],
+            },
+          },
+          "Sources: [West End inventory](/areas/west-end) and [West Bay inventory](/areas/west-bay). This is a selection of four offers, not a representative market sample or completed-sale record. Confirm availability, lease terms, property details and included services with the listing agency.",
+          "The sale examples differ in building type, size and facilities, so they do not measure an area premium. The rental examples have the same asking rent but different bathrooms and potentially different inclusions. Compare the home you would actually choose, including the costs outside its headline price.",
+          "Use our [cost-of-living budget guide](/guides/cost-of-living-in-roatan) to compare utilities, transport and other monthly costs alongside rent.",
+        ],
+      },
+      {
+        h: "Living in West End: check the village-to-home route",
+        body: [
+          "If the village setting appeals to you, walk from the specific home to the places you expect to use. A property near West End is not necessarily on a level, convenient route into the village. Check hills, road surface, lighting, parking and where a taxi can drop you.",
+          "Ask about normal activity near the home and visit at the times that matter to your routine, where practical. Do not assume an area label tells you how quiet a particular bedroom will be.",
+          "Be precise about location. Hogarli's West End page also includes listings labelled Gibson Bight; a broader search grouping is not the same thing as being in the village.",
+        ],
+      },
+      {
+        h: "Living in West Bay: check the building as well as the beach",
+        body: [
+          {
+            image: {
+              src: "/photos/guides/west-bay-beach-2009-05-23.webp",
+              alt: "Palm-frond canopy, sand and turquoise sea at West Bay Beach, Roatán",
+              width: 1400,
+              height: 1200,
+              caption: "West Bay Beach, May 23, 2009. Historical beach view. [West Bay Beach - Roatan, Honduras](https://commons.wikimedia.org/wiki/File:West_Bay_Beach_-Roatan_-Honduras-23May2009-c.jpg) · Adalberto Hernandez Vega · [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/). Cropped, resized and converted to WebP.",
+            },
+          },
+          "For a condo, ask for the current community fee, what it includes and what you pay separately. Review the arrangements for maintenance, shared facilities, insurance and property management. Do not assume every building offers the same services.",
+          "For either a condo or a house, check the real route between the property, the beach and your transport. A beach-area address does not by itself establish beachfront ownership or a particular access right. Have your independent adviser check any access arrangements relevant to the purchase.",
+          "If you plan to rent the home out, obtain the actual building rules, management terms and property-specific operating records. A location description is not evidence of occupancy or future rental income.",
+        ],
+      },
+      {
+        h: "Walkability, transport and evenings",
+        body: [
+          "Make a short list of the trips you will repeat: groceries, work, appointments, school if relevant, and evenings out. Test those routes from each shortlisted home and ask for transport options and prices.",
+          "Do not base a daily commute on an assumed water-taxi timetable or a travel time from a holiday visit. Confirm current operating arrangements and an alternative for the journeys you need.",
+          "For after-dark precautions and published emergency contacts, use our [Roatán safety guide](/guides/is-roatan-safe). This comparison does not rank either neighbourhood as safer.",
+        ],
+      },
+      {
+        h: "A viewing checklist for both areas",
+        body: [
+          { list: [
+              "Confirm the exact location, not only the listing's area label.",
+              "Walk or drive the approach and check parking and drop-off arrangements.",
+              "Ask for recent utility bills and the list of included services.",
+              "Obtain current community fees and maintenance responsibilities.",
+              "Test the internet connection if you will work from home.",
+              "Confirm rental restrictions if letting the property is part of your plan.",
+              "Compare the complete costs of two real homes before choosing an area.",
+            ] },
+          "Use the [rent-before-buying guide](/blog/renting-in-honduras-before-you-buy) if you want to test a location first, and the [buying guide](/guides/how-to-buy-property-in-roatan) for the purchase process.",
+        ],
+      },
+      {
+        h: "Which should you shortlist?",
+        body: [
+          "Start with **West End** if your main question is whether village life fits your daily routine. Start with **West Bay** if you want to compare beach-area homes and condo-building services. In either case, choose the particular home only after checking its access, terms and ongoing costs.",
+          "If neither fits, widen the search using the [island-wide area guide](/guides/best-areas-to-live-in-roatan). Browse [homes for sale](/listings?deal=sale) or [rentals](/listings?deal=rent), checking each property's location; the general search also includes mainland Honduras.",
+        ],
+      },
+    ],
+    // у тексті немає розділу питань і зовнішніх джерел: приклади цін — зі сторінок зон Hogarli
+    faq: [],
+    sources: [SOURCES.hogarliWestEnd, SOURCES.hogarliWestBay],
+    related: ['best-areas-to-live-in-roatan', 'cost-of-living-in-roatan', 'is-roatan-safe', 'how-to-buy-property-in-roatan'],
   },
 ];
 

@@ -134,6 +134,9 @@ export default async function AreaPage({ params }: { params: Promise<{ slug: str
               {t('Read next:')} <Link className="link-accent" href={lp('/guides/best-areas-to-live-in-roatan')}>{t('all areas compared')}</Link>
               {' · '}<Link className="link-accent" href={lp('/guides/is-roatan-safe')}>{t('is Roatán safe?')}</Link>
               {' · '}<Link className="link-accent" href={lp('/guides/cost-of-living-in-roatan')}>{t('cost of living')}</Link>
+              {(a.slug === 'west-end' || a.slug === 'west-bay') && (
+                <>{' · '}<Link className="link-accent" href={lp('/guides/west-end-vs-west-bay')}>{t('West End vs West Bay')}</Link></>
+              )}
             </p>
           )}
         </aside>
