@@ -3,6 +3,7 @@ import Logo from '@/components/Logo';
 import Icon from '@/components/Icon';
 import LangSwitch from '@/components/LangSwitch';
 import CurrencySwitch from '@/components/CurrencySwitch';
+import LandingMenu from '@/components/LandingMenu';
 import { getT, getLp } from '@/lib/i18n/server';
 import { CONTACT_EMAIL, OPERATOR } from '@/lib/site';
 
@@ -32,6 +33,7 @@ export default async function LandingLayout({ children }: { children: React.Reac
           <Link className="btn btn--primary lp-head__btn" href={lp('/listings?deal=sale')} aria-label={t('Browse listings')}>
             <span className="lp-head__cta">{t('Browse listings')}</span> <Icon name="arrowRight" size={16} />
           </Link>
+          <LandingMenu items={nav.map(([href, name]) => ({ href: lp(href), name: t(name) }))} label={t('Menu')} closeLabel={t('Close menu')} />
         </div>
       </header>
 

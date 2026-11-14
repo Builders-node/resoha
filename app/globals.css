@@ -1545,7 +1545,7 @@ textarea.input{resize:vertical;min-height:96px}
 .lightbox__bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px}
 .lightbox__count{font-weight:700;font-size:13px;opacity:.85}
 .lightbox__caption{margin-right:10px}
-.lightbox__close{width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;
+.lightbox__close{width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.1);color:#fff;
   display:grid;place-items:center;cursor:pointer}
 .lightbox__close:hover{background:rgba(255,255,255,.2)}
 .lightbox__stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center;padding:0 64px}
@@ -2828,11 +2828,22 @@ html{scroll-behavior:smooth}
 .lp .lp-head__nav a{color:#2b2a2e}
 .lp .lp-head__nav a:hover{color:var(--coral)}
 .lp .lp-head__btn{padding:10px 18px;font-size:13px}
-/* ≤1080px меню переноситься другим рядком: шапка має рости по висоті, а не лишатися 72px,
-   інакше рядок посилань вилазить за її тло на сторінку */
+/* бургер: ≤1080px рядок посилань не вміщається поруч із логотипом — ховаємо його,
+   шапка лишається одним рядком 72px, а посилання відкриваються списком під нею */
+.lp-burger{display:none}
 @media (max-width:1080px){
-  .lp .lp-head__in{height:auto;min-height:72px;padding-top:10px;padding-bottom:0}
-  .lp .lp-head__nav{gap:20px}
+  .lp .lp-head__in{flex-wrap:nowrap;height:72px;padding-top:0;gap:12px}
+  .lp .lp-head__nav{display:none}
+  .lp .lp-head__btn{margin-left:auto}
+  .lp-burger{display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;
+    border-radius:999px;border:1px solid rgba(15,15,16,.12);background:rgba(255,255,255,.7);color:var(--ink);cursor:pointer}
+  .lp-burger:hover{background:#fff}
+  .lp-menu{position:fixed;inset:72px 0 0;background:rgba(15,15,16,.18)}
+  .lp-menu__list{display:flex;flex-direction:column;background:var(--cream);box-shadow:var(--shadow-pop);
+    padding:8px 16px 16px;border-radius:0 0 var(--radius-lg) var(--radius-lg)}
+  .lp-menu__list a{padding:14px 8px;font-size:16px;font-weight:500;color:var(--ink);border-bottom:1px solid var(--line)}
+  .lp-menu__list a:last-child{border-bottom:0}
+  .lp-menu__list a[aria-current=page],.lp-menu__list a:hover{color:var(--coral)}
 }
 
 /* заголовок сторінки: по центру, великий і світлий */
