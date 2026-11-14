@@ -2828,6 +2828,12 @@ html{scroll-behavior:smooth}
 .lp .lp-head__nav a{color:#2b2a2e}
 .lp .lp-head__nav a:hover{color:var(--coral)}
 .lp .lp-head__btn{padding:10px 18px;font-size:13px}
+/* ≤1080px меню переноситься другим рядком: шапка має рости по висоті, а не лишатися 72px,
+   інакше рядок посилань вилазить за її тло на сторінку */
+@media (max-width:1080px){
+  .lp .lp-head__in{height:auto;min-height:72px;padding-top:10px;padding-bottom:0}
+  .lp .lp-head__nav{gap:20px}
+}
 
 /* заголовок сторінки: по центру, великий і світлий */
 .lp .page{padding-top:56px;padding-bottom:72px}
